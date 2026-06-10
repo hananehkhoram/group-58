@@ -11,7 +11,7 @@
 ###  منتور | Mentor
 | نام | نقش |
 |-----|-----|
-| Inaz Rahmani | Mentor |
+| Aynaz Rahmani | Mentor |
 
 ###  اعضای تیم | Students
 | نام | شماره دانشجویی |
