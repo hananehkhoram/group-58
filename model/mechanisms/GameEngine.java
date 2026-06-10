@@ -1,6 +1,6 @@
 package model.mechanisms;
 
-import model.plants.plantsKinds.Plant;
+import model.plants.*;
 import model.zombie.Zombie;
 
 public class GameEngine{

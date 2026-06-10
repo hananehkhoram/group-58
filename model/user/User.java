@@ -24,6 +24,8 @@ public class User {
     private GreenHouse greenHouse;
     private List<String> unlockedPlantTypes;     // گیاهانی که کاربر آنلاک کرده
     private int plantFoodCount;
+    protected int lastLevel;
+    protected int lastSeason;
 
     public boolean isBoughtDailyOfferToday() {
         return boughtDailyOfferToday;
@@ -51,5 +53,8 @@ public class User {
         this.plantFoodCount = plantFoodCount;
     }
     public Settings getSettings() { return settings; }
+
+    public int getLastLevel(){return lastLevel;}
+    public int getLastSeason(){return lastSeason;}
 }
 

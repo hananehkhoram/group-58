@@ -8,6 +8,7 @@ public class Wave{
     private int waveNumber;
     private boolean isLastWave;
     private int waveCost;
+    private int waveDelay;
 
     public int getWaveNumber() {
         return waveNumber;

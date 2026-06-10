@@ -1,36 +1,68 @@
 package model;
 
-import model.plants.plantsKinds.Plant;
+import model.level.Level;
+import model.plants.TargetingMode;
+import model.plants.Plant;
+import model.season.Grave;
 import model.user.User;
 import model.zombie.Zombie;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 //saving everything needed during the game
 public class GameContext {
-    private Map<String, Zombie> activeZombies = new HashMap<>();
-    private Map<String, Plant> activePlants = new HashMap<>();
-    private User loggedInUser;
-    private int coins;
-    private int gems;
-    private int currentDifficulty;
 
-    public void addCoins(int amount) {
+    private final Level level;
+    private final User user;
+    private final Plant[][] plantGrid;
+    private final Grave[][] graveGrid;
+    private final List<Plant> activePlants = new ArrayList<>();
+    private final List<Zombie> activeZombies = new ArrayList<>();
+    private int sunAmount = 0;
+    private int plantFoodCount = 0;
+    private int currentWaveIndex = 0;
+    private boolean gameEnded = false;
+    private boolean playerWon = false;
+
+    public GameContext(Level level, User user) {
+        this.level = level;
+        this.user = user;
+        this.plantGrid = new Plant[level.getRows()][level.getColumns()];
+        this.graveGrid = new Grave[level.getRows()][level.getColumns()];
     }
 
-    public void addZombie(String name, Zombie newZombie) {
+    public void addSun(int amount) {
     }
 
-    public void addPlant(String name, Plant plant) {
+    public void addZombie(Zombie z) {
     }
 
-    public boolean canSpendCoins(int amount) {
+    public void placeGrave(Grave g, int row, int col) {
+    }
+
+    public boolean canFreezeZombie() {
         return false;
     }
 
+    public boolean doesSunFall() {
+        return false;
+    }
 
-    public void setLoggedInUser(User loggedInUser) {
-        this.loggedInUser = loggedInUser;
+    public boolean isNecromancyCell(int row, int col) {
+        return false;
+    }
+
+    public List<Zombie> findTargets(int row, int col, TargetingMode mode) {
+        return null;
+    }
+
+    public void update(double deltaTime) {
+    }
+
+    private void checkGameEnd() {
+    }
+
+    public void onWaveStart(int waveNumber, int waveDelay) {
     }
 }

@@ -1,7 +1,7 @@
 package model.mechanisms;
 
 import model.GameContext;
-import model.plants.plantsKinds.Plant;
+import model.plants.*;
 import model.zombie.Zombie;
 
 public class Tile {
@@ -30,10 +30,6 @@ public class Tile {
 
     public Plant getPlant() {
         return plant;
-    }
-
-    public Zombie[] getZombies() {
-        return zombies;
     }
 
     public boolean setPlant(Plant plant) {

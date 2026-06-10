@@ -1,17 +1,17 @@
 package controller;
 
-import model.level.LevelData;
+import model.level.Level;
 
 import java.util.List;
 
 public class LevelManager {
-    private LevelData.Level level;
-    private List<LevelData.Level> levels;
+    private Level level;
+    private List<Level> levels;
 
-    public List<LevelData.Level> getLevels() {
+    public List<Level> getLevels() {
         return levels;
     }
     public void unlockLevel(String id){}
     public boolean isLevelUnlocked(String id){return false;}
-    public LevelData.Level getNextLevel(LevelData.Level level){return null;}
+    public Level getNextLevel(Level level){return null;}
 }
