@@ -24,6 +24,9 @@ public class GameContext {
     private int currentWaveIndex = 0;
     private boolean gameEnded = false;
     private boolean playerWon = false;
+    private int waveDurationRemaining = 0;//بر حسب تیک
+    private boolean waveSpawningFinished = false;
+    private int remainingZombiesToSpawn = 0;
 
     public GameContext(Level level, User user) {
         this.level = level;
@@ -65,4 +68,12 @@ public class GameContext {
 
     public void onWaveStart(int waveNumber, int waveDelay) {
     }
+
+    public boolean isWaveCompleted(){}
+
+    private boolean isWaveCleared(){}
+
+    private void startWaveDelay(){}
+
+    private void startNextWave(){}
 }
