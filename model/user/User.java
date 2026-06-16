@@ -12,7 +12,7 @@ public class User {
     protected String nickName;
     protected String email;
     protected Gender gender;
-    protected String securityQuestion;
+    protected SecurityQuestions securityQuestion;
     protected String securityAnswer;
     protected int gamesPlayed;
     protected int numberOfPassedLevels;
@@ -26,6 +26,14 @@ public class User {
     private int plantFoodCount;
     protected int lastLevel;
     protected int lastSeason;
+
+    public User(String username, String password, String nickName, String email, Gender gender) {
+        this.username = username;
+        this.password = password;
+        this.nickName = nickName;
+        this.email = email;
+        this.gender = gender;
+    }
 
     public boolean isBoughtDailyOfferToday() {
         return boughtDailyOfferToday;
@@ -56,5 +64,33 @@ public class User {
 
     public int getLastLevel(){return lastLevel;}
     public int getLastSeason(){return lastSeason;}
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getNickName() {
+        return nickName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public String getSecurityAnswer() {
+        return securityAnswer;
+    }
+
+    public SecurityQuestions getSecurityQuestion() {
+        return securityQuestion;
+    }
 }
 
