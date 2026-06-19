@@ -10,30 +10,30 @@ import java.util.regex.Pattern;
 public class CommandRegistry {
     private static class CommandEntry{
         Pattern pattern;
-        Command command;
+        controller.commandHandler.Command command;
 
-        CommandEntry(String regex, Command command){
+        CommandEntry(String regex, controller.commandHandler.Command command){
             this.pattern = Pattern.compile(regex);
             this.command = command;
         }
     }
 
     private final List<CommandEntry> commands = new ArrayList<>();
-    public void register(String regex, Command command){
+    public void register(String regex, controller.commandHandler.Command command){
         commands.add(new CommandEntry(regex, command));
     }
     public void handleCommand (String input){
         for (CommandEntry entry : commands){
             Matcher matcher = entry.pattern.matcher(input);
             if (matcher.matches()){
-            String[] args = new String[matcher.groupCount()];
-            for (int i = 0; i < matcher.groupCount(); i++){
+                String[] args = new String[matcher.groupCount()];
+                for (int i = 0; i < matcher.groupCount(); i++){
                 args[i] = matcher.group(i + 1);
+                }
+                entry.command.execute(args);
+                return;
             }
-            entry.command.execute(args);
-            return;
         }
         throw new CommandNotFound("Invalid Command.");
-        }
     }
 }
