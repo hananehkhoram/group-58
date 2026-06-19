@@ -2,6 +2,7 @@ package model.level;
 
 
 import model.mechanisms.Wave;
+import model.season.Season;
 
 public class LevelData {
     protected enum SpecialLevelType{

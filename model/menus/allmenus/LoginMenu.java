@@ -8,10 +8,11 @@ import model.user.User;
 import model.user.UserManager;
 
 public class LoginMenu extends BaseMenu {
+    private UserManager um;
     public LoginMenu(GameContext ctx, MenuType menuType) {
         super(ctx, MenuType.LOGIN);
+        this.um = UserManager.getInstance();
     }
-    private UserManager um;
 
     public String login (String username,  String password){
         if (um.doesUserExist(username)) return "User does not exist!";

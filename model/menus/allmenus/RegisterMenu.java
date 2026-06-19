@@ -9,10 +9,12 @@ import model.user.User;
 import model.user.UserManager;
 
 public class RegisterMenu extends BaseMenu {
+    private UserManager um;
     public RegisterMenu(String name, GameContext ctx, MenuType menuType) {
         super(ctx, MenuType.REGISTER);
+        this.um = UserManager.getInstance();
     }
-    private UserManager um;
+
 
     public String register(String username, String password, String passwordConfirm, String nickName,
                          String email,String gender){

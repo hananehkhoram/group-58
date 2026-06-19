@@ -1,17 +1,24 @@
 package model.user;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserManager {//singelton
+    private static UserManager instance = null;
 
     private List<User> users;
     private User currentUser;
 
     private UserManager() {
+        this.users = new ArrayList<>();
+        this.currentUser = null;
     }
 
-    public UserManager getInstance() {
-        return null;
+    public static UserManager getInstance() {
+        if (instance == null) {
+            instance = new UserManager();
+        }
+        return instance;
     }
 
     public User findUserByName(String name){

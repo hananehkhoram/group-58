@@ -2,7 +2,9 @@ package model.user;
 
 
 import model.GreenHouseData.GreenHouse;
+import model.plants.Plant;
 import model.settings.Settings;
+import model.zombie.Zombie;
 
 import java.util.List;
 
@@ -22,10 +24,15 @@ public class User {
     private long lastDailyOfferDate;      // تاریخ آخرین باری که پیشنهاد نمایش داده شد
     private boolean boughtDailyOfferToday;
     private GreenHouse greenHouse;
-    private List<String> unlockedPlantTypes;     // گیاهانی که کاربر آنلاک کرده
+    private List<Plant> unlockedPlantTypes;// گیاهانی که کاربر آنلاک کرده
+    private List<Zombie> seenZombies;
     private int plantFoodCount;
     protected int lastLevel;
     protected int lastSeason;
+    private int difficultyLevel = 3;
+    private int lastReadNewsId = 0;
+    private int coins;
+    private int gems;
 
     public User(String username, String password, String nickName, String email, Gender gender) {
         this.username = username;
@@ -33,6 +40,8 @@ public class User {
         this.nickName = nickName;
         this.email = email;
         this.gender = gender;
+        this.coins = 0;
+        this.gems = 0;
     }
 
     public boolean isBoughtDailyOfferToday() {
@@ -91,6 +100,66 @@ public class User {
 
     public SecurityQuestions getSecurityQuestion() {
         return securityQuestion;
+    }
+
+    public int getDifficultyLevel() {
+        return difficultyLevel;
+    }
+
+    public void setDifficultyLevel(int difficultyLevel) {
+        this.difficultyLevel = difficultyLevel;
+    }
+
+    public int getLastReadNewsId() {
+        return lastReadNewsId;
+    }
+
+    public void setLastReadNewsId(int lastReadNewsId) {
+        this.lastReadNewsId = lastReadNewsId;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public int getGamesPlayed() {
+        return gamesPlayed;
+    }
+
+    public void setGamesPlayed(int gamesPlayed) {
+        this.gamesPlayed = gamesPlayed;
+    }
+
+    public int getCoins() {
+        return coins;
+    }
+
+    public int getGems() {
+        return gems;
+    }
+
+    public int getMaxMewPoint() {
+        return maxMewPoint;
+    }
+
+    public List<Plant> getUnlockedPlantTypes() {
+        return unlockedPlantTypes;
+    }
+
+    public List<Zombie> getSeenZombies() {
+        return seenZombies;
     }
 }
 

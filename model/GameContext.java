@@ -76,4 +76,12 @@ public class GameContext {
     private void startWaveDelay(){}
 
     private void startNextWave(){}
+
+    public List<Plant> getActivePlants() {
+        return activePlants;
+    }
+
+    public List<Zombie> getActiveZombies() {
+        return activeZombies;
+    }
 }
