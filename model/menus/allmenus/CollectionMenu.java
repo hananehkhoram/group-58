@@ -3,7 +3,7 @@ package model.menus.allmenus;
 import model.GameContext;
 import model.menus.BaseMenu;
 import model.menus.MenuType;
-import model.plants.plantsKinds.Plant;
+import model.plants.Plant;
 import model.user.User;
 import model.user.UserManager;
 

@@ -1,8 +1,14 @@
 package model.plants;
 
+/**
+ * How a plant selects its target. No column in plants.csv currently encodes
+ * this, so it is left as a small placeholder enum; PlantLoader leaves it
+ * null for now. Extend and wire up via PlantLoader once source data exists.
+ */
 public enum TargetingMode {
-    FIRST_IN_ROW,       // Shooter
-    MOST_CROWDED,       // Lobber
-    WHOLE_ROW,          // StrikeThrough
-    ANYWHERE_ON_MAP     // Homing
+    NEAREST,
+    FARTHEST,
+    RANDOM,
+    FIRST_IN_LANE,
+    NONE
 }

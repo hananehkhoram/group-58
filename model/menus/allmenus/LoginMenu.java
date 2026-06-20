@@ -3,7 +3,6 @@ package model.menus.allmenus;
 import model.GameContext;
 import model.menus.BaseMenu;
 import model.menus.MenuType;
-import model.user.SecurityQuestions;
 import model.user.User;
 import model.user.UserManager;
 
