@@ -5,12 +5,12 @@ import model.user.User;
 import java.util.List;
 
 public class Shop{
-    private List<ShopItem> permanentItems;
+    private List<ItemType> permanentItems;
     private DailyOffer dailyOffer;
 
     public Shop() {}
 
-    public List<ShopItem> getPermanentItems() {
+    public List<ItemType> getPermanentItems() {
         return permanentItems;
     }
 

@@ -6,6 +6,9 @@ public class DailyOffer{
     private int discountedPrice;  // 1600 سکه
     private long expiryDate;
     private boolean purchased;
+    private int amount = 10;
+    private int price = 1600;
+    private Currency currency = Currency.COIN;
 
     public DailyOffer(String plantType,int discountedPrice,long expiryDate){}
 
@@ -23,5 +26,17 @@ public class DailyOffer{
 
     public boolean isPurchased() {
         return purchased;
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public Currency getCurrency() {
+        return currency;
     }
 }

@@ -8,4 +8,5 @@ public class TravelMenu extends BaseMenu {
     public TravelMenu(GameContext ctx, MenuType menuType) {
         super(ctx, MenuType.TRAVEL);
     }
+
 }
