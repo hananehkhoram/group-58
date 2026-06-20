@@ -12,7 +12,7 @@ public class MenuManager {
 
     public void pushMenu(){}
     public void popMenu(){}
-    public void changeMenu(){}
+    public void changeMenu(String targetMenu){}
     public void update(){}
     public void handleInput(){}
 }
