@@ -28,8 +28,7 @@ import controller.commands.special_levels_commands.plant_what_you_get;
 import controller.commands.status.show_map;
 import controller.commands.status.show_plants_status;
 import controller.commands.status.show_tile_status;
-import controller.newsMenu_commands.show_allNews;
-import controller.newsMenu_commands.show_unreadNews;
+
 
 public class FileCommandProvider implements controller.commandHandler.CommandProvider {
 
