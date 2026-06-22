@@ -3,6 +3,7 @@ package model.zombie;
 import model.season.Season;
 import model.zombie.behavior.Behaviors;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ public class Zombie {
         this.speed = speed;
         this.wavePointCost = wavePointCost;
         this.weight = weight;
+        this.behaviors = ZombieActivator.buildBehaviors(this);
     }
 
     public String getId() { return id; }
@@ -50,7 +52,6 @@ public class Zombie {
     public void setSpeed(double speed) { this.speed = speed; }
     public void setWavePointCost(int wavePointCost) { this.wavePointCost = wavePointCost; }
     public void setWeight(int weight) { this.weight = weight; }
-    public void setBehaviors(Map<String, Behaviors> behaviors) { this.behaviors = behaviors; }
     public void setEffects(List<Effects> effects) { this.effects = effects; }
     public void setExtraParams(Map<String, Object> extraParams) { this.extraParams = extraParams; }
 

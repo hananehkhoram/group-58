@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import model.zombie.behavior.ArmorType;
 
 public class ZombieActivator {
 
@@ -27,25 +28,25 @@ public class ZombieActivator {
 
             case "ZombieArmor1": // Cone Head
                 behaviors.put("armor", new Armor(
-                        Armor.ArmorType.CONE, Armor.ArmorType.CONE.baseHealth,
+                        ArmorType.CONE, ArmorType.CONE.baseHealth,
                         false, new double[]{0.666, 0.333}));
                 break;
 
             case "ZombieArmor2": // Bucket Head
                 behaviors.put("armor", new Armor(
-                        Armor.ArmorType.BUCKET, Armor.ArmorType.BUCKET.baseHealth,
+                        ArmorType.BUCKET, ArmorType.BUCKET.baseHealth,
                         true, new double[]{0.666, 0.333}));
                 break;
 
             case "ZombieArmor4": // Brick Head (unused in vanilla but in data)
                 behaviors.put("armor", new Armor(
-                        Armor.ArmorType.BRICK, Armor.ArmorType.BRICK.baseHealth,
+                        ArmorType.BRICK, ArmorType.BRICK.baseHealth,
                         false, new double[]{0.666, 0.333}));
                 break;
 
             case "ZombieDarkArmor3": // Dark Ages Knight
                 behaviors.put("armor", new Armor(
-                        Armor.ArmorType.SHOULDER_CROWN, Armor.ArmorType.SHOULDER_CROWN.baseHealth,
+                        ArmorType.SHOULDER_CROWN, ArmorType.SHOULDER_CROWN.baseHealth,
                         true, new double[]{0.666, 0.333}));
                 break;
 
@@ -53,7 +54,7 @@ public class ZombieActivator {
 
             case "ZombieNewspaper":
                 behaviors.put("armor", new Armor(
-                        Armor.ArmorType.NEWSPAPER, Armor.ArmorType.NEWSPAPER.baseHealth,
+                        ArmorType.NEWSPAPER, ArmorType.NEWSPAPER.baseHealth,
                         false, new double[]{0.5}, 4.0, 4.0));
                 break;
 
