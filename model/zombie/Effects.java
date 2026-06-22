@@ -1,4 +1,11 @@
 package model.zombie;
 
 public enum Effects {
-} //effects
+    CHILLED,       // slowed by ice/snow
+    FROZEN,        // fully stopped
+    BURNING,       // on fire (e.g. from Torchwood)
+    STUNNED,       // temporarily unable to act
+    HYPNOTIZED,    // turned against other zombies
+    ELECTROCUTED,  // shocked
+    ENRAGED        // increased speed/damage (e.g. Newspaper after paper destroyed)
+}
