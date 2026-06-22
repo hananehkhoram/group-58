@@ -1,31 +1,35 @@
 package model.ShopData;
+ public enum ItemType {
 
-public enum ItemType {
-
-    POT_UNLOCK("Unlock New Pot", 2000,Currency.COIN,1,
-            "Unlocks a new pot in your greenhouse."),
-    PLANT_FOOD("Plant Food", 3,Currency.GEM,1,
-            "Boosts your plant's growth speed."),
-    RANDOM_SEED_PACK("Random Seed Pack", 1000,Currency.COIN,5,
-            "5 Random Seed Packs for a random plant from unlocked plants."),
-    SELECTED_SEED_PACK("Selected Seed Pack", 5,Currency.GEM,10,
-            "10 Random Seed Packs for a selected plant from unlocked plants."),
-    CURRENCY_CONVERSION("Currency Conversion", 5,Currency.GEM,500,
-            "Convert your gems into coins.");
+    POT_UNLOCK("Unlock New Pot", 2000,Currency.COIN,1,1,
+            "Unlocks a new pot in your greenhouse.",20),
+    PLANT_FOOD("Plant Food", 3,Currency.GEM,1,2,
+            "Boosts your plant's growth speed.",3),
+    RANDOM_SEED_PACK("Random Seed Pack", 1000,Currency.COIN,5,3,
+            "5 Random Seed Packs for a random plant from unlocked plants.",0),
+    SELECTED_SEED_PACK("Selected Seed Pack", 5,Currency.GEM,10,4,
+            "10 Random Seed Packs for a selected plant from unlocked plants.",0),
+    CURRENCY_CONVERSION("Currency Conversion", 5,Currency.GEM,500,5,
+            "Convert your gems into coins.",0);
 
 
     private final String displayName;
     private final int price;
-    private Currency currency;
+    private final Currency currency;
     private final String description;
-    private int amount;
+    private final int amount;
+    private final int id;
+    private final int maxPurchase;//zero means unlimited
 
-    ItemType(String displayName, int price,Currency currency,int amount, String description) {
+    ItemType(String displayName, int price,Currency currency,
+             int amount,int id, String description,int maxPurchase) {
         this.displayName = displayName;
         this.price = price;
         this.currency = currency;
         this.description = description;
         this.amount = amount;
+        this.id = id;
+        this.maxPurchase = maxPurchase;
     }
 
 
@@ -47,5 +51,9 @@ public enum ItemType {
 
     public int getAmount() {
         return amount;
+    }
+
+    public int getId() {
+        return id;
     }
 }

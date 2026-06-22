@@ -2,11 +2,14 @@ package model.user;
 
 
 import model.GreenHouseData.GreenHouse;
+import model.ShopData.DailyOffer;
 import model.plants.Plant;
 import model.settings.Settings;
 import model.zombie.Zombie;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class User {
     protected String username;
@@ -20,13 +23,20 @@ public class User {
     protected int numberOfPassedLevels;
     protected int maxMewPoint;
     private Settings settings;
-    private String lastDailyOfferPlant;   // ایدی گیاه پیشنهاد روز گذشته
+
+    private Plant lastDailyOfferPlant;   // گیاه پیشنهاد روز گذشته
     private long lastDailyOfferDate;      // تاریخ آخرین باری که پیشنهاد نمایش داده شد
     private boolean boughtDailyOfferToday;
+    private DailyOffer lastDailyOffer;
+
+    private int ownedPotsCount = 1;
+    private int plantFoodCount = 0;
+
+    private Map<String, Integer> plantSeedsInventory = new HashMap<>();
+
     private GreenHouse greenHouse;
     private List<Plant> unlockedPlantTypes;// گیاهانی که کاربر آنلاک کرده
     private List<Zombie> seenZombies;
-    private int plantFoodCount;
     protected int lastLevel;
     protected int lastSeason;
     private int difficultyLevel = 3;
@@ -42,6 +52,7 @@ public class User {
         this.gender = gender;
         this.coins = 0;
         this.gems = 0;
+        this.greenHouse = new GreenHouse();
     }
 
     public boolean isBoughtDailyOfferToday() {
@@ -160,6 +171,52 @@ public class User {
 
     public List<Zombie> getSeenZombies() {
         return seenZombies;
+    }
+
+    public Plant getLastDailyOfferPlant() {
+        return lastDailyOfferPlant;
+    }
+
+    public void setLastDailyOfferPlant(Plant lastDailyOfferPlant) {
+        this.lastDailyOfferPlant = lastDailyOfferPlant;
+    }
+
+    public DailyOffer getLastDailyOffer() {
+        return lastDailyOffer;
+    }
+
+    public void setLastDailyOffer(DailyOffer lastDailyOffer) {
+        this.lastDailyOffer = lastDailyOffer;
+    }
+
+    public int getOwnedPotsCount() {
+        return ownedPotsCount;
+    }
+
+    public void setOwnedPotsCount(int ownedPotsCount) {
+        this.ownedPotsCount = ownedPotsCount;
+    }
+
+    public void setCoins(int coins) {
+        this.coins = coins;
+    }
+
+    public void setGems(int gems) {
+        this.gems = gems;
+    }
+    public void addSeedsToInventory(String plantName, int amount) {
+        int currentAmount = plantSeedsInventory.getOrDefault(plantName, 0);
+
+        plantSeedsInventory.put(plantName, currentAmount + amount);
+
+    }
+
+    public GreenHouse getGreenHouse() {
+        return greenHouse;
+    }
+
+    public int getSeedCount(String plantName) {
+        return plantSeedsInventory.getOrDefault(plantName, 0);
     }
 }
 
