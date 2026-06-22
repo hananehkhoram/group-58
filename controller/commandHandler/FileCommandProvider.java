@@ -68,10 +68,10 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("menu profile show-info" , new showInfo());
         registry.register("menu collection show-(?<all/nothing>\\S+)plants" , new showPlantsCollection());
         registry.register("menu collection show-(?<all/nothing>)zombies" , new showZombiesCollection());
-        registry.register("menu collection show-plant -p (?<plant_name>\\S+)" , new show_plant_details());
+        registry.register("menu collection show-plant -p (?<plant_name>\\S+)" , new show_plant_details(menuManager));
         registry.register("menu collection show-zombie -z (?<zombie_name>\\S+)" , new show_zombie_details());
         registry.register("menu collection upgrade-plant -p (?<plant_name>\\S+)" , new upgradePlant());
-        registry.register("menu collection purchase-plant -p (?<plant_name>\\S+)" , new purchasePlant());
+        registry.register("menu collection purchase-plant -p (?<plant_name>\\S+)" , new purchasePlant(menuManager));
         registry.register("show (?<all/available>) plants" , new show_plantsList());
         registry.register("add plant -t (?<type>\\S+)" , new addPlant());
         registry.register("remove plant -t (?<type>\\S+)" , new removePlant());

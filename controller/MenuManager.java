@@ -15,4 +15,11 @@ public class MenuManager {
     public void changeMenu(String targetMenu){}
     public void update(){}
     public void handleInput(){}
+    public Menu getCurrentMenu(){
+        if (!menus.isEmpty()){
+            return menus.peek();
+        }else {
+            return null;
+        }
+    }
 }
