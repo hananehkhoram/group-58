@@ -15,7 +15,6 @@ import java.util.List;
 public class GameContext {
 
     private final Level level;
-    private final User user;
     private final Plant[][] plantGrid;
     private final Grave[][] graveGrid;
     private final List<Plant> activePlants = new ArrayList<>();
@@ -30,9 +29,8 @@ public class GameContext {
     private int remainingZombiesToSpawn = 0;
     private List<Projectile> projectiles = new ArrayList<>();
 
-    public GameContext(Level level, User user) {
+    public GameContext(Level level) {
         this.level = level;
-        this.user = user;
         this.plantGrid = new Plant[level.getRows()][level.getColumns()];
         this.graveGrid = new Grave[level.getRows()][level.getColumns()];
     }
