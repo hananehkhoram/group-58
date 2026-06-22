@@ -1,6 +1,7 @@
 package model.plants.plantAbilities;
 
 import model.GameContext;
+import model.Projectile.Projectile;
 import model.plants.Plant;
 import model.plants.enums.BulletType;
 import model.plants.enums.ShootType;
@@ -12,7 +13,8 @@ public class Shooters implements BaseAbility {
         //check for striker here
         //check for homing (cat-tail - 14 - 15)
     }
-    public void shoot(int amount, ShootType shootType, BulletType bulletType) {
+    public void shoot(int amount, ShootType shootType, BulletType bulletType, Plant self, GameContext ctx) {
+        //Projectile projectile = new Projectile(self, ctx);
     }
     public void shootForHoming() {}
 
