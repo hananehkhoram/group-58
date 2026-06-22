@@ -1,8 +1,9 @@
 package model;
 
+import model.Projectile.Projectile;
 import model.level.Level;
-import model.plants.TargetingMode;
 import model.plants.Plant;
+import model.plants.TargetingMode;
 import model.season.Grave;
 import model.user.User;
 import model.zombie.Zombie;
@@ -27,12 +28,21 @@ public class GameContext {
     private int waveDurationRemaining = 0;//بر حسب تیک
     private boolean waveSpawningFinished = false;
     private int remainingZombiesToSpawn = 0;
+    private List<Projectile> projectiles = new ArrayList<>();
 
     public GameContext(Level level, User user) {
         this.level = level;
         this.user = user;
         this.plantGrid = new Plant[level.getRows()][level.getColumns()];
         this.graveGrid = new Grave[level.getRows()][level.getColumns()];
+    }
+
+    public List<Projectile> getProjectiles() {
+        return projectiles;
+    }
+
+    public void setNewProjectiles(Projectile projectile) {
+        this.projectiles.add(projectile);
     }
 
     public void addSun(int amount) {
@@ -69,13 +79,19 @@ public class GameContext {
     public void onWaveStart(int waveNumber, int waveDelay) {
     }
 
-    public boolean isWaveCompleted(){}
+    public boolean isWaveCompleted() {
+        return false;
+    }
 
-    private boolean isWaveCleared(){}
+    private boolean isWaveCleared() {
+        return false;
+    }
 
-    private void startWaveDelay(){}
+    private void startWaveDelay() {
+    }
 
-    private void startNextWave(){}
+    private void startNextWave() {
+    }
 
     public List<Plant> getActivePlants() {
         return activePlants;
