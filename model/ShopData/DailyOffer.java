@@ -1,24 +1,27 @@
 package model.ShopData;
 
+import model.plants.Plant;
+
 public class DailyOffer{
-    private int id;
-    private String plantType;
-    private int discountedPrice;  // 1600 سکه
+    private final int id = 6;
+    private String name;
+    private Plant plantType;
     private long expiryDate;
     private boolean purchased;
     private int amount = 10;
-    private int price = 1600;
-    private Currency currency = Currency.COIN;
+    private final int price = 1600;
+    private final Currency currency = Currency.COIN;
 
-    public DailyOffer(String plantType,int discountedPrice,long expiryDate){}
+    public DailyOffer(Plant plantType) {
+        this.plantType = plantType;
+        this.purchased = false;
+        this.name = plantType.getName();
+    }
 
-    public String getPlantType() {
+    public Plant getPlantType() {
         return plantType;
     }
 
-    public int getDiscountedPrice() {
-        return discountedPrice;
-    }
 
     public long getExpiryDate() {
         return expiryDate;
@@ -38,5 +41,17 @@ public class DailyOffer{
 
     public Currency getCurrency() {
         return currency;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setPurchased(boolean purchased) {
+        this.purchased = purchased;
+    }
+
+    public String getName() {
+        return name;
     }
 }

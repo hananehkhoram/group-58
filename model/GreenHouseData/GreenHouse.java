@@ -1,9 +1,16 @@
 package model.GreenHouseData;
 
 public class GreenHouse{
-    private Pot[] pots;
+    private Pot[][] pots;
 
-    public boolean unlockPot(int x,int y){return false;}//boolean to see if it succeeded
+    public GreenHouse() {
+        this.pots = new Pot[3][4];
+        for (Pot pot : pots[1]){
+            pot.setLocked(false);
+        }
+    }
+
+    public boolean unlockPot(int x, int y){return false;}
     public boolean plantPot(int x,int y){return false;}
     public Pot getPot(int x,int y){return null;}
     public boolean accelerateGrowth(int x,int y){return false;}

@@ -1,23 +1,65 @@
 package model.ShopData;
 
+import model.plants.Plant;
 import model.user.User;
+import model.user.UserManager;
 
 import java.util.List;
+import java.util.Random;
 
 public class Shop{
-    private List<ItemType> permanentItems;
-    private DailyOffer dailyOffer;
+    private ItemType[] permanentItems;
+    private UserManager um;
+    protected User currentUser;
 
-    public Shop() {}
+    public Shop() {
+        this.um = UserManager.getInstance();
+        this.currentUser = um.getCurrentUser();
+        this.permanentItems = ItemType.values();
 
-    public List<ItemType> getPermanentItems() {
+    }
+
+    public ItemType[] getPermanentItems() {
         return permanentItems;
     }
 
     public DailyOffer getDailyOffer() {
-        return dailyOffer;
+        if (currentUser == null) return null;
+        return currentUser.getLastDailyOffer();
     }
-    public boolean buyItem(User user, String id, int count, String plantType){return false;}
-    public void refreshDailyOffer(User user){}
+
+    public void updateDailyOffer(User currentUser){
+        //if one day has passed since last offer
+        Plant randomPlant = getRandomUnlockedPlant(currentUser);
+        //currentUser.setLastDailyOfferDate();  today
+        currentUser.setLastDailyOfferPlant(randomPlant);
+        DailyOffer newOffer = new DailyOffer(randomPlant);
+        currentUser.setLastDailyOffer(newOffer);
+
+        um.saveToFile();
+    }
+
+    private Plant getRandomUnlockedPlant(User currentUser) {
+        List<Plant> unlockedPlants = currentUser.getUnlockedPlantTypes();
+
+        if (unlockedPlants == null || unlockedPlants.isEmpty()) {
+            return null;
+        }
+
+        Random random = new Random();
+
+        int randomIndex = random.nextInt(unlockedPlants.size());
+
+        return unlockedPlants.get(randomIndex);
+    }
+
+    public ItemType getItemById(int id) {
+        for (ItemType item : ItemType.values()) {
+            if (item.getId() == id) {
+                return item;
+            }
+        }
+        return null;
+    }
 }
 

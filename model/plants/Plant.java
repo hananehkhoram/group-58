@@ -25,6 +25,8 @@ public class Plant {
     private Map<String, String> abilityParams;
     private PlantFoodMode plantFoodMode;
 
+    private boolean plantFood;
+
     // Index 0 = upgrades unlocked at level 2, index 1 = level 3, index 2 = level 4.
     private List<StatEffect>[] statUpgrades;
     private List<BehaviorEffect>[] behaviorUpgrades;
@@ -208,5 +210,13 @@ public class Plant {
 
     public void setCol(int col) {
         this.col = col;
+    }
+
+    public boolean isPlantFood() {
+        return plantFood;
+    }
+
+    public void setPlantFood(boolean plantFood) {
+        this.plantFood = plantFood;
     }
 }
