@@ -1,5 +1,6 @@
 package model.menus.allmenus;
 
+import controller.repository.factory.PlantFactory;
 import model.GameContext;
 import model.GreenHouseData.GreenHouse;
 import model.GreenHouseData.Pot;
@@ -17,6 +18,7 @@ public class GreenHouseMenu extends BaseMenu {
     private UserManager um;
     protected User currentUser;
     private GreenHouse greenHouse;
+    private PlantFactory plantFactory;
 
     private Random random = new Random();
 
@@ -25,6 +27,7 @@ public class GreenHouseMenu extends BaseMenu {
         this.um = UserManager.getInstance();
         this.currentUser = um.getCurrentUser();
         this.greenHouse = currentUser.getGreenHouse();
+        this.plantFactory = new PlantFactory();
     }
     public String showGreenHouse(){
         StringBuilder sb = new StringBuilder();
@@ -51,25 +54,44 @@ public class GreenHouseMenu extends BaseMenu {
 
         Plant plant = determineRandomPlantToPlant();
 
-        if (plant == null){//if its marigold
+        if (plant.getName().equalsIgnoreCase("marigold")){//if its marigold
             pot.setRemainingPlantedTime(2);
         }
         else pot.setRemainingPlantedTime(8);
         pot.plant(plant);
+        um.saveToFile();
         return "Pot successfully planted.";
     }
     public String collectPlant(int x,int y){
         Pot pot = greenHouse.getPot(x,y);
+        String result = null;
         if (pot == null) return "Invalid pot index.";
         if (pot.isLocked()) return "Pot is locked!";
         if (pot.isEmpty()) return "Pot is empty";
         if (!pot.isPlantReady()) return "Plant is not ready.";
 
-        if (pot.getPlantType() == null){//if its marigold
+        Plant plant = pot.getPlantType();
+
+        if (plant.getName().equalsIgnoreCase("marigold")){//if its marigold
             currentUser.setCoins(currentUser.getCoins() + 500);
             pot.collectPlant();
         }
-        else currentUser.setCoins(currentUser.getCoins() + 500);
+        else {
+            String plantName = plant.getName();
+
+            if (currentUser.hasStoredBoost(plantName)) {
+                result =  ("Harvested " + plantName + ". You already have a stored boost for this plant, so no extra boost was added.");
+            } else {
+                currentUser.addStoredBoost(plantName);
+                result = ("Harvested " + plantName + "! A stored boost has been activated for your next match.");
+            }
+        }
+        um.saveToFile();
+        pot.setEmpty(true);
+        pot.setPlantType(null);
+
+
+        return result;
     }
 
     public String growPlant(int x,int y){
@@ -79,13 +101,18 @@ public class GreenHouseMenu extends BaseMenu {
         if (pot.isEmpty()) return "Pot is empty";
         if (pot.isPlantReady()) return "Plant is ready.";
 
-        //int gemsNeeded = Math.ceil(pot.getRemainingPlantedTime());
+        double remainingHours = pot.getRemainingPlantedTime();
+        int gemsNeeded = (int) Math.ceil(remainingHours);
 
-        return null;
+        pot.setPlantReady(true);
+        um.saveToFile();
+
+        return "Successfully accelerated growth! Gained a fully grown " + pot.getPlantType().getName() + " for " +
+                gemsNeeded + " gems.";
     }
     public Plant determineRandomPlantToPlant() {
         if (random.nextBoolean()) {
-            return null; // return a marigold
+            return null;
         }
 
         List<Plant> unlockedPlants = currentUser.getUnlockedPlantTypes();
@@ -98,10 +125,11 @@ public class GreenHouseMenu extends BaseMenu {
         }
 
         if (validPlants.isEmpty()) {
-            return null; // return a marigold
+            return null;
         }
 
         int randomIndex = random.nextInt(validPlants.size());
-        return validPlants.get(randomIndex);
+        String id = String.valueOf(validPlants.get(randomIndex).getId());
+        return plantFactory.create(id);
     }
 }

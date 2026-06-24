@@ -1,6 +1,7 @@
 package model.user;
 
 
+import model.GameContext;
 import model.GreenHouseData.GreenHouse;
 import model.ShopData.DailyOffer;
 import model.plants.Plant;
@@ -10,6 +11,7 @@ import model.zombie.Zombie;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class User {
     protected String username;
@@ -24,6 +26,7 @@ public class User {
     protected int maxMewPoint;
     private Settings settings;
 
+
     private Plant lastDailyOfferPlant;   // گیاه پیشنهاد روز گذشته
     private long lastDailyOfferDate;      // تاریخ آخرین باری که پیشنهاد نمایش داده شد
     private boolean boughtDailyOfferToday;
@@ -31,6 +34,7 @@ public class User {
 
     private int ownedPotsCount = 1;
     private int plantFoodCount = 0;
+    private Map<String, Boolean> storedBoosts = new HashMap<>();
 
     private Map<String, Integer> plantSeedsInventory = new HashMap<>();
 
@@ -217,6 +221,24 @@ public class User {
 
     public int getSeedCount(String plantName) {
         return plantSeedsInventory.getOrDefault(plantName, 0);
+    }
+    public Plant getRandomUnlockedPlant(){
+        if (unlockedPlantTypes == null || unlockedPlantTypes.isEmpty()) {
+            return null;
+        }
+
+        Random random = new Random();
+        int randomIndex = random.nextInt(unlockedPlantTypes.size());
+
+        return unlockedPlantTypes.get(randomIndex);
+    }
+    public boolean hasStoredBoost(String plantName) {
+        return storedBoosts.getOrDefault(plantName, false);
+    }
+    public void addStoredBoost(String plantName){
+        String key = plantName.toLowerCase();
+
+        storedBoosts.put(key, true);
     }
 }
 

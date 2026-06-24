@@ -1,11 +1,27 @@
 package controller.commands.profileMenuCommands;
 
+import controller.MenuManager;
 import controller.commandHandler.Command;
+import model.menus.Menu;
+import model.menus.allmenus.ProfileMenu;
+import view.ConsoleView;
 
 public class change_nickName implements Command {
+    private MenuManager menuManager;
+
+    public change_nickName(MenuManager menuManager) {
+        this.menuManager = menuManager;
+    }
     @Override
     public void execute(String[] args) {
+        String nickName = args[0];
+        Menu currentMenu = menuManager.getCurrentMenu();
 
+        if (currentMenu instanceof ProfileMenu){
+            String result = ((ProfileMenu) currentMenu).changeNickname(nickName);
+            ConsoleView.showMessage("%s\n",result);
+
+        }
     }
 
     //menu profile change-username -u <username>

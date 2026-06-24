@@ -193,4 +193,8 @@ public class PlantRepository implements AssetRepository<Plant> {
         fields.add(cur.toString());
         return fields.toArray(new String[0]);
     }
+
+    public Map<String, Plant> getPlantDataMap() {
+        return plantDataMap;
+    }
 }

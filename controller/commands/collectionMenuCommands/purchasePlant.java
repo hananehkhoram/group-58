@@ -4,6 +4,7 @@ import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.menus.Menu;
 import model.menus.allmenus.CollectionMenu;
+import view.ConsoleView;
 
 public class purchasePlant implements Command {
 
@@ -16,11 +17,13 @@ public class purchasePlant implements Command {
     @Override
     public void execute(String[] args) {
         String plantName = args[0];
+        String result = null;
 
         Menu currentMenu = menuManager.getCurrentMenu();
 
         if (currentMenu instanceof CollectionMenu) {
-            ((CollectionMenu) currentMenu).purchasePlant(plantName);
+            result = ((CollectionMenu) currentMenu).purchasePlant(plantName);
+            ConsoleView.showMessage("%s\n",result);
         }
     }
 

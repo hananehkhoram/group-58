@@ -13,17 +13,20 @@ public class LoginMenu extends BaseMenu {
         this.um = UserManager.getInstance();
     }
 
-    public String login (String username,  String password){
+    public String login (String username,  String password,String stayLoggedIn){
         if (um.doesUserExist(username)) return "User does not exist!";
         if (um.isPasswordCorrect(password,username)) return "Incorrect password.";
 
         User user = um.findUserByName(username);
 
         um.login(user);
+        if (stayLoggedIn != null) {
+            //Stay logged in
+        }
         return "Logged in successfully.";
     }
 
-    public String AnswerSecurityQuestion(String username,String answer){
+    public String answerSecurityQuestion(String username,String answer){
         User user = um.findUserByName(username);
         if (!um.isAnswerCorrect(answer,user)) return "Wrong answer!";
         return "Please enter new password.";

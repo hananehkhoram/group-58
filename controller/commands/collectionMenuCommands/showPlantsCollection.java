@@ -1,11 +1,26 @@
 package controller.commands.collectionMenuCommands;
 
+import controller.MenuManager;
 import controller.commandHandler.Command;
+import model.menus.Menu;
+import model.menus.allmenus.CollectionMenu;
+import view.ConsoleView;
 
 public class showPlantsCollection implements Command {
+    private MenuManager menuManager;
+
+    public showPlantsCollection(MenuManager menuManager) {
+        this.menuManager = menuManager;
+    }
     @Override
     public void execute(String[] args) {
+        Menu currentMenu = menuManager.getCurrentMenu();
 
+        if (currentMenu instanceof CollectionMenu){
+            String result = ((CollectionMenu) currentMenu).showAllPlants();
+            ConsoleView.showMessage("%s\n",result);
+
+        }
     }
 
     //menu collection show-plants
