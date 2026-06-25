@@ -2,11 +2,11 @@ package controller.commands;
 
 import controller.commandHandler.Command;
 
-public class StartGame implements Command {
+public class ZombieDropped implements Command {
     @Override
     public void execute(String[] args) {
 
     }
 
-    //start game
+    //A zombie dropeed a <coin/diamond/pot>; you have <n> <coins/diamonds/pots> now.
 }

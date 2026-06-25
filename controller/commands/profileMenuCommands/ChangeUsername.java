@@ -6,22 +6,23 @@ import model.menus.Menu;
 import model.menus.allmenus.ProfileMenu;
 import view.ConsoleView;
 
-public class ShowInfo implements Command {
+public class ChangeUsername implements Command {
     private MenuManager menuManager;
 
-    public ShowInfo(MenuManager menuManager) {
+    public ChangeUsername(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
     @Override
     public void execute(String[] args) {
+        String username = args[0];
         Menu currentMenu = menuManager.getCurrentMenu();
 
         if (currentMenu instanceof ProfileMenu){
-            String result = ((ProfileMenu) currentMenu).showInfo();
+            String result = ((ProfileMenu) currentMenu).changeUsername(username);
             ConsoleView.showMessage("%s\n",result);
 
         }
     }
 
-    //menu profile show-info
+    //menu profile change-username -u <username>
 }

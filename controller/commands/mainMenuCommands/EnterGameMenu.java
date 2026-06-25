@@ -2,11 +2,11 @@ package controller.commands.mainMenuCommands;
 
 import controller.commandHandler.Command;
 
-public class Logout implements Command {
+public class EnterGameMenu implements Command {
     @Override
     public void execute(String[] args) {
 
     }
 
-    //menu logout
+    //play p_13
 }

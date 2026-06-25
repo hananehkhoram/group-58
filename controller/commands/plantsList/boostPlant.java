@@ -6,10 +6,10 @@ import model.menus.Menu;
 import model.menus.allmenus.PlantSelectionMenu;
 import view.ConsoleView;
 
-public class boostPlant implements Command {
+public class BoostPlant implements Command {
     private MenuManager menuManager;
 
-    public boostPlant (MenuManager menuManager) {
+    public BoostPlant(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
     @Override

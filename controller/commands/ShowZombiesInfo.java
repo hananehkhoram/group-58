@@ -2,11 +2,11 @@ package controller.commands;
 
 import controller.commandHandler.Command;
 
-public class StartGame implements Command {
+public class ShowZombiesInfo implements Command {
     @Override
     public void execute(String[] args) {
 
     }
 
-    //start game
+    //zombies info
 }

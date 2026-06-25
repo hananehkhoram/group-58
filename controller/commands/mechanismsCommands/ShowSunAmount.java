@@ -2,11 +2,11 @@ package controller.commands.mechanismsCommands;
 
 import controller.commandHandler.Command;
 
-public class AdvancedTime implements Command {
+public class ShowSunAmount implements Command {
     @Override
     public void execute(String[] args) {
 
     }
 
-    //advance time -t <count> ticks
+    //show sun amount
 }

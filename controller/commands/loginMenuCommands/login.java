@@ -3,14 +3,13 @@ package controller.commands.loginMenuCommands;
 import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.menus.Menu;
-import model.menus.allmenus.CollectionMenu;
 import model.menus.allmenus.LoginMenu;
 import view.ConsoleView;
 
-public class login implements Command {
+public class Login implements Command {
     private MenuManager menuManager;
 
-    public login(MenuManager menuManager) {
+    public Login(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
     @Override

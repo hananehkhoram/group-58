@@ -6,10 +6,10 @@ import model.menus.Menu;
 import model.menus.allmenus.CollectionMenu;
 import view.ConsoleView;
 
-public class upgradePlant implements Command {
+public class UpgradePlant implements Command {
     private MenuManager menuManager;
 
-    public upgradePlant(MenuManager menuManager) {
+    public UpgradePlant(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
     @Override

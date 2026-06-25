@@ -2,11 +2,11 @@ package controller.commands;
 
 import controller.commandHandler.Command;
 
-public class StartGame implements Command {
+public class MenuSettings implements Command {
     @Override
     public void execute(String[] args) {
 
     }
 
-    //start game
+    //menu settings change-difficulty -l <difficulty_level>
 }

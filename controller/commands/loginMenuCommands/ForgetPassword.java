@@ -6,23 +6,24 @@ import model.menus.Menu;
 import model.menus.allmenus.LoginMenu;
 import view.ConsoleView;
 
-public class Answer implements Command {
+public class ForgetPassword implements Command {
     private MenuManager menuManager;
 
-    public Answer(MenuManager menuManager) {
+    public ForgetPassword(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
     @Override
     public void execute(String[] args) {
-        String answer = args[0];
+        String username = args[0];
+        String email = args[1];
         Menu currentMenu = menuManager.getCurrentMenu();
 
         if (currentMenu instanceof LoginMenu){
-            String result = ((LoginMenu) currentMenu).answerSecurityQuestion()
+            String result = ((LoginMenu) currentMenu).forgetPassword(username,email);
             ConsoleView.showMessage("%s\n",result);
 
         }
     }
 
-    //answer -a <answer>
+    //forget password -u <username> -e <email>
 }
