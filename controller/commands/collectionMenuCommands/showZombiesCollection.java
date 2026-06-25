@@ -6,10 +6,10 @@ import model.menus.Menu;
 import model.menus.allmenus.CollectionMenu;
 import view.ConsoleView;
 
-public class showZombiesCollection implements Command {
+public class ShowZombiesCollection implements Command {
     private MenuManager menuManager;
 
-    public showZombiesCollection(MenuManager menuManager) {
+    public ShowZombiesCollection(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
     @Override

@@ -2,11 +2,11 @@ package controller.commands;
 
 import controller.commandHandler.Command;
 
-public class StartGame implements Command {
+public class ShowQuests implements Command{
     @Override
     public void execute(String[] args) {
 
     }
 
-    //start game
+    //travel log page <page_name>
 }

@@ -1,29 +1,28 @@
-package controller.commands.plantsList;
+package controller.commands.profileMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.menus.Menu;
-import model.menus.allmenus.PlantSelectionMenu;
+import model.menus.allmenus.ProfileMenu;
 import view.ConsoleView;
 
-public class RemovePlant implements Command {
+public class ChangeEmail implements Command {
     private MenuManager menuManager;
 
-    public RemovePlant(MenuManager menuManager) {
+    public ChangeEmail(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
     @Override
     public void execute(String[] args) {
-        String plantType = args[0];
-
+        String email = args[0];
         Menu currentMenu = menuManager.getCurrentMenu();
 
-        if (currentMenu instanceof PlantSelectionMenu){
-            String result = ((PlantSelectionMenu) currentMenu).removePlant(plantType);
+        if (currentMenu instanceof ProfileMenu){
+            String result = ((ProfileMenu) currentMenu).changeEmail(email);
             ConsoleView.showMessage("%s\n",result);
 
         }
     }
 
-    //remove plant -t <type>
+    //menu profile change-email -e <email>
 }

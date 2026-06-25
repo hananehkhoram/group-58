@@ -3,14 +3,13 @@ package controller.commands.plantsList;
 import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.menus.Menu;
-import model.menus.allmenus.LoginMenu;
 import model.menus.allmenus.PlantSelectionMenu;
 import view.ConsoleView;
 
-public class addPlant implements Command {
+public class AddPlant implements Command {
     private MenuManager menuManager;
 
-    public addPlant(MenuManager menuManager) {
+    public AddPlant(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
     @Override

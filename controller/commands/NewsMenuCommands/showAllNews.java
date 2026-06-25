@@ -3,14 +3,13 @@ package controller.commands.NewsMenuCommands;
 import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.menus.Menu;
-import model.menus.allmenus.LoginMenu;
 import model.menus.allmenus.NewsMenu;
 import view.ConsoleView;
 
-public class showAllNews implements Command {
+public class ShowAllNews implements Command {
     private MenuManager menuManager;
 
-    public showAllNews(MenuManager menuManager) {
+    public ShowAllNews(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
     @Override

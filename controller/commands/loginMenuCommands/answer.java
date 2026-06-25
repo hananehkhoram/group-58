@@ -6,10 +6,10 @@ import model.menus.Menu;
 import model.menus.allmenus.LoginMenu;
 import view.ConsoleView;
 
-public class answer implements Command {
+public class Answer implements Command {
     private MenuManager menuManager;
 
-    public answer(MenuManager menuManager) {
+    public Answer(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
     @Override

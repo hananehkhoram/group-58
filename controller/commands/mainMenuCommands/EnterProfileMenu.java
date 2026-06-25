@@ -1,12 +1,12 @@
-package controller.commands;
+package controller.commands.mainMenuCommands;
 
 import controller.commandHandler.Command;
 
-public class StartGame implements Command {
+public class EnterProfileMenu implements Command {
     @Override
     public void execute(String[] args) {
 
     }
 
-    //start game
+    //p_13
 }

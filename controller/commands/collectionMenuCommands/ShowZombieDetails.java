@@ -6,26 +6,25 @@ import model.menus.Menu;
 import model.menus.allmenus.CollectionMenu;
 import view.ConsoleView;
 
-public class PurchasePlant implements Command {
-
+public class ShowZombieDetails implements Command {
     private MenuManager menuManager;
 
-    public PurchasePlant(MenuManager menuManager) {
+    public ShowZombieDetails(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
 
     @Override
     public void execute(String[] args) {
         String plantName = args[0];
-        String result = null;
 
         Menu currentMenu = menuManager.getCurrentMenu();
 
-        if (currentMenu instanceof CollectionMenu) {
-            result = ((CollectionMenu) currentMenu).purchasePlant(plantName);
+        if (currentMenu instanceof CollectionMenu){
+            String result = ((CollectionMenu) currentMenu).showZombieDetails(plantName);
             ConsoleView.showMessage("%s\n",result);
+
         }
     }
 
-    //menu collection purchase-plant -p <plant_name>
+    //menu collection show-zombie -z <zombie_name>
 }
