@@ -6,23 +6,25 @@ import model.menus.Menu;
 import model.menus.allmenus.LoginMenu;
 import view.ConsoleView;
 
-public class answer implements Command {
+public class SetNewPassword implements Command {
     private MenuManager menuManager;
 
-    public answer(MenuManager menuManager) {
+    public SetNewPassword(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
+
     @Override
     public void execute(String[] args) {
-        String answer = args[0];
+        String newPassword = args[0];
         Menu currentMenu = menuManager.getCurrentMenu();
 
-        if (currentMenu instanceof LoginMenu){
-            String result = ((LoginMenu) currentMenu).answerSecurityQuestion(answer);
-            ConsoleView.showMessage("%s\n",result);
+        if (currentMenu instanceof LoginMenu) {
+            LoginMenu loginMenu = (LoginMenu) currentMenu;
 
+            String result = loginMenu.updatePassword(newPassword);
+            ConsoleView.showMessage("%s\n", result);
         }
     }
 
-    //answer -a <answer>
+    //new password -p <password>
 }

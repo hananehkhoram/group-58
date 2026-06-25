@@ -18,10 +18,11 @@ public class forget_password implements Command {
         String email = args[1];
         Menu currentMenu = menuManager.getCurrentMenu();
 
-        if (currentMenu instanceof LoginMenu){
-            String result = ((LoginMenu) currentMenu).forgetPassword(username,email);
-            ConsoleView.showMessage("%s\n",result);
+        if (currentMenu instanceof LoginMenu) {
+            LoginMenu loginMenu = (LoginMenu) currentMenu;
 
+            String result = loginMenu.startForgetPasswordProcess(username, email);
+            ConsoleView.showMessage("%s\n", result);
         }
     }
 

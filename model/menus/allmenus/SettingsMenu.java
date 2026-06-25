@@ -13,7 +13,8 @@ public class SettingsMenu extends BaseMenu {
         this.um = UserManager.getInstance();
     }
 
-    public void changeDifficulty(int newLevel){
+    public String changeDifficulty(int newLevel){
         um.getCurrentUser().setDifficultyLevel(newLevel);
+        return "Successfully changed difficulty to "+newLevel;
     }
 }
