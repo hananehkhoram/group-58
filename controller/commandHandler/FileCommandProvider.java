@@ -8,7 +8,7 @@ import controller.commands.GreenHouseCommands.CollectCommand;
 import controller.commands.GreenHouseCommands.FasterGrow;
 import controller.commands.GreenHouseCommands.PlantPot;
 import controller.commands.GreenHouseCommands.ShowGreenHouse;
-import controller.commands.plant_food_commands.FeedPlant;
+import controller.commands.PlantFoodCommands.FeedPlant;
 import controller.commands.ProfileMenuCommands.*;
 import controller.commands.ShopCommands.BuyCommand;
 import controller.commands.GreenHouseCommands.EnterShop;

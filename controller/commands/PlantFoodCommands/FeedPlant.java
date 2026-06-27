@@ -1,4 +1,4 @@
-package controller.commands.plant_food_commands;
+package controller.commands.PlantFoodCommands;
 
 import controller.commandHandler.Command;
 
