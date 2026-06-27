@@ -47,7 +47,7 @@ public final class PlantActivator {
             int amount = Integer.parseInt(p.get("amount"));
             ShootType shootType = ShootType.valueOf(p.get("shootType"));
             BulletType bulletType = BulletType.valueOf(p.get("bulletType"));
-            shooters.shoot(amount, shootType, bulletType);
+            //shooters.shoot(amount, shootType, bulletType);   commented this
             if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET) {
                 shooters.shootForHoming();
             }

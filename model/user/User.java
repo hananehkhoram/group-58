@@ -59,6 +59,9 @@ public class User {
         this.greenHouse = new GreenHouse();
     }
 
+    public User() {
+    }
+
     public boolean isBoughtDailyOfferToday() {
         return boughtDailyOfferToday;
     }

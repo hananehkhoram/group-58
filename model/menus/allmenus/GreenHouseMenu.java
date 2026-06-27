@@ -1,5 +1,6 @@
 package model.menus.allmenus;
 
+import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
 import model.GameContext;
 import model.GreenHouseData.GreenHouse;
@@ -19,15 +20,17 @@ public class GreenHouseMenu extends BaseMenu {
     protected User currentUser;
     private GreenHouse greenHouse;
     private PlantFactory plantFactory;
+    private DataManager dm;//temporary!!
 
     private Random random = new Random();
 
     public GreenHouseMenu(GameContext ctx, MenuType menuType) {
         super(ctx, MenuType.GREENHOUSE);
         this.um = UserManager.getInstance();
+        this.dm = new DataManager();
         this.currentUser = um.getCurrentUser();
         this.greenHouse = currentUser.getGreenHouse();
-        this.plantFactory = new PlantFactory();
+        this.plantFactory = new PlantFactory(dm);
     }
     public String showGreenHouse(){
         StringBuilder sb = new StringBuilder();

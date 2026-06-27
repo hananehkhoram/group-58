@@ -7,10 +7,10 @@ import model.menus.allmenus.LoginMenu;
 import model.menus.allmenus.SettingsMenu;
 import view.ConsoleView;
 
-public class menu_settings implements Command {
+public class MenuSettings implements Command {
     private MenuManager menuManager;
 
-    public menu_settings(MenuManager menuManager) {
+    public MenuSettings(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
     @Override
