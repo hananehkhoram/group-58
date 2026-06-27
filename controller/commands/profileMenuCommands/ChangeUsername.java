@@ -1,4 +1,4 @@
-package controller.commands.profileMenuCommands;
+package controller.commands.ProfileMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;

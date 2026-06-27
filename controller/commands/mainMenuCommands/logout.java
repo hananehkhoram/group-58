@@ -1,4 +1,4 @@
-package controller.commands.mainMenuCommands;
+package controller.commands.MainMenuCommands;
 
 import controller.commandHandler.Command;
 

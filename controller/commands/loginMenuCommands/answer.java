@@ -1,4 +1,4 @@
-package controller.commands.loginMenuCommands;
+package controller.commands.LoginMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;
@@ -18,7 +18,7 @@ public class Answer implements Command {
         Menu currentMenu = menuManager.getCurrentMenu();
 
         if (currentMenu instanceof LoginMenu){
-            String result = ((LoginMenu) currentMenu).answerSecurityQuestion()
+            String result = ((LoginMenu) currentMenu).answerSecurityQuestion();
             ConsoleView.showMessage("%s\n",result);
 
         }

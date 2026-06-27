@@ -1,4 +1,4 @@
-package controller.commands.mechanismsCommands;
+package controller.commands.MechanismsCommands;
 
 import controller.commandHandler.Command;
 

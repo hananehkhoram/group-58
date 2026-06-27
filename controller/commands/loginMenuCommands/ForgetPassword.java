@@ -1,4 +1,4 @@
-package controller.commands.loginMenuCommands;
+package controller.commands.LoginMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;

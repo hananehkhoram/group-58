@@ -1,4 +1,4 @@
-package controller.commands.plantsList;
+package controller.commands.PlantsList;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;

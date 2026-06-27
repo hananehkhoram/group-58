@@ -1,4 +1,4 @@
-package controller.commands.profileMenuCommands;
+package controller.commands.ProfileMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;
@@ -6,10 +6,10 @@ import model.menus.Menu;
 import model.menus.allmenus.ProfileMenu;
 import view.ConsoleView;
 
-public class changeNickName implements Command {
+public class ChangeNickName implements Command {
     private MenuManager menuManager;
 
-    public changeNickName(MenuManager menuManager) {
+    public ChangeNickName(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
     @Override
