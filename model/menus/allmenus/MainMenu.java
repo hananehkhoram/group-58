@@ -7,8 +7,9 @@ import model.menus.MenuType;
 import model.user.User;
 
 public class MainMenu extends BaseMenu {
-    public MainMenu(GameContext ctx, MenuType menuType) {
+    public MainMenu(GameContext ctx) {
     super(ctx, MenuType.MAIN);
+        this.name = "Main menu";
     }
     public void play() {}
     public void openSettings() {}

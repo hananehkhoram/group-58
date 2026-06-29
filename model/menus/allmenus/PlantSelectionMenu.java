@@ -19,13 +19,14 @@ public class PlantSelectionMenu extends BaseMenu {
     protected User currentUser;
     private PlantRepository plantRepository;
 
-    public PlantSelectionMenu(GameContext ctx, MenuType menuType) {
+    public PlantSelectionMenu(GameContext ctx) {
         super(ctx, MenuType.SELECT_PLANTS);
         this.um = UserManager.getInstance();
         this.currentUser = um.getCurrentUser();
         this.dm = new DataManager();//temporary!!!
         this.plantFactory = new PlantFactory(dm);
         this.plantRepository = dm.plants;
+        this.name = "Plant Selection menu";
     }
 
     public String showAllPlants() {

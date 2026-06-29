@@ -21,13 +21,14 @@ public class ShopMenu extends BaseMenu {
     private Random random = new Random();
     private GreenHouse greenHouse;
 
-    public ShopMenu(GameContext ctx, MenuType menuType) {
+    public ShopMenu(GameContext ctx) {
         super(ctx, MenuType.SHOP);
         this.um = UserManager.getInstance();
         this.currentUser = um.getCurrentUser();
         this.shop = new Shop();
         shop.updateDailyOffer(currentUser);
         this.greenHouse = currentUser.getGreenHouse();
+        this.name = "Shop menu";
     }
 
     public String showShopList(){

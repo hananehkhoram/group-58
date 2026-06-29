@@ -16,7 +16,7 @@ public class MenuShowCurrent implements Command {
     public void execute(String[] atgs ){
 
         Menu currentMenu = this.menuManager.getCurrentMenu();
-        ConsoleView.showMessage(currentMenu.toString());
+        ConsoleView.showMessage(currentMenu.showMenu());
 
     }
 

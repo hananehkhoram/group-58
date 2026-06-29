@@ -8,9 +8,10 @@ import model.user.UserManager;
 
 public class SettingsMenu extends BaseMenu {
     private UserManager um;
-    public SettingsMenu(GameContext ctx, MenuType menuType) {
+    public SettingsMenu(GameContext ctx) {
         super(ctx, MenuType.SETTINGS);
         this.um = UserManager.getInstance();
+        this.name = "Settings menu";
     }
 
     public String changeDifficulty(int newLevel){

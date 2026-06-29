@@ -10,10 +10,11 @@ import model.user.UserManager;
 public class ProfileMenu extends BaseMenu {
     private UserManager um;
     protected User currentUser;
-    public ProfileMenu(GameContext ctx, MenuType menuType) {
+    public ProfileMenu(GameContext ctx) {
         super(ctx, MenuType.PROFILE);
         this.um = UserManager.getInstance();
         currentUser = um.getCurrentUser();
+        this.name = "profile menu";
     }
 
     public String changeUsername(String newUsername) {

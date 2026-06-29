@@ -20,7 +20,7 @@ public class CollectionMenu extends BaseMenu {
     private List<Plant> plants;
     private List<Plant> unlockedPlants;
     private List<Zombie> zombies;
-    public CollectionMenu(GameContext ctx, MenuType menuType) {
+    public CollectionMenu(GameContext ctx) {
         super(ctx, MenuType.COLLECTION);
         this.um = UserManager.getInstance();
         currentUser = um.getCurrentUser();
@@ -29,6 +29,7 @@ public class CollectionMenu extends BaseMenu {
         this.zombies = ctx.getActiveZombies();
         this.unlockedPlants = currentUser.getUnlockedPlantTypes();
         this.plantFactory = new PlantFactory(dm);
+        this.name = "Collection menu";
     }
 
     public String showAllPlants() {

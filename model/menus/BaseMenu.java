@@ -15,10 +15,11 @@ public abstract class BaseMenu implements Menu{
     public void update() {}
 
     @Override
-    public void showMenu(){}
+    public String showMenu(){
+        return name;
+    }
     public MenuType getMenu() {
         return menuType;
     }
-
 
 }

@@ -1,7 +1,9 @@
 package controller;
 
 import controller.repository.DataManager;
+import model.GameContext;
 import model.TimeManager;
+import model.level.Level;
 
 public class GameEngine {
     private controller.commandHandler.CommandRegistry registry;
@@ -9,9 +11,14 @@ public class GameEngine {
     private MenuManager mm;
     private DataManager dm;
     private TimeManager tm;
+    private GameContext ctx;
+    private Level level;
 
     public GameEngine(){
-        this.mm = new MenuManager();
+        this.level = new Level();
+        this.ctx = new GameContext(level);
+        this.mm = new MenuManager(ctx);
+        mm.changeMenu("registermenu");
         this.dm = new DataManager();
         this.tm = new TimeManager();
         this.registry = new controller.commandHandler.CommandRegistry();
@@ -21,7 +28,7 @@ public class GameEngine {
 
     public void start(){
         isRunning = true;
-        view.ConsoleView.simplePrint("Game Started");
+        view.ConsoleView.simplePrint("Game Started\n");
     };
     public void stop(){
     };
