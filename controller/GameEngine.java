@@ -4,6 +4,9 @@ import controller.repository.DataManager;
 import model.GameContext;
 import model.TimeManager;
 import model.level.Level;
+import model.season.AncientEgypt;
+import model.season.Season;
+import view.ConsoleView;
 
 public class GameEngine {
     private controller.commandHandler.CommandRegistry registry;
@@ -12,14 +15,13 @@ public class GameEngine {
     private DataManager dm;
     private TimeManager tm;
     private GameContext ctx;
+    private Season season;
     private Level level;
 
     public GameEngine(){
-        this.level = new Level();
-        this.ctx = new GameContext(level);
-        this.mm = new MenuManager(ctx);
+        this.mm = new MenuManager(null);
         mm.changeMenu("registermenu");
-        this.dm = new DataManager();
+        this.dm = DataManager.getInstance();
         this.tm = new TimeManager();
         this.registry = new controller.commandHandler.CommandRegistry();
         controller.commandHandler.FileCommandProvider provider = new controller.commandHandler.FileCommandProvider(this.mm);
@@ -28,9 +30,12 @@ public class GameEngine {
 
     public void start(){
         isRunning = true;
-        view.ConsoleView.simplePrint("Game Started\n");
+        ConsoleView.simplePrint("Game Started\n");
     };
     public void stop(){
+        isRunning = false;
+        ConsoleView.simplePrint("Saving data and exiting game...\n");
+        //save
     };
     public void loop(){
         while (isRunning){
@@ -47,11 +52,17 @@ public class GameEngine {
             }
 
             try {
+                if (input.trim().equalsIgnoreCase("exit")) {
+                    stop();
+                    return;
+                }
                 registry.handleCommand(input);
             }catch (Exception e){
                 view.ConsoleView.showMessage(e.getMessage());
             }
         }
     }; //process commands and pass to commandHandler
-    public void update(){}; //calls every one to update
+    public void update(){
+        //ctx.update(tm.getTotalTicks());
+    }; //calls every one to update
 }

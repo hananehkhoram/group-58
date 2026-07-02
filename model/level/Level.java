@@ -6,21 +6,20 @@ import model.season.Season;
 import model.user.User;
 
 public class Level {
-    protected User user;
     protected String name;
     protected int rows;
     protected int columns;
     protected Wave[] waves;
-    protected SpecialLevelType specialLevelType;
+    protected LevelType levelType;
     protected Season season;
-    protected boolean isLocked;
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
+    public Level(String name, int rows, int columns, Wave[] waves, LevelType levelType, Season season) {
+        this.name = name;
+        this.rows = rows;
+        this.columns = columns;
+        this.waves = waves;
+        this.levelType = levelType;
+        this.season = season;
     }
 
     public String getName() {
@@ -39,23 +38,11 @@ public class Level {
         return waves;
     }
 
-    public SpecialLevelType getSpecialLevelType() {
-        return specialLevelType;
-    }
-
     public Season getSeason() {
         return season;
     }
 
-    public void unlock() {
-    }
 
-    public boolean isLocked() {
-        return isLocked;
-    }
 
-    protected enum SpecialLevelType {
-        NORMAL,//...
-    }
 }
 

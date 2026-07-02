@@ -5,7 +5,9 @@ import model.level.Level;
 import model.plants.Plant;
 import model.plants.TargetingMode;
 import model.season.Grave;
+import model.season.Season;
 import model.user.User;
+import model.user.UserManager;
 import model.zombie.Zombie;
 
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import java.util.List;
 public class GameContext {
 
     private final Level level;
+    private final Season season;
     private final Plant[][] plantGrid;
     private final Grave[][] graveGrid;
     private final List<Plant> activePlants = new ArrayList<>();
@@ -29,10 +32,12 @@ public class GameContext {
     private int remainingZombiesToSpawn = 0;
     private List<Projectile> projectiles = new ArrayList<>();
 
-    public GameContext(Level level) {
+    public GameContext(Level level,Season season) {
         this.level = level;
+        this.season = season;
         this.plantGrid = new Plant[level.getRows()][level.getColumns()];
         this.graveGrid = new Grave[level.getRows()][level.getColumns()];
+        this.plantFoodCount = UserManager.getInstance().getCurrentUser().getPlantFoodCount();
     }
 
     public List<Projectile> getProjectiles() {
@@ -51,9 +56,10 @@ public class GameContext {
 
     public void placeGrave(Grave g, int row, int col) {
     }
+    public void removeGrave(int row, int col){}
 
     public boolean canFreezeZombie() {
-        return false;
+        return season.sunFallsFromSky();
     }
 
     public boolean doesSunFall() {
@@ -97,5 +103,21 @@ public class GameContext {
 
     public List<Zombie> getActiveZombies() {
         return activeZombies;
+    }
+
+    public void addPlantFood(int amount){
+        this.plantFoodCount += amount;
+    }
+
+    public Level getLevel() {
+        return level;
+    }
+
+    public Plant[][] getPlantGrid() {
+        return plantGrid;
+    }
+
+    public Grave[][] getGraveGrid() {
+        return graveGrid;
     }
 }

@@ -23,7 +23,7 @@ public class PlantSelectionMenu extends BaseMenu {
         super(ctx, MenuType.SELECT_PLANTS);
         this.um = UserManager.getInstance();
         this.currentUser = um.getCurrentUser();
-        this.dm = new DataManager();//temporary!!!
+        this.dm = DataManager.getInstance();
         this.plantFactory = new PlantFactory(dm);
         this.plantRepository = dm.plants;
         this.name = "Plant Selection menu";

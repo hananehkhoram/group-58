@@ -14,7 +14,7 @@ import java.util.List;
 
 public class CollectionMenu extends BaseMenu {
     private UserManager um;
-    private DataManager dm;//temporary!!!
+    private DataManager dm;
     private PlantFactory plantFactory;
     protected User currentUser;
     private List<Plant> plants;
@@ -24,7 +24,7 @@ public class CollectionMenu extends BaseMenu {
         super(ctx, MenuType.COLLECTION);
         this.um = UserManager.getInstance();
         currentUser = um.getCurrentUser();
-        this.dm = new DataManager();//temporary!!!
+        this.dm = DataManager.getInstance();
         this.plants = ctx.getActivePlants();
         this.zombies = ctx.getActiveZombies();
         this.unlockedPlants = currentUser.getUnlockedPlantTypes();
