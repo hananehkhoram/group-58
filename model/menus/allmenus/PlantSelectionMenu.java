@@ -14,7 +14,7 @@ import java.util.List;
 
 public class PlantSelectionMenu extends BaseMenu {
     private UserManager um;
-    private DataManager dm;//temporary!!!
+    private DataManager dm;
     private PlantFactory plantFactory;
     protected User currentUser;
     private PlantRepository plantRepository;

@@ -1,20 +1,17 @@
 package model;
 
-import controller.LevelManager.ConveyorBeltManager;
-import controller.LevelManager.LevelManager;
+import controller.SpecialLevelManager.*;
 import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
-import controller.repository.factory.ZombieFactory;
 import model.Projectile.Projectile;
 import model.level.Level;
-import model.level.LevelType;
 import model.plants.Plant;
 import model.plants.TargetingMode;
 import model.season.Grave;
 import model.season.Season;
-import model.user.User;
 import model.user.UserManager;
 import model.zombie.Zombie;
+import view.ConsoleView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +37,14 @@ public class GameContext {
     private int remainingZombiesToSpawn = 0;
     private List<Projectile> projectiles = new ArrayList<>();
 
+    private int totalSunProducedInLevel = 0;
+    private int totalLostPlants = 0;
+    private int totalZombiesKilledInLevel = 0;
+
     private DataManager dm;
     private PlantFactory plantFactory;
+
+    private boolean isSetupPhase = false;
 
     private LevelManager levelManager;
 
@@ -72,6 +75,13 @@ public class GameContext {
     }
 
     public void addSun(int amount) {
+        if (amount > 0) {
+            this.sunAmount += amount;
+            this.totalSunProducedInLevel += amount;
+        }
+    }
+    public void incrementZombieKills() {
+        this.totalZombiesKilledInLevel++;
     }
 
     public void addZombie(Zombie z) {
@@ -83,10 +93,6 @@ public class GameContext {
 
     public boolean canFreezeZombie() {
         return season.sunFallsFromSky();
-    }
-
-    public boolean doesSunFall() {
-        return false;
     }
 
     public boolean isNecromancyCell(int row, int col) {
@@ -152,10 +158,75 @@ public class GameContext {
         switch (level.getLevelType()) {
             case CONVEYOR_BELT:
                 return new ConveyorBeltManager();
-
+            case SAVE_QUR_SEEDS:
+                return new SaveOurSeedsManager();
+            case TIMED_WAR:
+                return new TimedWarManager();
+            case NIGHT_OPS:
+                return new NightOpsManager();
+            case DEADLINE:
+                return new DeadLineManager();
+            case PLANT_WHAT_YOU_GET:
+                return new PlantWhatYouGetManager();
+            case LOCKED_PLANTS:
+                return new LockedPlantsManager(level.getBannedPlants(), level.getForcedPlants());
             case NORMAL:
             default:
                 return null;
         }
+    }
+    public void triggerPlayerWin() {
+        this.gameEnded = true;
+        this.playerWon = true;
+        System.out.println("Victory! You won the battle!");
+    }
+    public void triggerPlayerLoss() {
+        this.gameEnded = true;
+        this.playerWon = false;
+        System.out.println("Game Over! You lost the battle!!");
+    }
+
+    public int getTotalZombiesKilledInLevel() {
+        return totalZombiesKilledInLevel;
+    }
+
+    public int getTotalSunProducedInLevel() {
+        return totalSunProducedInLevel;
+    }
+
+    public boolean DoesSunFall() {
+        if (levelManager != null && levelManager.disableSkySun()) {
+            return false;
+        }
+
+        if (season != null) {
+            return season.sunFallsFromSky();
+        }
+
+        return true;
+    }
+
+    public List<Zombie> getAliveZombies() {
+        return aliveZombies;
+    }
+
+    public int getTotalLostPlants() {
+        return totalLostPlants;
+    }
+    public void incrementPlantsLost() {
+        this.totalLostPlants++;
+        ConsoleView.simplePrint("A plant was destroyed! Total lost: " + totalLostPlants+"\n");
+    }
+
+    public void setSunAmount(int sunAmount) {
+        this.sunAmount = sunAmount;
+    }
+
+    public boolean isSetupPhase() {
+        return isSetupPhase;
+    }
+
+    public void setSetupPhase(boolean setupPhase) {
+        isSetupPhase = setupPhase;
     }
 }

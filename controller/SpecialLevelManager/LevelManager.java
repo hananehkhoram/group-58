@@ -1,4 +1,4 @@
-package controller.LevelManager;
+package controller.SpecialLevelManager;
 
 import model.GameContext;
 import model.plants.Plant;
@@ -11,4 +11,8 @@ public interface LevelManager {
     void onPlantSuccess(Plant plantedPlant, GameContext context);
 
     void onLevelStart(GameContext context);
+
+    default boolean disableSkySun() {
+        return false;
+    }
 }

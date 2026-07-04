@@ -263,4 +263,8 @@ public class Plant {
     public void setHasLilyPadUnderneath(boolean hasLilyPadUnderneath) {
         this.hasLilyPadUnderneath = hasLilyPadUnderneath;
     }
+
+    public int getHp() {
+        return hp;
+    }
 }

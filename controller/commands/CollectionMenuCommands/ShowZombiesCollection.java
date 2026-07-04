@@ -16,10 +16,18 @@ public class ShowZombiesCollection implements Command {
     public void execute(String[] args) {
         Menu currentMenu = menuManager.getCurrentMenu();
 
-        if (currentMenu instanceof CollectionMenu){
-            String result = ((CollectionMenu) currentMenu).showAllZombies();
-            ConsoleView.showMessage("%s\n",result);
+        String allOrAvailable = null;
+        if (args[0] != null) allOrAvailable = args[0];
 
+        if (currentMenu instanceof CollectionMenu){
+            if (allOrAvailable != null){
+                String result = ((CollectionMenu) currentMenu).showAllZombies();
+                ConsoleView.showMessage("%s\n",result);
+            }
+            else {
+                String result = ((CollectionMenu) currentMenu).showZombies();
+                ConsoleView.showMessage("%s\n",result);
+            }
         }
     }
 

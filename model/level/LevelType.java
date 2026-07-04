@@ -8,7 +8,7 @@ public enum LevelType {
     LOVE_YOUR_PLANTS,
     NIGHT_OPS,
     PLANT_WHAT_YOU_GET,
-    SAVE_QUE_SEEDS,
+    SAVE_QUR_SEEDS,
     TIMED_WAR,
     BOSS_FIGHT
 }

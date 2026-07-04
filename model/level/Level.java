@@ -6,6 +6,7 @@ import model.plants.Plant;
 import model.season.Season;
 import model.user.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Level {
@@ -16,15 +17,41 @@ public class Level {
     protected LevelType levelType;
     protected Season season;
 
-    private List<Plant> conveyorPlantPool;
+    private List<Plant> bannedPlants = new ArrayList<>();
+    private List<Plant> forcedPlants = new ArrayList<>();
 
-    public Level(String name, int rows, int columns, Wave[] waves, LevelType levelType, Season season) {
+    private List<Plant> conveyorPlantPool = new ArrayList<>();
+
+    private List<PrePlacedPlant> saveOurSeedsPlants = new ArrayList<>();
+
+    private double timedWarDuration; // مدت زمان مرحله به ثانیه)
+    private int timedWarTargetZombies; // تعداد زامبی که باید کشته شوند
+    private int timedWarTargetSun; // تعداد خورشیدی که باید تولید شود
+    private boolean isSunProductionMode; // آیا مپ از نوع تولید خورشید است؟
+
+    private int deadlineColumn;
+
+    private int maxLostPlants;
+
+    private int sunsGiven;
+
+    public Level(String name, int rows, int columns, Wave[] waves,
+                 LevelType levelType, Season season,List<Plant> bannedPlants,
+                 List<Plant> forcedPlants,List<Plant> conveyorPlantPool,
+                 List<PrePlacedPlant> saveOurSeedsPlants) {
         this.name = name;
         this.rows = rows;
         this.columns = columns;
         this.waves = waves;
         this.levelType = levelType;
         this.season = season;
+        this.bannedPlants = bannedPlants;
+        this.conveyorPlantPool = conveyorPlantPool;
+        this.forcedPlants = forcedPlants;
+        this.saveOurSeedsPlants = saveOurSeedsPlants;
+    }
+    public Level(String name, int rows, int columns, Wave[] waves, LevelType levelType, Season season) {
+        this(name, rows, columns, waves, levelType, season, null, null, null,null);
     }
 
     public String getName() {
@@ -53,6 +80,62 @@ public class Level {
 
     public LevelType getLevelType() {
         return levelType;
+    }
+
+    public List<Plant> getBannedPlants() {
+        return bannedPlants;
+    }
+
+    public List<Plant> getForcedPlants() {
+        return forcedPlants;
+    }
+
+    public class PrePlacedPlant {
+        private final Plant plantTemplate;
+        private final int row;
+        private final int col;
+
+        public PrePlacedPlant(Plant plantTemplate, int row, int col) {
+            this.plantTemplate = plantTemplate;
+            this.row = row;
+            this.col = col;
+        }
+
+        public Plant getPlantTemplate() { return plantTemplate; }
+        public int getRow() { return row; }
+        public int getCol() { return col; }
+    }
+
+    public List<PrePlacedPlant> getSaveOurSeedsPlants() {
+        return saveOurSeedsPlants;
+    }
+
+    public double getTimedWarDuration() {
+        return timedWarDuration;
+    }
+
+    public int getTimedWarTargetZombies() {
+        return timedWarTargetZombies;
+    }
+
+    public int getTimedWarTargetSun() {
+        return timedWarTargetSun;
+    }
+
+    public boolean isSunProductionMode() {
+        return isSunProductionMode;
+    }
+
+    public int getDeadlineColumn() {
+        return deadlineColumn;
+    }
+
+    public int getMaxLostPlants() {
+        return maxLostPlants;
+    }
+
+    public int getSunsGiven() {
+        return sunsGiven;
     }
 }
 

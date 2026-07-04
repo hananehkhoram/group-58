@@ -1,4 +1,4 @@
-package controller.LevelManager;
+package controller.SpecialLevelManager;
 
 import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
