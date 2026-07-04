@@ -1,4 +1,4 @@
-package model.specialLevels;
+package model.specialLevels.ConveyorBeltLevel;
 
 public class ConveyorBeltLevel {
 

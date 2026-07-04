@@ -1,7 +1,13 @@
 package model;
 
+import controller.LevelManager.ConveyorBeltManager;
+import controller.LevelManager.LevelManager;
+import controller.repository.DataManager;
+import controller.repository.factory.PlantFactory;
+import controller.repository.factory.ZombieFactory;
 import model.Projectile.Projectile;
 import model.level.Level;
+import model.level.LevelType;
 import model.plants.Plant;
 import model.plants.TargetingMode;
 import model.season.Grave;
@@ -19,9 +25,11 @@ public class GameContext {
     private final Level level;
     private final Season season;
     private final Plant[][] plantGrid;
+    private final List<Plant> alivePlants = new ArrayList<>();//گیاهای زنده روی زمین
     private final Grave[][] graveGrid;
-    private final List<Plant> activePlants = new ArrayList<>();
-    private final List<Zombie> activeZombies = new ArrayList<>();
+    private final List<Plant> activePlants = new ArrayList<>();//گیاهای انتخاب شده
+    private final List<Zombie> activeZombies = new ArrayList<>();//zombies to spawn
+    private final List<Zombie> aliveZombies = new ArrayList<>();
     private int sunAmount = 0;
     private int plantFoodCount = 0;
     private int currentWaveIndex = 0;
@@ -32,13 +40,28 @@ public class GameContext {
     private int remainingZombiesToSpawn = 0;
     private List<Projectile> projectiles = new ArrayList<>();
 
+    private DataManager dm;
+    private PlantFactory plantFactory;
+
+    private LevelManager levelManager;
+
     public GameContext(Level level,Season season) {
         this.level = level;
+        this.levelManager = createManagerForLevel(level);
         this.season = season;
+        this.dm = DataManager.getInstance();
+        this.plantFactory = new PlantFactory(dm);
+
         this.plantGrid = new Plant[level.getRows()][level.getColumns()];
         this.graveGrid = new Grave[level.getRows()][level.getColumns()];
         this.plantFoodCount = UserManager.getInstance().getCurrentUser().getPlantFoodCount();
+
+        if (this.levelManager != null) {
+            this.levelManager.onLevelStart(this);
+        }
     }
+
+
 
     public List<Projectile> getProjectiles() {
         return projectiles;
@@ -101,6 +124,10 @@ public class GameContext {
         return activePlants;
     }
 
+    public List<Plant> getAlivePlants() {
+        return alivePlants;
+    }
+
     public List<Zombie> getActiveZombies() {
         return activeZombies;
     }
@@ -119,5 +146,16 @@ public class GameContext {
 
     public Grave[][] getGraveGrid() {
         return graveGrid;
+    }
+
+    private LevelManager createManagerForLevel(Level level) {
+        switch (level.getLevelType()) {
+            case CONVEYOR_BELT:
+                return new ConveyorBeltManager();
+
+            case NORMAL:
+            default:
+                return null;
+        }
     }
 }

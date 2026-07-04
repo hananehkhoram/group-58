@@ -1,4 +1,4 @@
-package model.SaveOueSeeds;
+package model.specialLevels.SaveOurSeeds;
 
 import controller.repository.PlantRepository;
 

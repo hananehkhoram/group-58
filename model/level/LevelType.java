@@ -2,6 +2,7 @@ package model.level;
 
 public enum LevelType {
     NORMAL,
+    CONVEYOR_BELT,
     DEADLINE,
     LOCKED_PLANTS,
     LOVE_YOUR_PLANTS,

@@ -1,6 +1,8 @@
 package model.menus.allmenus;
 
 import controller.repository.DataManager;
+import controller.repository.PlantRepository;
+import controller.repository.ZombieRepository;
 import controller.repository.factory.PlantFactory;
 import model.GameContext;
 import model.menus.BaseMenu;
@@ -17,19 +19,26 @@ public class CollectionMenu extends BaseMenu {
     private DataManager dm;
     private PlantFactory plantFactory;
     protected User currentUser;
-    private List<Plant> plants;
     private List<Plant> unlockedPlants;
-    private List<Zombie> zombies;
+    private List<Plant> allPlants;
+    private List<Zombie> allZombies;
+    private List<Zombie> seenZombies;
+    private PlantRepository plantRepository;
+    private ZombieRepository zombieRepository;
+
     public CollectionMenu(GameContext ctx) {
         super(ctx, MenuType.COLLECTION);
         this.um = UserManager.getInstance();
         currentUser = um.getCurrentUser();
         this.dm = DataManager.getInstance();
-        this.plants = ctx.getActivePlants();
-        this.zombies = ctx.getActiveZombies();
+        this.plantRepository = dm.plants;
+        this.zombieRepository = dm.zombies;
+        this.seenZombies = currentUser.getSeenZombies();
+        this.allZombies = (List<Zombie>) zombieRepository.getZombieDataMap().values();
         this.unlockedPlants = currentUser.getUnlockedPlantTypes();
         this.plantFactory = new PlantFactory(dm);
         this.name = "Collection menu";
+        this.allPlants = (List<Plant>) plantRepository.getPlantDataMap().values();
     }
 
     public String showAllPlants() {
@@ -37,17 +46,40 @@ public class CollectionMenu extends BaseMenu {
         sb.append("=== Welcome to the Collection Menu ===\n");
         sb.append("All Plants ->\n");
 
-        for (Plant p : plants){
-            sb.append(p.getName()).append("\n");
+        for (Plant plant : allPlants){
+            sb.append(plant.getName()).append("\n");
         }
+        sb.append("\n-----\n");
         return sb.toString();
     }
+    public String showPlants(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Welcome to the Collection Menu ===\n");
+        sb.append("Plants ->\n");
+
+        for (Plant plant : unlockedPlants){
+            sb.append(plant.getName()).append("\n");
+        }
+        sb.append("\n-----\n");
+        return sb.toString();
+    }
+
     public String showAllZombies() {
         StringBuilder sb = new StringBuilder();
         sb.append("=== Welcome to the Collection Menu ===\n");
         sb.append("All Zombies ->\n");
 
-        for (Zombie z : zombies){
+        for (Zombie z : allZombies){
+            sb.append(z.getName()).append("\n");
+        }
+        return sb.toString();
+    }
+    public String showZombies() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Welcome to the Collection Menu ===\n");
+        sb.append("Zombies ->\n");
+
+        for (Zombie z : seenZombies){
             sb.append(z.getName()).append("\n");
         }
         return sb.toString();
@@ -56,7 +88,7 @@ public class CollectionMenu extends BaseMenu {
         StringBuilder sb = new StringBuilder();
         sb.append("=== Welcome to the Collection Menu ===\n");
         Plant plant = null;
-        for (Plant p : plants){
+        for (Plant p : allPlants){
             if (p.getName().equalsIgnoreCase(plantName)) plant = p;
         }
         if (plant == null) return "Invalid plant name.";
@@ -72,7 +104,7 @@ public class CollectionMenu extends BaseMenu {
         StringBuilder sb = new StringBuilder();
         sb.append("=== Welcome to the Collection Menu ===\n");
         Zombie zombie = null;
-        for (Zombie z : zombies){
+        for (Zombie z : allZombies){
             if (z.getName().equalsIgnoreCase(zombieName)) zombie = z;
         }
         if (zombie == null) return "Invalid zombie name.";
@@ -90,7 +122,7 @@ public class CollectionMenu extends BaseMenu {
         StringBuilder sb = new StringBuilder();
         sb.append("=== Welcome to the Collection Menu ===\n");
         Plant plant = null;
-        for (Plant p : plants){
+        for (Plant p : allPlants){
             if (p.getName().equalsIgnoreCase(plantName)) plant = p;
         }
         if (plant == null) return "Invalid plant name.";

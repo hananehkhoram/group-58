@@ -34,10 +34,10 @@ public class Grave {
         }
     }
     public String displayGraveType() {
-        switch (this.type) {
-            case HAS_SUN: return "Sun";       // Grave with Sun
-            case HAS_PLANT_FOOD: return "Food"; // Grave with Food
-            default: return "Normal";            // Normal Grave
-        }
+        return switch (this.type) {
+            case HAS_SUN -> "Sun";       // Grave with Sun
+            case HAS_PLANT_FOOD -> "Food"; // Grave with Food
+            default -> "Normal";            // Normal Grave
+        };
     }
 }
