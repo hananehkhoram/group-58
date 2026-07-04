@@ -5,7 +5,9 @@ import model.mechanisms.SunType;
 import model.plants.enums.BulletType;
 import model.plants.enums.ShootType;
 import model.plants.plantAbilities.*;
+import model.zombie.behavior.Damage;
 
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -47,26 +49,34 @@ public final class PlantActivator {
             int amount = Integer.parseInt(p.get("amount"));
             ShootType shootType = ShootType.valueOf(p.get("shootType"));
             BulletType bulletType = BulletType.valueOf(p.get("bulletType"));
-            //shooters.shoot(amount, shootType, bulletType);   commented this
+            String interval = p.get("interval");
+            String damage = p.get("damage");
+            shooters.shoot(damage, amount, interval, shootType, bulletType, plant, ctx);
             if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET) {
                 shooters.shootForHoming();
             }
 
         } else if (ability instanceof Lobber lobber) {
             LobType lobType = LobType.valueOf(p.get("lobType"));
-            lobber.lob(lobType);
+            String interval = p.get("interval");
+            lobber.lob(lobType, interval, plant, ctx);
 
         } else if (ability instanceof Explosive explosive) {
             ExplosiveType explosiveType = ExplosiveType.valueOf(p.get("explosiveType"));
+            String damage = p.get("Damage");
             // row/col/time are NOT csv-driven — they come from where this plant
             // is planted and the game clock, e.g.:
             // explosive.explosion(ctx.getCurrentTick(), plant.getRow(), plant.getCol());
             switch (explosiveType) {
                 case WATER_TRAP -> explosive.waterExplosion();
-                case FREEZE_TRAP, BOARD_WIDE_FREEZE -> explosive.ice();
+                case FREEZE_TRAP, BOARD_WIDE_FREEZE -> explosive.ice(plant, ctx);
                 case MELT_AREA -> explosive.forIcedCave();
                 case GRAVE_DESTROY -> explosive.forEgyptAndDarkEra();
-                default -> explosive.explosion(0, plant.getRow(), plant.getCol());
+                default -> {
+
+                    int currentTime = ctx.getTimeManager().getTotalSeconds();
+                    explosive.explosion(currentTime, plant.getRow(), plant.getCol(), damage, plant, ctx);
+                }
             }
 
         } else if (ability instanceof MeleeAttackers melee) {

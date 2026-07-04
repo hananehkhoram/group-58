@@ -9,7 +9,18 @@ public class Lobber implements BaseAbility {
     public void activate(Plant self, GameContext ctx) {
 
     }
-    public void lob(LobType lobType) {}
+    public void lob(LobType lobType, String interval, Plant plant,  GameContext ctx) {
+
+        int currentSecond = ctx.getTimeManager().getTotalSeconds();
+
+
+        int intervalOfPlant = Integer.parseInt(interval);
+        if (currentSecond - plant.getLastActionSecond() >= intervalOfPlant){
+            boolean hasShot = false;
+
+        }
+
+    }
 
     @Override
     public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
