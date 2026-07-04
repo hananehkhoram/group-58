@@ -85,7 +85,7 @@ public final class PlantActivator {
             String rate = p.get("sunRate"); // "24", "0", or "everyRound" — passed through as-is
             int amount = Integer.parseInt(p.get("sunAmount"));
             SunType sunType = SunType.valueOf(p.get("sunType"));
-            sunProducers.produceSun(rate, amount, sunType);
+            sunProducers.produceSun(rate, amount, sunType, ctx, plant);
 
         } else if (ability instanceof Modifier modifier) {
             ModifierType modifierType = ModifierType.valueOf(p.get("modifierType"));

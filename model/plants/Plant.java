@@ -36,6 +36,7 @@ public class Plant {
     private Double actionInterval;
     private double rechargeTime;
     private TargetingMode targetingMode;
+    private int lastActionSecond = 0;   //timeManaging
 
     private int level;
 
@@ -218,5 +219,13 @@ public class Plant {
 
     public void setPlantFood(boolean plantFood) {
         this.plantFood = plantFood;
+    }
+
+    public int getLastActionSecond() {
+        return lastActionSecond;
+    }
+
+    public void setLastActionSecond(int lastActionSecond) {
+        this.lastActionSecond = lastActionSecond;
     }
 }

@@ -9,7 +9,9 @@ import model.user.User;
 import model.zombie.Zombie;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 //saving everything needed during the game
 public class GameContext {
@@ -28,11 +30,36 @@ public class GameContext {
     private boolean waveSpawningFinished = false;
     private int remainingZombiesToSpawn = 0;
     private List<Projectile> projectiles = new ArrayList<>();
+    private TimeManager timeManager;
+    private Map<String, Integer> producedSuns = new HashMap<>();
 
     public GameContext(Level level) {
         this.level = level;
         this.plantGrid = new Plant[level.getRows()][level.getColumns()];
         this.graveGrid = new Grave[level.getRows()][level.getColumns()];
+        this.timeManager = new TimeManager();
+    }
+
+    public void produceSun(int x, int y, int amount) {
+        String coordinateKey = x + ", " + y;
+        int currentAmount = producedSuns.getOrDefault(coordinateKey, 0);
+        producedSuns.put(coordinateKey, currentAmount + amount);
+    }
+
+    public boolean isSunPresent(int x, int y){
+        return producedSuns.containsKey(x + ", " + y);
+    }
+
+    public int collectSunAt(int x, int y) {
+        String coordinateKey = x + ", " + y;
+
+        if (producedSuns.containsKey(coordinateKey)) {
+            int amount = producedSuns.remove(coordinateKey);
+
+            this.addSun(amount);
+            return amount;
+        }
+        return 0;
     }
 
     public List<Projectile> getProjectiles() {
@@ -97,5 +124,9 @@ public class GameContext {
 
     public List<Zombie> getActiveZombies() {
         return activeZombies;
+    }
+
+    public TimeManager getTimeManager() {
+        return this.timeManager;
     }
 }
