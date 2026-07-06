@@ -14,18 +14,19 @@ import java.util.List;
 
 public class PlantSelectionMenu extends BaseMenu {
     private UserManager um;
-    private DataManager dm;//temporary!!!
+    private DataManager dm;
     private PlantFactory plantFactory;
     protected User currentUser;
     private PlantRepository plantRepository;
 
-    public PlantSelectionMenu(GameContext ctx, MenuType menuType) {
+    public PlantSelectionMenu(GameContext ctx) {
         super(ctx, MenuType.SELECT_PLANTS);
         this.um = UserManager.getInstance();
         this.currentUser = um.getCurrentUser();
-        this.dm = new DataManager();//temporary!!!
+        this.dm = DataManager.getInstance();
         this.plantFactory = new PlantFactory(dm);
         this.plantRepository = dm.plants;
+        this.name = "Plant Selection menu";
     }
 
     public String showAllPlants() {

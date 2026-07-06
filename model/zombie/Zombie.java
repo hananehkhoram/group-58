@@ -6,6 +6,7 @@ import model.zombie.behavior.Behaviors;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 public class Zombie {
     private String id;           // e.g. ZombieDefault
@@ -19,6 +20,10 @@ public class Zombie {
     private List<Effects> effects;
     private Map<String, Object> extraParams;
     private List<Season> seasonsAvailable;
+    private double x, y;
+
+    private boolean isIced = false;
+    private double iceHp = 0;
 
     public Zombie() {}
 
@@ -32,6 +37,11 @@ public class Zombie {
         this.wavePointCost = wavePointCost;
         this.weight = weight;
         this.behaviors = ZombieActivator.buildBehaviors(this);
+    }
+
+    public void setAsInitialFrozenBlock() {
+        this.isIced = true;
+        this.iceHp = 600;
     }
 
     public String getId() { return id; }
@@ -62,5 +72,49 @@ public class Zombie {
     public String zombieInfo() {
         return String.format("[%s] HP:%d EatDPS:%.0f Speed:%.3f WaveCost:%d",
                 id, hp, eatDps, speed, wavePointCost);
+    }
+
+    public double getX() {
+        return x;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public void takeDamage(double damage){
+        if (isIced) {
+            iceHp -= damage;
+            if (iceHp <= 0) {
+                isIced = false;
+                System.out.println("Zombie broke free from ice!");
+            }
+        } else {
+            this.hp -= damage;
+        }
+    }
+
+    public boolean isIced() {
+        return isIced;
+    }
+
+    public void setIced(boolean iced) {
+        isIced = iced;
+    }
+
+    public double getIceHp() {
+        return iceHp;
+    }
+
+    public void setIceHp(double iceHp) {
+        this.iceHp = iceHp;
     }
 }

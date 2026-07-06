@@ -4,14 +4,12 @@ package model.user;
 import model.GameContext;
 import model.GreenHouseData.GreenHouse;
 import model.ShopData.DailyOffer;
+import model.level.Level;
 import model.plants.Plant;
 import model.settings.Settings;
 import model.zombie.Zombie;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class User {
     protected String username;
@@ -41,8 +39,11 @@ public class User {
     private GreenHouse greenHouse;
     private List<Plant> unlockedPlantTypes;// گیاهانی که کاربر آنلاک کرده
     private List<Zombie> seenZombies;
+
     protected int lastLevel;
+    protected ArrayList<String> unlockedLevels;
     protected int lastSeason;
+
     private int difficultyLevel = 3;
     private int lastReadNewsId = 0;
     private int coins;
@@ -242,6 +243,16 @@ public class User {
         String key = plantName.toLowerCase();
 
         storedBoosts.put(key, true);
+    }
+
+    public boolean isLevelUnlocked(String levelName) {
+        return unlockedLevels.contains(levelName);
+    }
+
+    public void unlockLevel(String levelName) {
+        if (!unlockedLevels.contains(levelName)) {
+            unlockedLevels.add(levelName);
+        }
     }
 }
 

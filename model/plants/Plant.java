@@ -25,6 +25,8 @@ public class Plant {
     private Map<String, String> abilityParams;
     private PlantFoodMode plantFoodMode;
 
+    private boolean hasLilyPadUnderneath;
+
     private boolean plantFood;
 
     // Index 0 = upgrades unlocked at level 2, index 1 = level 3, index 2 = level 4.
@@ -44,7 +46,10 @@ public class Plant {
     private int row, col;
     private boolean plantFoodActive;
     private double attackCooldown;
-    private boolean isIced;
+
+    private int freezeLevel = 0;
+    private double iceHp = 0;
+    private boolean isIced = false;
 
     public Plant() {
     }
@@ -227,5 +232,48 @@ public class Plant {
 
     public void setLastActionSecond(int lastActionSecond) {
         this.lastActionSecond = lastActionSecond;
+    }
+
+    public boolean hasFireTag(){
+        for (Tag t : tags){
+            if (t.equals(Tag.FIRE)) return true;
+        }
+        return false;
+    }
+    public boolean hasWaterTag(){
+        for (Tag t : tags){
+            if (t.equals(Tag.WATER)) return true;
+        }
+        return false;
+    }
+    public void increaseFreezeLevel(){
+        freezeLevel += 1;
+        if (freezeLevel >= 3){
+            isIced = true;
+            iceHp = 600;
+        }
+    }
+
+    public int getFreezeLevel() {
+        return freezeLevel;
+    }
+    public void damageIce(double amount){
+        iceHp -= amount;
+        if (iceHp <= 0){
+            iceHp = 0;
+            isIced = false;
+        }
+    }
+
+    public boolean isHasLilyPadUnderneath() {
+        return hasLilyPadUnderneath;
+    }
+
+    public void setHasLilyPadUnderneath(boolean hasLilyPadUnderneath) {
+        this.hasLilyPadUnderneath = hasLilyPadUnderneath;
+    }
+
+    public int getHp() {
+        return hp;
     }
 }

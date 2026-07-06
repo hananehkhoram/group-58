@@ -13,9 +13,10 @@ public class LoginMenu extends BaseMenu {
     private ResetState currentState = ResetState.NONE;
     private User targetUser = null;
 
-    public LoginMenu(GameContext ctx, MenuType menuType) {
+    public LoginMenu(GameContext ctx) {
         super(ctx, MenuType.LOGIN);
         this.um = UserManager.getInstance();
+        this.name = "Login menu";
     }
 
     public String login (String username,  String password,String stayLoggedIn){

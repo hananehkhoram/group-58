@@ -5,7 +5,8 @@ import model.menus.BaseMenu;
 import model.menus.MenuType;
 
 public class GemWalletMenu extends BaseMenu {
-    public GemWalletMenu(GameContext ctx, MenuType menuType) {
+    public GemWalletMenu(GameContext ctx) {
         super(ctx, MenuType.GEM_WALLET);
+        this.name = "Gem Wallet menu";
     }
 }

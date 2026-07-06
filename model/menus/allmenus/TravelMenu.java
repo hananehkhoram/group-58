@@ -5,8 +5,9 @@ import model.menus.BaseMenu;
 import model.menus.MenuType;
 
 public class TravelMenu extends BaseMenu {
-    public TravelMenu(GameContext ctx, MenuType menuType) {
+    public TravelMenu(GameContext ctx) {
         super(ctx, MenuType.TRAVEL);
+        this.name = "Travel menu";
     }
 
 }

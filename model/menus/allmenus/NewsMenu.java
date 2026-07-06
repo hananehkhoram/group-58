@@ -10,9 +10,10 @@ import model.user.UserManager;
 
 public class NewsMenu extends BaseMenu {
     private UserManager um;
-    public NewsMenu(GameContext ctx, MenuType menuType) {
+    public NewsMenu(GameContext ctx) {
         super(ctx, MenuType.NEWS);
         this.um = UserManager.getInstance();
+        this.name = "News emnu";
     }
 
     public String showUnreadNews() {

@@ -20,17 +20,18 @@ public class GreenHouseMenu extends BaseMenu {
     protected User currentUser;
     private GreenHouse greenHouse;
     private PlantFactory plantFactory;
-    private DataManager dm;//temporary!!
+    private DataManager dm;
 
     private Random random = new Random();
 
-    public GreenHouseMenu(GameContext ctx, MenuType menuType) {
+    public GreenHouseMenu(GameContext ctx) {
         super(ctx, MenuType.GREENHOUSE);
         this.um = UserManager.getInstance();
-        this.dm = new DataManager();
+        this.dm = DataManager.getInstance();
         this.currentUser = um.getCurrentUser();
         this.greenHouse = currentUser.getGreenHouse();
         this.plantFactory = new PlantFactory(dm);
+        this.name = "Greenhouse menu";
     }
     public String showGreenHouse(){
         StringBuilder sb = new StringBuilder();

@@ -5,8 +5,9 @@ import model.menus.BaseMenu;
 import model.menus.MenuType;
 
 public class GameMenu extends BaseMenu {
-    public GameMenu(GameContext ctx, MenuType menuType) {
-        super(ctx, menuType);
+    public GameMenu(GameContext ctx) {
+        super(ctx, MenuType.GAME);
+        this.name = "Game menu";
     }
 
     public void enterChapter(String chapterName) {}

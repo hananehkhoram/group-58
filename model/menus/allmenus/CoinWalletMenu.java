@@ -6,8 +6,9 @@ import model.menus.MenuType;
 
 public class CoinWalletMenu extends BaseMenu {
 
-    public CoinWalletMenu(GameContext ctx, MenuType menuType) {
+    public CoinWalletMenu(GameContext ctx) {
         super(ctx, MenuType.COIN_WALLET);
+        this.name = "Coin Wallet menu";
     }
 
 }

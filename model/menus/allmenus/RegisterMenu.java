@@ -9,9 +9,10 @@ import model.user.UserManager;
 
 public class RegisterMenu extends BaseMenu {
     private UserManager um;
-    public RegisterMenu(String name, GameContext ctx, MenuType menuType) {
+    public RegisterMenu(GameContext ctx) {
         super(ctx, MenuType.REGISTER);
         this.um = UserManager.getInstance();
+        this.name = "Register menu";
     }
 
 

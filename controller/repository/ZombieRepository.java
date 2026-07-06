@@ -43,4 +43,8 @@ public class ZombieRepository implements AssetRepository<Zombie>{
     public Zombie get(String id) {
         return  zombieDataMap.get(id);
     }
+
+    public Map<String, Zombie> getZombieDataMap() {
+        return zombieDataMap;
+    }
 }
