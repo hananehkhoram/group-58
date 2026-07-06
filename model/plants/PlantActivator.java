@@ -62,22 +62,14 @@ public final class PlantActivator {
             lobber.lob(lobType, interval, plant, ctx);
 
         } else if (ability instanceof Explosive explosive) {
-            ExplosiveType explosiveType = ExplosiveType.valueOf(p.get("explosiveType"));
-            String damage = p.get("Damage");
+            ExplosiveType type = ExplosiveType.valueOf(p.get("explosiveType"));
+            //String damage = p.get("Damage");
+            int damage = Integer.parseInt(p.get("damage"));
+            explosive.triggerAbility(type, damage, plant, ctx);
             // row/col/time are NOT csv-driven — they come from where this plant
             // is planted and the game clock, e.g.:
             // explosive.explosion(ctx.getCurrentTick(), plant.getRow(), plant.getCol());
-            switch (explosiveType) {
-                case WATER_TRAP -> explosive.waterExplosion();
-                case FREEZE_TRAP, BOARD_WIDE_FREEZE -> explosive.ice(plant, ctx);
-                case MELT_AREA -> explosive.forIcedCave();
-                case GRAVE_DESTROY -> explosive.forEgyptAndDarkEra();
-                default -> {
 
-                    int currentTime = ctx.getTimeManager().getTotalSeconds();
-                    explosive.explosion(currentTime, plant.getRow(), plant.getCol(), damage, plant, ctx);
-                }
-            }
 
         } else if (ability instanceof MeleeAttackers melee) {
             String meleeKind = p.get("meleeKind");
@@ -89,7 +81,7 @@ public final class PlantActivator {
 
         } else if (ability instanceof WallNut wallNut) {
             WallNutType wallNutType = WallNutType.valueOf(p.get("wallNutType"));
-            wallNut.wall(wallNutType);
+            wallNut.wall(wallNutType, plant, ctx);
 
         } else if (ability instanceof SunProducers sunProducers) {
             String rate = p.get("sunRate"); // "24", "0", or "everyRound" — passed through as-is

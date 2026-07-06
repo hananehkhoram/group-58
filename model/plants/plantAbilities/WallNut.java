@@ -9,7 +9,7 @@ public class WallNut implements BaseAbility {
     public void activate(Plant self, GameContext ctx) {
 
     }
-    public void wall(WallNutType wallNutType) {
+    public void wall(WallNutType wallNutType, Plant plant, GameContext ctx) {
 
     }
 
