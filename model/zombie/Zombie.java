@@ -1,15 +1,15 @@
 package model.zombie;
 
+import model.GameContext;
 import model.season.Season;
+import model.zombie.behavior.Armor;
 import model.zombie.behavior.Behaviors;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 public class Zombie {
-    private String id;           // e.g. ZombieDefault
+    private String id;
     private String name;
     private int hp;
     private double eatDps;
@@ -24,6 +24,8 @@ public class Zombie {
 
     private boolean isIced = false;
     private double iceHp = 0;
+
+    private boolean isEating = false;
 
     public Zombie() {}
 
@@ -44,6 +46,56 @@ public class Zombie {
         this.iceHp = 600;
     }
 
+    public void update(GameContext ctx, double deltaTime) {
+        if (isDead()) return;
+
+        for (Behaviors b : behaviors.values()) {
+            b.onTick(this);
+        }
+
+        Armor armor = getArmor();
+        if (armor != null && armor.isDestroyed()) {
+            armor.afterDestroy(this);
+        }
+
+        if (!isEating) {
+            double effectiveSpeed = speed;
+            if (isIced) effectiveSpeed *= 0.5;
+            x -= effectiveSpeed * deltaTime;
+        }
+    }
+
+    public void takeDamage(double damage) {
+        if (isIced) {
+            iceHp -= damage;
+            if (iceHp <= 0) {
+                isIced = false;
+                System.out.println("Zombie broke free from ice!");
+            }
+            return;
+        }
+
+        Armor armor = getArmor();
+        if (armor != null && !armor.isDestroyed()) {
+            armor.onHit(this, (int) damage);
+            if (armor.isDestroyed()) {
+                double overflow = -armor.getArmorHP();
+                if (overflow > 0) hp -= (int) overflow;
+            }
+        } else {
+            hp -= (int) damage;
+        }
+    }
+
+    public Armor getArmor() {
+        Behaviors b = behaviors.get("armor");
+        return (b instanceof Armor) ? (Armor) b : null;
+    }
+
+    public boolean isDead() { return hp <= 0; }
+
+    // --- Getters / Setters ---
+
     public String getId() { return id; }
     public String getName() { return name; }
     public int getHp() { return hp; }
@@ -54,67 +106,49 @@ public class Zombie {
     public Map<String, Behaviors> getBehaviors() { return behaviors; }
     public List<Effects> getEffects() { return effects; }
     public Map<String, Object> getExtraParams() { return extraParams; }
+    public double getX() { return x; }
+    public double getY() { return y; }
+    public boolean isIced() { return isIced; }
+    public double getIceHp() { return iceHp; }
+    public boolean isEating() { return isEating; }
 
     public void setId(String id) { this.id = id; }
     public void setName(String name) { this.name = name; }
     public void setHp(int hp) { this.hp = hp; }
     public void setEatDps(double eatDps) { this.eatDps = eatDps; }
     public void setSpeed(double speed) { this.speed = speed; }
-    public void setWavePointCost(int wavePointCost) { this.wavePointCost = wavePointCost; }
+    public void setWavePointCost(int wpc) { this.wavePointCost = wpc; }
     public void setWeight(int weight) { this.weight = weight; }
     public void setEffects(List<Effects> effects) { this.effects = effects; }
-    public void setExtraParams(Map<String, Object> extraParams) { this.extraParams = extraParams; }
-
-    public boolean isDead() { return hp <= 0; }
-
-    public void update() {} // runs each game loop tick
+    public void setExtraParams(Map<String, Object> p) { this.extraParams = p; }
+    public void setX(double x) { this.x = x; }
+    public void setY(double y) { this.y = y; }
+    public void setIced(boolean iced) { this.isIced = iced; }
+    public void setIceHp(double iceHp) { this.iceHp = iceHp; }
+    public void setEating(boolean eating) { this.isEating = eating; }
 
     public String zombieInfo() {
-        return String.format("[%s] HP:%d EatDPS:%.0f Speed:%.3f WaveCost:%d",
-                id, hp, eatDps, speed, wavePointCost);
+        return String.format("[%s] \n   HP:%d \n    Armors:%s \n    Position:%f , %f \n     Effects:%s",
+                name, hp, getStringArmor(), x, y, getStringEffects());
     }
 
-    public double getX() {
-        return x;
-    }
-
-    public void setX(double x) {
-        this.x = x;
-    }
-
-    public double getY() {
-        return y;
-    }
-
-    public void setY(double y) {
-        this.y = y;
-    }
-
-    public void takeDamage(double damage){
-        if (isIced) {
-            iceHp -= damage;
-            if (iceHp <= 0) {
-                isIced = false;
-                System.out.println("Zombie broke free from ice!");
+    private String getStringArmor() {
+        StringBuilder sb = new StringBuilder();
+        for (Behaviors b : behaviors.values()) {
+            if (b instanceof Armor) {
+                sb.append("\n").append(((Armor) b).getArmorType())
+                        .append(": ").append(((Armor) b).getArmorHP());
             }
-        } else {
-            this.hp -= damage;
         }
+        return sb.toString();
     }
 
-    public boolean isIced() {
-        return isIced;
-    }
-
-    public void setIced(boolean iced) {
-        isIced = iced;
-    }
-
-    public double getIceHp() {
-        return iceHp;
-    }
-
-    public void setIceHp(double iceHp) {
-        this.iceHp = iceHp;
+    private String getStringEffects() {
+        if (effects == null) return "none";
+        StringBuilder sb = new StringBuilder();
+        for (Effects e : effects) {
+            sb.append("\n").append(e.toString());
+        }
+        return sb.toString();
     }
 }

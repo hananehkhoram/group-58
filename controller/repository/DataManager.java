@@ -16,7 +16,7 @@ public class DataManager {
         return instance;
     }
     public void initialize(){
-        plants.load("/home/hananehkhoram/aUni/AP/pvz/ap-project/Files/plants.csv");
+        plants.load("Files/plants.csv");
 //        zombies.load("pathtofile");
 //        game.load("pathtofile");
     }

@@ -1,6 +1,7 @@
 package model.plants.plantAbilities;
 
 import model.GameContext;
+import model.mechanisms.GameEngine;
 import model.plants.Plant;
 import model.plants.TargetingMode;
 import model.plants.plantAbilities.BaseAbility;
@@ -16,13 +17,13 @@ import static model.plants.plantAbilities.ExplosiveType.LANE_FIRE;
 public class Explosive implements BaseAbility {
 
 
-    private void applyDamageToTiles(int damage, List<int[]> targetTiles, GameContext ctx) {
+    private void applyDamageToTiles(int damage, List<int[]> targetTiles, GameEngine engine) {
         for (int[] pos : targetTiles) {
             int r = pos[0];
             int c = pos[1];
 
             if (r >= 0 && c >= 0) {
-                List<Zombie> targets = ctx.findTargets(r, c, TargetingMode.NONE);
+                List<Zombie> targets = engine.findTargets(r, c, TargetingMode.NONE);
                 if (targets != null && !targets.isEmpty()) {
                     for (Zombie target : targets) {
                         target.setHp(target.getHp() - damage);
@@ -32,7 +33,7 @@ public class Explosive implements BaseAbility {
         }
     }
 
-    public void triggerAbility(ExplosiveType type, int damage, Plant plant, GameContext ctx) {
+    public void triggerAbility(ExplosiveType type, int damage, Plant plant, GameEngine engine) {
         int pRow = plant.getRow();
         int pCol = plant.getCol();
 
@@ -41,24 +42,24 @@ public class Explosive implements BaseAbility {
         switch (type) {
             case INSTANT_AOE:
                 areaTiles = get3x3Tiles(pRow, pCol);
-                applyDamageToTiles(damage, areaTiles, ctx);
+                applyDamageToTiles(damage, areaTiles, engine);
                 plant.setDamage("99999");
                 break;
 
             case LANE_FIRE:
                 areaTiles = getLaneTiles(pRow);
-                applyDamageToTiles(damage, areaTiles, ctx);
+                applyDamageToTiles(damage, areaTiles, engine);
                 plant.setDamage("99999");
                 break;
 
             case BOARD_WIDE:
                 areaTiles = getAllBoardTiles();
-                applyDamageToTiles(damage, areaTiles, ctx);
+                applyDamageToTiles(damage, areaTiles, engine);
                 plant.setDamage("99999");
                 break;
 
             case CRUSH:
-                List<Zombie> targets = ctx.findTargets(pRow, pCol, TargetingMode.NONE);
+                List<Zombie> targets = engine.findTargets(pRow, pCol, TargetingMode.NONE);
                 if (targets != null && !targets.isEmpty()) {
                     Zombie firstZombie = targets.get(0);
                     firstZombie.setHp(firstZombie.getHp() - damage);
@@ -68,12 +69,12 @@ public class Explosive implements BaseAbility {
 
             case TIMED_MINE:
             case TIMED_MINE_AOE:
-                int currentSecond = ctx.getTimeManager().getTotalSeconds();
+                int currentSecond = engine.getCtx().getTimeManager().getTotalSeconds();
                 int timeAlive = currentSecond - plant.getLastActionSecond();
 
                 int delay = (type == ExplosiveType.TIMED_MINE_AOE) ? 5 : 15;
 
-                    List<Zombie> contactZombies = ctx.findTargets(pRow, pCol, TargetingMode.NONE);
+                    List<Zombie> contactZombies = engine.findTargets(pRow, pCol, TargetingMode.NONE);
                     if (contactZombies != null && !contactZombies.isEmpty()) {
 
                         if (type == ExplosiveType.TIMED_MINE) {
@@ -83,19 +84,19 @@ public class Explosive implements BaseAbility {
                             areaTiles = get3x3Tiles(pRow, pCol);
                         }
 
-                        applyDamageToTiles(damage, areaTiles, ctx);
+                        applyDamageToTiles(damage, areaTiles, engine);
                         plant.setDamage("99999");}
 
                 break;
 
             case INSTANT_AOE_SHRAPNEL:
                 areaTiles = get3x3Tiles(pRow, pCol);
-                applyDamageToTiles(damage, areaTiles, ctx);
+                applyDamageToTiles(damage, areaTiles, engine);
                 plant.setDamage("99999");
                 break;
 
             case FREEZE_TRAP:
-                List<Zombie> stepZombies = ctx.findTargets(pRow, pCol, TargetingMode.NONE);
+                List<Zombie> stepZombies = engine.findTargets(pRow, pCol, TargetingMode.NONE);
                 if (stepZombies != null && !stepZombies.isEmpty()) {
                     Zombie firstZombie = stepZombies.get(0);
                     plant.setDamage("99999");
@@ -103,16 +104,16 @@ public class Explosive implements BaseAbility {
                 break;
 
             case WATER_TRAP:
-                waterExplosion(plant, ctx);
+                waterExplosion(plant, engine.getCtx());
                 break;
             case BOARD_WIDE_FREEZE:
-                ice(plant, ctx);
+                ice(plant, engine.getCtx());
                 break;
             case MELT_AREA:
-                forIcedCave(plant, ctx);
+                forIcedCave(plant, engine.getCtx());
                 break;
             case GRAVE_DESTROY:
-                forEgyptAndDarkEra(plant, ctx);
+                forEgyptAndDarkEra(plant, engine.getCtx());
                 break;
         }
     }

@@ -2,6 +2,7 @@ package model.plants.plantAbilities;
 
 import model.GameContext;
 import model.Projectile.Projectile;
+import model.mechanisms.GameEngine;
 import model.plants.Plant;
 import model.plants.TargetingMode;
 import model.plants.enums.BulletType;
@@ -17,8 +18,9 @@ public class Shooters implements BaseAbility {
         //check for striker here
         //check for homing (cat-tail - 14 - 15)
     }
-    public void shoot(String damage, int amount, String interval, ShootType shootType, BulletType bulletType, Plant self, GameContext ctx) {
+    public void shoot(String damage, int amount, String interval, ShootType shootType, BulletType bulletType, Plant self, GameEngine engine) {
         //Projectile projectile = new Projectile(self, ctx);
+        GameContext ctx = engine.getCtx();
         int currentSecond = ctx.getTimeManager().getTotalSeconds();
 
         if (!interval.equals("everyRound")) {
@@ -52,7 +54,7 @@ public class Shooters implements BaseAbility {
                             mode = TargetingMode.FIRST_IN_LANE;
                             break;
                     }
-                    List<Zombie> targets = ctx.findTargets(self.getRow(), self.getCol(), mode);
+                    List<Zombie> targets = engine.findTargets(self.getRow(), self.getCol(), mode);
 
                     if (targets != null && !targets.isEmpty()){
                         Zombie target = targets.get(0);

@@ -1,6 +1,7 @@
 package model.plants;
 
 import model.GameContext;
+import model.mechanisms.GameEngine;
 import model.mechanisms.SunType;
 import model.plants.enums.BulletType;
 import model.plants.enums.ShootType;
@@ -41,7 +42,7 @@ public final class PlantActivator {
     private PlantActivator() {
     }
 
-    public static void activate(Plant plant, GameContext ctx) {
+    public static void activate(Plant plant, GameContext ctx, GameEngine engine) {
         BaseAbility ability = plant.getBaseAbility();
         Map<String, String> p = plant.getAbilityParams();
 
@@ -51,7 +52,7 @@ public final class PlantActivator {
             BulletType bulletType = BulletType.valueOf(p.get("bulletType"));
             String interval = p.get("interval");
             String damage = p.get("damage");
-            shooters.shoot(damage, amount, interval, shootType, bulletType, plant, ctx);
+            shooters.shoot(damage, amount, interval, shootType, bulletType, plant, engine);
             if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET) {
                 shooters.shootForHoming();
             }
@@ -65,7 +66,7 @@ public final class PlantActivator {
             ExplosiveType type = ExplosiveType.valueOf(p.get("explosiveType"));
             //String damage = p.get("Damage");
             int damage = Integer.parseInt(p.get("damage"));
-            explosive.triggerAbility(type, damage, plant, ctx);
+            explosive.triggerAbility(type, damage, plant, engine);
             // row/col/time are NOT csv-driven — they come from where this plant
             // is planted and the game clock, e.g.:
             // explosive.explosion(ctx.getCurrentTick(), plant.getRow(), plant.getCol());

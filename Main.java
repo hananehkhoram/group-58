@@ -1,20 +1,11 @@
-import controller.GameEngine;
-import controller.MenuManager;
-import controller.commandHandler.CommandRegistry;
-import controller.commandHandler.FileCommandProvider;
-import controller.repository.DataManager;
-import model.GameContext;
-import model.level.Level;
-import model.menus.allmenus.RegisterMenu;
-
-import java.util.Scanner;
+import controller.GameEngineController;
 
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        GameEngine engine = new GameEngine();
+        GameEngineController engine = new GameEngineController();
         engine.start();
         engine.loop();
     }}

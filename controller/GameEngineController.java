@@ -4,65 +4,84 @@ import controller.repository.DataManager;
 import model.GameContext;
 import model.TimeManager;
 import model.level.Level;
-import model.season.AncientEgypt;
+import model.mechanisms.GameEngine;
 import model.season.Season;
 import view.ConsoleView;
 
-public class GameEngine {
+public class GameEngineController {
+    private static final double DELTA_TIME = 0.05; // 20 TPS
     private controller.commandHandler.CommandRegistry registry;
     private boolean isRunning;
     private MenuManager mm;
     private DataManager dm;
     private TimeManager tm;
     private GameContext ctx;
+    private GameEngine gameEngine;
     private Season season;
     private Level level;
 
-    public GameEngine(){
+    public GameEngineController() {
         this.mm = new MenuManager(null);
         mm.changeMenu("registermenu");
         this.dm = DataManager.getInstance();
         this.tm = new TimeManager();
         this.registry = new controller.commandHandler.CommandRegistry();
-        controller.commandHandler.FileCommandProvider provider = new controller.commandHandler.FileCommandProvider(this.mm);
+        controller.commandHandler.FileCommandProvider provider =
+                new controller.commandHandler.FileCommandProvider(this.mm);
         provider.registerCommands(this.registry);
     }
 
-    public void start(){
+    public void startBattle(Level level, Season season) {
+        this.level = level;
+        this.season = season;
+        this.ctx = new GameContext(level, season);
+        this.gameEngine = new GameEngine(ctx);
+    }
+
+    public void start() {
         isRunning = true;
         ConsoleView.simplePrint("Game Started\n");
-    };
-    public void stop(){
+    }
+
+    public void stop() {
         isRunning = false;
         ConsoleView.simplePrint("Saving data and exiting game...\n");
-        //save
-    };
-    public void loop(){
-        while (isRunning){
+    }
+
+    public void loop() {
+        while (isRunning) {
             processInput();
             update();
         }
-    };
-    public void processInput(){
-        if (view.ConsoleView.hasNextLine()){
+    }
+
+    public void processInput() {
+        if (view.ConsoleView.hasNextLine()) {
             String input = view.ConsoleView.nextLine();
-
-            if (input.isEmpty()) {
-                return;
-            }
-
+            if (input.isEmpty()) return;
             try {
                 if (input.trim().equalsIgnoreCase("exit")) {
                     stop();
                     return;
                 }
                 registry.handleCommand(input);
-            }catch (Exception e){
+            } catch (Exception e) {
                 view.ConsoleView.showMessage(e.getMessage());
             }
         }
-    }; //process commands and pass to commandHandler
-    public void update(){
-        //ctx.update(tm.getTotalTicks());
-    }; //calls every one to update
+    }
+
+    public void update() {
+        if (gameEngine != null) {
+            gameEngine.update(DELTA_TIME);
+        }
+    }
+
+    public GameContext getCtx() {
+        return ctx;
+    }
+
+    public GameEngine getGameEngine() {
+        return gameEngine;
+    }
 }

@@ -25,4 +25,6 @@ public class Wave{
     public void setWaveCost(int waveCost) {
         this.waveCost = waveCost;
     }
+
+    public int getWaveDelay() {return waveDelay;}
 }

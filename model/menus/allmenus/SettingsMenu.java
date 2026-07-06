@@ -14,8 +14,8 @@ public class SettingsMenu extends BaseMenu {
         this.name = "Settings menu";
     }
 
-    public String changeDifficulty(int newLevel){
+    public void changeDifficulty(int newLevel){
         um.getCurrentUser().setDifficultyLevel(newLevel);
-        return "Successfully changed difficulty to "+newLevel;
+        //return "Successfully changed difficulty to "+newLevel;
     }
 }

@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//saving everything needed during the game
 public class GameContext {
 
     private final Level level;
@@ -47,58 +46,41 @@ public class GameContext {
 
     private DataManager dm;
     private PlantFactory plantFactory;
-
     private boolean isSetupPhase = false;
-
     private LevelManager levelManager;
 
-    public GameContext(Level level,Season season) {
+    public GameContext(Level level, Season season) {
         this.level = level;
         this.levelManager = createManagerForLevel(level);
         this.season = season;
         this.dm = DataManager.getInstance();
         this.plantFactory = new PlantFactory(dm);
-
         this.plantGrid = new Plant[level.getRows()][level.getColumns()];
         this.graveGrid = new Grave[level.getRows()][level.getColumns()];
         this.plantFoodCount = UserManager.getInstance().getCurrentUser().getPlantFoodCount();
-
-        if (this.levelManager != null) {
-            this.levelManager.onLevelStart(this);
-        }
+        if (this.levelManager != null) this.levelManager.onLevelStart(this);
         this.timeManager = new TimeManager();
     }
 
+    // SUN
+
     public void produceSun(int x, int y, int amount) {
-        String coordinateKey = x + ", " + y;
-        int currentAmount = producedSuns.getOrDefault(coordinateKey, 0);
-        producedSuns.put(coordinateKey, currentAmount + amount);
+        String key = x + ", " + y;
+        producedSuns.put(key, producedSuns.getOrDefault(key, 0) + amount);
     }
 
-    public boolean isSunPresent(int x, int y){
+    public boolean isSunPresent(int x, int y) {
         return producedSuns.containsKey(x + ", " + y);
     }
 
     public int collectSunAt(int x, int y) {
-        String coordinateKey = x + ", " + y;
-
-        if (producedSuns.containsKey(coordinateKey)) {
-            int amount = producedSuns.remove(coordinateKey);
-
-            this.addSun(amount);
+        String key = x + ", " + y;
+        if (producedSuns.containsKey(key)) {
+            int amount = producedSuns.remove(key);
+            addSun(amount);
             return amount;
         }
         return 0;
-    }
-
-
-
-    public List<Projectile> getProjectiles() {
-        return projectiles;
-    }
-
-    public void setNewProjectiles(Projectile projectile) {
-        this.projectiles.add(projectile);
     }
 
     public void addSun(int amount) {
@@ -107,157 +89,89 @@ public class GameContext {
             this.totalSunProducedInLevel += amount;
         }
     }
-    public void incrementZombieKills() {
-        this.totalZombiesKilledInLevel++;
+
+    // EVENTS
+
+    public String triggerPlayerWin() {
+        this.gameEnded = true;
+        this.playerWon = true;
+        return("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
     }
 
-    public void addZombie(Zombie z) {
+    public String triggerPlayerLoss() {
+        this.gameEnded = true;
+        this.playerWon = false;
+        return("Game Over! You lost the battle!!");
     }
 
-    public void placeGrave(Grave g, int row, int col) {
-    }
-    public void removeGrave(int row, int col){}
+    public void incrementZombieKills() { this.totalZombiesKilledInLevel++; }
 
-    public boolean canFreezeZombie() {
-        return season.sunFallsFromSky();
-    }
-
-    public boolean isNecromancyCell(int row, int col) {
-        return false;
+    public void incrementPlantsLost() {
+        this.totalLostPlants++;
+        //return("A plant was destroyed! Total lost: " + totalLostPlants + "\n");
     }
 
-    public List<Zombie> findTargets(int row, int col, TargetingMode mode) {
-        return null;
-    }
+    public void addZombie(Zombie z)          { aliveZombies.add(z); }
+    public void addPlantFood(int amount)     { this.plantFoodCount += amount; }
 
-    public void update(double deltaTime) {
-    }
+    public void placeGrave(Grave g, int row, int col) { graveGrid[row][col] = g; }
+    public void removeGrave(int row, int col)          { graveGrid[row][col] = null; }
 
-    private void checkGameEnd() {
-    }
+    // WAVE STATE
 
-    public void onWaveStart(int waveNumber, int waveDelay) {
-    }
+    public int getWaveDurationRemaining()              { return waveDurationRemaining; }
+    public void setWaveDurationRemaining(int ticks)    { this.waveDurationRemaining = ticks; }
+    public void decrementWaveDelay()                   { waveDurationRemaining--; }
+    public int getCurrentWaveIndex()                   { return currentWaveIndex; }
+    public void incrementWaveIndex()                   { currentWaveIndex++; }
+    public boolean isWaveSpawningFinished()            { return waveSpawningFinished; }
+    public void setWaveSpawningFinished(boolean v)     { this.waveSpawningFinished = v; }
 
-    public boolean isWaveCompleted() {
-        return false;
-    }
+    // MISC
 
-    private boolean isWaveCleared() {
-        return false;
-    }
+    public boolean canFreezeZombie()                   { return season.sunFallsFromSky(); }
+    public boolean isNecromancyCell(int row, int col)  { return false; }
 
-    private void startWaveDelay() {
-    }
-
-    private void startNextWave() {
-    }
-
-    public List<Plant> getActivePlants() {
-        return activePlants;
-    }
-
-    public List<Plant> getAlivePlants() {
-        return alivePlants;
-    }
-
-    public List<Zombie> getActiveZombies() {
-        return activeZombies;
-    }
-
-    public TimeManager getTimeManager() {
-        return this.timeManager;
-    }
-
-    public void addPlantFood(int amount){
-        this.plantFoodCount += amount;
-    }
-
-    public Level getLevel() {
-        return level;
-    }
-
-    public Plant[][] getPlantGrid() {
-        return plantGrid;
-    }
-
-    public Grave[][] getGraveGrid() {
-        return graveGrid;
+    public boolean DoesSunFall() {
+        if (levelManager != null && levelManager.disableSkySun()) return false;
+        return season != null && season.sunFallsFromSky();
     }
 
     private LevelManager createManagerForLevel(Level level) {
         switch (level.getLevelType()) {
-            case CONVEYOR_BELT:
-                return new ConveyorBeltManager();
-            case SAVE_QUR_SEEDS:
-                return new SaveOurSeedsManager();
-            case TIMED_WAR:
-                return new TimedWarManager();
-            case NIGHT_OPS:
-                return new NightOpsManager();
-            case DEADLINE:
-                return new DeadLineManager();
-            case PLANT_WHAT_YOU_GET:
-                return new PlantWhatYouGetManager();
+            case CONVEYOR_BELT:      return new ConveyorBeltManager();
+            case SAVE_QUR_SEEDS:     return new SaveOurSeedsManager();
+            case TIMED_WAR:          return new TimedWarManager();
+            case NIGHT_OPS:          return new NightOpsManager();
+            case DEADLINE:           return new DeadLineManager();
+            case PLANT_WHAT_YOU_GET: return new PlantWhatYouGetManager();
             case LOCKED_PLANTS:
                 return new LockedPlantsManager(level.getBannedPlants(), level.getForcedPlants());
-            case NORMAL:
-            default:
-                return null;
+            case NORMAL: default:    return null;
         }
     }
-    public void triggerPlayerWin() {
-        this.gameEnded = true;
-        this.playerWon = true;
-        System.out.println("Victory! You won the battle!");
-    }
-    public void triggerPlayerLoss() {
-        this.gameEnded = true;
-        this.playerWon = false;
-        System.out.println("Game Over! You lost the battle!!");
-    }
 
-    public int getTotalZombiesKilledInLevel() {
-        return totalZombiesKilledInLevel;
-    }
+    // GETTERS
 
-    public int getTotalSunProducedInLevel() {
-        return totalSunProducedInLevel;
-    }
-
-    public boolean DoesSunFall() {
-        if (levelManager != null && levelManager.disableSkySun()) {
-            return false;
-        }
-
-        if (season != null) {
-            return season.sunFallsFromSky();
-        }
-
-        return true;
-    }
-
-    public List<Zombie> getAliveZombies() {
-        return aliveZombies;
-    }
-
-    public int getTotalLostPlants() {
-        return totalLostPlants;
-    }
-    public void incrementPlantsLost() {
-        this.totalLostPlants++;
-        ConsoleView.simplePrint("A plant was destroyed! Total lost: " + totalLostPlants+"\n");
-    }
-
-    public void setSunAmount(int sunAmount) {
-        this.sunAmount = sunAmount;
-    }
-
-    public boolean isSetupPhase() {
-        return isSetupPhase;
-    }
-
-    public void setSetupPhase(boolean setupPhase) {
-        isSetupPhase = setupPhase;
-    }
+    public List<Projectile> getProjectiles()      { return projectiles; }
+    public void setNewProjectiles(Projectile p)   { this.projectiles.add(p); }
+    public List<Plant> getActivePlants()           { return activePlants; }
+    public List<Plant> getAlivePlants()            { return alivePlants; }
+    public List<Zombie> getActiveZombies()         { return activeZombies; }
+    public List<Zombie> getAliveZombies()          { return aliveZombies; }
+    public Level getLevel()                        { return level; }
+    public Plant[][] getPlantGrid()                { return plantGrid; }
+    public Grave[][] getGraveGrid()                { return graveGrid; }
+    public int getSunAmount()                      { return sunAmount; }
+    public void setSunAmount(int sunAmount)        { this.sunAmount = sunAmount; }
+    public int getTotalZombiesKilledInLevel()      { return totalZombiesKilledInLevel; }
+    public int getTotalSunProducedInLevel()        { return totalSunProducedInLevel; }
+    public int getTotalLostPlants()                { return totalLostPlants; }
+    public boolean isGameEnded()                   { return gameEnded; }
+    public boolean isPlayerWon()                   { return playerWon; }
+    public boolean isSetupPhase()                  { return isSetupPhase; }
+    public void setSetupPhase(boolean v)           { this.isSetupPhase = v; }
+    public TimeManager getTimeManager()            { return timeManager; }
+    public PlantFactory getPlantFactory()          { return plantFactory; }
+    public DataManager getDataManager()            { return dm; }
 }

@@ -6,9 +6,9 @@ package model.plants;
  * null for now. Extend and wire up via PlantLoader once source data exists.
  */
 public enum TargetingMode {
-    NEAREST,
-    FARTHEST,
-    RANDOM,
     FIRST_IN_LANE,
+    ALL_IN_ROW,
+    NEAREST,
+    RANDOM,
     NONE
 }
