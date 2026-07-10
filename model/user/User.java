@@ -58,9 +58,17 @@ public class User {
         this.coins = 0;
         this.gems = 0;
         this.greenHouse = new GreenHouse();
+        this.unlockLevel("Ancient Egypt - Day 1");
+        this.unlockedLevels = new ArrayList<>();
+        this.unlockedPlantTypes = new ArrayList<>();
+        this.seenZombies = new ArrayList<>();
     }
 
     public User() {
+        this.unlockLevel("Ancient Egypt - Day 1");
+        this.unlockedLevels = new ArrayList<>();
+        this.unlockedPlantTypes = new ArrayList<>();
+        this.seenZombies = new ArrayList<>();
     }
 
     public boolean isBoughtDailyOfferToday() {
@@ -253,6 +261,34 @@ public class User {
         if (!unlockedLevels.contains(levelName)) {
             unlockedLevels.add(levelName);
         }
+    }
+
+    public void setUnlockedPlantTypes(List<Plant> unlockedPlantTypes) {
+        this.unlockedPlantTypes = unlockedPlantTypes;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
+    }
+
+    public void setSeenZombies(List<Zombie> seenZombies) {
+        this.seenZombies = seenZombies;
+    }
+
+    public ArrayList<String> getUnlockedLevels() {
+        return unlockedLevels;
+    }
+
+    public void setUnlockedLevels(ArrayList<String> unlockedLevels) {
+        this.unlockedLevels = unlockedLevels;
+    }
+
+    public void setSecurityQuestion(SecurityQuestions securityQuestion) {
+        this.securityQuestion = securityQuestion;
+    }
+
+    public void setSecurityAnswer(String securityAnswer) {
+        this.securityAnswer = securityAnswer;
     }
 }
 

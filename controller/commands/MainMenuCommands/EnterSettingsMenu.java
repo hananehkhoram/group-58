@@ -1,24 +1,23 @@
-package controller.commands.GameMenuCommands;
+package controller.commands.MainMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.menus.Menu;
-import model.menus.allmenus.GameMenu;
+import model.menus.allmenus.MainMenu;
 
-public class EnterLeaderBoard implements Command {
+public class EnterSettingsMenu implements Command {
     private MenuManager menuManager;
 
-    public EnterLeaderBoard(MenuManager menuManager) {
+    public EnterSettingsMenu(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
+
     @Override
     public void execute(String[] args) {
         Menu currentMenu = menuManager.getCurrentMenu();
 
-        if (currentMenu instanceof GameMenu){
-            menuManager.changeMenu("LeaderBoardMenu");
+        if (currentMenu instanceof MainMenu){
+            menuManager.changeMenu("settingsmenu");
         }
     }
-
-    //menu leaderboard
 }

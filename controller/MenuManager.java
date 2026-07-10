@@ -3,8 +3,11 @@ package controller;
 import controller.commandHandler.CommandRegistry;
 import exceptions.CommandNotFound;
 import model.GameContext;
+import model.level.Level;
+import model.mechanisms.GameEngine;
 import model.menus.Menu;
 import model.menus.allmenus.*;
+import model.season.Season;
 
 import java.util.Stack;
 
@@ -13,6 +16,7 @@ public class MenuManager {
     private GameContext ctx;
     private Menu nextMenu;
     private Menu currentMenu;
+    private GameEngine gameEngine;
 
     public MenuManager(GameContext ctx) {
         this.ctx = ctx;
@@ -88,5 +92,15 @@ public class MenuManager {
         }else {
             return null;
         }
+    }
+    public void startBattle(Level level, Season season) {
+        this.ctx = new GameContext(level, season);
+        this.gameEngine = new GameEngine(this.ctx);
+    }
+
+    public GameEngine getGameEngine() { return gameEngine; }
+
+    public GameContext getCtx() {
+        return ctx;
     }
 }

@@ -12,6 +12,8 @@ import controller.commands.NewsMenuCommands.ShowAllNews;
 import controller.commands.NewsMenuCommands.ShowUnreadNews;
 import controller.commands.PlantFoodCommands.FeedPlant;
 import controller.commands.ProfileMenuCommands.*;
+import controller.commands.RegisterMenuCommands.NewUser;
+import controller.commands.RegisterMenuCommands.PickAQuestion;
 import controller.commands.ShopCommands.BuyCommand;
 import controller.commands.GreenHouseCommands.EnterShop;
 import controller.commands.ShopCommands.ShowProductsCommands;
@@ -19,10 +21,6 @@ import controller.commands.SpecialLevelsCommands.PlantWhatYouGet;
 import controller.commands.status.show_map;
 import controller.commands.status.show_plants_status;
 import controller.commands.status.show_tile_status;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 
 public class FileCommandProvider implements controller.commandHandler.CommandProvider {
@@ -41,12 +39,12 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("menu enter (?<menuName>\\w*)" , new MenuEnter(this.menuManager));
         registry.register("menu show current" , new MenuShowCurrent(menuManager));
         registry.register("menu exit" , new MenuExit());
-        registry.register("^register -u (?<username>\\S+) -p (?<password>\\S+) (?<passwordConfirm>\\S+) -n (?<nickname>\\S+) -e (?<email>\\S+) -g (?<gender>\\w+)$" , new NewUser());
-        registry.register("pick question -q (?<questionNumber>\\d+) -a (?<answer>\\S+) -c (?<answerConfirm>\\S+)" , new PickAQuestion());
+        registry.register("^register -u (?<username>\\S+) -p (?<password>\\S+) (?<passwordConfirm>\\S+) -n (?<nickname>\\S+) -e (?<email>\\S+) -g (?<gender>\\w+)$" , new NewUser(menuManager));
+        registry.register("pick question -q (?<questionNumber>\\d+) -a (?<answer>\\S+) -c (?<answerConfirm>\\S+)" , new PickAQuestion(menuManager));
         registry.register("login -u (?<username>\\S+) -p (?<password>\\S+) -stayLoggedIn" , new controller.commands.LoginMenuCommands.Login(menuManager));
         registry.register("forget password -u (?<username>\\S+) -e (?<email>\\S+)" , new controller.commands.LoginMenuCommands.ForgetPassword(menuManager));
         registry.register("answer -a (?<answer>\\S+)" , new controller.commands.LoginMenuCommands.Answer(menuManager));
-        registry.register("menu logout" , new controller.commands.MainMenuCommands.Logout());
+        registry.register("menu logout" , new controller.commands.MainMenuCommands.Logout(menuManager));
         registry.register("menu enter chapter -c (?<chaptername>\\S+)" , new EnterChapter(menuManager));
         registry.register("menu greenhouse" , new EnterGreenHouse(menuManager));
         registry.register("menu travel-log" , new EnterTravelLog(menuManager));
@@ -93,6 +91,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("shop (?<listORdaily>\\S+)" , new ShowProductsCommands(menuManager));
         registry.register("shop buy -i (?<itemId>\\S+) -n (?<count>\\d+) [-t (?<plantType>\\S+)]" , new BuyCommand(menuManager));
         registry.register("travel log page (?<pageName>\\S+)" , new ShowQuests());
+        registry.register("(?i)^menu\\s+cheat\\s+add\\s+(\\d+)\\s+(coin|diamond)$",new CheatAddCurrency(menuManager));
 
     }
 }

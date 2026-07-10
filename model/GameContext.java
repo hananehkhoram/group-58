@@ -1,5 +1,6 @@
 package model;
 
+import controller.NewsManager;
 import controller.SpecialLevelManager.*;
 import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
@@ -27,7 +28,7 @@ public class GameContext {
     private final Grave[][] graveGrid;
     private final List<Plant> activePlants = new ArrayList<>();//گیاهای انتخاب شده
     private final List<Zombie> activeZombies = new ArrayList<>();//zombies to spawn
-    private final List<Zombie> aliveZombies = new ArrayList<>();
+    private final List<Zombie> aliveZombies = new ArrayList<>();//زامبیای زنده رو زمین
     private int sunAmount = 0;
     private int plantFoodCount = 0;
     private int currentWaveIndex = 0;
@@ -108,10 +109,16 @@ public class GameContext {
 
     public void incrementPlantsLost() {
         this.totalLostPlants++;
-        //return("A plant was destroyed! Total lost: " + totalLostPlants + "\n");
+        ConsoleView.showMessage("A plant was destroyed! Total lost: %d\n",totalLostPlants);
     }
 
-    public void addZombie(Zombie z)          { aliveZombies.add(z); }
+    public void addZombie(Zombie z) {
+        aliveZombies.add(z);
+        if (!UserManager.getInstance().getCurrentUser().getSeenZombies().contains(z)){
+            NewsManager.addNews("New Zombie","You unlocked: "+z.getName());
+            UserManager.getInstance().getCurrentUser().getSeenZombies().add(z);
+        }
+    }
     public void addPlantFood(int amount)     { this.plantFoodCount += amount; }
 
     public void placeGrave(Grave g, int row, int col) { graveGrid[row][col] = g; }
@@ -174,4 +181,5 @@ public class GameContext {
     public TimeManager getTimeManager()            { return timeManager; }
     public PlantFactory getPlantFactory()          { return plantFactory; }
     public DataManager getDataManager()            { return dm; }
+    public Season getSeason() {return season;}
 }

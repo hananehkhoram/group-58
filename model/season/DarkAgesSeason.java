@@ -3,12 +3,12 @@ package model.season;
 import controller.repository.DataManager;
 import controller.repository.factory.ZombieFactory;
 import model.GameContext;
+import model.level.Level;
 import model.zombie.Zombie;
 import view.ConsoleView;
 
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
 
 public class DarkAgesSeason extends Season{
         private final Random random = new Random();

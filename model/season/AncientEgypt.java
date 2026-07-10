@@ -2,13 +2,13 @@ package model.season;
 
 import model.GameContext;
 import model.GridCell;
+import model.level.Level;
 import model.zombie.Zombie;
 import view.ConsoleView;
 
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Level;
 
 public class AncientEgypt extends Season{
     private final Random random = new Random();

@@ -6,6 +6,7 @@ import model.TimeManager;
 import model.level.Level;
 import model.mechanisms.GameEngine;
 import model.season.Season;
+import model.user.UserManager;
 import view.ConsoleView;
 
 public class GameEngineController {
@@ -15,15 +16,12 @@ public class GameEngineController {
     private MenuManager mm;
     private DataManager dm;
     private TimeManager tm;
-    private GameContext ctx;
-    private GameEngine gameEngine;
-    private Season season;
-    private Level level;
 
     public GameEngineController() {
         this.mm = new MenuManager(null);
-        mm.changeMenu("registermenu");
         this.dm = DataManager.getInstance();
+        UserManager.getInstance().loadFromFile();
+        mm.changeMenu("registermenu");
         this.tm = new TimeManager();
         this.registry = new controller.commandHandler.CommandRegistry();
         controller.commandHandler.FileCommandProvider provider =
@@ -31,12 +29,6 @@ public class GameEngineController {
         provider.registerCommands(this.registry);
     }
 
-    public void startBattle(Level level, Season season) {
-        this.level = level;
-        this.season = season;
-        this.ctx = new GameContext(level, season);
-        this.gameEngine = new GameEngine(ctx);
-    }
 
     public void start() {
         isRunning = true;
@@ -45,6 +37,7 @@ public class GameEngineController {
 
     public void stop() {
         isRunning = false;
+        UserManager.getInstance().saveToFile();
         ConsoleView.simplePrint("Saving data and exiting game...\n");
     }
 
@@ -72,16 +65,11 @@ public class GameEngineController {
     }
 
     public void update() {
-        if (gameEngine != null) {
-            gameEngine.update(DELTA_TIME);
+        GameEngine engine = mm.getGameEngine();
+        if (engine != null) {
+            engine.update(DELTA_TIME);
         }
     }
 
-    public GameContext getCtx() {
-        return ctx;
-    }
 
-    public GameEngine getGameEngine() {
-        return gameEngine;
-    }
 }

@@ -36,11 +36,14 @@ public class RegisterMenu extends BaseMenu {
         return "Please pick a security question.";
 
     }
-    public String pickQuestion(int questionNumber,String answer){
+    public String pickQuestion(int questionNumber,String answer,String answerConfirm){
         SecurityQuestions selectedQuestion = SecurityQuestions.getQuestionById(questionNumber);
 
         if (selectedQuestion == null) {
             return "Invalid question number! Please choose a valid number.";
+        }
+        if (!answer.equalsIgnoreCase(answerConfirm)){
+            return "Answers don't mach!please try again.\n";
         }
         um.addQuestion(selectedQuestion,answer);
         return "Registered successfully.";

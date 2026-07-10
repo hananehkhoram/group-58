@@ -27,9 +27,9 @@ public class PlantWhatYouGetManager implements LevelManager{
     @Override
     public void onLevelStart(GameContext context) {
         context.setSetupPhase(true);
-        context.setSunAmount(800);
+        context.setSunAmount(context.getLevel().getSunsGiven());
         ConsoleView.showMessage("Plant What You Get started!\n");
-        ConsoleView.showMessage("You have " + 800 + " sun. Plant your defenses wisely.\n");
+        ConsoleView.showMessage("You have " + context.getLevel().getSunsGiven() + " sun. Plant your defenses wisely.\n");
     }
 
     @Override

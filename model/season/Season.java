@@ -2,10 +2,11 @@ package model.season;
 
 import model.GameContext;
 import model.GridCell;
+import model.level.Level;
 
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
+
 
 public abstract class Season {
     protected String name;
