@@ -33,7 +33,14 @@ public class RegisterMenu extends BaseMenu {
 
         um.register(username,password,nickName,email,gender);
 
-        return "Please pick a security question.";
+        StringBuilder sb = new StringBuilder();
+        sb.append("Please pick a security question: \n");
+        for (int i = 0; i < SecurityQuestions.values().length; i++) {
+            SecurityQuestions question = SecurityQuestions.getQuestionById(i + 1);
+            sb.append(question.getId()).append(": ").append(question.getQuestionText()).append("\n");
+        }
+
+        return sb.toString();
 
     }
     public String pickQuestion(int questionNumber,String answer,String answerConfirm){
@@ -46,6 +53,7 @@ public class RegisterMenu extends BaseMenu {
             return "Answers don't mach!please try again.\n";
         }
         um.addQuestion(selectedQuestion,answer);
+
         return "Registered successfully.";
     }
 

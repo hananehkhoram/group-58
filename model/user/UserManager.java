@@ -246,5 +246,13 @@ public class UserManager {//singelton
 
         return u;
     }
+    public void clearAllUsers() {
+        users.clear();
+        currentUser = null;
+        java.io.File file = new java.io.File(USERS_FILE);
+        if (file.exists()) {
+            file.delete();
+        }
+    }
 
 }

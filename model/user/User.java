@@ -58,6 +58,7 @@ public class User {
         this.coins = 0;
         this.gems = 0;
         this.greenHouse = new GreenHouse();
+        this.unlockedLevels = new ArrayList<>();
         this.unlockLevel("Ancient Egypt - Day 1");
         this.unlockedLevels = new ArrayList<>();
         this.unlockedPlantTypes = new ArrayList<>();
@@ -65,6 +66,7 @@ public class User {
     }
 
     public User() {
+        this.unlockedLevels = new ArrayList<>();
         this.unlockLevel("Ancient Egypt - Day 1");
         this.unlockedLevels = new ArrayList<>();
         this.unlockedPlantTypes = new ArrayList<>();

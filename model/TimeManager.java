@@ -3,7 +3,9 @@ package model;
 public class TimeManager {
     private long totalTicks;
 
-    public void advanceTime(int ticks){}
+    public void advanceTime(int ticks){
+        totalTicks += ticks;
+    }
     public long getTotalTicks() {
         return totalTicks;
     }

@@ -15,14 +15,12 @@ public class GameEngineController {
     private boolean isRunning;
     private MenuManager mm;
     private DataManager dm;
-    private TimeManager tm;
 
     public GameEngineController() {
         this.mm = new MenuManager(null);
         this.dm = DataManager.getInstance();
         UserManager.getInstance().loadFromFile();
         mm.changeMenu("registermenu");
-        this.tm = new TimeManager();
         this.registry = new controller.commandHandler.CommandRegistry();
         controller.commandHandler.FileCommandProvider provider =
                 new controller.commandHandler.FileCommandProvider(this.mm);
@@ -58,6 +56,7 @@ public class GameEngineController {
                     return;
                 }
                 registry.handleCommand(input);
+                System.out.print("> ");
             } catch (Exception e) {
                 view.ConsoleView.showMessage(e.getMessage());
             }

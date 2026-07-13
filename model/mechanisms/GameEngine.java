@@ -30,6 +30,7 @@ public class GameEngine {
         if (ctx.isGameEnded()) return;
 
         ctx.getTimeManager().advanceTime(1);
+        ctx.getSunManager().update();
         updateWave(deltaTime);
         updateZombies(deltaTime);
         updatePlants(deltaTime);

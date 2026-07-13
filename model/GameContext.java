@@ -6,6 +6,7 @@ import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
 import model.Projectile.Projectile;
 import model.level.Level;
+import model.mechanisms.SunManager;
 import model.plants.Plant;
 import model.plants.TargetingMode;
 import model.season.Grave;
@@ -40,6 +41,7 @@ public class GameContext {
     private List<Projectile> projectiles = new ArrayList<>();
     private TimeManager timeManager;
     private Map<String, Integer> producedSuns = new HashMap<>();
+    private SunManager sunManager;
 
     private int totalSunProducedInLevel = 0;
     private int totalLostPlants = 0;
@@ -61,6 +63,7 @@ public class GameContext {
         this.plantFoodCount = UserManager.getInstance().getCurrentUser().getPlantFoodCount();
         if (this.levelManager != null) this.levelManager.onLevelStart(this);
         this.timeManager = new TimeManager();
+        this.sunManager = new SunManager(this.timeManager);
     }
 
     // SUN
@@ -181,5 +184,6 @@ public class GameContext {
     public TimeManager getTimeManager()            { return timeManager; }
     public PlantFactory getPlantFactory()          { return plantFactory; }
     public DataManager getDataManager()            { return dm; }
-    public Season getSeason() {return season;}
+    public Season getSeason()                      { return season; }
+    public SunManager getSunManager()              { return sunManager; }
 }

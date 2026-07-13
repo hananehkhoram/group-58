@@ -152,4 +152,5 @@ public class CollectionMenu extends BaseMenu {
 
         return "Successfully purchased " + newPlant.getName() + "! It is now added to your collection.";
     }
+
 }

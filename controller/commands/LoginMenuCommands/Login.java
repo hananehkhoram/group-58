@@ -25,6 +25,7 @@ public class Login implements Command {
         if (currentMenu instanceof LoginMenu){
             String result = ((LoginMenu) currentMenu).login(username,password,stayLoggedIn);
             ConsoleView.showMessage("%s\n",result);
+            menuManager.forceChangeMenu("mainmenu");
 
         }
     }

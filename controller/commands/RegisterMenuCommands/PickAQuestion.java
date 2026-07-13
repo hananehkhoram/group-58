@@ -30,6 +30,9 @@ public class PickAQuestion implements Command {
         if (currentMenu instanceof RegisterMenu){
             String result = ((RegisterMenu) currentMenu).pickQuestion(qNumber,answer,answerConfirm);
             ConsoleView.showMessage("%s\n",result);
+            if (result.startsWith("Registered")){
+                ConsoleView.showMessage("You can now enter the Login menu.");
+            }
 
         }
     }
