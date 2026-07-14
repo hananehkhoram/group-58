@@ -30,7 +30,7 @@ public class GameEngine {
     public void update(double deltaTime) {
         if (ctx.isGameEnded()) return;
 
-        ctx.getTimeManager().advanceTime(1);
+        //ctx.getTimeManager().advanceTime(1);
         ctx.getSunManager().update();
         updateWave(deltaTime);
         updateZombies(deltaTime);
@@ -233,7 +233,8 @@ public class GameEngine {
 
 
     public Tile getTiles(int x, int y) {
-        return null;
+        if (x < 0 || x >= tiles.length || y < 0 || y >= tiles[0].length) return null;
+        return tiles[x][y];
     }
     
 

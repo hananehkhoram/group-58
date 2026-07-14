@@ -14,9 +14,7 @@ import view.ConsoleView;
 import java.util.*;
 
 public class MenuManager {
-    private Stack<Menu> menus =  new Stack<>();
     private GameContext ctx;
-    private Menu nextMenu;
     private Menu currentMenu;
     private GameEngine gameEngine;
 
@@ -45,7 +43,7 @@ public class MenuManager {
 
     public MenuManager(GameContext ctx) {
         this.ctx = ctx;
-        this.menus.push(new RegisterMenu(this.ctx));
+        this.currentMenu = new RegisterMenu(this.ctx);
     }
     private Menu buildMenu(String targetMenu) {
         MenuType type = MenuType.fromMenuName(targetMenu);
@@ -69,14 +67,6 @@ public class MenuManager {
         }
     }
 
-    public void pushMenu(Menu menu) {
-        menus.push(menu);
-    }
-    public void popMenu(){
-        if(!menus.isEmpty()){
-            menus.pop();
-        }
-    }
     public void changeMenu(String targetMenu){
         Menu newMenu = buildMenu(targetMenu);
 
@@ -99,11 +89,7 @@ public class MenuManager {
     public void update(){}
     public void handleInput(){}
     public Menu getCurrentMenu(){
-        if (!menus.isEmpty()){
-            return menus.peek();
-        }else {
-            return null;
-        }
+        return currentMenu;
     }
     public void startBattle(Level level, Season season) {
         this.ctx = new GameContext(level, season);

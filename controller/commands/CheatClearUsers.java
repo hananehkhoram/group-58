@@ -9,4 +9,4 @@ public class CheatClearUsers implements Command {
     public void execute(String[] args) {
         UserManager.getInstance().clearAllUsers();
     }
-}
+}//cheat reset users

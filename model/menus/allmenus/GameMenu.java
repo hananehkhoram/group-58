@@ -15,13 +15,6 @@ public class GameMenu extends BaseMenu {
         this.name = "Game menu";
     }
 
-    public void enterChapter(String chapterName) {}
-    public void openCollectionMenu() {}
-    public void openGreenhouseMenu() {}
-    public void openTravelLogMenu() {}
-    public void openLeaderboardMenu() {}
-    public void openCoinWallet() {}
-    public void openGemWallet() {}
     public void switchWorld(String worldName) {
         Season world = DataManager.getInstance().seasons.get(worldName);
         if (world == null) {
