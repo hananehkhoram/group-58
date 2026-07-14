@@ -9,10 +9,6 @@ import model.user.UserManager;
 public class LoginMenu extends BaseMenu {
     private UserManager um;
 
-    @Override
-    public MenuType getMenu() {
-        return null;
-    }
 
     private enum ResetState { NONE, AWAITING_SECURITY_ANSWER, AWAITING_NEW_PASSWORD }
 
