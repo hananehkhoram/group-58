@@ -18,8 +18,6 @@ public abstract class BaseMenu implements Menu{
     public String showMenu(){
         return name;
     }
-    public MenuType getMenu() {
-        return menuType;
-    }
+    public MenuType getMenu() { return menuType; }
 
 }

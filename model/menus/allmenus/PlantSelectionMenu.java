@@ -7,6 +7,7 @@ import model.GameContext;
 import model.menus.BaseMenu;
 import model.menus.MenuType;
 import model.plants.Plant;
+import model.season.Grave;
 import model.user.User;
 import model.user.UserManager;
 
@@ -123,5 +124,17 @@ public class PlantSelectionMenu extends BaseMenu {
         return "Successfully boosted "+plantInCtx.getName()+"from your plants.";
 
     }
-    public void startGame() {}
+    public String startGame() {
+        if (ctx.getActivePlants().isEmpty()) {
+            return "You must choose at least one plant before starting.";
+        }
+
+        ctx.getSeason().onLevelStart(ctx);
+
+        for (Grave g : ctx.getSeason().getInitialGraves(ctx.getLevel())) {
+            ctx.placeGrave(g, g.getRow(), g.getCol());
+        }
+
+        return "Let's begin this level: " + ctx.getLevel().getName();
+    }
 }

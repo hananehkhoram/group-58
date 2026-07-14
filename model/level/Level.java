@@ -90,7 +90,7 @@ public class Level {
         return forcedPlants;
     }
 
-    public class PrePlacedPlant {
+    public static class PrePlacedPlant {
         private final Plant plantTemplate;
         private final int row;
         private final int col;
@@ -137,5 +137,13 @@ public class Level {
     public int getSunsGiven() {
         return sunsGiven;
     }
+
+    public void setDeadlineColumn(int deadlineColumn) { this.deadlineColumn = deadlineColumn; }
+    public void setMaxLostPlants(int maxLostPlants) { this.maxLostPlants = maxLostPlants; }
+    public void setSunsGiven(int sunsGiven) { this.sunsGiven = sunsGiven; }
+    public void setTimedWarDuration(double d) { this.timedWarDuration = d; }
+    public void setTimedWarTargetZombies(int n) { this.timedWarTargetZombies = n; }
+    public void setTimedWarTargetSun(int n) { this.timedWarTargetSun = n; }
+    public void setSunProductionMode(boolean b) { this.isSunProductionMode = b; }
 }
 

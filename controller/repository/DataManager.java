@@ -5,8 +5,10 @@ public class DataManager {
     public PlantRepository plants = new PlantRepository(); //
     public ZombieRepository zombies = new ZombieRepository();
     public UserRepository game = new UserRepository();
+    public SeasonRepository seasons = new SeasonRepository();
 
     private DataManager(){
+        instance = this;
         initialize();
     }
     public static DataManager getInstance() {
@@ -19,5 +21,6 @@ public class DataManager {
         plants.load("Files/plants.csv");
 //        zombies.load("pathtofile");
 //        game.load("pathtofile");
+        seasons.load(null);
     }
 }

@@ -40,4 +40,12 @@ public class Grave {
             default -> "Normal";            // Normal Grave
         };
     }
+
+    public int getRow() {
+        return row;
+    }
+
+    public int getCol() {
+        return col;
+    }
 }

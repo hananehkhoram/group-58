@@ -2,8 +2,11 @@ package controller.commands.GameMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;
+import controller.repository.DataManager;
 import model.menus.Menu;
 import model.menus.allmenus.GameMenu;
+import model.season.Season;
+import view.ConsoleView;
 
 public class ChooseTheWorld implements Command {
 
@@ -19,7 +22,13 @@ public class ChooseTheWorld implements Command {
         Menu currentMenu = menuManager.getCurrentMenu();
 
         if (currentMenu instanceof GameMenu){
-            //((GameMenu) currentMenu).ChooseTheWorld(worldName);  the method in the menu
+            Season world = DataManager.getInstance().seasons.get(worldName);
+            if (world == null) {
+                ConsoleView.showMessage("Invalid world name.\n");
+                return;
+            }
+
+            ((GameMenu) currentMenu).switchWorld(worldName);
         }
 
     }

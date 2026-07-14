@@ -16,7 +16,7 @@ public class EnterLeaderBoard implements Command {
         Menu currentMenu = menuManager.getCurrentMenu();
 
         if (currentMenu instanceof GameMenu){
-
+            menuManager.changeMenu("LeaderBoardMenu");
         }
     }
 

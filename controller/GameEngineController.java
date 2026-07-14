@@ -6,6 +6,7 @@ import model.TimeManager;
 import model.level.Level;
 import model.mechanisms.GameEngine;
 import model.season.Season;
+import model.user.UserManager;
 import view.ConsoleView;
 
 public class GameEngineController {
@@ -14,29 +15,18 @@ public class GameEngineController {
     private boolean isRunning;
     private MenuManager mm;
     private DataManager dm;
-    private TimeManager tm;
-    private GameContext ctx;
-    private GameEngine gameEngine;
-    private Season season;
-    private Level level;
 
     public GameEngineController() {
         this.mm = new MenuManager(null);
-        mm.changeMenu("registermenu");
         this.dm = DataManager.getInstance();
-        this.tm = new TimeManager();
+        UserManager.getInstance().loadFromFile();
+        mm.changeMenu("registermenu");
         this.registry = new controller.commandHandler.CommandRegistry();
         controller.commandHandler.FileCommandProvider provider =
                 new controller.commandHandler.FileCommandProvider(this.mm);
         provider.registerCommands(this.registry);
     }
 
-    public void startBattle(Level level, Season season) {
-        this.level = level;
-        this.season = season;
-        this.ctx = new GameContext(level, season);
-        this.gameEngine = new GameEngine(ctx);
-    }
 
     public void start() {
         isRunning = true;
@@ -45,6 +35,7 @@ public class GameEngineController {
 
     public void stop() {
         isRunning = false;
+        UserManager.getInstance().saveToFile();
         ConsoleView.simplePrint("Saving data and exiting game...\n");
     }
 
@@ -65,6 +56,7 @@ public class GameEngineController {
                     return;
                 }
                 registry.handleCommand(input);
+                System.out.print("> ");
             } catch (Exception e) {
                 view.ConsoleView.showMessage(e.getMessage());
             }
@@ -72,16 +64,11 @@ public class GameEngineController {
     }
 
     public void update() {
-        if (gameEngine != null) {
-            gameEngine.update(DELTA_TIME);
+        GameEngine engine = mm.getGameEngine();
+        if (engine != null) {
+            engine.update(DELTA_TIME);
         }
     }
 
-    public GameContext getCtx() {
-        return ctx;
-    }
 
-    public GameEngine getGameEngine() {
-        return gameEngine;
-    }
 }

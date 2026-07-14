@@ -1,5 +1,8 @@
 package model.user;
 
+import model.plants.Plant;
+import model.zombie.Zombie;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +11,10 @@ public class UserManager {//singelton
 
     private List<User> users;
     private User currentUser;
+
+    private static final String USERS_FILE = "Files/users.dat";
+    private static final String FIELD_SEP = "|";
+    private static final String LIST_SEP = ",";
 
     private UserManager() {
         this.users = new ArrayList<>();
@@ -135,12 +142,117 @@ public class UserManager {//singelton
     }
 
     public User getCurrentUser() {
-        return null;
+        return currentUser;
     }
 
     public void saveToFile() {
+        try (java.io.PrintWriter writer = new java.io.PrintWriter(
+                new java.io.FileWriter(USERS_FILE, java.nio.charset.StandardCharsets.UTF_8))) {
+            for (User u : users) {
+                writer.println(serializeUser(u));
+            }
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Could not save users to file", e);
+        }
     }
 
     public void loadFromFile() {
+        java.io.File file = new java.io.File(USERS_FILE);
+        if (!file.exists()) return;
+
+        users.clear();
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.FileReader(file, java.nio.charset.StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.isBlank()) continue;
+                users.add(deserializeUser(line));
+            }
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Could not load users from file", e);
+        }
     }
+    private String serializeUser(User u) {
+        String plantNames = u.getUnlockedPlantTypes() == null ? "" :
+                String.join(LIST_SEP, u.getUnlockedPlantTypes().stream().map(model.plants.Plant::getName).toList());
+        String zombieNames = u.getSeenZombies() == null ? "" :
+                String.join(LIST_SEP, u.getSeenZombies().stream().map(model.zombie.Zombie::getName).toList());
+        String levels = u.getUnlockedLevels() == null ? "" : String.join(LIST_SEP, u.getUnlockedLevels());
+
+        return String.join(FIELD_SEP,
+                u.getUsername(),
+                u.getPassword(),
+                u.getNickName(),
+                u.getEmail(),
+                u.getGender().name(),
+                u.getSecurityQuestion() == null ? "" : String.valueOf(u.getSecurityQuestion().getId()),
+                u.getSecurityAnswer() == null ? "" : u.getSecurityAnswer(),
+                String.valueOf(u.getCoins()),
+                String.valueOf(u.getGems()),
+                String.valueOf(u.getDifficultyLevel()),
+                String.valueOf(u.getLastReadNewsId()),
+                String.valueOf(u.getGamesPlayed()),
+                String.valueOf(u.getPlantFoodCount()),
+                String.valueOf(u.getOwnedPotsCount()),
+                levels,
+                plantNames,
+                zombieNames
+        );
+    }
+
+    private User deserializeUser(String line) {
+        String[] f = line.split("\\" + FIELD_SEP, -1);
+
+        User u = new User();
+        u.setUsername(f[0]);
+        u.setPassword(f[1]);
+        u.setNickName(f[2]);
+        u.setEmail(f[3]);
+        u.setGender(Gender.valueOf(f[4]));
+
+        if (!f[5].isBlank()) {
+            addQuestion(SecurityQuestions.getQuestionById(Integer.parseInt(f[5])), f[6]);
+        }
+
+        u.setCoins(Integer.parseInt(f[7]));
+        u.setGems(Integer.parseInt(f[8]));
+        u.setDifficultyLevel(Integer.parseInt(f[9]));
+        u.setLastReadNewsId(Integer.parseInt(f[10]));
+        u.setGamesPlayed(Integer.parseInt(f[11]));
+        u.setPlantFoodCount(Integer.parseInt(f[12]));
+        u.setOwnedPotsCount(Integer.parseInt(f[13]));
+
+        ArrayList<String> levels = new ArrayList<>();
+        if (!f[14].isBlank()) levels.addAll(java.util.List.of(f[14].split(LIST_SEP)));
+        u.setUnlockedLevels(levels);
+
+        List<Plant> plants = new ArrayList<>();
+        if (!f[15].isBlank()) {
+            for (String name : f[15].split(LIST_SEP)) {
+                Plant p = controller.repository.DataManager.getInstance().plants.get(name);
+                if (p != null) plants.add(p);
+            }
+        }
+        u.setUnlockedPlantTypes(plants);
+
+        List<Zombie> zombies = new ArrayList<>();
+        if (!f[16].isBlank()) {
+            for (String name : f[16].split(LIST_SEP)) {
+                Zombie z = controller.repository.DataManager.getInstance().zombies.get(name);
+                if (z != null) zombies.add(z);
+            }
+        }
+        u.setSeenZombies(zombies);
+
+        return u;
+    }
+    public void clearAllUsers() {
+        users.clear();
+        currentUser = null;
+        java.io.File file = new java.io.File(USERS_FILE);
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
 }

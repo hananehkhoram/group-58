@@ -1,5 +1,6 @@
 package model.menus.allmenus;
 
+import controller.NewsManager;
 import controller.repository.DataManager;
 import controller.repository.PlantRepository;
 import controller.repository.ZombieRepository;
@@ -144,10 +145,12 @@ public class CollectionMenu extends BaseMenu {
         Plant newPlant = plantFactory.create(String.valueOf(plant.getId()));
 
         unlockedPlants.add(newPlant);
+        NewsManager.addNews("New Plant Unlocked","You unlocked: "+newPlant.getName());
 
 
         um.saveToFile();
 
         return "Successfully purchased " + newPlant.getName() + "! It is now added to your collection.";
     }
+
 }

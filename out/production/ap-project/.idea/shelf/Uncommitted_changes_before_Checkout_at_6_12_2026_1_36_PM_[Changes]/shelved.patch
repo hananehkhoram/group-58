@@ -1,0 +1,41 @@
+Index: model/GameContext.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package model;\r\n\r\nimport model.level.Level;\r\nimport model.plants.TargetingMode;\r\nimport model.plants.Plant;\r\nimport model.season.Grave;\r\nimport model.user.User;\r\nimport model.zombie.Zombie;\r\n\r\nimport java.util.ArrayList;\r\nimport java.util.List;\r\n\r\n//saving everything needed during the game\r\npublic class GameContext {\r\n\r\n    private final Level level;\r\n    private final User user;\r\n    private final Plant[][] plantGrid;\r\n    private final Grave[][] graveGrid;\r\n    private final List<Plant> activePlants = new ArrayList<>();\r\n    private final List<Zombie> activeZombies = new ArrayList<>();\r\n    private int sunAmount = 0;\r\n    private int plantFoodCount = 0;\r\n    private int currentWaveIndex = 0;\r\n    private boolean gameEnded = false;\r\n    private boolean playerWon = false;\r\n\r\n    public GameContext(Level level, User user) {\r\n        this.level = level;\r\n        this.user = user;\r\n        this.plantGrid = new Plant[level.getRows()][level.getColumns()];\r\n        this.graveGrid = new Grave[level.getRows()][level.getColumns()];\r\n    }\r\n\r\n    public void addSun(int amount) {\r\n    }\r\n\r\n    public void addZombie(Zombie z) {\r\n    }\r\n\r\n    public void placeGrave(Grave g, int row, int col) {\r\n    }\r\n\r\n    public boolean canFreezeZombie() {\r\n        return false;\r\n    }\r\n\r\n    public boolean doesSunFall() {\r\n        return false;\r\n    }\r\n\r\n    public boolean isNecromancyCell(int row, int col) {\r\n        return false;\r\n    }\r\n\r\n    public List<Zombie> findTargets(int row, int col, TargetingMode mode) {\r\n        return null;\r\n    }\r\n\r\n    public void update(double deltaTime) {\r\n    }\r\n\r\n    private void checkGameEnd() {\r\n    }\r\n\r\n    public void onWaveStart(int waveNumber) {\r\n        level.getSeason().onWaveStart(this, waveNumber);\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/model/GameContext.java b/model/GameContext.java
+--- a/model/GameContext.java	(revision e463ab4a30c5eb49072171db219c66e8a653a946)
++++ b/model/GameContext.java	(date 1781258681673)
+@@ -24,6 +24,10 @@
+     private int currentWaveIndex = 0;
+     private boolean gameEnded = false;
+     private boolean playerWon = false;
++    private int waveRemainingDuration = 0;
++    private boolean waveSpawningFinished = false;
++    private int remainingZombiesToSpawn = 0;
++    private boolean waveCompleted;
+ 
+     public GameContext(Level level, User user) {
+         this.level = level;
+@@ -32,6 +36,8 @@
+         this.graveGrid = new Grave[level.getRows()][level.getColumns()];
+     }
+ 
++    public boolean isWaveCompleted() {}
++
+     public void addSun(int amount) {
+     }
+ 
+@@ -66,4 +72,10 @@
+     public void onWaveStart(int waveNumber) {
+         level.getSeason().onWaveStart(this, waveNumber);
+     }
++
++    private boolean isWaveCleared(){}
++
++    private void startNextWave(){}
++
++    
+ }

@@ -27,4 +27,23 @@ public class Wave{
     }
 
     public int getWaveDelay() {return waveDelay;}
+
+    public void setWaveNumber(int waveNumber) {
+        this.waveNumber = waveNumber;
+    }
+
+    public void setLastWave(boolean lastWave) {
+        isLastWave = lastWave;
+    }
+
+    public void setWaveDelay(int waveDelay) {
+        this.waveDelay = waveDelay;
+    }
+
+    public Wave(int waveCost, int waveDelay, boolean isLastWave, int waveNumber) {
+        this.waveCost = waveCost;
+        this.waveDelay = waveDelay;
+        this.isLastWave = isLastWave;
+        this.waveNumber = waveNumber;
+    }
 }

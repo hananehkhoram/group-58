@@ -13,7 +13,7 @@ public class NewsMenu extends BaseMenu {
     public NewsMenu(GameContext ctx) {
         super(ctx, MenuType.NEWS);
         this.um = UserManager.getInstance();
-        this.name = "News emnu";
+        this.name = "News menu";
     }
 
     public String showUnreadNews() {

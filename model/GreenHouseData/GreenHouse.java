@@ -52,6 +52,6 @@ public class GreenHouse{
     private boolean isInvalidBounds(int x, int y) {
         return x < 0 || x >= 3 || y < 0 || y >= 4;
     }
-    public boolean accelerateGrowth(int x,int y){return false;}
+
 
 }
