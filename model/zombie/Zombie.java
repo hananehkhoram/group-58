@@ -21,6 +21,7 @@ public class Zombie {
     private Map<String, Object> extraParams;
     private List<Season> seasonsAvailable;
     private double x, y;
+    private boolean isBoss = false;
 
     private boolean isIced = false;
     private double iceHp = 0;
@@ -150,5 +151,13 @@ public class Zombie {
             sb.append("\n").append(e.toString());
         }
         return sb.toString();
+    }
+
+    public boolean isBoss() {
+        return isBoss;
+    }
+
+    public void setBoss(boolean boss) {
+        isBoss = boss;
     }
 }

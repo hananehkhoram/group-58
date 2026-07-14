@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c95e5784-0829-4f8d-8ed6-9644d0e3339e" name="Changes" comment="projectile" />
+    <list default="true" id="c95e5784-0829-4f8d-8ed6-9644d0e3339e" name="Changes" comment="projectile">
+      <change beforePath="$PROJECT_DIR$/model/mechanisms/GameEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/mechanisms/GameEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/menus/allmenus/GameMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/menus/allmenus/GameMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/menus/allmenus/MainMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/menus/allmenus/MainMenu.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -112,6 +116,11 @@
       <workItem from="1783574154081" duration="489000" />
       <workItem from="1783614204373" duration="5000000" />
       <workItem from="1783655646384" duration="12438000" />
+      <workItem from="1783710961556" duration="6704000" />
+      <workItem from="1783751146605" duration="24000" />
+      <workItem from="1783865413434" duration="10624000" />
+      <workItem from="1783919393466" duration="19686000" />
+      <workItem from="1784009634330" duration="4091000" />
     </task>
     <task id="LOCAL-00001" summary="added projectile">
       <option name="closed" value="true" />

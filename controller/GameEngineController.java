@@ -20,7 +20,6 @@ public class GameEngineController {
         this.mm = new MenuManager(null);
         this.dm = DataManager.getInstance();
         UserManager.getInstance().loadFromFile();
-        mm.changeMenu("registermenu");
         this.registry = new controller.commandHandler.CommandRegistry();
         controller.commandHandler.FileCommandProvider provider =
                 new controller.commandHandler.FileCommandProvider(this.mm);

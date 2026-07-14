@@ -11,11 +11,6 @@ public class MainMenu extends BaseMenu {
     super(ctx, MenuType.MAIN);
         this.name = "Main menu";
     }
-    public void play() {}
-    public void openSettings() {}
-    public void openNews() {}
-    public void openProfile() {}
-    public void logout() {}
 
     public boolean shouldShowRedDot(User currentUser) {
         int totalNewsCount = NewsManager.getAllNews().size();
