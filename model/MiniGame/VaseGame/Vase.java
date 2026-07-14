@@ -1,6 +1,6 @@
-package model.MiniGame;
+package model.MiniGame.VaseGame;
 
-public class jar {
+public class Vase {
 
     protected String normalJar;
     protected String plantJar;

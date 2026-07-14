@@ -9,5 +9,4 @@ public class TravelMenu extends BaseMenu {
         super(ctx, MenuType.TRAVEL);
         this.name = "Travel menu";
     }
-
 }
