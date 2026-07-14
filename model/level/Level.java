@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Level {
+    public static final int ROWS = 5;
+    public static final int COLS = 9;
     protected String name;
     protected int rows;
     protected int columns;

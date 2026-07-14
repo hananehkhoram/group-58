@@ -96,16 +96,16 @@ public class GameContext {
 
     // EVENTS
 
-    public String triggerPlayerWin() {
+    public void triggerPlayerWin() {
         this.gameEnded = true;
         this.playerWon = true;
-        return("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
+        ConsoleView.showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
     }
 
-    public String triggerPlayerLoss() {
+    public void triggerPlayerLoss() {
         this.gameEnded = true;
         this.playerWon = false;
-        return("Game Over! You lost the battle!!");
+        ConsoleView.showMessage("The zombie ate your brain; LOSER!!!");
     }
 
     public void incrementZombieKills() { this.totalZombiesKilledInLevel++; }
