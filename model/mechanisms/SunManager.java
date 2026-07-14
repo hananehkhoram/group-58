@@ -8,9 +8,13 @@ public class SunManager{
     private TimeManager timeManager;
     private long nextDropTick;
     private List<Sun> activeSunDrops;
+    private final int rows;
+    private final int columns;
 
-    public SunManager(TimeManager timeManager) {
+    public SunManager(TimeManager timeManager,int rows,int columns) {
         this.timeManager = timeManager;
+        this.rows = rows;
+        this.columns = columns;
         manageNextDrop();
     }
     public void update(){
@@ -29,14 +33,14 @@ public class SunManager{
         this.nextDropTick = timeManager.getTotalTicks() + (long) (intervalSeconds * 10);
     }
     public void generateRandom(){
-        int x = (int) (Math.random() * BOARD_COLUMNS);
-        int y = (int) (Math.random() * BOARD_ROWS);
+        int x = (int) (Math.random() * columns);
+        int y = (int) (Math.random() * rows);
 
         double roll = Math.random();
         SunType type;
         if (roll < 0.05) type = SunType.RADIOACTIVE;
-        else if (roll < 0.20) type = SunType.SPECIAL;   // ۵٪ + ۱۵٪
-        else type = SunType.NORMAL;                      // ۸۰٪
+        else if (roll < 0.20) type = SunType.SPECIAL;
+        else type = SunType.NORMAL;
 
         Sun drop = new Sun(x, y, type);
         activeSunDrops.add(drop);

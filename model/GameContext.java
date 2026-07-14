@@ -63,7 +63,7 @@ public class GameContext {
         this.plantFoodCount = UserManager.getInstance().getCurrentUser().getPlantFoodCount();
         if (this.levelManager != null) this.levelManager.onLevelStart(this);
         this.timeManager = new TimeManager();
-        this.sunManager = new SunManager(this.timeManager);
+        this.sunManager = new SunManager(this.timeManager,level.getRows(),level.getColumns());
     }
 
     // SUN

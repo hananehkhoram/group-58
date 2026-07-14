@@ -8,6 +8,7 @@ import controller.commands.GreenHouseCommands.CollectCommand;
 import controller.commands.GreenHouseCommands.FasterGrow;
 import controller.commands.GreenHouseCommands.PlantPot;
 import controller.commands.GreenHouseCommands.ShowGreenHouse;
+import controller.commands.MechanismsCommands.CheatAddSun;
 import controller.commands.NewsMenuCommands.ShowAllNews;
 import controller.commands.NewsMenuCommands.ShowUnreadNews;
 import controller.commands.PlantFoodCommands.FeedPlant;
@@ -73,7 +74,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("start game" , new StartGame(menuManager));
         registry.register("advance time -t (?<count>\\d+) ticks" , new controller.commands.MechanismsCommands.AdvancedTime(menuManager));
         registry.register("collect sun -l ((?<x>\\d+), (?<y>\\d+))" , new controller.commands.MechanismsCommands.CollectSun(menuManager));
-        registry.register("show sun amount" , new controller.commands.MechanismsCommands.ShowSunAmount());
+        registry.register("show sun amount" , new controller.commands.MechanismsCommands.ShowSunAmount(menuManager));
         registry.register("plant plant -t (?<type>\\S+) -l ((?<x>\\d+), (?<y>\\d+))" , new Planting());
         registry.register("pluck plant -l ((?<x>\\d+), (?<y>\\d+))" , new Plucking());
         registry.register("feed plant -l ((?<x>\\d+), (?<y>\\d+))" , new FeedPlant());
@@ -93,6 +94,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("travel log page (?<pageName>\\S+)" , new ShowQuests());
         registry.register("(?i)^menu\\s+cheat\\s+add\\s+(\\d+)\\s+(coin|diamond)$",new CheatAddCurrency(menuManager));
         registry.register("cheat reset users",new CheatClearUsers());
+        registry.register("^\\/\\/cheat add -n (\\d+) suns$",new CheatAddSun(menuManager));
     }
 }
 

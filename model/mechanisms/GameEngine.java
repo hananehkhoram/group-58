@@ -20,6 +20,7 @@ public class GameEngine {
 
     public GameEngine(GameContext ctx) {
         this.ctx = ctx;
+        this.tiles = buildTiles(ctx);
     }
 
     public GameContext getCtx() {
@@ -216,6 +217,18 @@ public class GameEngine {
         if (didLawnMoved[0]) {
             // print "the lawn mower in ..."
         }
+    }
+
+    private Tile[][] buildTiles(GameContext ctx) {
+        int rows = ctx.getLevel().getRows();
+        int cols = ctx.getLevel().getColumns();
+        Tile[][] grid = new Tile[rows][cols];
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                grid[r][c] = new Tile(r, c, ctx);
+            }
+        }
+        return grid;
     }
 
 
