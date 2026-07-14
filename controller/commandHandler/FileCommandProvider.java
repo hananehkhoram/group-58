@@ -75,7 +75,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("advance time -t (?<count>\\d+) ticks" , new controller.commands.MechanismsCommands.AdvancedTime(menuManager));
         registry.register("collect sun -l ((?<x>\\d+), (?<y>\\d+))" , new controller.commands.MechanismsCommands.CollectSun(menuManager));
         registry.register("show sun amount" , new controller.commands.MechanismsCommands.ShowSunAmount(menuManager));
-        registry.register("plant plant -t (?<type>\\S+) -l ((?<x>\\d+), (?<y>\\d+))" , new Planting());
+        registry.register("plant plant -t (?<type>\\S+) -l ((?<x>\\d+), (?<y>\\d+))" , new Planting(menuManager));
         registry.register("pluck plant -l ((?<x>\\d+), (?<y>\\d+))" , new Plucking());
         registry.register("feed plant -l ((?<x>\\d+), (?<y>\\d+))" , new FeedPlant());
         registry.register("show map" , new ShowMap());

@@ -186,4 +186,5 @@ public class GameContext {
     public DataManager getDataManager()            { return dm; }
     public Season getSeason()                      { return season; }
     public SunManager getSunManager()              { return sunManager; }
+    public LevelManager getLevelManager()          { return levelManager; }
 }

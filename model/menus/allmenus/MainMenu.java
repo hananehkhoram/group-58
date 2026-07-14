@@ -18,8 +18,4 @@ public class MainMenu extends BaseMenu {
         return totalNewsCount > currentUser.getLastReadNewsId();
     }
 
-    @Override
-    public MenuType getMenu() {
-        return null;
-    }
 }
