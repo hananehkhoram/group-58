@@ -19,7 +19,7 @@ public class DataManager {
     }
     public void initialize(){
         plants.load("Files/plants.csv");
-//        zombies.load("pathtofile");
+        zombies.load("Files/zombies.csv");
 //        game.load("pathtofile");
         seasons.load(null);
     }

@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c95e5784-0829-4f8d-8ed6-9644d0e3339e" name="Changes" comment="projectile">
-      <change beforePath="$PROJECT_DIR$/model/mechanisms/GameEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/mechanisms/GameEngine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/menus/allmenus/GameMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/menus/allmenus/GameMenu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/menus/allmenus/MainMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/menus/allmenus/MainMenu.java" afterDir="false" />
-    </list>
+    <list default="true" id="2cbdf629-2fc9-45ad-af0e-b3dc6eec6962" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -17,188 +13,81 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Enum" />
         <option value="Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
-    <favorite-branches>
-      <branch-storage>
-        <map>
-          <entry type="REMOTE">
-            <value>
-              <list>
-                <branch-info repo="$PROJECT_DIR$" source="origin/detached" />
-              </list>
-            </value>
-          </entry>
-        </map>
-      </branch-storage>
-    </favorite-branches>
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$" value="detached" />
-      </map>
-    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
-  <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
   </component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 7
+  &quot;associatedIndex&quot;: 2
 }</component>
-  <component name="ProjectId" id="3EzvoQozL120wcpKV8pwNMwHPOu" />
-  <component name="ProjectLevelVcsManager">
-    <ConfirmationsSetting value="1" id="Add" />
-  </component>
+  <component name="ProjectId" id="3G754lz3WAj0raMtwN3ZDqAkRD1" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Main.executor": "Run",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/hananehkhoram/aUni/AP/pvz/group-58",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="group-58" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="group-58" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.31033.145" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="c95e5784-0829-4f8d-8ed6-9644d0e3339e" name="Changes" comment="" />
-      <created>1781194389572</created>
+      <changelist id="2cbdf629-2fc9-45ad-af0e-b3dc6eec6962" name="Changes" comment="" />
+      <created>1783309577343</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1781194389572</updated>
-      <workItem from="1781194391969" duration="11683000" />
-      <workItem from="1781443837733" duration="3001000" />
-      <workItem from="1781498200526" duration="11228000" />
-      <workItem from="1781610316949" duration="14065000" />
-      <workItem from="1781723347639" duration="8754000" />
-      <workItem from="1781812588458" duration="3950000" />
-      <workItem from="1781846634109" duration="263000" />
-      <workItem from="1781931513321" duration="8078000" />
-      <workItem from="1781986608053" duration="1239000" />
-      <workItem from="1782018828606" duration="21672000" />
-      <workItem from="1782103600759" duration="10395000" />
-      <workItem from="1782276496995" duration="30239000" />
-      <workItem from="1782365499473" duration="220000" />
-      <workItem from="1782405455368" duration="6520000" />
-      <workItem from="1782535824701" duration="892000" />
-      <workItem from="1782572372713" duration="14499000" />
-      <workItem from="1782623816949" duration="39000" />
-      <workItem from="1782709810589" duration="6288000" />
-      <workItem from="1782818731493" duration="2000" />
-      <workItem from="1782837973831" duration="8546000" />
-      <workItem from="1782903400366" duration="2199000" />
-      <workItem from="1782965445101" duration="23059000" />
-      <workItem from="1783055898075" duration="11700000" />
-      <workItem from="1783165797944" duration="20223000" />
-      <workItem from="1783227914243" duration="165000" />
-      <workItem from="1783431382183" duration="3565000" />
-      <workItem from="1783489864019" duration="9534000" />
-      <workItem from="1783574154081" duration="489000" />
-      <workItem from="1783614204373" duration="5000000" />
-      <workItem from="1783655646384" duration="12438000" />
-      <workItem from="1783710961556" duration="6704000" />
-      <workItem from="1783751146605" duration="24000" />
-      <workItem from="1783865413434" duration="10624000" />
-      <workItem from="1783919393466" duration="19686000" />
-      <workItem from="1784009634330" duration="4091000" />
+      <updated>1783309577343</updated>
     </task>
-    <task id="LOCAL-00001" summary="added projectile">
-      <option name="closed" value="true" />
-      <created>1781501991608</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1781501991608</updated>
-    </task>
-    <task id="LOCAL-00002" summary="login and register menu">
-      <option name="closed" value="true" />
-      <created>1781627738395</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1781627738396</updated>
-    </task>
-    <task id="LOCAL-00003" summary="settings profile news ... menues">
-      <option name="closed" value="true" />
-      <created>1781846796939</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1781846796940</updated>
-    </task>
-    <task id="LOCAL-00004" summary="projectile">
-      <option name="closed" value="true" />
-      <created>1781965449366</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1781965449366</updated>
-    </task>
-    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
-  <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="3" />
-  </component>
   <component name="Vcs.Log.Tabs.Properties">
-    <option name="OPEN_GENERIC_TABS">
-      <map>
-        <entry key="57262613-aaea-4fdc-871e-b38a2a72e292" value="TOOL_WINDOW" />
-      </map>
-    </option>
     <option name="TAB_STATES">
       <map>
-        <entry key="57262613-aaea-4fdc-871e-b38a2a72e292">
+        <entry key="MAIN">
           <value>
             <State />
           </value>
         </entry>
-        <entry key="MAIN">
-          <value>
-            <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="origin/detached" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
-            </State>
-          </value>
-        </entry>
       </map>
     </option>
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="added projectile" />
-    <MESSAGE value="login and register menu" />
-    <MESSAGE value="settings profile news ... menues" />
-    <MESSAGE value="projectile" />
-    <MESSAGE value="shop profile ... menus" />
-    <option name="LAST_COMMIT_MESSAGE" value="shop profile ... menus" />
   </component>
 </project>
