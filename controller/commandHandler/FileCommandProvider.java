@@ -95,6 +95,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("(?i)^menu\\s+cheat\\s+add\\s+(\\d+)\\s+(coin|diamond)$",new CheatAddCurrency(menuManager));
         registry.register("cheat reset users",new CheatClearUsers());
         registry.register("^\\/\\/cheat add -n (\\d+) suns$",new CheatAddSun(menuManager));
+        registry.register("cheat remove-cooldown",new CheatRemoveCooldown(menuManager));
     }
 }
 

@@ -142,7 +142,7 @@ public class CollectionMenu extends BaseMenu {
 
         currentUser.setCoins(currentUser.getCoins() - cost);
 
-        Plant newPlant = plantFactory.create(String.valueOf(plant.getId()));
+        Plant newPlant = plantFactory.create(String.valueOf(plant.getName()));
 
         unlockedPlants.add(newPlant);
         NewsManager.addNews("New Plant Unlocked","You unlocked: "+newPlant.getName());

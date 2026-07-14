@@ -53,7 +53,7 @@ public class Planting implements Command {
             return;
         }
 
-        if (template.getRechargeTime() > timeManager.getTotalTicks()) {
+        if (ctx.isOnCooldown(type)) {
             ConsoleView.showMessage("This plant is still recharging.");
             return;
         }
@@ -64,6 +64,7 @@ public class Planting implements Command {
             return;
         }
 
+        ctx.setCooldown(type, template.getRechargeTime());
         Plant newPlant = ctx.getPlantFactory().create(String.valueOf(template.getName()));
         tile.setPlant(newPlant);
         ctx.getPlantGrid()[x][y] = newPlant;
@@ -77,39 +78,10 @@ public class Planting implements Command {
             levelManager.onPlantSuccess(newPlant, ctx);
         }
 
+        ctx.setCooldown(type, template.getRechargeTime());
         ConsoleView.showMessage("Planted " + type + " at (" + x + ", " + y + ").");
     }
 
     //Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.
-    /*
-    public void handlePlantCommand(String plantName, int row, int col, GameContext ctx) throws Exception {
-    if (ctx.getLevel().getSpecialLevelType() == Level.SpecialLevelType.CONVEYOR_BELT) {
 
-        // ۱. پیدا کردن گیاه روی نوار نقاله
-        Plant plantToPlant = null;
-        for (Plant p : ctx.getConveyorBelt()) {
-            if (p.getName().equalsIgnoreCase(plantName)) {
-                plantToPlant = p;
-                break;
-            }
-        }
-
-        if (plantToPlant == null) {
-            throw new Exception("This plant is not available on the conveyor belt right now!");
-        }
-
-        // ۲. کاشت گیاه روی زمین بدون کم کردن خورشید
-        ctx.getPlantGrid()[row][col] = plantToPlant;
-        ctx.getActivePlants().add(plantToPlant);
-
-        // ۳. حذف کارت از روی نوار نقاله
-        ctx.getConveyorBelt().remove(plantToPlant);
-
-    } else {
-        // --- منطق مراحل معمولی بازی ---
-        // ۱. چک کردن موجودی خورشید (sunAmount)
-        // ۲. چک کردن کول‌داون کارت‌ها و در نهایت کاشت گیاه
-    }
-}
-     */
 }

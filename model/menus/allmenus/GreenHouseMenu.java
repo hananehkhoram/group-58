@@ -133,7 +133,7 @@ public class GreenHouseMenu extends BaseMenu {
         }
 
         int randomIndex = random.nextInt(validPlants.size());
-        String id = String.valueOf(validPlants.get(randomIndex).getId());
-        return plantFactory.create(id);
+        String name = String.valueOf(validPlants.get(randomIndex).getName());
+        return plantFactory.create(name);
     }
 }

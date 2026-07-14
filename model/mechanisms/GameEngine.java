@@ -33,6 +33,9 @@ public class GameEngine {
         if (ctx.isGameEnded()) return;
 
 //        ctx.getTimeManager().advanceTime(1);
+        if (ctx.getLevelManager() != null) {
+            ctx.getLevelManager().onUpdate(deltaTime, ctx);
+        }
         ctx.getSunManager().update();
         updateWave(deltaTime);
         updateZombies(deltaTime);

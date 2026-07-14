@@ -17,17 +17,20 @@ public class ConveyorBeltManager implements LevelManager{
     private DataManager dm;
     private PlantFactory plantFactory;
 
+    public ConveyorBeltManager() {
+        this.plantFactory = new PlantFactory(DataManager.getInstance());
+    }
+
     @Override
     public void onLevelStart(GameContext context) {
-        // اولین گیاه در بدو ورود اسپان می‌شود
-        //spawnPlant(context);
+        spawnPlantOnConveyor(context);
     }
 
     @Override
     public void onUpdate(double deltaTime, GameContext context) {
         conveyorTimer += deltaTime;
         if (conveyorTimer >= CONVEYOR_INTERVAL) {
-            //spawnPlant(context);
+            spawnPlantOnConveyor(context);
             conveyorTimer = 0.0;
         }
     }
