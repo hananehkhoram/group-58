@@ -6,6 +6,7 @@ import model.level.Level;
 import model.plants.Plant;
 import model.plants.TargetingMode;
 import model.zombie.Zombie;
+import view.ConsoleView;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,6 +22,7 @@ public class GameEngine {
     public GameEngine(GameContext ctx) {
         this.ctx = ctx;
         this.tiles = buildTiles(ctx);
+        this.lawnMowers = buildLawnMowers();
     }
 
     public GameContext getCtx() {
@@ -30,10 +32,11 @@ public class GameEngine {
     public void update(double deltaTime) {
         if (ctx.isGameEnded()) return;
 
-        ctx.getTimeManager().advanceTime(1);
+//        ctx.getTimeManager().advanceTime(1);
         ctx.getSunManager().update();
         updateWave(deltaTime);
         updateZombies(deltaTime);
+        updateLawnMowers(deltaTime);
         updatePlants(deltaTime);
         updateProjectiles(deltaTime);
         checkZombiePlantCollisions();
@@ -70,8 +73,14 @@ public class GameEngine {
             z.update(ctx, deltaTime);
 
             if (z.getX() <= LOSS_X) {
-                ctx.triggerPlayerLoss();
-                return;
+                LawnMower mower = lawnMowers[(int) z.getY()];
+                if (!mower.isAvailable()) {
+                    ctx.triggerPlayerLoss();
+                    return;
+                }
+                if (!mower.isActivated()) {
+                    mower.activate();
+                }
             }
             if (z.isDead()) {
                 it.remove();
@@ -80,12 +89,29 @@ public class GameEngine {
         }
     }
 
+
+    private void updateLawnMowers(double deltaTime) {
+        for (LawnMower l : lawnMowers) {
+            if (!l.isActivated() || !l.isAvailable()) continue;
+
+            for (Zombie z : getRowZombies(l.getRow())) {
+                l.trigger(z);
+            }
+            l.advance(deltaTime);
+
+            if (l.isDidKilled()) {
+                ctx.incrementZombieKills();
+                l.setDidKilled(false);
+            }
+        }
+    }
+
     public boolean addZombie(Zombie z, int row) {
-        if (row < 0 || row >= ctx.getLevel().getRows()) {
+        if (row < 0 || row >= Level.ROWS) {
             return false;
         }
-        z.setX(ctx.getLevel().getColumns() - 1 + ZOMBIE_SPAWN_X_OFFSET);
-        z.setY(ctx.getLevel().getRows() - 1 + row);
+        z.setX(Level.COLS - 1 + ZOMBIE_SPAWN_X_OFFSET);
+        z.setY(row);
         ctx.getAliveZombies().add(z);
         return true;
     }
@@ -105,17 +131,16 @@ public class GameEngine {
             if (p.getHp() <= 0) {
                 ctx.getPlantGrid()[p.getRow()][p.getCol()] = null;
                 it.remove();
-                ctx.incrementWaveIndex();
+                ctx.incrementPlantsLost();
             }
         }
     }
 
     public boolean canPlacePlant(Plant p, int row, int col) {
-        Level level = ctx.getLevel();
-        if (row < 0 || row >= level.getRows()) {
+        if (row < 0 || row >= Level.ROWS) {
             return false;
         }
-        if (col < 0 || col >= level.getColumns()) {
+        if (col < 0 || col >= Level.COLS) {
             return false;
         }
         return ctx.getPlantGrid()[row][col] == null;
@@ -156,8 +181,8 @@ public class GameEngine {
             int col = (int) z.getX();
             int row = (int) z.getY();
 
-            if (col < 0 || col >= ctx.getLevel().getRows()
-                    || row < 0 || row >= ctx.getLevel().getColumns()) {
+            if (row < 0 || row >= Level.ROWS
+                    || col < 0 || col >= Level.COLS) {
                 z.setEating(false);
                 continue;
             }
@@ -202,40 +227,27 @@ public class GameEngine {
         return targets;
     }
 
-    public void triggerLawnMower(int row) {
-        final boolean[] didLawnMoved = {false};
-        final List <Zombie> deadZombies = new  ArrayList<>();
-        ctx.getAliveZombies().removeIf(z -> {
-            if ((int) z.getY() == row) {
-                ctx.incrementZombieKills();
-                deadZombies.add(z);
-                didLawnMoved[0] = true;
-                return true;
-            }
-            return false;
-        });
-        if (didLawnMoved[0]) {
-            // print "the lawn mower in ..."
-        }
-    }
-
     private Tile[][] buildTiles(GameContext ctx) {
-        int rows = ctx.getLevel().getRows();
-        int cols = ctx.getLevel().getColumns();
-        Tile[][] grid = new Tile[rows][cols];
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
+        Tile[][] grid = new Tile[Level.ROWS][Level.COLS];
+        for (int r = 0; r < Level.ROWS; r++) {
+            for (int c = 0; c < Level.COLS; c++) {
                 grid[r][c] = new Tile(r, c, ctx);
             }
         }
         return grid;
     }
 
+    private LawnMower[] buildLawnMowers() {
+        LawnMower[] mowers = new LawnMower[Level.ROWS];
+        for (int r = 0; r < Level.ROWS; r++) {
+            mowers[r] = new LawnMower(r);
+        }
+        return mowers;
+    }
 
     public Tile getTiles(int x, int y) {
         return null;
     }
-    
 
     public Zombie[] getRowsZombies(int row) {
         return null;
