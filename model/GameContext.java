@@ -101,6 +101,23 @@ public class GameContext {
         return 0;
     }
 
+    public Plant findNearestPlantInRow(Zombie zombie, GameContext ctx) {
+        int row = zombie.getRow();
+        Plant nearest = null;
+        double minDist = Double.MAX_VALUE;
+
+        for (Plant p : ctx.getPlantGrid()[row]) {
+            if (p == null || p.isDead()) continue;
+            double dist = Math.abs(zombie.getX() - p.getCol());
+            if (dist < minDist) {
+                minDist = dist;
+                nearest = p;
+            }
+        }
+
+        return nearest;
+    }
+
     public void addSun(int amount) {
         if (amount > 0) {
             this.sunAmount += amount;
