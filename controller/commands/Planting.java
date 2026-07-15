@@ -84,4 +84,5 @@ public class Planting implements Command {
 
     //Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.
 
+    //plant plant -t <type> -l (<x>, <y>)
 }

@@ -6,10 +6,12 @@ import model.level.Level;
 import model.plants.Plant;
 import model.plants.TargetingMode;
 import model.zombie.Zombie;
+import model.zombie.behavior.Behaviors;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 public class GameEngine {
     private static final double ZOMBIE_SPAWN_X_OFFSET = 1.0;
@@ -17,6 +19,7 @@ public class GameEngine {
     private final GameContext ctx;
     private Tile[][] tiles;
     private LawnMower[] lawnMowers;
+    private final Random random = new Random();
 
     public GameEngine(GameContext ctx) {
         this.ctx = ctx;
@@ -96,6 +99,9 @@ public class GameEngine {
                 }
             }
             if (z.isDead()) {
+                for (Behaviors b : z.getBehaviors().values()) {
+                    b.onDeath(z, ctx);
+                }
                 it.remove();
                 ctx.incrementZombieKills();
             }
@@ -175,6 +181,14 @@ public class GameEngine {
                 continue;
             }
 
+            int totalRows = ctx.getPlantGrid().length;
+            int totalCols = ctx.getPlantGrid()[0].length;
+            if (p.getRow() < 0 || p.getRow() >= totalRows || p.getX() < -1 || p.getX() > totalCols) {
+                p.deactivate();
+                it.remove();
+                continue;
+            }
+
             if (p.isFromZombie()) {
                 Plant target = ctx.getPlantGrid()[p.getRow()][(int) p.getX()];
                 if (target != null && !target.isDead()) {
@@ -225,22 +239,49 @@ public class GameEngine {
     }
 
     public List<Zombie> findTargets(int row, int col, TargetingMode mode) {
-        List<Zombie> targets = new ArrayList<>();
+        List<Zombie> sameRow = new ArrayList<>();
         for (Zombie z : ctx.getAliveZombies()) {
-            if ((int) z.getY() == row) targets.add(z);
+            if ((int) z.getY() == row) sameRow.add(z);
         }
+
         switch (mode) {
             case FIRST_IN_LANE -> {
-                targets.sort((a, b) -> Double.compare(a.getX(), b.getX()));
-                return targets.isEmpty() ? targets : targets.subList(0, 1);
+                sameRow.sort((a, b) -> Double.compare(a.getX(), b.getX()));
+                return sameRow.isEmpty() ? sameRow : sameRow.subList(0, 1);
             }
             case ALL_IN_ROW -> {
+                return sameRow;
+            }
+            case NEAREST -> {
+                // برخلاف FIRST_IN_LANE، اینجا محدود به سطر خودِ گیاه نیست — نزدیک‌ترین زامبی در کل صفحه
+                List<Zombie> result = new ArrayList<>();
+                Zombie nearest = null;
+                double bestDist = Double.MAX_VALUE;
+                for (Zombie z : ctx.getAliveZombies()) {
+                    double dRow = z.getY() - row;
+                    double dCol = z.getX() - col;
+                    double dist = Math.hypot(dRow, dCol);
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        nearest = z;
+                    }
+                }
+                if (nearest != null) result.add(nearest);
+                return result;
+            }
+            case RANDOM -> {
+                // یک زامبی تصادفی از کل صفحه (نه فقط همون سطر)
+                List<Zombie> all = ctx.getAliveZombies();
+                List<Zombie> result = new ArrayList<>();
+                if (!all.isEmpty()) {
+                    result.add(all.get(random.nextInt(all.size())));
+                }
+                return result;
             }
             default -> {
-                return targets;
+                return sameRow;
             }
         }
-        return targets;
     }
 
     private Tile[][] buildTiles(GameContext ctx) {

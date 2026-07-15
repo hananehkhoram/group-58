@@ -102,4 +102,12 @@ public class MenuManager {
         return ctx;
     }
 
+    public void setCtx(GameContext ctx) {
+        this.ctx = ctx;
+    }
+
+    public  void setGameEngine(GameEngine gameEngine) {
+        this.gameEngine = gameEngine;
+    }
+
 }

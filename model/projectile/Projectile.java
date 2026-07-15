@@ -14,11 +14,26 @@ public class Projectile {
     protected final TrajectoryType trajectory;
     protected final boolean isFromZombie;
 
+    private final double dirX;
+    private final double dirY;
+
     private Damageable homingTarget;                 // فقط برای HOMING
     private final Set<Damageable> alreadyHit = new HashSet<>(); // فقط برای PIERCING
 
     public Projectile(int damage, double x, double y, int row, double speed,
                       BulletType bulletType, TrajectoryType trajectory, boolean isFromZombie) {
+        this(damage, x, y, row, speed, bulletType, trajectory, isFromZombie,
+                isFromZombie ? -1.0 : 1.0, 0.0);
+    }
+
+    /**
+     * برای شلیک‌های مورب/رو-به-عقب (QUAD_DIAGONAL, FRONT_AND_BACK, STAR_BURST) که جهت واقعی‌شون
+     * با پیش‌فرض ساده‌ی isFromZombie (فقط جلو/عقب در همون row) فرق می‌کنه.
+     * dirX/dirY باید یک بردار یکه (unit vector) باشن.
+     */
+    public Projectile(int damage, double x, double y, int row, double speed,
+                      BulletType bulletType, TrajectoryType trajectory, boolean isFromZombie,
+                      double dirX, double dirY) {
         this.damage = damage;
         this.x = x;
         this.y = y;
@@ -28,12 +43,12 @@ public class Projectile {
         this.bulletType = bulletType;
         this.trajectory = trajectory;
         this.isFromZombie = isFromZombie;
+        this.dirX = dirX;
+        this.dirY = dirY;
     }
 
     public void update(double time) {
         if (!isActive) return;
-
-        double direction = isFromZombie ? -1 : 1;
 
         switch (trajectory) {
             case HOMING:
@@ -41,14 +56,25 @@ public class Projectile {
                     isActive = false;
                     return;
                 }
-                x += direction * speed * time;
+                double toTargetX = homingTarget.getX() - x;
+                double toTargetY = homingTarget.getRow() - y;
+                double dist = Math.hypot(toTargetX, toTargetY);
+                if (dist > 1e-6) {
+                    x += (toTargetX / dist) * speed * time;
+                    y += (toTargetY / dist) * speed * time;
+                    row = (int) Math.round(y);
+                }
                 break;
             case LOBBED:
             case STRAIGHT:
             case PIERCING:
             case BOWLING:
             default:
-                x += direction * speed * time;
+                x += dirX * speed * time;
+                if (dirY != 0) {
+                    y += dirY * speed * time;
+                    row = (int) Math.round(y);
+                }
                 break;
         }
     }
@@ -71,7 +97,7 @@ public class Projectile {
                 target.applySlowOrFreeze();
                 break;
             case ELECTRIC:
-                target.takeDamage(Integer.MAX_VALUE); // نابودی آنی
+                target.takeDamage(Integer.MAX_VALUE);
                 break;
             case IMMOBILIZE:
                 target.applySlowOrFreeze(); // یا متد جدا مثل target.immobilize() اگر رفتارش با ICE فرق دارد
@@ -94,6 +120,9 @@ public class Projectile {
     public void setHomingTarget(Damageable target) {
         this.homingTarget = target;
     }
+
+    /** برای وقتی که تیر (مثلاً یک شلیک مورب) از بالا/پایین صفحه خارج می‌شود */
+    public void deactivate() { this.isActive = false; }
 
     public double getX() { return x; }
     public int getRow() { return row; }

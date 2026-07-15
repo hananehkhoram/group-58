@@ -7,6 +7,7 @@ import model.plants.Plant;
 import model.settings.Settings;
 import model.zombie.Zombie;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class User {
@@ -30,7 +31,7 @@ public class User {
 
 
     private Plant lastDailyOfferPlant;   // گیاه پیشنهاد روز گذشته
-    private long lastDailyOfferDate;      // تاریخ آخرین باری که پیشنهاد نمایش داده شد
+    private LocalDate lastDailyOfferDate;      // تاریخ آخرین باری که پیشنهاد نمایش داده شد
     private boolean boughtDailyOfferToday;
     private DailyOffer lastDailyOffer;
 
@@ -64,15 +65,16 @@ public class User {
         this.greenHouse = new GreenHouse();
         this.unlockedLevels = new ArrayList<>();
         this.unlockLevel("Ancient Egypt - Day 1");
-        this.unlockedLevels = new ArrayList<>();
         this.unlockedPlantTypes = new ArrayList<>();
         this.seenZombies = new ArrayList<>();
     }
 
     public User() {
+        this.coins = 0;
+        this.gems = 0;
+        this.greenHouse = new GreenHouse();
         this.unlockedLevels = new ArrayList<>();
         this.unlockLevel("Ancient Egypt - Day 1");
-        this.unlockedLevels = new ArrayList<>();
         this.unlockedPlantTypes = new ArrayList<>();
         this.seenZombies = new ArrayList<>();
     }
@@ -85,14 +87,15 @@ public class User {
         this.boughtDailyOfferToday = boughtDailyOfferToday;
     }
 
-    public long getLastDailyOfferDate() {
+    public LocalDate getLastDailyOfferDate() {
         return lastDailyOfferDate;
     }
 
-    public void setLastDailyOfferDate(long lastDailyOfferDate) {
+    public void setLastDailyOfferDate(LocalDate lastDailyOfferDate) {
         this.lastDailyOfferDate = lastDailyOfferDate;
     }
-    public void addSeedPackets(String plantType,int count){}
+
+    public void addSeedPackets(String plantType, int count){}
     public void getUnlockedPotCount(){}
 
     public int getPlantFoodCount() {

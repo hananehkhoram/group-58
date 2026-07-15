@@ -80,8 +80,8 @@ public class Jumper implements Behaviors {
         this.landed = false;
     }
 
-    /** شروع پرش عمومی روی یک ستون هدف دلخواه (برای DODO و بعداً PROSPECTOR استفاده می‌شود) */
-    private void startJump(GameContext ctx, Zombie zombie, int targetCol, float flightSeconds, int apexValue) {
+    /** شروع پرش عمومی روی یک ستون هدف دلخواه؛ برای DODO داخلی و برای PROSPECTOR از بیرون (توسط LaserShooting) استفاده می‌شود */
+    public void startJump(GameContext ctx, Zombie zombie, int targetCol, float flightSeconds, int apexValue) {
         this.startColumn = zombie.getX();
         this.targetColumn = targetCol;
         this.timeToTravel = flightSeconds;
@@ -119,8 +119,7 @@ public class Jumper implements Behaviors {
             zombie.setX(targetColumn);
             landed = true;
             if (variant == JumpVariant.PROSPECTOR && reverseTheWay) {
-                // TODO: از این نقطه به بعد Prospector باید در جهت مخالف حرکت کند و بخورد؛
-                // این نیازمند یک فلگ در Zombie (مثل movingBackward) است که Zombie.update() آن را چک کند.
+                zombie.setMovingBackward(true); // از اینجا به بعد رو به عقب (سمت راست) می‌خورد
             }
         }
     }

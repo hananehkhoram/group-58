@@ -308,4 +308,16 @@ public class Plant implements Damageable {
     public int getHp() {
         return hp;
     }
+
+    /*
+    private Set<BehaviorKey> activeBehaviors = new HashSet<>();
+
+    public boolean hasBehavior(BehaviorKey key) {
+    return activeBehaviors.add(key);
+    }
+
+    public vid addBehavior(BehaviorKey key) {
+    this.activeBehaviors.add(key);
+    }
+     */
 }

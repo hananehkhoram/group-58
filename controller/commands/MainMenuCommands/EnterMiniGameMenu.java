@@ -41,6 +41,9 @@ public class EnterMiniGameMenu implements Command {
                     case 2:
                         WallnutBowlingGame wBGame = new WallnutBowlingGame();
                         wBGame.start();
+                        menuManager.setCtx(wBGame.getCtx());
+                        menuManager.setGameEngine(wBGame.getGameEngine());
+                        break;
 
                     case 3:
                         IzambiModel izambiModel = new IzambiModel();

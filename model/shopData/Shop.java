@@ -5,6 +5,7 @@ import model.plants.Plant;
 import model.user.User;
 import model.user.UserManager;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 
@@ -26,13 +27,21 @@ public class Shop{
 
     public DailyOffer getDailyOffer() {
         if (currentUser == null) return null;
+
+        LocalDate today = LocalDate.now();
+
+        if (currentUser.getLastDailyOfferDate() == null
+                || !today.equals(currentUser.getLastDailyOfferDate())) {
+
+            updateDailyOffer(currentUser);
+        }
+
         return currentUser.getLastDailyOffer();
     }
 
     public void updateDailyOffer(User currentUser){
-        //if one day has passed since last offer
         Plant randomPlant = getRandomUnlockedPlant(currentUser);
-        //currentUser.setLastDailyOfferDate();  today
+        currentUser.setLastDailyOfferDate(LocalDate.now());
         currentUser.setLastDailyOfferPlant(randomPlant);
         DailyOffer newOffer = new DailyOffer(randomPlant);
         currentUser.setLastDailyOffer(newOffer);
