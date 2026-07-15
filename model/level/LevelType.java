@@ -10,5 +10,6 @@ public enum LevelType {
     PLANT_WHAT_YOU_GET,
     SAVE_QUR_SEEDS,
     TIMED_WAR,
-    BOSS_FIGHT
+    BOSS_FIGHT,
+    Wallnuts_MG
 }

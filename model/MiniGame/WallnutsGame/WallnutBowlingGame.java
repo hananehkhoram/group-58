@@ -1,26 +1,29 @@
 package model.MiniGame.WallnutsGame;
 
+import controller.repository.factory.LevelFactory;
+import model.GameContext;
+import model.level.Level;
 import model.plants.Plant;
+import model.season.Season;
+import model.season.miniGameSeason.wallnutsSeason;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class WallnutBowlingGame {
+    private Level currentLevel;
 
-    protected int maxAllowedRow;
-    protected int maxAllowdColumn;
+    public void WallnutBowlingGame(){
+    }
 
-    List<Plant> bowlingPlants = new ArrayList<>();
+    public void start(){
 
-    public int getMaxAllowedRow(){return maxAllowedRow;}
-    public int getMaxAllowdColumn(){return maxAllowdColumn;}
+        List<Level> bowlingLevels = LevelFactory.buildWallnutsLevels();
+        Level firstLevel = bowlingLevels.get(0);
 
-    public void bowling(int row, int column) {
+        Season bowlingSeason = new wallnutsSeason(bowlingLevels);
+        GameContext ctx = new GameContext(firstLevel, bowlingSeason);
 
     }
 
-    public void startBowlingWallnutsMiniGame() {
-
-
-    }
 }

@@ -6,5 +6,8 @@ public class Vase {
     protected String plantJar;
     protected String zambiJar;
 
+    public void startMiniGame() {
+    }
+
 
 }

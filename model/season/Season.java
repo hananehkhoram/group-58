@@ -17,6 +17,9 @@ public abstract class Season {
         this.levels = levels;
     }
 
+    protected Season() {
+    }
+
     public boolean sunFallsFromSky() { return true; }
 
     public boolean iceEffectiveOnZombies() { return true; }

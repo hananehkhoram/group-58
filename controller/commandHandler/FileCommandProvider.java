@@ -8,6 +8,7 @@ import controller.commands.GreenHouseCommands.CollectCommand;
 import controller.commands.GreenHouseCommands.FasterGrow;
 import controller.commands.GreenHouseCommands.PlantPot;
 import controller.commands.GreenHouseCommands.ShowGreenHouse;
+import controller.commands.MainMenuCommands.EnterMiniGameMenu;
 import controller.commands.MechanismsCommands.CheatAddSun;
 import controller.commands.NewsMenuCommands.ShowAllNews;
 import controller.commands.NewsMenuCommands.ShowUnreadNews;
@@ -22,14 +23,17 @@ import controller.commands.SpecialLevelsCommands.PlantWhatYouGet;
 import controller.commands.status.ShowMap;
 import controller.commands.status.ShowPlantsStatus;
 import controller.commands.status.ShowTileStatus;
+import model.GameContext;
 
 
 public class FileCommandProvider implements controller.commandHandler.CommandProvider {
 
     private MenuManager menuManager;
+    private GameContext ctx;
 
-    public FileCommandProvider(MenuManager menuManager){
+    public FileCommandProvider(MenuManager menuManager, GameContext ctx) {
         this.menuManager = menuManager;
+        this.ctx = ctx;
     }
 
 
@@ -95,6 +99,8 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("(?i)^menu\\s+cheat\\s+add\\s+(\\d+)\\s+(coin|diamond)$",new CheatAddCurrency(menuManager));
         registry.register("cheat reset users",new CheatClearUsers());
         registry.register("^\\/\\/cheat add -n (\\d+) suns$",new CheatAddSun(menuManager));
+        registry.register("(?<enter>enter) minigame" , new EnterMiniGameMenu(menuManager, ctx));
+        registry.register("miniGame number (?<number> \\d)" , new EnterMiniGameMenu(menuManager, ctx));
     }
 }
 

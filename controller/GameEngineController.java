@@ -15,14 +15,16 @@ public class GameEngineController {
     private boolean isRunning;
     private MenuManager mm;
     private DataManager dm;
+    private GameContext gameContext;
 
     public GameEngineController() {
         this.mm = new MenuManager(null);
         this.dm = DataManager.getInstance();
+        this.gameContext = null;
         UserManager.getInstance().loadFromFile();
         this.registry = new controller.commandHandler.CommandRegistry();
         controller.commandHandler.FileCommandProvider provider =
-                new controller.commandHandler.FileCommandProvider(this.mm);
+                new controller.commandHandler.FileCommandProvider(this.mm, this.gameContext);
         provider.registerCommands(this.registry);
     }
 

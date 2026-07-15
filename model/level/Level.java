@@ -48,7 +48,9 @@ public class Level {
         this.levelType = levelType;
         this.season = season;
         this.bannedPlants = bannedPlants;
-        this.conveyorPlantPool = conveyorPlantPool;
+        if (conveyorPlantPool != null) {
+            this.conveyorPlantPool.addAll(conveyorPlantPool);
+        }
         this.forcedPlants = forcedPlants;
         this.saveOurSeedsPlants = saveOurSeedsPlants;
     }

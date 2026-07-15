@@ -151,16 +151,14 @@ public class Explosive implements BaseAbility {
     }
 
 
-    public void waterExplosion(Plant plant, GameContext ctx) { }
-    public void ice(Plant plant, GameContext ctx) {  }
-    public void forIcedCave(Plant plant, GameContext ctx) { }
-    public void forEgyptAndDarkEra(Plant plant, GameContext ctx) {  }
+    public void waterExplosion(Plant plant, GameContext ctx) {}
+    public void ice(Plant plant, GameContext ctx) {}
+    public void forIcedCave(Plant plant, GameContext ctx) {}
+    public void forEgyptAndDarkEra(Plant plant, GameContext ctx) {}
 
     @Override
-    public void activate(Plant self, GameContext ctx) {
-    }
+    public void activate(Plant self, GameContext ctx) {}
 
     @Override
-    public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
-    }
+    public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {}
 }
