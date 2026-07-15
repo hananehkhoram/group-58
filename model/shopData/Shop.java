@@ -37,7 +37,7 @@ public class Shop{
         DailyOffer newOffer = new DailyOffer(randomPlant);
         currentUser.setLastDailyOffer(newOffer);
 
-        um.saveToFile();
+//        um.saveToFile();
         DataManager.getInstance().saveUser();
     }
 

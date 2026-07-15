@@ -22,8 +22,8 @@ public class LoginMenu extends BaseMenu {
     }
 
     public String login (String username,  String password,String stayLoggedIn){
-        if (um.doesUserExist(username)) return "User does not exist!";
-        if (um.isPasswordCorrect(password,username)) return "Incorrect password.";
+        if (!um.doesUserExist(username)) return "User does not exist!";
+        if (!um.isPasswordCorrect(password,username)) return "Incorrect password.";
 
         User user = um.findUserByName(username);
 

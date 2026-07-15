@@ -4,11 +4,10 @@ import controller.NewsManager;
 import controller.SpecialLevelManager.*;
 import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
-import model.Projectile.Projectile;
+import model.projectile.Projectile;
 import model.level.Level;
 import model.mechanisms.SunManager;
 import model.plants.Plant;
-import model.plants.TargetingMode;
 import model.season.Grave;
 import model.season.Season;
 import model.user.UserManager;
@@ -114,7 +113,7 @@ public class GameContext {
     public void triggerPlayerWin() {
         this.gameEnded = true;
         this.playerWon = true;
-        UserManager.getInstance().saveToFile();
+//        UserManager.getInstance().saveToFile();
         DataManager.getInstance().saveUser();
         ConsoleView.showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
     }
@@ -122,7 +121,7 @@ public class GameContext {
     public void triggerPlayerLoss() {
         this.gameEnded = true;
         this.playerWon = false;
-        UserManager.getInstance().saveToFile();
+//        UserManager.getInstance().saveToFile();
         DataManager.getInstance().saveUser();
         ConsoleView.showMessage("The zombie ate your brain; LOSER!!!");
     }

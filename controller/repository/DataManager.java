@@ -1,5 +1,11 @@
 package controller.repository;
 
+import model.user.User;
+import model.user.UserManager;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class DataManager {
     private static DataManager instance;
     public PlantRepository plants = new PlantRepository(); //
@@ -21,11 +27,18 @@ public class DataManager {
         return instance;
     }
     public void loadUser(){
+
         users.load(userPath);
+        List<User> loadedUsers = new ArrayList<>(users.getUserMap().values());
+        UserManager.getInstance().updateUsers(loadedUsers);
     }
     public void saveUser(){
-        users.save();
-    }
+        users.getUserMap().clear();
+        for (User u : UserManager.getInstance().users) {
+            users.getUserMap().put(u.getUsername(), u);
+        }
+
+        users.save();    }
 
     public void initialize(){
         plants.load("Files/plants.csv");

@@ -1,12 +1,11 @@
 package model.mechanisms;
 
 import model.GameContext;
-import model.Projectile.Projectile;
+import model.projectile.Projectile;
 import model.level.Level;
 import model.plants.Plant;
 import model.plants.TargetingMode;
 import model.zombie.Zombie;
-import view.ConsoleView;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -168,17 +167,23 @@ public class GameEngine {
                 continue;
             }
 
-            for (Zombie z : ctx.getAliveZombies()) {
-                if (z.getY() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.5) {
-                    p.onHit(z);
-                    z.takeDamage(p.getDamage());
-                    it.remove();
-                    break;
+            if (p.isFromZombie()) {
+                Plant target = ctx.getPlantGrid()[p.getRow()][(int) p.getX()];
+                if (target != null && !target.isDead()) {
+                    p.onHit(target);
+                    if (!p.isActive()) it.remove();
+                }
+            } else {
+                for (Zombie z : ctx.getAliveZombies()) {
+                    if (z.getRow() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.5) {
+                        p.onHit(z);
+                        if (!p.isActive()) it.remove();
+                        break;
+                    }
                 }
             }
         }
     }
-
     private void checkZombiePlantCollisions() {
         for (Zombie z : ctx.getAliveZombies()) {
             int col = (int) z.getX();

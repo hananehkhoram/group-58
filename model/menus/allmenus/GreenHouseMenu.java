@@ -63,7 +63,7 @@ public class GreenHouseMenu extends BaseMenu {
         }
         else pot.setRemainingPlantedTime(8);
         pot.plant(plant);
-        um.saveToFile();
+//        um.saveToFile();
         DataManager.getInstance().saveUser();
         return "Pot successfully planted.";
     }
@@ -91,7 +91,7 @@ public class GreenHouseMenu extends BaseMenu {
                 result = ("Harvested " + plantName + "! A stored boost has been activated for your next match.");
             }
         }
-        um.saveToFile();
+//        um.saveToFile();
         DataManager.getInstance().saveUser();
         pot.setEmpty(true);
         pot.setPlantType(null);
@@ -111,7 +111,7 @@ public class GreenHouseMenu extends BaseMenu {
         int gemsNeeded = (int) Math.ceil(remainingHours);
 
         pot.setPlantReady(true);
-        um.saveToFile();
+//        um.saveToFile();
         DataManager.getInstance().saveUser();
 
         return "Successfully accelerated growth! Gained a fully grown " + pot.getPlantType().getName() + " for " +
