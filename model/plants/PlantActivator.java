@@ -82,6 +82,9 @@ public final class PlantActivator {
 
         } else if (ability instanceof WallNut wallNut) {
             WallNutType wallNutType = WallNutType.valueOf(p.get("wallNutType"));
+            String damageString = p.get("Damage");
+            int damage = Integer.parseInt(p.get("damage"));
+            wallNut.triggerAbility(wallNutType, damage, plant, engine);
             wallNut.wall(wallNutType, plant, ctx);
 
         } else if (ability instanceof SunProducers sunProducers) {
