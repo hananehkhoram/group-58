@@ -27,6 +27,7 @@ public class Login implements Command {
             ConsoleView.showMessage("%s\n",result);
             if (result.startsWith("Logged in")) {
                 menuManager.forceChangeMenu("mainmenu");
+                ConsoleView.showMessage("You are now in Main menu.\n");
             }
 
         }

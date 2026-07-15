@@ -23,6 +23,11 @@ public class User {
     private Settings settings;
     private boolean stayedLogin;
 
+    private Set<String> completedQuestIds = new HashSet<>();
+    private int dailyQuestsCompletedCount = 0;
+    private int otherQuestsCompletedCount = 0;
+    private int minigamesCompleted = 0;
+
 
     private Plant lastDailyOfferPlant;   // گیاه پیشنهاد روز گذشته
     private long lastDailyOfferDate;      // تاریخ آخرین باری که پیشنهاد نمایش داده شد
@@ -313,5 +318,33 @@ public class User {
     public Map<String, Boolean> getStoredBoosts() {
         return storedBoosts;
     }
+
+    public void setLastLevel(int lastLevel) {
+        this.lastLevel = lastLevel;
+    }
+
+    public void setLastSeason(int lastSeason) {
+        this.lastSeason = lastSeason;
+    }
+    public Set<String> getCompletedQuestIds() { return completedQuestIds; }
+    public void setCompletedQuestIds(Set<String> completedQuestIds) { this.completedQuestIds = completedQuestIds; }
+
+    public boolean isQuestCompleted(String questId) { return completedQuestIds.contains(questId); }
+    public void completeQuest(String questId, boolean isDaily) {
+        if (completedQuestIds.add(questId)) {
+            if (isDaily) dailyQuestsCompletedCount++;
+            else otherQuestsCompletedCount++;
+        }
+    }
+
+    public int getDailyQuestsCompletedCount() { return dailyQuestsCompletedCount; }
+    public void setDailyQuestsCompletedCount(int n) { this.dailyQuestsCompletedCount = n; }
+
+    public int getOtherQuestsCompletedCount() { return otherQuestsCompletedCount; }
+    public void setOtherQuestsCompletedCount(int n) { this.otherQuestsCompletedCount = n; }
+
+    public int getMinigamesCompleted() { return minigamesCompleted; }
+    public void setMinigamesCompleted(int n) { this.minigamesCompleted = n; }
+    public void incrementMinigamesCompleted() { minigamesCompleted++; }
 }
 

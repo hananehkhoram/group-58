@@ -21,7 +21,7 @@ public class FrozenCaveChapter extends Season {
     private int[][] sliders;
 
     public FrozenCaveChapter(List<Level> levels) {
-        super("FrozenCave", levels);
+        super("FrozenCave", levels,2);
         this.dm = DataManager.getInstance();
         this.zombieFactory = new ZombieFactory(dm);
     }

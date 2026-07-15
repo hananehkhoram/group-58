@@ -10,11 +10,13 @@ import java.util.Set;
 
 public abstract class Season {
     protected String name;
+    protected int chapterNumber;
     protected List<Level> levels; // normal, special, special, boss
 
-    public Season(String name, List<Level> levels) {
+    public Season(String name, List<Level> levels,int chapterNumber) {
         this.name = name;
         this.levels = levels;
+        this.chapterNumber = chapterNumber;
     }
 
     public boolean sunFallsFromSky() { return true; }
@@ -39,4 +41,8 @@ public abstract class Season {
 
     public String getName() { return name; }
     public List<Level> getLevels() { return levels; }
+
+    public int getChapterNumber() {
+        return chapterNumber;
+    }
 }

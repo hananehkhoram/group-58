@@ -10,6 +10,7 @@ import model.plants.Plant;
 import model.projectile.Projectile;
 import model.season.Grave;
 import model.season.Season;
+import model.user.User;
 import model.user.UserManager;
 import model.zombie.Zombie;
 import view.ConsoleView;
@@ -139,6 +140,26 @@ public class GameContext {
     public void triggerPlayerWin() {
         this.gameEnded = true;
         this.playerWon = true;
+        User currentUser = UserManager.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            List<Level> levelsInSeason = this.season.getLevels();
+            int levelIndex = levelsInSeason.indexOf(this.level);
+
+            currentUser.setLastLevel(levelIndex + 1);
+            currentUser.setLastSeason(DataManager.getInstance().seasons.getChapterNumber(this.season));
+            currentUser.setNumberOfPassedLevels(currentUser.getNumberOfPassedLevels() + 1);
+
+            if (levelIndex + 1 < levelsInSeason.size()) {
+                currentUser.unlockLevel(levelsInSeason.get(levelIndex + 1).getName());
+            }
+            else {
+                Season nextSeason = DataManager.getInstance().seasons.getNextSeason(this.season);
+                if (nextSeason != null && !nextSeason.getLevels().isEmpty()) {
+                    currentUser.unlockLevel(nextSeason.getLevels().get(0).getName());
+                }
+                // اگه nextSeason == null یعنی این آخرین فصل (Dark Ages) بود و بازیکن کل adventure رو تموم کرده
+            }
+        }
 //        UserManager.getInstance().saveToFile();
         DataManager.getInstance().saveUser();
         ConsoleView.showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");

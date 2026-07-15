@@ -67,5 +67,5 @@ public class EnterChapter implements Command {
             }
         }
         return chapter.getLevels().get(chapter.getLevels().size() - 1);
-    }
+    }//menu enter chapter -c
 }

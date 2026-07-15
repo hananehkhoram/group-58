@@ -18,7 +18,7 @@ public class DarkAgesSeason extends Season{
         private boolean[][] necromancyCells;
 
         public DarkAgesSeason(List<Level> levels) {
-                super("Dark Ages", levels);
+                super("Dark Ages", levels,4);
                 this.dm = DataManager.getInstance();
                 this.zombieFactory = new ZombieFactory(dm);
         }

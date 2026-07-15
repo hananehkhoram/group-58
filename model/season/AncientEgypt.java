@@ -13,7 +13,7 @@ import java.util.Set;
 public class AncientEgypt extends Season{
     private final Random random = new Random();
     public AncientEgypt(List<Level> levels) {
-        super("Ancient Egypt", levels);
+        super("Ancient Egypt", levels,1);
     }
 
 

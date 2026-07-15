@@ -19,7 +19,7 @@ public class BigWaveBeachSeason extends Season{
         //private final int maxWaterLimitColumn;
 
         public BigWaveBeachSeason(List<Level> levels) {
-                super("Big Wave Beach", levels);
+                super("Big Wave Beach", levels,3);
         }
 
         @Override
