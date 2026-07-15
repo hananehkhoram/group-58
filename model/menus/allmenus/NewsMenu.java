@@ -1,6 +1,7 @@
 package model.menus.allmenus;
 
 import controller.NewsManager;
+import controller.repository.DataManager;
 import model.GameContext;
 import model.News.News;
 import model.menus.BaseMenu;
@@ -29,6 +30,7 @@ public class NewsMenu extends BaseMenu {
         int latestNewsId = NewsManager.getAllNews().size();
         user.setLastReadNewsId(latestNewsId);
         um.saveToFile();
+        DataManager.getInstance().saveUser();
         if (sb.isEmpty()) {
             return "No unread news available.";
         }
@@ -45,6 +47,7 @@ public class NewsMenu extends BaseMenu {
         int latestNewsId = NewsManager.getAllNews().size();
         user.setLastReadNewsId(latestNewsId);
         um.saveToFile();
+        DataManager.getInstance().saveUser();
         if (sb.isEmpty()) {
             return "No news available.";
         }

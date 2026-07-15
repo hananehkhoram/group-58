@@ -1,0 +1,28 @@
+﻿,EatDPS,Hitpoints,Speed,Wave Cost,Armor,ID,,Armor Type,Hitpoints,Metallic
+Default,100,190,0.185,100,,ZombieDefault,,Cone,370,no
+cone head,100,190,0.185,200,Cone,ZombieArmor1,,Bucket,1100,yes
+bucket head,100,190,0.185,400,Bucket,ZombieArmor2,,Brick,2200,no
+brick head,100,190,0.185,700,Brick,ZombieArmor4,,Shoulder Armor,1600,yes
+knight,100,190,0.185,550,Crown + Shoulder Armor,ZombieDarkArmor3,,Crown (knights helmet),1600,yes
+Gargantuar,1500,3600,0.23999999999999999,1500,-,ZombieGargantuar,,Newspaper,800,no
+Imp,100,190,0.22,100,-,ZombieImp,,,,
+Ra,100,190,0.20000000000000001,100,-,ZombieRa,,,,
+Explorer,100,250,0.25,250,-,ZombieExplorer,,,,
+Tomb raiser,100,380,0.185,300,-,ZombieTombRaiser,,,,
+Dodo,100,490,0.29999999999999999,600,-,ZombieIceAgeDodo,,,,
+Hunter,100,700,0.12,500,-,ZombieIceAgeHunter,,,,
+Troglobite,100,470,0.185,600,-,ZombieIceAgeTroglobite,,,,
+Fisherman,100,1000,0.185,700,-,ZombieBeachFisherman,,,,
+Octopus,100,910,0.12,900,-,ZombieBeachOctopus,,,,
+Snorkel,100,350,0.185,200,-,ZombieBeachSnorkel,,,,
+Juggler,100,420,0.20000000000000001,450,-,ZombieDarkJuggler,,,,
+Wizard,100,490,0.12,800,-,ZombieWizard,,,,
+King,100,1000,0,750,-,ZombieDarkKing,,,,
+Imp Dragon,100,190,0.185,150,-,ZombieDarkImpDragon,,,,
+Allstar,100,1100,0.16,1000,-,ZombieModernAllStar,,,,
+Arcade,100,490,0.19,600,-,ZombieArcade,,,,
+Umbrella,100,350,0.25,200,-,ZombieLostCityJane,,,,
+Turquoise,100,250,0.185,500,-,ZombieCrystalSkull,,,,
+Prospector,100,190,0.16,200,-,ZombieProspector,,,,
+Piano,4000,840,0.12,450,-,ZombiePiano,,,,
+News Paper,200,460,0.22,700,Newspaper,ZombieNewspaper

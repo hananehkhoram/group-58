@@ -1,10 +1,8 @@
 package model.user;
 
 
-import model.GameContext;
 import model.GreenHouseData.GreenHouse;
-import model.ShopData.DailyOffer;
-import model.level.Level;
+import model.shopData.DailyOffer;
 import model.plants.Plant;
 import model.settings.Settings;
 import model.zombie.Zombie;
@@ -23,6 +21,7 @@ public class User {
     protected int numberOfPassedLevels;
     protected int maxMewPoint;
     private Settings settings;
+    private boolean stayedLogin;
 
 
     private Plant lastDailyOfferPlant;   // گیاه پیشنهاد روز گذشته
@@ -179,6 +178,8 @@ public class User {
         return gems;
     }
 
+    public int getNumberOfPassedLevels (){return numberOfPassedLevels;}
+
     public int getMaxMewPoint() {
         return maxMewPoint;
     }
@@ -190,6 +191,8 @@ public class User {
     public List<Zombie> getSeenZombies() {
         return seenZombies;
     }
+
+    public void setNumberOfPassedLevels(int n) {this.numberOfPassedLevels = n;}
 
     public Plant getLastDailyOfferPlant() {
         return lastDailyOfferPlant;
@@ -265,6 +268,8 @@ public class User {
         }
     }
 
+    public void setMaxMewPoint(int maxMewPoint) {this.maxMewPoint = maxMewPoint;}
+
     public void setUnlockedPlantTypes(List<Plant> unlockedPlantTypes) {
         this.unlockedPlantTypes = unlockedPlantTypes;
     }
@@ -291,6 +296,14 @@ public class User {
 
     public void setSecurityAnswer(String securityAnswer) {
         this.securityAnswer = securityAnswer;
+    }
+
+    public boolean isStayedLogin() {
+        return stayedLogin;
+    }
+
+    public void setStayedLogin(boolean stayedLogin) {
+        this.stayedLogin = stayedLogin;
     }
 }
 

@@ -64,6 +64,7 @@ public class GreenHouseMenu extends BaseMenu {
         else pot.setRemainingPlantedTime(8);
         pot.plant(plant);
         um.saveToFile();
+        DataManager.getInstance().saveUser();
         return "Pot successfully planted.";
     }
     public String collectPlant(int x,int y){
@@ -91,6 +92,7 @@ public class GreenHouseMenu extends BaseMenu {
             }
         }
         um.saveToFile();
+        DataManager.getInstance().saveUser();
         pot.setEmpty(true);
         pot.setPlantType(null);
 
@@ -110,6 +112,7 @@ public class GreenHouseMenu extends BaseMenu {
 
         pot.setPlantReady(true);
         um.saveToFile();
+        DataManager.getInstance().saveUser();
 
         return "Successfully accelerated growth! Gained a fully grown " + pot.getPlantType().getName() + " for " +
                 gemsNeeded + " gems.";
@@ -133,7 +136,7 @@ public class GreenHouseMenu extends BaseMenu {
         }
 
         int randomIndex = random.nextInt(validPlants.size());
-        String id = String.valueOf(validPlants.get(randomIndex).getId());
-        return plantFactory.create(id);
+        String name = String.valueOf(validPlants.get(randomIndex).getName());
+        return plantFactory.create(name);
     }
 }

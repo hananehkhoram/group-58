@@ -42,6 +42,7 @@ public class GameContext {
     private TimeManager timeManager;
     private Map<String, Integer> producedSuns = new HashMap<>();
     private SunManager sunManager;
+    private final Map<String, Long> plantCooldowns = new HashMap<>();
 
     private int totalSunProducedInLevel = 0;
     private int totalLostPlants = 0;
@@ -64,6 +65,20 @@ public class GameContext {
         if (this.levelManager != null) this.levelManager.onLevelStart(this);
         this.timeManager = new TimeManager();
         this.sunManager = new SunManager(this.timeManager,level.getRows(),level.getColumns());
+    }
+
+    public boolean isOnCooldown(String plantName) {
+        long availableAt = plantCooldowns.getOrDefault(plantName, 0L);
+        return timeManager.getTotalTicks() < availableAt;
+    }
+
+    public void setCooldown(String plantName, double rechargeSeconds) {
+        long ticksFromNow = (long) (rechargeSeconds * 10);
+        plantCooldowns.put(plantName, timeManager.getTotalTicks() + ticksFromNow);
+    }
+
+    public void clearAllCooldowns() { // برای cheat remove-cooldown
+        plantCooldowns.clear();
     }
 
     // SUN
@@ -99,12 +114,16 @@ public class GameContext {
     public void triggerPlayerWin() {
         this.gameEnded = true;
         this.playerWon = true;
+        UserManager.getInstance().saveToFile();
+        DataManager.getInstance().saveUser();
         ConsoleView.showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
     }
 
     public void triggerPlayerLoss() {
         this.gameEnded = true;
         this.playerWon = false;
+        UserManager.getInstance().saveToFile();
+        DataManager.getInstance().saveUser();
         ConsoleView.showMessage("The zombie ate your brain; LOSER!!!");
     }
 
@@ -187,4 +206,5 @@ public class GameContext {
     public DataManager getDataManager()            { return dm; }
     public Season getSeason()                      { return season; }
     public SunManager getSunManager()              { return sunManager; }
+    public LevelManager getLevelManager()          { return levelManager; }
 }

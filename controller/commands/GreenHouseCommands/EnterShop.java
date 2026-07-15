@@ -2,7 +2,6 @@ package controller.commands.GreenHouseCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;
-import model.ShopData.Shop;
 
 public class EnterShop implements Command {
 

@@ -1,5 +1,6 @@
-package model.ShopData;
+package model.shopData;
 
+import controller.repository.DataManager;
 import model.plants.Plant;
 import model.user.User;
 import model.user.UserManager;
@@ -37,6 +38,7 @@ public class Shop{
         currentUser.setLastDailyOffer(newOffer);
 
         um.saveToFile();
+        DataManager.getInstance().saveUser();
     }
 
     private Plant getRandomUnlockedPlant(User currentUser) {

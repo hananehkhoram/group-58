@@ -70,7 +70,7 @@ public class PlantSelectionMenu extends BaseMenu {
         if (inUserPlant == null) return "Plant is not unlocked.";
         if (plantInCtx) return "Plant is already chosen.";
 
-        Plant newPlant = plantFactory.create(String.valueOf(inUserPlant.getId()));
+        Plant newPlant = plantFactory.create(String.valueOf(inUserPlant.getName()));
         ctx.getActivePlants().add(newPlant);
         return "Successfully added "+newPlant.getName()+"to your plants.";
     }

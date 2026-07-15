@@ -6,6 +6,9 @@ public class DataManager {
     public ZombieRepository zombies = new ZombieRepository();
     public UserRepository game = new UserRepository();
     public SeasonRepository seasons = new SeasonRepository();
+    public UserRepository users = new UserRepository();
+
+    private String userPath = "Files/users.dat";
 
     private DataManager(){
         instance = this;
@@ -17,10 +20,17 @@ public class DataManager {
         }
         return instance;
     }
+    public void loadUser(){
+        users.load(userPath);
+    }
+    public void saveUser(){
+        users.save();
+    }
+
     public void initialize(){
         plants.load("Files/plants.csv");
-//        zombies.load("pathtofile");
-//        game.load("pathtofile");
+        zombies.load("Files/zombies.csv");
+        users.load("Files/users.dat");
         seasons.load(null);
     }
 }

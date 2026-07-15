@@ -127,6 +127,7 @@ public class Zombie {
     public void setIced(boolean iced) { this.isIced = iced; }
     public void setIceHp(double iceHp) { this.iceHp = iceHp; }
     public void setEating(boolean eating) { this.isEating = eating; }
+    public void setBehaviors (Map <String, Behaviors> behaviors){this.behaviors = behaviors;}
 
     public String zombieInfo() {
         return String.format("[%s] \n   HP:%d \n    Armors:%s \n    Position:%f , %f \n     Effects:%s",
