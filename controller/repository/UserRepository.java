@@ -1,5 +1,6 @@
 package controller.repository;
 
+import model.GreenHouseData.Pot;
 import model.plants.Plant;
 import model.shopData.DailyOffer;
 import model.user.Gender;
@@ -68,8 +69,29 @@ public class UserRepository implements AssetRepository<User> {
         String levels = u.getUnlockedLevels() == null ? "" : String.join(LIST_SEP, u.getUnlockedLevels());
 
 
-        String dailyOffers = u.getLastDailyOffer() == null ? "" : u.getLastDailyOffer().getId() + LIST_SEP + u.getLastDailyOffer().getDate() + LIST_SEP + u.getLastDailyOffer().isPurchased();
+        String plantName = (u.getLastDailyOffer() != null && u.getLastDailyOffer().getPlantType() != null)
+                ? u.getLastDailyOffer().getPlantType().getName() : "";
+        String dailyOffers = u.getLastDailyOffer() == null ? "" :
+                u.getLastDailyOffer().getId() + LIST_SEP + u.getLastDailyOffer().getDate() + LIST_SEP
+                + u.getLastDailyOffer().isPurchased() + LIST_SEP + plantName + LIST_SEP + u.isBoughtDailyOfferToday();
         String dailyOfferId = u.getLastDailyOffer() == null ? "-1" : String.valueOf(u.getLastDailyOffer().getId());
+
+        String seedPackets = String.join(LIST_SEP,
+                u.getPlantSeedsInventory().entrySet().stream()
+                        .map(e -> e.getKey() + PLANT_SEP + e.getValue())
+                        .toList());
+        StringBuilder greenhouseSb = new StringBuilder();
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 4; j++) {
+                Pot pot = u.getGreenHouse().getPot(i, j);
+                greenhouseSb.append(pot.isLocked()).append(PLANT_SEP)
+                        .append(pot.isEmpty()).append(PLANT_SEP)
+                        .append(pot.getPlantType() == null ? "" : pot.getPlantType().getName()).append(PLANT_SEP)
+                        .append(pot.getRemainingPlantedTime()).append(PLANT_SEP)
+                        .append(pot.isPlantReady());
+                greenhouseSb.append(LIST_SEP);
+            }
+        }
 
         return String.join(FIELD_SEP,
                 u.getUsername(),
@@ -155,12 +177,37 @@ public class UserRepository implements AssetRepository<User> {
 
         if (!f[21].isBlank()) {
             String[] offerParts = f[21].split(LIST_SEP);
-            if (offerParts.length >= 3) {
-                int offerId = Integer.parseInt(offerParts[0]);
-                long date = Long.parseLong(offerParts[1]);
-                boolean isPurchased = Boolean.parseBoolean(offerParts[2]);
-                DailyOffer d = new DailyOffer(offerId, date, isPurchased);
-                u.setLastDailyOffer(d);
+            DailyOffer d = new DailyOffer(Integer.parseInt(offerParts[0]), Long.parseLong(offerParts[1]), Boolean.parseBoolean(offerParts[2]));
+            u.setLastDailyOffer(d);
+            if (offerParts.length > 3 && !offerParts[3].isBlank()) {
+                Plant p = DataManager.getInstance().plants.get(offerParts[3]);
+                u.setLastDailyOfferPlant(p);
+            }
+            if (offerParts.length > 4) {
+                u.setBoughtDailyOfferToday(Boolean.parseBoolean(offerParts[4]));
+            }
+        }
+        if (!f[22].isBlank()) {
+            for (String entry : f[22].split(LIST_SEP)) {
+                String[] parts = entry.split(PLANT_SEP, 2);
+                u.addSeedsToInventory(parts[0], Integer.parseInt(parts[1]));
+            }
+        }
+        if (!f[23].isBlank()) {
+            String[] potEntries = f[23].split(LIST_SEP);
+            int idx = 0;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 4; j++) {
+                    String[] parts = potEntries[idx++].split(PLANT_SEP, -1);
+                    Pot pot = u.getGreenHouse().getPot(i, j);
+                    pot.setLocked(Boolean.parseBoolean(parts[0]));
+                    pot.setEmpty(Boolean.parseBoolean(parts[1]));
+                    if (!parts[2].isBlank()) {
+                        pot.setPlantType(DataManager.getInstance().plants.get(parts[2]));
+                    }
+                    pot.setRemainingPlantedTime(Double.parseDouble(parts[3]));
+                    pot.setPlantReady(Boolean.parseBoolean(parts[4]));
+                }
             }
         }
         return u;

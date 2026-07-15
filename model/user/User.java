@@ -305,5 +305,13 @@ public class User {
     public void setStayedLogin(boolean stayedLogin) {
         this.stayedLogin = stayedLogin;
     }
+
+    public Map<String, Integer> getPlantSeedsInventory() {
+        return plantSeedsInventory;
+    }
+
+    public Map<String, Boolean> getStoredBoosts() {
+        return storedBoosts;
+    }
 }
 

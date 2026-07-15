@@ -16,38 +16,51 @@ public class EnterChapter implements Command {
 
     private MenuManager menuManager;
 
-
     public EnterChapter(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
 
     @Override
     public void execute(String[] args) {
-        String chapterName = args[0];
+        if (args == null || args.length == 0) {
+            ConsoleView.showMessage("Please enter a chapter name.");
+            return;
+        }
+
+        String chapterName = String.join(" ", args).trim();
+
+        Season chapter = DataManager.getInstance().seasons.get(chapterName);
+
+        if (chapter == null) {
+            ConsoleView.showMessage("Chapter not found: " + chapterName);
+            return;
+        }
 
         Menu currentMenu = menuManager.getCurrentMenu();
-        Season chapter = DataManager.getInstance().seasons.get(chapterName);
         Level levelToPlay = firstUnfinishedLevel(chapter, UserManager.getInstance().getCurrentUser());
-
 
         if (currentMenu instanceof GameMenu) {
             menuManager.startBattle(levelToPlay, chapter);
-
-
             menuManager.changeMenu("plantselectionmenu");
-            ConsoleView.showMessage("Entering %s. Choose your plants.",levelToPlay.getName());
+            ConsoleView.showMessage("Entering %s. Choose your plants.", levelToPlay.getName());
         }
-
     }
+
     private boolean isChapterUnlocked(Season chapter, User user) {
+        if (chapter == null || chapter.getLevels().isEmpty()) {
+            return false;
+        }
         Level firstLevel = chapter.getLevels().get(0);
-        if (firstLevel == chapter.getLevels().get(0)
-                && DataManager.getInstance().seasons.get("Ancient Egypt") == chapter) {
+        if (DataManager.getInstance().seasons.get("Ancient Egypt") == chapter) {
             return true;
         }
         return user.isLevelUnlocked(firstLevel.getName());
     }
+
     private Level firstUnfinishedLevel(Season chapter, User user) {
+        if (chapter == null || chapter.getLevels().isEmpty()) {
+            return null;
+        }
         for (Level lvl : chapter.getLevels()) {
             if (!user.isLevelUnlocked(lvl.getName())) {
                 return lvl;
@@ -55,6 +68,4 @@ public class EnterChapter implements Command {
         }
         return chapter.getLevels().get(chapter.getLevels().size() - 1);
     }
-
-    //menu enter chapter -c <chaptername>
 }

@@ -5,6 +5,7 @@ import model.projectile.Damageable;
 import model.season.Season;
 import model.zombie.behavior.Armor;
 import model.zombie.behavior.Behaviors;
+import model.zombie.behavior.Jumper;
 
 import java.util.List;
 import java.util.Map;
@@ -60,11 +61,18 @@ public class Zombie implements Damageable {
             armor.afterDestroy(this);
         }
 
-        if (!isEating) {
+        boolean airborne = getJumper() != null && !getJumper().isLanded();
+
+        if (!isEating && !airborne) {
             double effectiveSpeed = speed;
             if (isIced) effectiveSpeed *= 0.5;
             x -= effectiveSpeed * deltaTime;
         }
+    }
+
+    public Jumper getJumper() {
+        Behaviors b = behaviors.get("jumper");
+        return (b instanceof Jumper) ? (Jumper) b : null;
     }
 
     public void takeDamage(double damage) {

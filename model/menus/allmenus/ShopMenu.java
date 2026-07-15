@@ -1,6 +1,7 @@
 package model.menus.allmenus;
 
 import controller.repository.DataManager;
+import controller.repository.UserRepository;
 import model.GameContext;
 import model.GreenHouseData.GreenHouse;
 import model.shopData.Currency;
@@ -21,6 +22,7 @@ public class ShopMenu extends BaseMenu {
     private UserManager um;
     private Random random = new Random();
     private GreenHouse greenHouse;
+
 
     public ShopMenu(GameContext ctx) {
         super(ctx, MenuType.SHOP);
@@ -106,7 +108,6 @@ public class ShopMenu extends BaseMenu {
             }
             else if (item == ItemType.PLANT_FOOD) {
                 currentUser.setPlantFoodCount(currentUser.getPlantFoodCount() + count);
-//                um.saveToFile();
                 DataManager.getInstance().saveUser();
                 return "Successfully purchased " + count + " Plant Food(s)! Total: " + currentUser.getPlantFoodCount();
             }

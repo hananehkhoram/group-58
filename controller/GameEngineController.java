@@ -6,6 +6,7 @@ import model.TimeManager;
 import model.level.Level;
 import model.mechanisms.GameEngine;
 import model.season.Season;
+import model.user.User;
 import model.user.UserManager;
 import view.ConsoleView;
 
@@ -21,6 +22,13 @@ public class GameEngineController {
         this.mm = new MenuManager(null);
         this.dm = DataManager.getInstance();
         dm.loadUser();
+        for (User u : UserManager.getInstance().users) {
+            if (u.isStayedLogin()) {
+                UserManager.getInstance().login(u);
+                mm.forceChangeMenu("mainmenu");
+                break;
+            }
+        }
         this.registry = new controller.commandHandler.CommandRegistry();
         controller.commandHandler.FileCommandProvider provider =
                 new controller.commandHandler.FileCommandProvider(this.mm, gameContext);
