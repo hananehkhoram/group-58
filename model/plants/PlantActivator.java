@@ -74,10 +74,12 @@ public final class PlantActivator {
 
         } else if (ability instanceof MeleeAttackers melee) {
             String meleeKind = p.get("meleeKind");
+
             if ("INSTANT_EAT".equals(meleeKind)) {
-                melee.instantEat(0); // delay comes from a stat upgrade / game balance constant, not csv
+                melee.instantEat(plant, engine);
             } else {
-                melee.melee(plant.getRow(), plant.getCol());
+                int damage = Integer.parseInt(p.get("damage"));
+                melee.melee(meleeKind, damage, plant, engine);
             }
 
         } else if (ability instanceof WallNut wallNut) {
@@ -95,7 +97,7 @@ public final class PlantActivator {
 
         } else if (ability instanceof Modifier modifier) {
             ModifierType modifierType = ModifierType.valueOf(p.get("modifierType"));
-            modifier.modify(modifierType);
+            modifier.modify(modifierType, plant, engine);
 
         } else if (ability instanceof PlantFooder) {
             // No extra params: PlantFooder's whole job IS the plant-food effect,

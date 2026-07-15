@@ -13,5 +13,6 @@ public enum ModifierType {
     /** Copies another plant, allowing the same card to be used twice (Imitater). */
     COPY_PLANT,
     /** Provides a plantable surface on water tiles (Lily Pad). */
-    WATER_PLATFORM
+    WATER_PLATFORM,
+    FAMILY_BUFF
 }

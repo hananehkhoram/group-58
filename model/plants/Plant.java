@@ -65,6 +65,7 @@ public class Plant implements Damageable {
     }
 
     public void heal(int amount) {
+        this.hp += amount;
     }
 
     public void activatePlantFood(GameContext ctx) {
