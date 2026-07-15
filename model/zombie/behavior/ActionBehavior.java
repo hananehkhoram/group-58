@@ -1,5 +1,6 @@
 package model.zombie.behavior;
 
+import model.GameContext;
 import model.zombie.Zombie;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class ActionBehavior implements Behaviors {
     }
 
     @Override
-    public void onTick(Zombie zombie) {
+    public void onTick(Zombie zombie, GameContext ctx) {
         switch (actionType) {
             case PUSH_GRID_ITEM:     pushIceBlock(zombie);       break;
             case OCTOPUS_PROJECTILE: fireInkProjectile(zombie);  break;

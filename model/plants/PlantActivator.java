@@ -3,7 +3,7 @@ package model.plants;
 import model.GameContext;
 import model.mechanisms.GameEngine;
 import model.mechanisms.SunType;
-import model.plants.enums.BulletType;
+import model.projectile.BulletType;
 import model.plants.enums.ShootType;
 import model.plants.plantAbilities.*;
 import model.zombie.behavior.Damage;

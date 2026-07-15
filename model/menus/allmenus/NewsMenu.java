@@ -29,7 +29,7 @@ public class NewsMenu extends BaseMenu {
 
         int latestNewsId = NewsManager.getAllNews().size();
         user.setLastReadNewsId(latestNewsId);
-        um.saveToFile();
+//        um.saveToFile();
         DataManager.getInstance().saveUser();
         if (sb.isEmpty()) {
             return "No unread news available.";
@@ -46,7 +46,7 @@ public class NewsMenu extends BaseMenu {
 
         int latestNewsId = NewsManager.getAllNews().size();
         user.setLastReadNewsId(latestNewsId);
-        um.saveToFile();
+//        um.saveToFile();
         DataManager.getInstance().saveUser();
         if (sb.isEmpty()) {
             return "No news available.";

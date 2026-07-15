@@ -1,5 +1,6 @@
 package model.zombie.behavior;
 
+import model.GameContext;
 import model.zombie.Zombie;
 
 public class GetDamage implements Behaviors {
@@ -11,7 +12,7 @@ public class GetDamage implements Behaviors {
     }
 
     @Override
-    public void onTick(Zombie zombie) {}
+    public void onTick(Zombie zombie, GameContext ctx) {}
 
     @Override
     public void onHit(Zombie zombie, int damage) {}

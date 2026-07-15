@@ -1,5 +1,6 @@
 package model.zombie.behavior;
 
+import model.GameContext;
 import model.zombie.Zombie;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +28,7 @@ public class PianoCharge implements Behaviors {
     }
 
     @Override
-    public void onTick(Zombie zombie) {
+    public void onTick(Zombie zombie, GameContext ctx) {
         if (rolling) {
         }
     }

@@ -1,11 +1,10 @@
 package model.plants.plantAbilities;
 
 import model.GameContext;
-import model.Projectile.Projectile;
 import model.mechanisms.GameEngine;
 import model.plants.Plant;
 import model.plants.TargetingMode;
-import model.plants.enums.BulletType;
+import model.projectile.BulletType;
 import model.plants.enums.ShootType;
 import model.plants.plantFoodEffect.PlantFoodMode;
 import model.zombie.Zombie;
