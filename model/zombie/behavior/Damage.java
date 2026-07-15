@@ -1,5 +1,6 @@
 package model.zombie.behavior;
 
+import model.GameContext;
 import model.zombie.Zombie;
 
 import java.util.List;
@@ -8,7 +9,7 @@ public class Damage implements Behaviors{
     private List<TargetType> targetType;
     int distance;
     @Override
-    public void onTick(Zombie zombie) {
+    public void onTick(Zombie zombie, GameContext ctx) {
 
     }
 

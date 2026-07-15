@@ -1,5 +1,6 @@
 package model.zombie.behavior;
 
+import model.GameContext;
 import model.zombie.Zombie;
 
 public class SunThief implements Behaviors {
@@ -17,7 +18,7 @@ public class SunThief implements Behaviors {
     }
 
     @Override
-    public void onTick(Zombie zombie) {
+    public void onTick(Zombie zombie, GameContext ctx) {
         // steal sun currency from nearby suns on the ground
     }
 

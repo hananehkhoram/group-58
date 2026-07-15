@@ -148,7 +148,7 @@ public class CollectionMenu extends BaseMenu {
         NewsManager.addNews("New Plant Unlocked","You unlocked: "+newPlant.getName());
 
 
-        um.saveToFile();
+//        um.saveToFile();
         DataManager.getInstance().saveUser();
 
         return "Successfully purchased " + newPlant.getName() + "! It is now added to your collection.";

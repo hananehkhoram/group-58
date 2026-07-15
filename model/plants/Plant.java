@@ -5,12 +5,13 @@ import model.plants.plantAbilities.BaseAbility;
 import model.plants.plantFoodEffect.PlantFoodMode;
 import model.plants.upgradeEffect.BehaviorEffect;
 import model.plants.upgradeEffect.StatEffect;
+import model.projectile.Damageable;
 
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
-public class Plant {
+public class Plant implements Damageable {
     // from csv file
     private int id;
     private String name;
@@ -57,7 +58,10 @@ public class Plant {
     public void update(GameContext ctx) {
     }
 
+    @Override
     public void takeDamage(int amount) {
+        hp -= amount;
+        if (hp < 0) hp = 0;
     }
 
     public void heal(int amount) {
@@ -70,6 +74,33 @@ public class Plant {
     }
 
     public void upgrade() {
+    }
+
+    // --- Damageable ---
+
+    @Override
+    public double getX() {
+        return col;
+    }
+
+    @Override
+    public boolean isDead() {
+        return hp <= 0;
+    }
+
+    @Override
+    public void meltIce() {
+        if (isIced) {
+            damageIce(iceHp); // ذوب کامل؛ iceHp را صفر و isIced را false می‌کند
+        }
+        // توجه: مکانیزم "ذوب تدریجی ۶۰ سلامتی در ثانیه در مجاورت گیاه آتشین"
+        // (سند بخش ۴) یک اثر ناحیه‌ای/پیوسته است، نه برخورد یک‌باره‌ی تیر؛
+        // آن باید جدا در GameEngine روی گیاهان مجاور یک Torchwood/Fire tick بخورد.
+    }
+
+    @Override
+    public void applySlowOrFreeze() {
+        increaseFreezeLevel(); // بعد از سه بار فراخوانی خودش isIced=true, iceHp=600 می‌کند
     }
 
     // --- Getters / setters used by PlantLoader ---

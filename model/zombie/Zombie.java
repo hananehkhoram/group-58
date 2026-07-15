@@ -1,6 +1,7 @@
 package model.zombie;
 
 import model.GameContext;
+import model.projectile.Damageable;
 import model.season.Season;
 import model.zombie.behavior.Armor;
 import model.zombie.behavior.Behaviors;
@@ -8,7 +9,7 @@ import model.zombie.behavior.Behaviors;
 import java.util.List;
 import java.util.Map;
 
-public class Zombie {
+public class Zombie implements Damageable {
     private String id;
     private String name;
     private int hp;
@@ -51,7 +52,7 @@ public class Zombie {
         if (isDead()) return;
 
         for (Behaviors b : behaviors.values()) {
-            b.onTick(this);
+            b.onTick(this, ctx);
         }
 
         Armor armor = getArmor();
@@ -94,6 +95,42 @@ public class Zombie {
     }
 
     public boolean isDead() { return hp <= 0; }
+
+    // --- Damageable ---
+
+    @Override
+    public int getRow() {
+        return (int) y;
+    }
+
+    @Override
+    public void takeDamage(int amount) {
+        takeDamage((double) amount); // از منطق آرمور/یخ موجود استفاده می‌کند
+    }
+
+    @Override
+    public void takeArmorPiercingDamage(int amount) {
+        // برخلاف takeDamage عادی، از بلوک armor رد می‌شود و مستقیم به جان اصلی می‌زند
+        hp -= amount;
+    }
+
+    @Override
+    public void meltIce() {
+        if (isIced) {
+            iceHp = 0;
+            isIced = false;
+        }
+        // مکانیزم پیوسته‌ی ذوب (۶۰ سلامتی/ثانیه در مجاورت گیاه آتشین) اینجا نیست؛
+        // آن باید جدا در GameEngine روی زامبی‌های مجاور یک گیاه آتشین tick بخورد.
+    }
+
+    @Override
+    public void applySlowOrFreeze() {
+        if (!isIced) {
+            isIced = true;
+            iceHp = 300; // TODO: مقدار دقیق را طبق سند/csv تنظیم کنید
+        }
+    }
 
     // --- Getters / Setters ---
 

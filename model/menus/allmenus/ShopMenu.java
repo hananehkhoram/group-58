@@ -98,7 +98,7 @@ public class ShopMenu extends BaseMenu {
                 currentUser.setOwnedPotsCount(currentUser.getOwnedPotsCount() + count);
                 boolean result = greenHouse.unlockFirstLockedPot();
                 if (result) {
-                    um.saveToFile();
+//                    um.saveToFile();
                     DataManager.getInstance().saveUser();
                     return "Successfully unlocked " + count + " new pot(s) in your greenhouse!";
                 }
@@ -106,14 +106,14 @@ public class ShopMenu extends BaseMenu {
             }
             else if (item == ItemType.PLANT_FOOD) {
                 currentUser.setPlantFoodCount(currentUser.getPlantFoodCount() + count);
-                um.saveToFile();
+//                um.saveToFile();
                 DataManager.getInstance().saveUser();
                 return "Successfully purchased " + count + " Plant Food(s)! Total: " + currentUser.getPlantFoodCount();
             }
             else if (item == ItemType.CURRENCY_CONVERSION) {
                 int coinsGained = item.getAmount() * count;
                 currentUser.setCoins(currentUser.getCoins() + coinsGained);
-                um.saveToFile();
+//                um.saveToFile();
                 DataManager.getInstance().saveUser();
                 return "Successfully converted gems to " +coinsGained+ "cons.";
             }
@@ -122,7 +122,7 @@ public class ShopMenu extends BaseMenu {
                 if (plant == null) return "Purchase failed! You don't have any unlocked plants to receive seeds for.";
                  currentUser.addSeedsToInventory(plant.getName(),item.getAmount() * count);
 
-                um.saveToFile();
+//                um.saveToFile();
                 DataManager.getInstance().saveUser();
 
                 return "Successfully purchased " + count + "x " + item.getDisplayName() +
@@ -153,7 +153,7 @@ public class ShopMenu extends BaseMenu {
                 int totalSeedsGained = item.getAmount() * count;
                 currentUser.addSeedsToInventory(officialPlantName, totalSeedsGained);
 
-                um.saveToFile();
+//                um.saveToFile();
                 DataManager.getInstance().saveUser();
 
                 return "Successfully purchased " + count + "x " + item.getDisplayName() +
@@ -183,7 +183,7 @@ public class ShopMenu extends BaseMenu {
 
         offer.setPurchased(true);
 
-        um.saveToFile();
+//        um.saveToFile();
         DataManager.getInstance().saveUser();
         return "Successfully purchased today's special offer";
     }

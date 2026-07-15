@@ -43,6 +43,7 @@ public class UserRepository implements AssetRepository<User> {
         } catch (java.io.IOException e) {
             throw new RuntimeException("Could not load users from file", e);
         }
+
     }
 
     public void save() {
@@ -50,9 +51,6 @@ public class UserRepository implements AssetRepository<User> {
                 new java.io.FileWriter(PATH, java.nio.charset.StandardCharsets.UTF_8))) {
             for (User u : userMap.values()) {
                 writer.println(serializeUser(u));
-            }
-            for (User user : UserManager.getInstance().users){
-                writer.println(serializeUser(user));
             }
         } catch (java.io.IOException e) {
             throw new RuntimeException("Could not save users to file", e);

@@ -37,7 +37,7 @@ public class GameEngineController {
 
     public void stop() {
         isRunning = false;
-        UserManager.getInstance().saveToFile();
+//        UserManager.getInstance().saveToFile();
         DataManager.getInstance().saveUser();
         ConsoleView.simplePrint("Saving data and exiting game...\n");
     }

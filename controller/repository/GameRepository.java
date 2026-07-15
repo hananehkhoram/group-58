@@ -11,7 +11,7 @@ import java.util.Map;
 public class GameRepository {
     public void saveGame(GameContext ctx, String fileName) {
         //save the whole game
-        UserManager.getInstance().saveToFile();
+//        UserManager.getInstance().saveToFile();
         DataManager.getInstance().saveUser();
         // should be called in game loop/ game engine before exit
         //unnecessary
@@ -19,7 +19,7 @@ public class GameRepository {
 
     public Map<String ,User> getAvailableSaves() {
         //list all available games
-        UserManager.getInstance().loadFromFile();
+//        UserManager.getInstance().loadFromFile();
         DataManager.getInstance().loadUser();
 
         //unnecessary
