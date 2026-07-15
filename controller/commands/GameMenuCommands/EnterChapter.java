@@ -5,8 +5,10 @@ import controller.MenuManager;
 import controller.commandHandler.Command;
 import controller.repository.DataManager;
 import model.level.Level;
+import model.level.LevelType;
 import model.menus.Menu;
 import model.menus.allmenus.GameMenu;
+import model.season.Grave;
 import model.season.Season;
 import model.user.User;
 import model.user.UserManager;
@@ -41,6 +43,16 @@ public class EnterChapter implements Command {
 
         if (currentMenu instanceof GameMenu) {
             menuManager.startBattle(levelToPlay, chapter);
+            if (levelToPlay.getLevelType().equals(LevelType.CONVEYOR_BELT)){
+                menuManager.getCtx().getSeason().onLevelStart(menuManager.getCtx());
+
+                for (Grave g : menuManager.getCtx().getSeason().getInitialGraves(menuManager.getCtx().getLevel())) {
+                    menuManager.getCtx().placeGrave(g, g.getRow(), g.getCol());
+                }
+
+                ConsoleView.showMessage("Let's begin this level: %s\n" , menuManager.getCtx().getLevel().getName());
+                menuManager.forceChangeMenu("gamemenu");
+            }
             menuManager.changeMenu("plantselectionmenu");
             ConsoleView.showMessage("Entering %s. Choose your plants.", levelToPlay.getName());
         }

@@ -32,7 +32,8 @@ public class MenuExit implements Command {
                     ConsoleView.showMessage("You can't exit from here.");
                 } else {
                     menuManager.forceChangeMenu(target.name().toLowerCase() + "menu");
+                    ConsoleView.showMessage("You are now in %s menu.\n",target.name());
                 }
         }
-    }
+    }//menu exit
 }

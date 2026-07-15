@@ -29,7 +29,9 @@ public class LoginMenu extends BaseMenu {
 
         um.login(user);
         if (stayLoggedIn != null) {
-            //Stay logged in
+            user.setStayedLogin(true);
+        } else {
+            user.setStayedLogin(false);
         }
         return "Logged in successfully.";
     }

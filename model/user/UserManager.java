@@ -147,7 +147,6 @@ public class UserManager {//singelton
 
     public void login(User user) {
         this.currentUser = user;
-        user.setStayedLogin(true);
     }
 
     public void logOut() {
