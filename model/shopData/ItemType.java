@@ -1,4 +1,4 @@
-package model.ShopData;
+package model.shopData;
  public enum ItemType {
 
     POT_UNLOCK("Unlock New Pot", 2000,Currency.COIN,1,1,

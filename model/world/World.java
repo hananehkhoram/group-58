@@ -1,9 +1,8 @@
-package model.World;
+package model.world;
 
 import model.level.Level;
 import model.mechanisms.LawnMower;
 import model.mechanisms.Tile;
-import model.*;
 import model.plants.Plant;
 import model.zombie.Zombie;
 

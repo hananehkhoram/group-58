@@ -1,12 +1,13 @@
-package model.ShopData;
+package model.shopData;
 
 import model.plants.Plant;
 
 public class DailyOffer{
-    private final int id = 6;
+    private static int id_counter = 0; //Hananeh's Comment
+    private int id;
     private String name;
     private Plant plantType;
-    private long expiryDate;
+    private long date;
     private boolean purchased;
     private int amount = 10;
     private final int price = 1600;
@@ -16,15 +17,22 @@ public class DailyOffer{
         this.plantType = plantType;
         this.purchased = false;
         this.name = plantType.getName();
+        this.id = id_counter++; //Hananeh's Comment
+    }
+
+    // Hananeh's Comment
+    public DailyOffer(int id , long date , boolean isPurchased) {
+        this.id = id;
+        this.date = date;
+        this.purchased = isPurchased;
     }
 
     public Plant getPlantType() {
         return plantType;
     }
 
-
-    public long getExpiryDate() {
-        return expiryDate;
+    public long getDate() {
+        return date;
     }
 
     public boolean isPurchased() {
@@ -53,5 +61,9 @@ public class DailyOffer{
 
     public String getName() {
         return name;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

@@ -149,6 +149,7 @@ public class CollectionMenu extends BaseMenu {
 
 
         um.saveToFile();
+        DataManager.getInstance().saveUser();
 
         return "Successfully purchased " + newPlant.getName() + "! It is now added to your collection.";
     }

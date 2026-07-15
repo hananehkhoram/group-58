@@ -19,7 +19,7 @@ public class GameEngineController {
     public GameEngineController() {
         this.mm = new MenuManager(null);
         this.dm = DataManager.getInstance();
-        UserManager.getInstance().loadFromFile();
+        dm.loadUser();
         this.registry = new controller.commandHandler.CommandRegistry();
         controller.commandHandler.FileCommandProvider provider =
                 new controller.commandHandler.FileCommandProvider(this.mm);
@@ -35,6 +35,7 @@ public class GameEngineController {
     public void stop() {
         isRunning = false;
         UserManager.getInstance().saveToFile();
+        DataManager.getInstance().saveUser();
         ConsoleView.simplePrint("Saving data and exiting game...\n");
     }
 

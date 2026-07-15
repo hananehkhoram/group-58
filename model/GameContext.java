@@ -114,12 +114,16 @@ public class GameContext {
     public void triggerPlayerWin() {
         this.gameEnded = true;
         this.playerWon = true;
+        UserManager.getInstance().saveToFile();
+        DataManager.getInstance().saveUser();
         ConsoleView.showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
     }
 
     public void triggerPlayerLoss() {
         this.gameEnded = true;
         this.playerWon = false;
+        UserManager.getInstance().saveToFile();
+        DataManager.getInstance().saveUser();
         ConsoleView.showMessage("The zombie ate your brain; LOSER!!!");
     }
 

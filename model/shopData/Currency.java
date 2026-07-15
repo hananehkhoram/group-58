@@ -1,4 +1,4 @@
-package model.ShopData;
+package model.shopData;
 
 public enum Currency {
     COIN, GEM
