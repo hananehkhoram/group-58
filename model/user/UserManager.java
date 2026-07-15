@@ -14,9 +14,12 @@ public class UserManager {//singelton
     private static final String LIST_SEP = ",";
     private static final String PLANT_SEP = "#";
     private static UserManager instance = null;
-    private List<User> users;
+    public List<User> users;
     private User currentUser;
 
+    public void updateUsers(List<User> users) {
+        this.users = users;
+    }
     private UserManager() {
         this.users = new ArrayList<>();
         this.currentUser = null;
@@ -107,7 +110,7 @@ public class UserManager {//singelton
         currentUser = new User(username, hashedPassword, nickName, email,
                 gender.equalsIgnoreCase("female") ? Gender.FEMALE : Gender.MALE);
         users.add(currentUser);
-        saveToFile();
+//        saveToFile();
         DataManager.getInstance().saveUser();
     }
 

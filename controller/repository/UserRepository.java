@@ -51,6 +51,9 @@ public class UserRepository implements AssetRepository<User> {
             for (User u : userMap.values()) {
                 writer.println(serializeUser(u));
             }
+            for (User user : UserManager.getInstance().users){
+                writer.println(serializeUser(user));
+            }
         } catch (java.io.IOException e) {
             throw new RuntimeException("Could not save users to file", e);
         }
@@ -66,9 +69,9 @@ public class UserRepository implements AssetRepository<User> {
                 String.join(LIST_SEP, u.getSeenZombies().stream().map(model.zombie.Zombie::getName).toList());
         String levels = u.getUnlockedLevels() == null ? "" : String.join(LIST_SEP, u.getUnlockedLevels());
 
-        DailyOffer d = u.getLastDailyOffer();
-        String dailyOffers = d == null ? "" : d.getId() + LIST_SEP + d.getDate() + LIST_SEP + d.isPurchased();
-        String dailyOfferId = d == null ? "-1" : String.valueOf(d.getId());
+
+        String dailyOffers = u.getLastDailyOffer() == null ? "" : u.getLastDailyOffer().getId() + LIST_SEP + u.getLastDailyOffer().getDate() + LIST_SEP + u.getLastDailyOffer().isPurchased();
+        String dailyOfferId = u.getLastDailyOffer() == null ? "-1" : String.valueOf(u.getLastDailyOffer().getId());
 
         return String.join(FIELD_SEP,
                 u.getUsername(),
