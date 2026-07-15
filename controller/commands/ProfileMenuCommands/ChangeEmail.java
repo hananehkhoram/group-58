@@ -2,6 +2,7 @@ package controller.commands.ProfileMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;
+import controller.repository.DataManager;
 import model.menus.Menu;
 import model.menus.allmenus.ProfileMenu;
 import view.ConsoleView;
@@ -19,6 +20,7 @@ public class ChangeEmail implements Command {
 
         if (currentMenu instanceof ProfileMenu){
             String result = ((ProfileMenu) currentMenu).changeEmail(email);
+            DataManager.getInstance().saveUser();
             ConsoleView.showMessage("%s\n",result);
 
         }

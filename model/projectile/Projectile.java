@@ -55,7 +55,7 @@ public class Projectile {
 
     public void onHit(Damageable target) {
         if (trajectory == TrajectoryType.PIERCING && alreadyHit.contains(target)) {
-            return; // این هدف قبلاً از این تیر ضربه خورده
+            return;
         }
 
         switch (bulletType) {
