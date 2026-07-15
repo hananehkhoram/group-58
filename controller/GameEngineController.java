@@ -16,6 +16,7 @@ public class GameEngineController {
     private boolean isRunning;
     private MenuManager mm;
     private DataManager dm;
+    private GameContext gameContext;
 
     public GameEngineController() {
         this.mm = new MenuManager(null);
@@ -30,7 +31,7 @@ public class GameEngineController {
         }
         this.registry = new controller.commandHandler.CommandRegistry();
         controller.commandHandler.FileCommandProvider provider =
-                new controller.commandHandler.FileCommandProvider(this.mm);
+                new controller.commandHandler.FileCommandProvider(this.mm, gameContext);
         provider.registerCommands(this.registry);
     }
 
@@ -80,3 +81,4 @@ public class GameEngineController {
 
 
 }
+

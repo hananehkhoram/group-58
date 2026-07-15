@@ -2,6 +2,7 @@ package controller.repository;
 
 import controller.repository.factory.LevelFactory;
 import model.season.*;
+import model.season.miniGameSeason.wallnutsSeason;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,11 +19,13 @@ public class SeasonRepository implements AssetRepository<Season> {
         Season frozen = new FrozenCaveChapter(LevelFactory.buildFrozenCaveLevels());
         Season beach = new BigWaveBeachSeason(LevelFactory.buildBigWaveBeachLevels());
         Season darkAges = new DarkAgesSeason(LevelFactory.buildDarkAgesLevels());
+        Season wallnut = new wallnutsSeason(LevelFactory.buildWallnutsLevels());
 
         orderedSeasons.add(egypt);
         orderedSeasons.add(frozen);
         orderedSeasons.add(beach);
         orderedSeasons.add(darkAges);
+        orderedSeasons.add(wallnut);
 
         for (Season s : orderedSeasons) {
             seasonMap.put(s.getName(), s);

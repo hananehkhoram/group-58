@@ -19,6 +19,9 @@ public abstract class Season {
         this.chapterNumber = chapterNumber;
     }
 
+    protected Season() {
+    }
+
     public boolean sunFallsFromSky() { return true; }
 
     public boolean iceEffectiveOnZombies() { return true; }

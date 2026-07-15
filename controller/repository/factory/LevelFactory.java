@@ -6,6 +6,7 @@ import model.level.LevelType;
 import model.mechanisms.Wave;
 import model.plants.Plant;
 import model.season.*;
+import model.season.miniGameSeason.wallnutsSeason;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,6 +131,32 @@ public class LevelFactory {
         return levels;
     }
 
+    // ---------------- MiniGames ----------------
+    public static List<Level> buildWallnutsLevels() {
+        List<Level> levels = new ArrayList<>();
+
+        levels.add(new Level("Wallnuts - Day 1", 5, 9, generateWaves(5, 200, 220), LevelType.Wallnuts_MG, null));
+
+        levels.add(new Level("Wallnuts - Day 2", 5, 9, generateWaves(6, 220, 210), LevelType.Wallnuts_MG, null));
+
+        levels.add(new Level("Wallnuts - Day 3", 5, 9, generateWaves(7, 240, 200), LevelType.Wallnuts_MG, null));
+
+        for (int i = 0; i < 3; i++){
+            Plant wallnutsTemp = new Plant();
+            Plant eNutTemp = new Plant();
+            Plant bwallnutsTemp = new Plant();
+
+            wallnutsTemp.setName("Wall-nut");
+            eNutTemp.setName("Explode-o-nut");
+            bwallnutsTemp.setName("Wall-nut");
+
+            levels.get(i).getConveyorPlantPool().add(wallnutsTemp);
+            levels.get(i).getConveyorPlantPool().add(eNutTemp);
+            levels.get(i).getConveyorPlantPool().add(bwallnutsTemp);
+        }
+
+        return  levels;
+    }
 
     List<Level> egyptLevels = LevelFactory.buildAncientEgyptLevels();
     Season ancientEgypt = new AncientEgypt(egyptLevels);
@@ -143,5 +170,7 @@ public class LevelFactory {
     List<Level> frozenCavesLevels = LevelFactory.buildFrozenCaveLevels();
     Season frozenCaves = new FrozenCaveChapter(frozenCavesLevels);
 
+    List<Level> wallnutsLevels = LevelFactory.buildWallnutsLevels();
+    Season wallnutsSeason = new wallnutsSeason(wallnutsLevels);
 
 }

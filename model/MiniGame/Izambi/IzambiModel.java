@@ -6,6 +6,8 @@ public class IzambiModel {
     protected int brainNumber;
     protected boolean result = false;
 
+    public void startMiniGame() {}
+
     public void zambiPrice(){}
     public void finish(){}
 
