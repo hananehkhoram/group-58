@@ -1,5 +1,6 @@
 register -u hana -p #hH12345678 #hH12345678 -n hana -e hananeh.khoram@gmail.com -g female
 pick question -q 1 -a baba -c baba
+
 menu enter loginmenu
 login -u hana -p #hH12345678
 menu enter gamemenu

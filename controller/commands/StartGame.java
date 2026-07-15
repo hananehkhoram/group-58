@@ -2,6 +2,7 @@ package controller.commands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;
+import model.GameContext;
 
 public class StartGame implements Command {
     private MenuManager menuManager;
@@ -13,6 +14,7 @@ public class StartGame implements Command {
     public void execute(String[] args) {
 
         menuManager.changeMenu("GameMenu");
+        GameContext.setBattleStarted(true);
     }
 
     //start game

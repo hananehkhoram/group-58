@@ -72,7 +72,12 @@ public class Wave {
 
         ZombieFactory factory = new ZombieFactory(ctx.getDataManager());
 
-        while (remainingBudget > 0) {
+        int minCost = ctx.getDataManager().zombies.getZombieDataMap().values().stream()
+                .mapToInt(Zombie::getWavePointCost)
+                .min()
+                .orElse(Integer.MAX_VALUE);
+
+        while (remainingBudget >= minCost) {
             String randomName = availableZombieNames.get(random.nextInt(availableZombieNames.size()));
             Zombie template = ctx.getDataManager().zombies.get(randomName);
 
@@ -102,21 +107,17 @@ public class Wave {
                         "Zombie %s spawned at wave %d in lane %d which costed %d.\n",
                         zombie.getName(), this.waveNumber, lane + 1, cost
                 ));
-            } else {
-                break;
             }
         }
     }
 
     public boolean isThresholdReached() {
-        if (!started || spawnedZombies.isEmpty()) return false;
+        if (!started || spawnedZombies.isEmpty() || initialTotalHp <= 0) return false;
 
         int currentTotalHp = spawnedZombies.stream()
                 .filter(z -> !z.isDead())
                 .mapToInt(Zombie::getHp)
                 .sum();
-
-        if (initialTotalHp == 0) return true;
 
         double remainingHpRatio = (double) currentTotalHp / initialTotalHp;
         return remainingHpRatio <= 0.25;

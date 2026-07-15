@@ -29,7 +29,7 @@ public class GameEngine {
     }
 
     public void update(double deltaTime) {
-        if (ctx.isGameEnded()) return;
+        if (!ctx.isBattleStarted() || ctx.isGameEnded()) return;
 
         if (ctx.getLevelManager() != null) {
             ctx.getLevelManager().onUpdate(deltaTime, ctx);
