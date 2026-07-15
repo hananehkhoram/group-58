@@ -10,7 +10,6 @@ import model.plants.Plant;
 import model.projectile.Projectile;
 import model.season.Grave;
 import model.season.Season;
-import model.user.User;
 import model.user.UserManager;
 import model.zombie.Zombie;
 import view.ConsoleView;
@@ -140,26 +139,6 @@ public class GameContext {
     public void triggerPlayerWin() {
         this.gameEnded = true;
         this.playerWon = true;
-        User currentUser = UserManager.getInstance().getCurrentUser();
-        if (currentUser != null) {
-            List<Level> levelsInSeason = this.season.getLevels();
-            int levelIndex = levelsInSeason.indexOf(this.level);
-
-            currentUser.setLastLevel(levelIndex + 1);
-            currentUser.setLastSeason(DataManager.getInstance().seasons.getChapterNumber(this.season));
-            currentUser.setNumberOfPassedLevels(currentUser.getNumberOfPassedLevels() + 1);
-
-            if (levelIndex + 1 < levelsInSeason.size()) {
-                currentUser.unlockLevel(levelsInSeason.get(levelIndex + 1).getName());
-            }
-            else {
-                Season nextSeason = DataManager.getInstance().seasons.getNextSeason(this.season);
-                if (nextSeason != null && !nextSeason.getLevels().isEmpty()) {
-                    currentUser.unlockLevel(nextSeason.getLevels().get(0).getName());
-                }
-                // اگه nextSeason == null یعنی این آخرین فصل (Dark Ages) بود و بازیکن کل adventure رو تموم کرده
-            }
-        }
 //        UserManager.getInstance().saveToFile();
         DataManager.getInstance().saveUser();
         ConsoleView.showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
@@ -265,9 +244,114 @@ public class GameContext {
                 return new PlantWhatYouGetManager();
             case LOCKED_PLANTS:
                 return new LockedPlantsManager(level.getBannedPlants(), level.getForcedPlants());
-            case Wallnuts_MG: return new ConveyorBeltManager();
-            case NORMAL: default:    return null;
+            case NORMAL:
+            default:
+                return null;
         }
+    }
+
+    public List<Projectile> getProjectiles() {
+        return projectiles;
+    }
+
+    public void setNewProjectiles(Projectile p) {
+        this.projectiles.add(p);
+    }
+
+    public List<Plant> getActivePlants() {
+        return activePlants;
+    }
+
+    public List<Plant> getAlivePlants() {
+        return alivePlants;
+    }
+
+    public List<Zombie> getActiveZombies() {
+        return activeZombies;
+    }
+
+    public List<Zombie> getAliveZombies() {
+        return aliveZombies;
+    }
+
+    public Level getLevel() {
+        return level;
+    }
+
+    public Plant[][] getPlantGrid() {
+        return plantGrid;
+    }
+
+    public Grave[][] getGraveGrid() {
+        return graveGrid;
+    }
+
+    public int getSunAmount() {
+        return sunAmount;
+    }
+
+    public void setSunAmount(int sunAmount) {
+        this.sunAmount = sunAmount;
+    }
+
+    public int getTotalZombiesKilledInLevel() {
+        return totalZombiesKilledInLevel;
+    }
+
+    public int getTotalSunProducedInLevel() {
+        return totalSunProducedInLevel;
+    }
+
+    public int getTotalLostPlants() {
+        return totalLostPlants;
+    }
+
+    public boolean isGameEnded() {
+        return gameEnded;
+    }
+
+    public boolean isPlayerWon() {
+        return playerWon;
+    }
+
+    public boolean isSetupPhase() {
+        return isSetupPhase;
+    }
+
+    public void setSetupPhase(boolean v) {
+        this.isSetupPhase = v;
+    }
+
+    public TimeManager getTimeManager() {
+        return timeManager;
+    }
+
+    public PlantFactory getPlantFactory() {
+        return plantFactory;
+    }
+
+    public DataManager getDataManager() {
+        return dm;
+    }
+
+    public Season getSeason() {
+        return season;
+    }
+
+    public SunManager getSunManager() {
+        return sunManager;
+    }
+
+    public LevelManager getLevelManager() {
+        return levelManager;
+    }
+
+    public boolean isBattleStarted() {
+        return battleStarted;
+    }
+
+    public static void setBattleStarted(boolean battleStarted) {
+        battleStarted = battleStarted;
     }
 
     public boolean isActiveWaveInProgress() {
