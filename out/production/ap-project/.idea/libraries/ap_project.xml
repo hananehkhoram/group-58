@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="ap-project">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/ap-project.zip!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
