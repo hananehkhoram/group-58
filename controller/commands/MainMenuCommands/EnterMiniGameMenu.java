@@ -7,6 +7,7 @@ import model.MiniGame.Beghouled.Beghouled;
 import model.MiniGame.Izambi.IzambiModel;
 import model.MiniGame.VaseGame.Vase;
 import model.MiniGame.WallnutsGame.WallnutBowlingGame;
+import model.menus.BaseMenu;
 import model.menus.Menu;
 import model.menus.allmenus.MainMenu;
 import model.menus.allmenus.TravelMenu;
@@ -14,7 +15,6 @@ import model.menus.allmenus.TravelMenu;
 public class EnterMiniGameMenu implements Command {
     private MenuManager menuManager;
     private GameContext gameContext;
-    private Menu travelMenu;
 
     public EnterMiniGameMenu(MenuManager menuManager, GameContext gameContext) {
         this.menuManager = menuManager;
@@ -24,19 +24,14 @@ public class EnterMiniGameMenu implements Command {
     @Override
     public void execute(String[] args) {
 
-        this.travelMenu = new TravelMenu(gameContext);
-
         String whichCommand = args[0];
 
-        WallnutBowlingGame wBGame = new WallnutBowlingGame();
-        wBGame.start();
-
-        /*if (menuManager.getCurrentMenu().equals(travelMenu)){
+        if (menuManager.getCurrentMenu() instanceof TravelMenu){
             if (whichCommand.equals("enter")){
-                view.ConsoleView.simplePrint("Choose your miniGame :\n1: Vasebreaker\n2: Wallnut Bowling\n3: (i, zombie\n4:Beghouled");
+                view.ConsoleView.simplePrint("Choose your miniGame :\n1: Vasebreaker\n2: Wallnut Bowling\n3: (i, zombie\n4:Beghouled\n");
 
             }else {
-                int number = Integer.parseInt(args[0]);
+                int number = Integer.parseInt(whichCommand);
 
                 switch (number){
                     case 1:
@@ -57,6 +52,6 @@ public class EnterMiniGameMenu implements Command {
 
                 }
             }
-        }*/
+        }
     }
 }

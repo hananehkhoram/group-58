@@ -20,12 +20,10 @@ public class GameEngineController {
     public GameEngineController() {
         this.mm = new MenuManager(null);
         this.dm = DataManager.getInstance();
-        this.gameContext = null;
-        UserManager.getInstance().loadFromFile();
         dm.loadUser();
         this.registry = new controller.commandHandler.CommandRegistry();
         controller.commandHandler.FileCommandProvider provider =
-                new controller.commandHandler.FileCommandProvider(this.mm, this.gameContext);
+                new controller.commandHandler.FileCommandProvider(this.mm, gameContext);
         provider.registerCommands(this.registry);
     }
 
@@ -75,3 +73,4 @@ public class GameEngineController {
 
 
 }
+

@@ -100,7 +100,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("cheat reset users",new CheatClearUsers());
         registry.register("^\\/\\/cheat add -n (\\d+) suns$",new CheatAddSun(menuManager));
         registry.register("(?<enter>enter) minigame" , new EnterMiniGameMenu(menuManager, ctx));
-        registry.register("miniGame number (?<number> \\d)" , new EnterMiniGameMenu(menuManager, ctx));
+        registry.register("(?<number>\\d+)" , new EnterMiniGameMenu(menuManager, ctx));
         registry.register("cheat remove-cooldown",new CheatRemoveCooldown(menuManager));
     }
 }

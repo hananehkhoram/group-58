@@ -148,7 +148,7 @@ public class LevelFactory {
 
             wallnutsTemp.setName("Wall-nut");
             eNutTemp.setName("Explode-o-nut");
-            bwallnutsTemp.setName("B-Wallnut");
+            bwallnutsTemp.setName("Wall-nut");
 
             levels.get(i).getConveyorPlantPool().add(wallnutsTemp);
             levels.get(i).getConveyorPlantPool().add(eNutTemp);
