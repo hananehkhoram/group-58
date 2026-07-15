@@ -40,7 +40,7 @@ public class ActionBehavior implements Behaviors {
     public void onTick(Zombie zombie, GameContext ctx) {
         switch (actionType) {
             case PUSH_GRID_ITEM:     pushIceBlock(zombie);       break;
-            case OCTOPUS_PROJECTILE: fireInkProjectile(zombie);  break;
+            case OCTOPUS_PROJECTILE: fireInkProjectile(zombie, ctx);  break;
             case DARK_WIZARD_ZAP:    zapPlant(zombie);           break;
             case ARCADE_PUSH:        pushWithCabinet(zombie);    break;
             case KNIGHT_KNIGHTING:   knightNearbyZombies(zombie);break;
@@ -57,7 +57,7 @@ public class ActionBehavior implements Behaviors {
         // Troglobite: pushes ice blocks (numberOfIceblocks=3), chillInsteadOfFreeze=true
     }
     private void fireInkProjectile(Zombie zombie, GameContext ctx) {
-        Plant target = ctx.findNearestPlantInRow(zombie, ctx);
+        Plant target = ctx.findNearestPlantInRow(zombie);
         if (target == null) return;
 
         Projectile ink = new Projectile(

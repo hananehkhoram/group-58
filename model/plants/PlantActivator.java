@@ -64,7 +64,7 @@ public final class PlantActivator {
 
         } else if (ability instanceof Explosive explosive) {
             ExplosiveType type = ExplosiveType.valueOf(p.get("explosiveType"));
-            //String damage = p.get("Damage");
+            String damageString = p.get("Damage");
             int damage = Integer.parseInt(p.get("damage"));
             explosive.triggerAbility(type, damage, plant, engine);
             // row/col/time are NOT csv-driven — they come from where this plant

@@ -38,7 +38,7 @@ public class Shooting implements Behaviors {
 
         if (currentSecond - lastShotSecond < cooldown) return;
 
-        Plant target = findNearestPlantInRow(zombie, ctx);
+        Plant target = ctx.findNearestPlantInRow(zombie);
         if (target == null) return;
 
         Projectile shard = new Projectile(
@@ -51,21 +51,6 @@ public class Shooting implements Behaviors {
         );
         ctx.getProjectiles().add(shard);
         lastShotSecond = currentSecond;
-    }
-
-    private Plant findNearestPlantInRow(Zombie zombie, GameContext ctx) {
-        int row = zombie.getRow();
-        Plant nearest = null;
-        double minDist = Double.MAX_VALUE;
-        for (Plant p : ctx.getPlantGrid()[row]) {
-            if (p == null || p.isDead()) continue;
-            double dist = Math.abs(zombie.getX() - p.getCol());
-            if (dist < minDist) {
-                minDist = dist;
-                nearest = p;
-            }
-        }
-        return nearest;
     }
 
     @Override

@@ -31,11 +31,10 @@ public class GameEngine {
     public void update(double deltaTime) {
         if (ctx.isGameEnded()) return;
 
-//        ctx.getTimeManager().advanceTime(1);
         if (ctx.getLevelManager() != null) {
             ctx.getLevelManager().onUpdate(deltaTime, ctx);
         }
-        ctx.getSunManager().update();
+        ctx.getSunManager().update(this);
         updateWave(deltaTime);
         updateZombies(deltaTime);
         updateLawnMowers(deltaTime);
@@ -45,28 +44,40 @@ public class GameEngine {
         checkGameEnd();
     }
 
-    //Wave
-
     private void updateWave(double deltaTime) {
-        if (ctx.getWaveDurationRemaining() > 0) {
-            ctx.decrementWaveDelay();
-            return;
+        if (ctx.getLevel().getLevelType() == model.level.LevelType.PLANT_WHAT_YOU_GET) {
+            if (!ctx.isManualStartCommandReceived()) {
+                return;
+            }
         }
+
         Wave[] waves = ctx.getLevel().getWaves();
-        if (waves == null || ctx.getCurrentWaveIndex() >= waves.length) {
+        if (waves == null || waves.length == 0) {
             ctx.setWaveSpawningFinished(true);
             return;
         }
-        spawnWave(waves[ctx.getCurrentWaveIndex()]);
-        ctx.incrementWaveIndex();
-        ctx.setWaveDurationRemaining(waves[ctx.getCurrentWaveIndex() - 1].getWaveDelay());
+
+        if (ctx.getCurrentWaveIndex() == 0) {
+            spawnWave(waves[0]);
+            return;
+        }
+
+        Wave previousWave = waves[ctx.getCurrentWaveIndex() - 1];
+
+        if (previousWave.isThresholdReached()) {
+            if (ctx.getCurrentWaveIndex() < waves.length) {
+                spawnWave(waves[ctx.getCurrentWaveIndex()]);
+            } else {
+                ctx.setWaveSpawningFinished(true);
+            }
+        }
     }
 
     private void spawnWave(Wave wave) {
-
+        wave.start(ctx);
+        ctx.incrementWaveIndex();
+        ctx.setActiveWaveInProgress(true);
     }
-
-    //Zombies
 
     private void updateZombies(double deltaTime) {
         Iterator<Zombie> it = ctx.getAliveZombies().iterator();
@@ -86,11 +97,10 @@ public class GameEngine {
             }
             if (z.isDead()) {
                 it.remove();
-                ctx.incrementWaveIndex();
+                ctx.incrementZombieKills();
             }
         }
     }
-
 
     private void updateLawnMowers(double deltaTime) {
         for (LawnMower l : lawnMowers) {
@@ -124,7 +134,6 @@ public class GameEngine {
                 .toArray(Zombie[]::new);
     }
 
-    // Plants
     private void updatePlants(double deltaTime) {
         Iterator<Plant> it = ctx.getAlivePlants().iterator();
         while (it.hasNext()) {
@@ -156,7 +165,6 @@ public class GameEngine {
         }
     }
 
-    // Projectiles
     public void updateProjectiles(double deltaTime) {
         Iterator<Projectile> it = ctx.getProjectiles().iterator();
         while (it.hasNext()) {
@@ -184,6 +192,7 @@ public class GameEngine {
             }
         }
     }
+
     private void checkZombiePlantCollisions() {
         for (Zombie z : ctx.getAliveZombies()) {
             int col = (int) z.getX();
@@ -204,7 +213,6 @@ public class GameEngine {
         }
     }
 
-    // Game End
     private void checkGameEnd() {
         if (ctx.isGameEnded()) {
             return;

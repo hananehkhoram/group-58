@@ -43,6 +43,7 @@ public class GameContext {
     private SunManager sunManager;
     private final Map<String, Long> plantCooldowns = new HashMap<>();
 
+
     private int totalSunProducedInLevel = 0;
     private int totalLostPlants = 0;
     private int totalZombiesKilledInLevel = 0;
@@ -101,12 +102,20 @@ public class GameContext {
         return 0;
     }
 
-    public Plant findNearestPlantInRow(Zombie zombie, GameContext ctx) {
+    /**
+     * Zombie-side counterpart of GameEngine.findTargets: nearest live plant in
+     * the zombie's own row. NOTE: this is technically game logic and would sit
+     * more naturally in GameEngine (see findTargets), but Behaviors.onTick only
+     * receives GameContext, not GameEngine, so it lives here for now. If you
+     * later change Behaviors to also receive GameEngine (mirroring how plant
+     * abilities already get it via Shooters.shoot(..., GameEngine engine)),
+     * move this there and delete it from GameContext.
+     */
+    public Plant findNearestPlantInRow(Zombie zombie) {
         int row = zombie.getRow();
         Plant nearest = null;
         double minDist = Double.MAX_VALUE;
-
-        for (Plant p : ctx.getPlantGrid()[row]) {
+        for (Plant p : getPlantGrid()[row]) {
             if (p == null || p.isDead()) continue;
             double dist = Math.abs(zombie.getX() - p.getCol());
             if (dist < minDist) {
@@ -114,7 +123,6 @@ public class GameContext {
                 nearest = p;
             }
         }
-
         return nearest;
     }
 
@@ -222,4 +230,27 @@ public class GameContext {
     public Season getSeason()                      { return season; }
     public SunManager getSunManager()              { return sunManager; }
     public LevelManager getLevelManager()          { return levelManager; }
+
+    private boolean activeWaveInProgress = false;
+    private boolean manualStartCommandReceived = false;
+
+    public boolean isActiveWaveInProgress() {
+        return activeWaveInProgress;
+    }
+
+    public void setActiveWaveInProgress(boolean activeWaveInProgress) {
+        this.activeWaveInProgress = activeWaveInProgress;
+    }
+
+    public boolean isManualStartCommandReceived() {
+        return manualStartCommandReceived;
+    }
+
+    public void setManualStartCommandReceived(boolean manualStartCommandReceived) {
+        this.manualStartCommandReceived = manualStartCommandReceived;
+    }
+
+    public void triggerManualWaveStart() {
+        this.manualStartCommandReceived = true;
+    }
 }

@@ -1,5 +1,6 @@
 package model.menus.allmenus;
 
+import controller.repository.DataManager;
 import model.GameContext;
 import model.menus.BaseMenu;
 import model.menus.MenuType;

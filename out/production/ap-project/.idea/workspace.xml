@@ -4,7 +4,39 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2cbdf629-2fc9-45ad-af0e-b3dc6eec6962" name="Changes" comment="userRepository" />
+    <list default="true" id="2cbdf629-2fc9-45ad-af0e-b3dc6eec6962" name="Changes" comment="userRepository">
+      <change beforePath="$PROJECT_DIR$/Files/.~lock.plants.csv#" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Files/.~lock.zombies.csv#" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/commandHandler/FileCommandProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/controller/commandHandler/FileCommandProvider.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/commands/ProfileMenuCommands/ChangeEmail.java" beforeDir="false" afterPath="$PROJECT_DIR$/controller/commands/ProfileMenuCommands/ChangeEmail.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/commands/ProfileMenuCommands/ChangeNickName.java" beforeDir="false" afterPath="$PROJECT_DIR$/controller/commands/ProfileMenuCommands/ChangeNickName.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/commands/ProfileMenuCommands/ChangePassword.java" beforeDir="false" afterPath="$PROJECT_DIR$/controller/commands/ProfileMenuCommands/ChangePassword.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/commands/ProfileMenuCommands/ChangeUsername.java" beforeDir="false" afterPath="$PROJECT_DIR$/controller/commands/ProfileMenuCommands/ChangeUsername.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/GameContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/GameContext.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/mechanisms/GameEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/mechanisms/GameEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/mechanisms/Wave.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/mechanisms/Wave.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/menus/allmenus/ProfileMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/menus/allmenus/ProfileMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/plants/PlantActivator.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/plants/PlantActivator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/plants/enums/BulletType.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/projectile/Projectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/projectile/Projectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/projectile/TrajectoryType.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/projectile/TrajectoryType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/zombie/behavior/ActionBehavior.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/zombie/behavior/ActionBehavior.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/zombie/behavior/Shooting.java" beforeDir="false" afterPath="$PROJECT_DIR$/model/zombie/behavior/Shooting.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/controller/commandHandler/FileCommandProvider.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/controller/commandHandler/FileCommandProvider.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/controller/repository/PlantRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/controller/repository/PlantRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/model/GameContext$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/model/GameContext$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/model/GameContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/model/GameContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/model/mechanisms/GameEngine$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/model/mechanisms/GameEngine$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/model/mechanisms/GameEngine.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/model/mechanisms/GameEngine.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/model/mechanisms/Wave.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/model/mechanisms/Wave.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/model/plants/PlantActivator.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/model/plants/PlantActivator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/model/plants/enums/BulletType.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/model/zombie/behavior/ActionBehavior$ActionParams.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/model/zombie/behavior/ActionBehavior$ActionParams.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/model/zombie/behavior/ActionBehavior$ActionType.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/model/zombie/behavior/ActionBehavior$ActionType.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/model/zombie/behavior/ActionBehavior.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/model/zombie/behavior/ActionBehavior.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/model/zombie/behavior/Shooting$ShootingType.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/model/zombie/behavior/Shooting$ShootingType.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ap-project/model/zombie/behavior/Shooting.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ap-project/model/zombie/behavior/Shooting.class" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -37,7 +69,7 @@
     <urls />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
+    <option name="selectedTabId" value="DEPENDENCY_CHECKER_PROBLEMS_TAB" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
@@ -132,5 +164,16 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="userRepository" />
     <option name="LAST_COMMIT_MESSAGE" value="userRepository" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/controller/commandHandler/FileCommandProvider.java</url>
+          <line>47</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
