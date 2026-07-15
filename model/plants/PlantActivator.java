@@ -53,9 +53,6 @@ public final class PlantActivator {
             String interval = p.get("interval");
             String damage = p.get("damage");
             shooters.shoot(damage, amount, interval, shootType, bulletType, plant, engine);
-            if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET) {
-                shooters.shootForHoming();
-            }
 
         } else if (ability instanceof Lobber lobber) {
             LobType lobType = LobType.valueOf(p.get("lobType"));
@@ -67,8 +64,6 @@ public final class PlantActivator {
             String damageString = p.get("Damage");
             int damage = Integer.parseInt(p.get("damage"));
             explosive.triggerAbility(type, damage, plant, engine);
-            // row/col/time are NOT csv-driven — they come from where this plant
-            // is planted and the game clock, e.g.:
             // explosive.explosion(ctx.getCurrentTick(), plant.getRow(), plant.getCol());
 
 
@@ -82,9 +77,6 @@ public final class PlantActivator {
 
         } else if (ability instanceof WallNut wallNut) {
             WallNutType wallNutType = WallNutType.valueOf(p.get("wallNutType"));
-            String damageString = p.get("Damage");
-            int damage = Integer.parseInt(p.get("damage"));
-            wallNut.triggerAbility(wallNutType, damage, plant, engine);
             wallNut.wall(wallNutType, plant, ctx);
 
         } else if (ability instanceof SunProducers sunProducers) {

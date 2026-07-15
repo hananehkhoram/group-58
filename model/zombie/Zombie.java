@@ -29,6 +29,7 @@ public class Zombie implements Damageable {
     private double iceHp = 0;
 
     private boolean isEating = false;
+    private boolean movingBackward = false;
 
     public Zombie() {}
 
@@ -66,7 +67,7 @@ public class Zombie implements Damageable {
         if (!isEating && !airborne) {
             double effectiveSpeed = speed;
             if (isIced) effectiveSpeed *= 0.5;
-            x -= effectiveSpeed * deltaTime;
+            x += movingBackward ? effectiveSpeed * deltaTime : -effectiveSpeed * deltaTime;
         }
     }
 
@@ -74,6 +75,10 @@ public class Zombie implements Damageable {
         Behaviors b = behaviors.get("jumper");
         return (b instanceof Jumper) ? (Jumper) b : null;
     }
+
+    /** بعد از انفجار دینامیت اکتشافگر، جهت حرکتش برعکس می‌شود (به سمت راست، رو به عقب می‌خورد) */
+    public void setMovingBackward(boolean movingBackward) { this.movingBackward = movingBackward; }
+    public boolean isMovingBackward() { return movingBackward; }
 
     public void takeDamage(double damage) {
         if (isIced) {

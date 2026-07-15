@@ -7,5 +7,6 @@ public interface Behaviors {
     void onTick (Zombie zombie, GameContext ctx);
     void onHit (Zombie zombie, int damage); // after doing the action
     boolean isDestroyed ();
+    default void onDeath(Zombie zombie, GameContext ctx) {}
 
 }
