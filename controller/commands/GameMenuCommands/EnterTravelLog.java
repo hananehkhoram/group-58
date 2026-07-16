@@ -4,6 +4,7 @@ import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.menus.Menu;
 import model.menus.allmenus.GameMenu;
+import view.ConsoleView;
 
 public class EnterTravelLog implements Command {
 
@@ -17,7 +18,8 @@ public class EnterTravelLog implements Command {
         Menu currentMenu = menuManager.getCurrentMenu();
 
         if (currentMenu instanceof GameMenu) {
-
+            menuManager.changeMenu("travelmenu");
+            ConsoleView.showMessage("");
         }
     }
 

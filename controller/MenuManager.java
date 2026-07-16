@@ -38,6 +38,7 @@ public class MenuManager {
         EXIT_TARGET.put(MenuType.NEWS, MenuType.MAIN);
         EXIT_TARGET.put(MenuType.PROFILE, MenuType.MAIN);
         EXIT_TARGET.put(MenuType.COLLECTION, MenuType.GAME);
+        EXIT_TARGET.put(MenuType.TRAVEL, MenuType.GAME);
     }
 
 

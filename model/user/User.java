@@ -55,29 +55,32 @@ public class User {
     private int coins;
     private int gems;
 
+
     public User(String username, String password, String nickName, String email, Gender gender) {
         this.username = username;
         this.password = password;
         this.nickName = nickName;
         this.email = email;
         this.gender = gender;
-        this.coins = 0;
-        this.gems = 0;
+        this.coins = 2000;
+        this.gems = 5;
         this.greenHouse = new GreenHouse();
         this.unlockedLevels = new ArrayList<>();
         this.unlockLevel("Ancient Egypt - Day 1");
         this.unlockedPlantTypes = new ArrayList<>();
         this.seenZombies = new ArrayList<>();
+        unlockStarterPlants();
     }
 
     public User() {
-        this.coins = 0;
-        this.gems = 0;
+        this.coins = 2000;
+        this.gems = 5;
         this.greenHouse = new GreenHouse();
         this.unlockedLevels = new ArrayList<>();
         this.unlockLevel("Ancient Egypt - Day 1");
         this.unlockedPlantTypes = new ArrayList<>();
         this.seenZombies = new ArrayList<>();
+        unlockStarterPlants();
     }
 
     public boolean isBoughtDailyOfferToday() {
@@ -354,5 +357,15 @@ public class User {
     }
     public Map<String, Integer> getAllQuestProgress() { return questProgress; }
     public void setAllQuestProgress(Map<String, Integer> questProgress) { this.questProgress = questProgress; }
+
+    private void unlockStarterPlants() {
+        String[] starters = {"Peashooter", "Sunflower", "Wall-nut"};
+        for (String name : starters) {
+            Plant p = controller.repository.DataManager.getInstance().plants.get(name);
+            if (p != null) {
+                unlockedPlantTypes.add(p);
+            }
+        }
+    }
 }
 
