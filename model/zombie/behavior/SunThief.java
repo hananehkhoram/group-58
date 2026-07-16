@@ -28,7 +28,7 @@ public class SunThief implements Behaviors {
     @Override
     public boolean isDestroyed() { return false; }
 
-    public void giveBackSuns() {
+    public void giveBackSuns(GameContext ctx) {
         // called on death: drop stolenSuns back on board
         stolenSuns = 0;
     }
