@@ -52,7 +52,7 @@ public class GameContext {
     private LevelManager levelManager;
     private boolean activeWaveInProgress = false;
     private boolean manualStartCommandReceived = false;
-    public static boolean battleStarted = false;
+    public boolean battleStarted = false;
 
     public GameContext(Level level, Season season) {
         this.level = level;

@@ -4,6 +4,7 @@ import controller.GameEngineController;
 import controller.MenuManager;
 import controller.commandHandler.Command;
 import controller.repository.DataManager;
+import model.GameContext;
 import model.level.Level;
 import model.level.LevelType;
 import model.menus.Menu;
@@ -52,9 +53,11 @@ public class EnterChapter implements Command {
 
                 ConsoleView.showMessage("Let's begin this level: %s\n" , menuManager.getCtx().getLevel().getName());
                 menuManager.forceChangeMenu("gamemenu");
+                GameContext.setBattleStarted(true);
+            }else {
+                menuManager.changeMenu("plantselectionmenu");
+                ConsoleView.showMessage("Entering %s. Choose your plants.", levelToPlay.getName());
             }
-            menuManager.changeMenu("plantselectionmenu");
-            ConsoleView.showMessage("Entering %s. Choose your plants.", levelToPlay.getName());
         }
     }
 

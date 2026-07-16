@@ -135,6 +135,7 @@ public class PlantSelectionMenu extends BaseMenu {
             ctx.placeGrave(g, g.getRow(), g.getCol());
         }
 
+        ctx.setBattleStarted(true);
         return "Let's begin this level: " + ctx.getLevel().getName();
     }
 }
