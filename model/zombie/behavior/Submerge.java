@@ -1,6 +1,7 @@
 package model.zombie.behavior;
 
 import model.GameContext;
+import model.plants.Plant;
 import model.zombie.Zombie;
 import java.util.List;
 import java.util.Set;
@@ -31,19 +32,39 @@ public class Submerge implements Behaviors {
                     List<String> damageWhileSubmerged,
                     List<String> damageWhileSubmergedPlantfoodOnly) {
         this.submerged = true;
-        this.targetPlants = new HashSet<>(targetPlants);
-        this.damageWhileSubmerged = new HashSet<>(damageWhileSubmerged);
-        this.damageWhileSubmergedPlantfoodOnly = new HashSet<>(damageWhileSubmergedPlantfoodOnly);
+        this.targetPlants = normalizeAll(targetPlants);
+        this.damageWhileSubmerged = normalizeAll(damageWhileSubmerged);
+        this.damageWhileSubmergedPlantfoodOnly = normalizeAll(damageWhileSubmergedPlantfoodOnly);
     }
 
     @Override
     public void onTick(Zombie zombie, GameContext ctx) {
-        // Check if any targetPlant is in this lane — if yes, surface and eat
+        int row = zombie.getRow();
+        int col = (int) zombie.getX();
+        int totalRows = ctx.getPlantGrid().length;
+        int totalCols = ctx.getPlantGrid()[0].length;
+
+        Plant target = (row >= 0 && row < totalRows && col >= 0 && col < totalCols)
+                ? ctx.getPlantGrid()[row][col] : null;
+        boolean hasLiveTarget = target != null && !target.isDead();
+
+        if (submerged) {
+            // زیر آب: فقط اگه گیاهی که میخواد بخوره جلوش باشه، میاد بالا سطح آب
+            if (hasLiveTarget && willSurfaceFor(target.getName())) {
+                surface();
+            }
+        } else if (!hasLiveTarget) {
+            // گیاهی که براش اومده بالا خورده شده/از بین رفته؛ دوباره میره زیر آب
+            submerge();
+        }
     }
 
     @Override
     public void onHit(Zombie zombie, int damage) {
-        // Damage is ignored while submerged unless source is in damageWhileSubmerged
+        // مسیر واقعی اعمال دمیج (Projectile.onHit → Zombie.takeDamage) هنوز اصلاً از
+        // isVulnerableTo() اینجا خبر نداره — این قسمت فعلاً هیچ اثری روی جونش نداره.
+        // باید قبل از takeDamage، منبع پرتابه/گیاه چک بشه (شبیه همون مشکلی که با
+        // ProjectileDeflector داشتیم: کلاس آماده‌ست ولی جایی صداش نمی‌زنه).
     }
 
     @Override
@@ -55,12 +76,25 @@ public class Submerge implements Behaviors {
 
     public boolean isVulnerableTo(String plantId, boolean isPlantFood) {
         if (!submerged) return true;
-        if (damageWhileSubmerged.contains(plantId)) return true;
-        if (isPlantFood && damageWhileSubmergedPlantfoodOnly.contains(plantId)) return true;
+        String key = normalize(plantId);
+        if (damageWhileSubmerged.contains(key)) return true;
+        if (isPlantFood && damageWhileSubmergedPlantfoodOnly.contains(key)) return true;
         return false;
     }
 
     public boolean willSurfaceFor(String plantId) {
-        return targetPlants.contains(plantId);
+        return targetPlants.contains(normalize(plantId));
+    }
+
+    // Plant.getName() ("Cherry Bomb", "Melon-pult") با فرمت این لیست‌ها ("cherry_bomb", "melonpult")
+    // یکی نیست؛ برای مقایسه‌ی درست، هردو طرف رو به یه شکل ساده (حروف کوچیک، بدون فاصله/خط‌تیره/زیرخط) می‌بریم.
+    private static String normalize(String s) {
+        return s == null ? "" : s.toLowerCase().replaceAll("[\\s\\-_]", "");
+    }
+
+    private static Set<String> normalizeAll(List<String> raw) {
+        Set<String> result = new HashSet<>();
+        for (String s : raw) result.add(normalize(s));
+        return result;
     }
 }

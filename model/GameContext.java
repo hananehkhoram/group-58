@@ -122,15 +122,6 @@ public class GameContext {
         return 0;
     }
 
-    /**
-     * Zombie-side counterpart of GameEngine.findTargets: nearest live plant in
-     * the zombie's own row. NOTE: this is technically game logic and would sit
-     * more naturally in GameEngine (see findTargets), but Behaviors.onTick only
-     * receives GameContext, not GameEngine, so it lives here for now. If you
-     * later change Behaviors to also receive GameEngine (mirroring how plant
-     * abilities already get it via Shooters.shoot(..., GameEngine engine)),
-     * move this there and delete it from GameContext.
-     */
     public Plant findNearestPlantInRow(Zombie zombie) {
         int row = zombie.getRow();
         Plant nearest = null;

@@ -3,7 +3,7 @@ package model.zombie.behavior;
 import model.GameContext;
 import model.plants.Plant;
 import model.zombie.Zombie;
-
+//
 public class Eating implements Behaviors {
 
     @Override

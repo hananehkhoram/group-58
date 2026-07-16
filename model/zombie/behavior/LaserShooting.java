@@ -89,7 +89,7 @@ public class LaserShooting implements Behaviors {
         if (jumper == null) return;
         jumper.turnBackward();
         // طبق سند: به انتهای سطر (کنار خانه‌ی بازیکن) پرتاب می‌شود؛ ستون ۰ = کنار خانه
-        jumper.startJump(ctx, zombie, 0, 0.6f, 40); // TODO: زمان/ارتفاع دقیق پرش را طبق سند تنظیم کنید
+        jumper.startJump(ctx, zombie, 0, 0.6f, 40); // TODO: زمان/ارتفاع دقیق پرش را طبق داک تنظیم کنید
     }
 
     // ================= Turquoise (CrystalSkull) =================

@@ -2,7 +2,7 @@ package model.zombie.behavior;
 
 import model.GameContext;
 import model.zombie.Zombie;
-
+//
 public class GetDamage implements Behaviors {
 
     private GetDamageType type;

@@ -1,14 +1,20 @@
 package model.zombie.behavior;
 
 import model.GameContext;
+import model.mechanisms.Sun;
 import model.zombie.Zombie;
+
+import java.util.ArrayList;
 
 public class SunThief implements Behaviors {
 
+    private static final int TICKS_PER_SECOND = 10; // مطابق TimeManager
+
     private int stolenSuns;
     private int maxClaimedSuns;  // ZombieRa: 250
-    private int rate;
+    private int rate;            // فاصله‌ی زمانی (ثانیه) بین هر بار قاپیدن
     private int distance;
+    private long lastStealTick = -1;
 
     public SunThief(int maxClaimedSuns, int rate, int distance) {
         this.maxClaimedSuns = maxClaimedSuns;
@@ -19,7 +25,25 @@ public class SunThief implements Behaviors {
 
     @Override
     public void onTick(Zombie zombie, GameContext ctx) {
-        // steal sun currency from nearby suns on the ground
+        if (!canStealMore()) return;
+
+        long now = ctx.getTimeManager().getTotalTicks();
+        if (lastStealTick >= 0 && (now - lastStealTick) < (long) rate * TICKS_PER_SECOND) return;
+
+        for (Sun sun : new ArrayList<>(ctx.getSunManager().getActiveSunDrops())) {
+            if (!sun.isOnGround()) continue; // فقط خورشیدهای رو زمین قابل قاپیدنن، نه هنوز در حال سقوط
+
+            double dRow = sun.getY() - zombie.getRow();
+            double dCol = sun.getX() - zombie.getX();
+            if (Math.hypot(dRow, dCol) > distance) continue;
+
+            int amount = ctx.getSunManager().stealSun(sun);
+            if (amount > 0) {
+                stolenSuns = Math.min(maxClaimedSuns, stolenSuns + amount);
+                lastStealTick = now;
+                if (!canStealMore()) break;
+            }
+        }
     }
 
     @Override
@@ -29,8 +53,11 @@ public class SunThief implements Behaviors {
     public boolean isDestroyed() { return false; }
 
     public void giveBackSuns(GameContext ctx) {
-        // called on death: drop stolenSuns back on board
-        stolenSuns = 0;
+        // طبق سند: بعد از مرگ، همه‌ی خورشیدهای دزدیده‌شده برمی‌گردن به بازیکن
+        if (stolenSuns > 0) {
+            ctx.addSun(stolenSuns);
+            stolenSuns = 0;
+        }
     }
 
     public boolean canStealMore() { return stolenSuns < maxClaimedSuns; }
