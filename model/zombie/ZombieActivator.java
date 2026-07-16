@@ -44,9 +44,12 @@ public class ZombieActivator {
                         false, new double[]{0.666, 0.333}));
                 break;
 
-            case "ZombieDarkArmor3": // Dark Ages Knight
-                behaviors.put("armor", new Armor(
+            case "ZombieDarkArmor3": // Dark Ages Knight — کلاهخود + شانه‌بند، هرکدام جدا (صفحه ۳۴ سند)
+                behaviors.put("armor", new Armor(          // کلاهخود — magnetshroom می‌تونه اینو بقاپه
                         ArmorType.SHOULDER_CROWN, ArmorType.SHOULDER_CROWN.baseHealth,
+                        true, new double[]{0.666, 0.333}));
+                behaviors.put("armor2", new Armor(         // شانه‌بند — magnetshroom نمی‌تونه اینو بقاپه
+                        ArmorType.SHOULDER_ARMOR, ArmorType.SHOULDER_ARMOR.baseHealth,
                         true, new double[]{0.666, 0.333}));
                 break;
 

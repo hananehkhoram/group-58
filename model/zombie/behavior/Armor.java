@@ -38,8 +38,21 @@ public class Armor implements Behaviors {
 
     @Override
     public void onHit(Zombie zombie, int damage) {
+        absorb(damage);
+    }
+
+    public int absorb(int damage) {
         armorHP -= damage;
-        if (armorHP < 0) armorHP = 0;
+        int overflow = 0;
+        if (armorHP < 0) {
+            overflow = -armorHP;
+            armorHP = 0;
+        }
+        return overflow;
+    }
+
+    public void destroy() {
+        armorHP = 0;
     }
 
     @Override
@@ -47,10 +60,6 @@ public class Armor implements Behaviors {
         return armorHP <= 0;
     }
 
-    /**
-     * Called by the game loop when isDestroyed() first becomes true.
-     * If enrageable (Newspaper), multiplies the zombie's speed and eatDps.
-     */
     public void afterDestroy(Zombie zombie) {
         if (enrageable && !enraged) {
             enraged = true;

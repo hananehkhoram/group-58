@@ -11,7 +11,7 @@ import model.user.UserManager;
 import view.ConsoleView;
 
 public class GameEngineController {
-    private static final double DELTA_TIME = 0.05; // 20 TPS
+    private static final double DELTA_TIME = 0.1;
     private controller.commandHandler.CommandRegistry registry;
     private boolean isRunning;
     private MenuManager mm;

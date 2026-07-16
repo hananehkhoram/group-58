@@ -45,7 +45,7 @@ public class GameEngine {
         updateLawnMowers(deltaTime);
         updatePlants(deltaTime);
         updateProjectiles(deltaTime);
-        checkZombiePlantCollisions();
+        checkZombiePlantCollisions(deltaTime);
         checkGameEnd();
     }
 
@@ -224,7 +224,7 @@ public class GameEngine {
         }
     }
 
-    private void checkZombiePlantCollisions() {
+    private void checkZombiePlantCollisions(double deltaTime) {
         for (Zombie z : ctx.getAliveZombies()) {
             int col = (int) z.getX();
             int row = (int) z.getY();
@@ -237,7 +237,10 @@ public class GameEngine {
             Plant p = ctx.getPlantGrid()[row][col];
             if (p != null && p.getHp() > 0) {
                 z.setEating(true);
-                p.takeDamage((int) z.getEatDps());
+                int damage = z.consumeEatDamage(deltaTime);
+                if (damage > 0) {
+                    p.takeDamage(damage);
+                }
             } else {
                 z.setEating(false);
             }
@@ -270,7 +273,6 @@ public class GameEngine {
                 return sameRow;
             }
             case NEAREST -> {
-                // برخلاف FIRST_IN_LANE، اینجا محدود به سطر خودِ گیاه نیست — نزدیک‌ترین زامبی در کل صفحه
                 List<Zombie> result = new ArrayList<>();
                 Zombie nearest = null;
                 double bestDist = Double.MAX_VALUE;
@@ -287,7 +289,6 @@ public class GameEngine {
                 return result;
             }
             case RANDOM -> {
-                // یک زامبی تصادفی از کل صفحه (نه فقط همون سطر)
                 List<Zombie> all = ctx.getAliveZombies();
                 List<Zombie> result = new ArrayList<>();
                 if (!all.isEmpty()) {

@@ -100,7 +100,7 @@ public class Projectile {
                 target.takeDamage(Integer.MAX_VALUE);
                 break;
             case IMMOBILIZE:
-                target.applySlowOrFreeze(); // یا متد جدا مثل target.immobilize() اگر رفتارش با ICE فرق دارد
+                target.applySlowOrFreeze();
                 break;
             case MAGIC:
             case SMOKE:

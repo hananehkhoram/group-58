@@ -17,12 +17,12 @@ public class Jumper implements Behaviors {
         DRAGON_IMP   // مثل IMP، فقط FireDamageMultiplier=0
     }
 
-    private static final int TICKS_PER_SECOND = 10; // مطابق TimeManager (getTotalSeconds = totalTicks/10)
+    private static final int TICKS_PER_SECOND = 10;
     private static final int HIGH_HP_OBSTACLE_THRESHOLD = 4000; // TODO: آستانه‌ی دقیق «جان زیاد مثل wall-nut» را با plants.csv تطبیق دهید
 
     private JumpVariant variant;
     private boolean landed;
-    public boolean reverseTheWay; // Prospector: بعد از فرود برعکس راه می‌رود
+    public boolean reverseTheWay;
 
     // پارامترهای قوس پرش (مشترک بین IMP/DRAGON_IMP/DODO/PROSPECTOR)
     private int apex;
@@ -30,8 +30,8 @@ public class Jumper implements Behaviors {
     private int stunTime;
     private int targetColumn;
 
-    private double startColumn;   // ستونی که پرش از آن‌جا شروع شد
-    private long startTick;       // تیکی که پرش شروع شد (برای محاسبه‌ی پیشرفت، چون onTick بدون deltaTime صدا زده می‌شود)
+    private double startColumn;
+    private long startTick;
 
     private double fireDamageMultiplier;
 
@@ -41,7 +41,6 @@ public class Jumper implements Behaviors {
         this.fireDamageMultiplier = 1.0;
     }
 
-    /** Dodo — دیگر شانس تصادفی ندارد؛ فقط سازنده برای سازگاری با کد قبلی نگه داشته شده */
     public Jumper(float initialChance, float addChancePerGrid,
                   int minGridSquares, int maxGridSquares) {
         this.variant = JumpVariant.DODO;
@@ -103,8 +102,6 @@ public class Jumper implements Behaviors {
         if (variant == JumpVariant.DODO) {
             checkDodoObstacle(ctx, zombie);
         }
-        // EXPLORER: بدون کاری — رفتار واقعی‌اش در Area پیاده می‌شود
-        // PROSPECTOR: شروع پرش توسط LaserShooting (بعد از ۱۰ ثانیه انفجار دینامیت) صدا زده خواهد شد
     }
 
     /** جابه‌جایی خطی روی قوس پرش، بر اساس تعداد تیک سپری‌شده (نه deltaTime، چون onTick آن را ندارد) */
@@ -119,7 +116,7 @@ public class Jumper implements Behaviors {
             zombie.setX(targetColumn);
             landed = true;
             if (variant == JumpVariant.PROSPECTOR && reverseTheWay) {
-                zombie.setMovingBackward(true); // از اینجا به بعد رو به عقب (سمت راست) می‌خورد
+                zombie.setMovingBackward(true);
             }
         }
     }
@@ -130,20 +127,20 @@ public class Jumper implements Behaviors {
      */
     private void checkDodoObstacle(GameContext ctx, Zombie zombie) {
         int row = zombie.getRow();
-        int aheadCol = (int) Math.floor(zombie.getX()) - 1; // خانه‌ی بعدی که قرار است وارد آن شود
+        int aheadCol = (int) Math.floor(zombie.getX()) - 1;
         if (aheadCol < 0) return;
 
         Plant ahead = ctx.getPlantGrid()[row][aheadCol];
         if (!isObstacle(ahead)) return;
 
-        int landingCol = Math.max(0, aheadCol - 1); // درست بعد از مانع فرود می‌آید
+        int landingCol = Math.max(0, aheadCol - 1);
         startJump(ctx, zombie, landingCol, 0.6f, 40); // TODO: زمان/ارتفاع دقیق پرش را طبق سند تنظیم کنید
     }
 
     private boolean isObstacle(Plant p) {
         if (p == null || p.isDead()) return false;
         String name = p.getName() == null ? "" : p.getName().toLowerCase();
-        if (name.contains("tall") && name.contains("nut")) return false; // از گردوی بلند رد نمی‌شود
+        if (name.contains("tall") && name.contains("nut")) return false;
 
         EnumSet<Tag> tags = p.getTags();
         if (tags != null && (tags.contains(Tag.MOVE_ZOMBIES) || tags.contains(Tag.TRAP))) return true;

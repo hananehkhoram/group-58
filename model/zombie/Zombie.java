@@ -4,6 +4,7 @@ import model.GameContext;
 import model.projectile.Damageable;
 import model.season.Season;
 import model.zombie.behavior.Armor;
+import model.zombie.behavior.ArmorType;
 import model.zombie.behavior.Behaviors;
 import model.zombie.behavior.Jumper;
 
@@ -15,6 +16,7 @@ public class Zombie implements Damageable {
     private String name;
     private int hp;
     private double eatDps;
+    private double eatDamageAccumulator = 0.0; // باقیمانده‌ی اعشاری دمیج خوردن گیاه بین تیک‌ها
     private double speed;
     private int wavePointCost;
     private int weight;
@@ -61,13 +63,16 @@ public class Zombie implements Damageable {
         if (armor != null && armor.isDestroyed()) {
             armor.afterDestroy(this);
         }
+        Armor secondaryArmor = getSecondaryArmor();
+        if (secondaryArmor != null && secondaryArmor.isDestroyed()) {
+            secondaryArmor.afterDestroy(this);
+        }
 
         boolean airborne = getJumper() != null && !getJumper().isLanded();
 
         if (!isEating && !airborne) {
-            double effectiveSpeed = speed;
-            if (isIced) effectiveSpeed *= 0.5;
-            x += movingBackward ? effectiveSpeed * deltaTime : -effectiveSpeed * deltaTime;
+            if (isIced) speed *= 0.5;
+            x += movingBackward ? speed * deltaTime : -speed * deltaTime;
         }
     }
 
@@ -76,7 +81,6 @@ public class Zombie implements Damageable {
         return (b instanceof Jumper) ? (Jumper) b : null;
     }
 
-    /** بعد از انفجار دینامیت اکتشافگر، جهت حرکتش برعکس می‌شود (به سمت راست، رو به عقب می‌خورد) */
     public void setMovingBackward(boolean movingBackward) { this.movingBackward = movingBackward; }
     public boolean isMovingBackward() { return movingBackward; }
 
@@ -90,21 +94,45 @@ public class Zombie implements Damageable {
             return;
         }
 
-        Armor armor = getArmor();
-        if (armor != null && !armor.isDestroyed()) {
-            armor.onHit(this, (int) damage);
-            if (armor.isDestroyed()) {
-                double overflow = -armor.getArmorHP();
-                if (overflow > 0) hp -= (int) overflow;
-            }
-        } else {
-            hp -= (int) damage;
+        int remaining = (int) damage;
+
+        Armor primary = getArmor();
+        if (primary != null && !primary.isDestroyed()) {
+            remaining = primary.absorb(remaining);
+            if (remaining <= 0) return;
         }
+
+        Armor secondary = getSecondaryArmor();
+        if (secondary != null && !secondary.isDestroyed()) {
+            remaining = secondary.absorb(remaining);
+            if (remaining <= 0) return;
+        }
+
+        hp -= remaining;
     }
 
     public Armor getArmor() {
         Behaviors b = behaviors.get("armor");
         return (b instanceof Armor) ? (Armor) b : null;
+    }
+
+    public Armor getSecondaryArmor() {
+        Behaviors b = behaviors.get("armor2");
+        return (b instanceof Armor) ? (Armor) b : null;
+    }
+
+    public boolean removeArmorOfType(ArmorType type) {
+        Armor primary = getArmor();
+        if (primary != null && primary.getArmorType() == type && !primary.isDestroyed()) {
+            primary.destroy();
+            return true;
+        }
+        Armor secondary = getSecondaryArmor();
+        if (secondary != null && secondary.getArmorType() == type && !secondary.isDestroyed()) {
+            secondary.destroy();
+            return true;
+        }
+        return false;
     }
 
     public boolean isDead() { return hp <= 0; }
@@ -118,12 +146,11 @@ public class Zombie implements Damageable {
 
     @Override
     public void takeDamage(int amount) {
-        takeDamage((double) amount); // از منطق آرمور/یخ موجود استفاده می‌کند
+        takeDamage((double) amount);
     }
 
     @Override
     public void takeArmorPiercingDamage(int amount) {
-        // برخلاف takeDamage عادی، از بلوک armor رد می‌شود و مستقیم به جان اصلی می‌زند
         hp -= amount;
     }
 
@@ -151,6 +178,14 @@ public class Zombie implements Damageable {
     public String getName() { return name; }
     public int getHp() { return hp; }
     public double getEatDps() { return eatDps; }
+
+
+    public int consumeEatDamage(double deltaTime) {
+        eatDamageAccumulator += eatDps * deltaTime;
+        int wholeDamage = (int) eatDamageAccumulator;
+        eatDamageAccumulator -= wholeDamage;
+        return wholeDamage;
+    }
     public double getSpeed() { return speed; }
     public int getWavePointCost() { return wavePointCost; }
     public int getWeight() { return weight; }

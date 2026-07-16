@@ -64,9 +64,6 @@ public class Shooters implements BaseAbility {
             default -> TrajectoryType.STRAIGHT;
         };
 
-        // amount فقط برای STRAIGHT_SEQUENTIAL (Repeater) به معنی «چندبار پشت‌سرهم شلیک کن»ه؛
-        // برای TRI_LANE به معنی «چند لاین» است (در resolveLanes مدیریت شده)، و برای شلیک‌های چندجهته
-        // (QUAD_DIAGONAL/FRONT_AND_BACK/STAR_BURST) هرجهت خودش یک شلیک همزمانه، نه تکراری.
         int shotsPerLane = (shootType == ShootType.STRAIGHT_SEQUENTIAL) ? Math.max(1, amount) : 1;
 
         boolean firedAny = false;
