@@ -57,7 +57,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("menu coin-wallet" , new EnterCoinWallet(menuManager));
         registry.register("menu gem-wallet" , new EnterGemWallet(menuManager));
         registry.register("" , new ChooseTheWorld(menuManager));
-        registry.register("menu settings changeDifficulty -l (?<difficultyLevel>\\d+)" , new SettingsMenuCommands(menuManager));
+        registry.register("menu settings change-difficulty -l (?<difficultyLevel>\\d+)" , new SettingsMenuCommands(menuManager));
         registry.register("menu news show-unread" , new ShowUnreadNews(menuManager));
         registry.register("menu news show-all" , new ShowAllNews(menuManager));
         registry.register("menu profile change-username -u (?<username>\\S+)" , new ChangeUsername(menuManager));
@@ -71,7 +71,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("menu collection show-zombie -z (?<zombieName>\\S+)" , new ShowZombieDetails(menuManager));
         registry.register("menu collection upgrade-plant -p (?<plantName>\\S+)" , new UpgradePlant(menuManager));
         registry.register("menu collection purchase-plant -p (?<plantName>\\S+)" , new PurchasePlant(menuManager));
-        registry.register("show (?<allORavailable>) plants" , new controller.commands.PlantsList.ShowPlantsList(menuManager));
+        registry.register("show (?<allORavailable>all|available) plants" , new controller.commands.PlantsList.ShowPlantsList(menuManager));
         registry.register("add plant -t (?<type>\\S+)" , new controller.commands.PlantsList.AddPlant(menuManager));
         registry.register("remove plant -t (?<type>\\S+)" , new controller.commands.PlantsList.RemovePlant(menuManager));
         registry.register("boost plant -t (?<type>\\S+)" , new controller.commands.PlantsList.BoostPlant(menuManager));

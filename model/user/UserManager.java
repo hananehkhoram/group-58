@@ -33,9 +33,9 @@ public class UserManager {//singelton
     }
 
     public User findUserByName(String name) {
-        User foundUser = null;
-        for (User u : users) {
-            if (u.getUsername().equals(name)) {
+        User foundUser = new User();
+        for (User u : UserManager.getInstance().users) {
+            if (u.getUsername().equalsIgnoreCase(name)) {
                 foundUser = u;
                 break;
             }
@@ -60,7 +60,7 @@ public class UserManager {//singelton
     }
 
     public boolean doesUserExist(String username) {
-        for (User user : users) {
+        for (User user : UserManager.getInstance().users) {
             if (user.username.equals(username)) return true;
         }
         return false;
@@ -140,6 +140,7 @@ public class UserManager {//singelton
 
     public boolean isEmailCorrect(String email, String name) {
         User foundUser = findUserByName(name);
+        if (foundUser == null) return false;
         if (!foundUser.getEmail().equalsIgnoreCase(email)) return false;
         return true;
     }

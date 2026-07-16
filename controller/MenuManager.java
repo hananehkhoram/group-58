@@ -68,6 +68,7 @@ public class MenuManager {
             case PROFILE: return new ProfileMenu(ctx);
             case REGISTER: return new RegisterMenu(ctx);
             case TRAVEL: return new TravelMenu(ctx);
+            case SETTINGS: return new SettingsMenu(ctx);
             default: throw new CommandNotFound("Invalid menu type!");
         }
     }

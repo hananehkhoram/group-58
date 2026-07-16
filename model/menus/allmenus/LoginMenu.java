@@ -63,8 +63,8 @@ public class LoginMenu extends BaseMenu {
     }
 
     public String startForgetPasswordProcess(String username, String email) {
-        User user = um.findUserByName(username);
         if (!um.doesUserExist(username)) return "User does not exist!";
+        User user = um.findUserByName(username);
         if (!um.isEmailCorrect(email,name)) return "Email is incorrect.";
 
         this.targetUser = user;

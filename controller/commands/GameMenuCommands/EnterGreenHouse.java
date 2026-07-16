@@ -5,6 +5,7 @@ import controller.commandHandler.Command;
 import model.GameContext;
 import model.menus.MenuType;
 import model.menus.allmenus.GreenHouseMenu;
+import view.ConsoleView;
 
 public class EnterGreenHouse implements Command {
     private MenuManager menuManager;
@@ -17,6 +18,7 @@ public class EnterGreenHouse implements Command {
     public void execute(String[] args) {
 
         menuManager.changeMenu("GreenHouseMenu");
+        ConsoleView.showMessage("You are now in greenhouse");
 
 
     }

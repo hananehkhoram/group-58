@@ -4,6 +4,7 @@ import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.menus.Menu;
 import model.menus.allmenus.GameMenu;
+import view.ConsoleView;
 
 public class EnterLeaderBoard implements Command {
     private MenuManager menuManager;
@@ -17,6 +18,7 @@ public class EnterLeaderBoard implements Command {
 
         if (currentMenu instanceof GameMenu){
             menuManager.changeMenu("LeaderBoardMenu");
+            ConsoleView.showMessage("You are now in leader board menu");
         }
     }
 
