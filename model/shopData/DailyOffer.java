@@ -66,4 +66,8 @@ public class DailyOffer{
     public void setId(int id) {
         this.id = id;
     }
+
+    public void setPlantType(Plant plantType) {
+        this.plantType = plantType;
+    }
 }

@@ -73,14 +73,14 @@ public class EnterChapter implements Command {
     }
 
     private Level firstUnfinishedLevel(Season chapter, User user) {
-        if (chapter == null || chapter.getLevels().isEmpty()) {
-            return null;
-        }
+        Level currentLevel = chapter.getLevels().get(0);
         for (Level lvl : chapter.getLevels()) {
-            if (!user.isLevelUnlocked(lvl.getName())) {
-                return lvl;
+            if (user.isLevelUnlocked(lvl.getName())) {
+                currentLevel = lvl;
+            } else {
+                break;
             }
         }
-        return chapter.getLevels().get(chapter.getLevels().size() - 1);
+        return currentLevel;
     }//menu enter chapter -c
 }

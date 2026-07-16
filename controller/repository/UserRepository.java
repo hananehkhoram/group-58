@@ -214,11 +214,11 @@ public class UserRepository implements AssetRepository<User> {
         if (f.length > 28 && !f[28].isBlank()) {
             String[] offerParts = f[28].split(LIST_SEP, -1);
             DailyOffer d = new DailyOffer(Integer.parseInt(offerParts[0]), Long.parseLong(offerParts[1]), Boolean.parseBoolean(offerParts[2]));
-            u.setLastDailyOffer(d);
             if (offerParts.length > 3 && !offerParts[3].isBlank()) {
                 Plant p = DataManager.getInstance().plants.get(offerParts[3]);
-                u.setLastDailyOfferPlant(p);
+                d.setPlantType(p);
             }
+            u.setLastDailyOffer(d);
             if (offerParts.length > 4) {
                 u.setBoughtDailyOfferToday(Boolean.parseBoolean(offerParts[4]));
             }

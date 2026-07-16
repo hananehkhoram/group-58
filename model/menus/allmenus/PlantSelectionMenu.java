@@ -11,6 +11,7 @@ import model.season.Grave;
 import model.user.User;
 import model.user.UserManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlantSelectionMenu extends BaseMenu {
@@ -31,7 +32,7 @@ public class PlantSelectionMenu extends BaseMenu {
     }
 
     public String showAllPlants() {
-        List<Plant> plants = (List<Plant>) plantRepository.getPlantDataMap().values();
+        List<Plant> plants = new ArrayList<>(plantRepository.getPlantDataMap().values());
         StringBuilder sb = new StringBuilder();
         sb.append("All plants ->\n");
         for (Plant plant : plants){
@@ -51,9 +52,9 @@ public class PlantSelectionMenu extends BaseMenu {
         return sb.toString();
     }
     public String addPlant(String plantType) {
-        List<Plant> allPlants = (List<Plant>) plantRepository.getPlantDataMap().values();
-        List<Plant> plants = currentUser.getUnlockedPlantTypes();
-        List<Plant> plantsInCtx = ctx.getActivePlants();
+        List<Plant> allPlants = new ArrayList<>(plantRepository.getPlantDataMap().values());
+        List<Plant> plants = new ArrayList<>(currentUser.getUnlockedPlantTypes());
+        List<Plant> plantsInCtx = new ArrayList<>(ctx.getActivePlants());
         Plant inAllPlant = null;
         Plant inUserPlant = null;
         boolean plantInCtx = false;
@@ -75,9 +76,9 @@ public class PlantSelectionMenu extends BaseMenu {
         return "Successfully added "+newPlant.getName()+"to your plants.";
     }
     public String removePlant(String plantType) {
-        List<Plant> allPlants = (List<Plant>) plantRepository.getPlantDataMap().values();
-        List<Plant> plants = currentUser.getUnlockedPlantTypes();
-        List<Plant> plantsInCtx = ctx.getActivePlants();
+        List<Plant> allPlants = new ArrayList<>(plantRepository.getPlantDataMap().values());
+        List<Plant> plants = new ArrayList<>(currentUser.getUnlockedPlantTypes());
+        List<Plant> plantsInCtx = new ArrayList<>(ctx.getActivePlants());
         Plant inAllPlant = null;
         Plant inUserPlant = null;
         Plant plantInCtx = null;
@@ -98,9 +99,9 @@ public class PlantSelectionMenu extends BaseMenu {
         return "Successfully removed "+plantInCtx.getName()+"from your plants.";
     }
     public String boostPlant(String plantType) {
-        List<Plant> allPlants = (List<Plant>) plantRepository.getPlantDataMap().values();
-        List<Plant> plants = currentUser.getUnlockedPlantTypes();
-        List<Plant> plantsInCtx = ctx.getActivePlants();
+        List<Plant> allPlants = new ArrayList<>(plantRepository.getPlantDataMap().values());
+        List<Plant> plants = new ArrayList<>(currentUser.getUnlockedPlantTypes());
+        List<Plant> plantsInCtx = new ArrayList<>(ctx.getActivePlants());
         Plant inAllPlant = null;
         Plant inUserPlant = null;
         Plant plantInCtx = null;

@@ -13,6 +13,7 @@ import model.user.User;
 import model.user.UserManager;
 import model.zombie.Zombie;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CollectionMenu extends BaseMenu {
@@ -39,7 +40,7 @@ public class CollectionMenu extends BaseMenu {
         this.unlockedPlants = currentUser.getUnlockedPlantTypes();
         this.plantFactory = new PlantFactory(dm);
         this.name = "Collection menu";
-        this.allPlants = (List<Plant>) plantRepository.getPlantDataMap().values();
+        this.allPlants = new ArrayList<>(plantRepository.getPlantDataMap().values());
     }
 
     public String showAllPlants() {

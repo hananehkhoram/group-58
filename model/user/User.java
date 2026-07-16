@@ -30,7 +30,6 @@ public class User {
     private int minigamesCompleted = 0;
 
 
-    private Plant lastDailyOfferPlant;   // گیاه پیشنهاد روز گذشته
     private LocalDate lastDailyOfferDate;      // تاریخ آخرین باری که پیشنهاد نمایش داده شد
     private boolean boughtDailyOfferToday;
     private DailyOffer lastDailyOffer;
@@ -201,14 +200,6 @@ public class User {
     }
 
     public void setNumberOfPassedLevels(int n) {this.numberOfPassedLevels = n;}
-
-    public Plant getLastDailyOfferPlant() {
-        return lastDailyOfferPlant;
-    }
-
-    public void setLastDailyOfferPlant(Plant lastDailyOfferPlant) {
-        this.lastDailyOfferPlant = lastDailyOfferPlant;
-    }
 
     public DailyOffer getLastDailyOffer() {
         return lastDailyOffer;

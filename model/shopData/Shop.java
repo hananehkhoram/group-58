@@ -42,7 +42,6 @@ public class Shop{
     public void updateDailyOffer(User currentUser){
         Plant randomPlant = getRandomUnlockedPlant(currentUser);
         currentUser.setLastDailyOfferDate(LocalDate.now());
-        currentUser.setLastDailyOfferPlant(randomPlant);
         DailyOffer newOffer = new DailyOffer(randomPlant);
         currentUser.setLastDailyOffer(newOffer);
 
