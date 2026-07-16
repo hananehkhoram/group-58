@@ -1,10 +1,12 @@
 package model.mechanisms;
 
+import controller.QuestManager;
 import model.GameContext;
 import model.projectile.Projectile;
 import model.level.Level;
 import model.plants.Plant;
 import model.plants.TargetingMode;
+import model.user.UserManager;
 import model.zombie.Zombie;
 import model.zombie.behavior.Behaviors;
 
@@ -80,6 +82,9 @@ public class GameEngine {
         wave.start(ctx);
         ctx.incrementWaveIndex();
         ctx.setActiveWaveInProgress(true);
+        if (ctx.getCurrentWaveIndex() == 1) {
+            ctx.recordFirstWaveStart();
+        }
     }
 
     private void updateZombies(double deltaTime) {
@@ -104,6 +109,17 @@ public class GameEngine {
                 }
                 it.remove();
                 ctx.incrementZombieKills();
+                QuestManager.progress(UserManager.getInstance().getCurrentUser(),
+                        "chapter-hunter-" + ctx.getSeason().getName(), 1);
+
+                if (ctx.getFirstWaveStartTick() != -1) {
+                    ctx.recordZombieKillTick();
+                }
+
+                LawnMower mowerForThisRow = lawnMowers[(int) z.getY()];
+                if (z.getX() < 1.0 && !mowerForThisRow.isAvailable()) {
+                    ctx.recordAlmostLostKill();
+                }
             }
         }
     }
@@ -119,6 +135,7 @@ public class GameEngine {
 
             if (l.isDidKilled()) {
                 ctx.incrementZombieKills();
+                ctx.recordLawnMowerKill();
                 l.setDidKilled(false);
             }
         }

@@ -3,28 +3,39 @@ package model;
 import java.util.ArrayList;
 import model.plants.PlantFamily;
 
+
 public class Quest {
-
-    protected String id;
-    protected String condition;
+    public enum QuestCategory { DAILY, MAIN, EPIC }
     public enum QuestLevel { LOW, MEDIUM, HIGH, CRITICAL }
-    public enum QuestType { DAILY, MAIN, EPIC_CHALLENGE }
+    public enum RewardType { COIN, GEM, SEED_PACKET, RANDOM_PLANT }
 
-    protected int gemReward;
-    protected int coinReward;
+    private final String id;
+    private final String name;
+    private final QuestCategory category;
+    private final String description;
+    private final RewardType rewardType;
+    private final int rewardAmount;
+    private final QuestLevel priority;
+    private final int targetProgress;
 
-    protected int sun_amount;
-    protected int questNumber; //progress
+    public Quest(String id, String name, QuestCategory category, String description,
+                 RewardType rewardType, int rewardAmount, QuestLevel priority, int targetProgress) {
+        this.id = id;
+        this.name = name;
+        this.category = category;
+        this.description = description;
+        this.rewardType = rewardType;
+        this.rewardAmount = rewardAmount;
+        this.priority = priority;
+        this.targetProgress = targetProgress;
+    }
 
-    ArrayList<String> season = new ArrayList<>();
-    ArrayList<String> killerPlant = new ArrayList<>();
-    public int[] n_seed = {0 , 1 , 2 , 3 , 4 , 5};
-    public int[] n_Gem = {10 , 20 , 30 , 40 , 50};
-
-    protected int numberOFrow;
-    protected int nuimberOFcolumns;
-    protected int min_row_column;
-
-    public void specialreward(){}
-
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public QuestCategory getCategory() { return category; }
+    public String getDescription() { return description; }
+    public RewardType getRewardType() { return rewardType; }
+    public int getRewardAmount() { return rewardAmount; }
+    public QuestLevel getPriority() { return priority; }
+    public int getTargetProgress() { return targetProgress; }
 }

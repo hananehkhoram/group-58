@@ -7,10 +7,7 @@ import model.season.miniGameSeason.beghouledSeason;
 import model.season.miniGameSeason.vaseSeason;
 import model.season.miniGameSeason.wallnutsSeason;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SeasonRepository implements AssetRepository<Season> {
     private final Map<String, Season> seasonMap = new HashMap<>();
@@ -22,18 +19,24 @@ public class SeasonRepository implements AssetRepository<Season> {
         Season frozen = new FrozenCaveChapter(LevelFactory.buildFrozenCaveLevels());
         Season beach = new BigWaveBeachSeason(LevelFactory.buildBigWaveBeachLevels());
         Season darkAges = new DarkAgesSeason(LevelFactory.buildDarkAgesLevels());
+
         Season wallnut = new wallnutsSeason(LevelFactory.buildWallnutsLevels());
         Season vase = new vaseSeason(LevelFactory.buildVaseLevels());
-        Season Izombie = new IzombieSeason(LevelFactory.buildIzombieLevels());
-        Season Beghouled = new beghouledSeason(LevelFactory.buldBeghouledLevels());
+        Season izombie = new IzombieSeason(LevelFactory.buildIzombieLevels());
+        Season beghouled = new beghouledSeason(LevelFactory.buldBeghouledLevels());
 
         orderedSeasons.add(egypt);
         orderedSeasons.add(frozen);
         orderedSeasons.add(beach);
         orderedSeasons.add(darkAges);
-        orderedSeasons.add(wallnut);
 
-        for (Season s : orderedSeasons) {
+        List<Season> allSeasons = new ArrayList<>(orderedSeasons);
+        allSeasons.add(wallnut);
+        allSeasons.add(vase);
+        allSeasons.add(izombie);
+        allSeasons.add(beghouled);
+
+        for (Season s : allSeasons) {
             seasonMap.put(s.getName(), s);
         }
     }
@@ -41,6 +44,13 @@ public class SeasonRepository implements AssetRepository<Season> {
     @Override
     public Season get(String id) {
         return seasonMap.get(id);
+    }
+
+    public Collection<Season> getAll() {
+        return seasonMap.values();
+    }
+    public List<Season> getMainChapters() {
+        return orderedSeasons;
     }
 
     public int getChapterNumber(Season season) {

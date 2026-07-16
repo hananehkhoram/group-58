@@ -90,6 +90,11 @@ public class UserRepository implements AssetRepository<User> {
             }
         }
 
+        String questProgressStr = u.getAllQuestProgress() == null ? "" :
+                String.join(LIST_SEP, u.getAllQuestProgress().entrySet().stream()
+                                      .map(e -> e.getKey() + PLANT_SEP + e.getValue())
+                                      .toList());
+
         return String.join(FIELD_SEP,
                 u.getUsername(),                                              // 0
                 u.getPassword(),                                              // 1
@@ -119,7 +124,9 @@ public class UserRepository implements AssetRepository<User> {
                 completedQuests,                                              // 25
                 seedPackets,                                                  // 26
                 greenhouseSb.toString(),                                      // 27
-                dailyOffer                                                    // 28
+                dailyOffer,                                                   // 28
+                String.valueOf(u.getWinStreakAtMaxDifficulty()),              // 29 ← جدید
+                questProgressStr                                              // 30 ← جدید
         );
     }
 
@@ -222,6 +229,21 @@ public class UserRepository implements AssetRepository<User> {
             if (offerParts.length > 4) {
                 u.setBoughtDailyOfferToday(Boolean.parseBoolean(offerParts[4]));
             }
+        }
+
+        if (f.length > 29 && !f[29].isBlank()) {
+            u.setWinStreakAtMaxDifficulty(Integer.parseInt(f[29]));
+        }
+
+        if (f.length > 30 && !f[30].isBlank()) {
+            Map<String, Integer> progress = new HashMap<>();
+            for (String entry : f[30].split(LIST_SEP)) {
+                String[] parts = entry.split(PLANT_SEP, 2);
+                if (parts.length == 2) {
+                    progress.put(parts[0], Integer.parseInt(parts[1]));
+                }
+            }
+            u.setAllQuestProgress(progress);
         }
 
         return u;

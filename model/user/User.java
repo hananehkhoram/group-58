@@ -28,6 +28,8 @@ public class User {
     private int dailyQuestsCompletedCount = 0;
     private int otherQuestsCompletedCount = 0;
     private int minigamesCompleted = 0;
+    private int winStreakAtMaxDifficulty = 0;
+    private Map<String, Integer> questProgress = new HashMap<>();
 
 
     private LocalDate lastDailyOfferDate;      // تاریخ آخرین باری که پیشنهاد نمایش داده شد
@@ -340,5 +342,17 @@ public class User {
     public int getMinigamesCompleted() { return minigamesCompleted; }
     public void setMinigamesCompleted(int n) { this.minigamesCompleted = n; }
     public void incrementMinigamesCompleted() { minigamesCompleted++; }
+
+    public int getWinStreakAtMaxDifficulty() { return winStreakAtMaxDifficulty; }
+    public void setWinStreakAtMaxDifficulty(int n) { this.winStreakAtMaxDifficulty = n; }
+
+    public int getQuestProgress(String questId) {
+        return questProgress.getOrDefault(questId, 0);
+    }
+    public void setQuestProgress(String questId, int progress) {
+        questProgress.put(questId, progress);
+    }
+    public Map<String, Integer> getAllQuestProgress() { return questProgress; }
+    public void setAllQuestProgress(Map<String, Integer> questProgress) { this.questProgress = questProgress; }
 }
 

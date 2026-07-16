@@ -80,6 +80,7 @@ public class Planting implements Command {
 
         ctx.setCooldown(type, template.getRechargeTime());
         ConsoleView.showMessage("Planted " + type + " at (" + x + ", " + y + ").");
+        ctx.recordPlantPlaced(newPlant, x, y);
     }
 
     //Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.

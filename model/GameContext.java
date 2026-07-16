@@ -1,23 +1,23 @@
 package model;
 
 import controller.NewsManager;
+import controller.QuestManager;
 import controller.SpecialLevelManager.*;
 import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
 import model.level.Level;
 import model.mechanisms.SunManager;
 import model.plants.Plant;
+import model.plants.PlantFamily;
 import model.projectile.Projectile;
 import model.season.Grave;
 import model.season.Season;
+import model.user.User;
 import model.user.UserManager;
 import model.zombie.Zombie;
 import view.ConsoleView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GameContext {
 
@@ -53,6 +53,23 @@ public class GameContext {
     private boolean activeWaveInProgress = false;
     private boolean manualStartCommandReceived = false;
     public boolean battleStarted = false;
+
+    private final Set<PlantFamily> plantFamiliesUsedToKillThisLevel = new HashSet<>();
+    private final Set<PlantFamily> plantFamiliesPlantedThisLevel = new HashSet<>();
+    private final Set<String> plantNamesThatKilledThisLevel = new HashSet<>();
+    private int totalKillsThisLevel = 0;
+
+    private final Set<Integer> plantedColumns = new HashSet<>();
+    private final Set<Integer> plantedRows = new HashSet<>();
+    private int explosivePlantsPlacedThisLevel = 0;
+    private int sunProducerPlantsPlacedThisLevel = 0;
+    private int totalPlantsPlacedThisLevel = 0;
+    private long firstWaveStartTick = -1;
+    private final List<Long> earlyKillTicks = new ArrayList<>();   // برای «سرعت عمل»
+    private int almostLostKillsThisLevel = 0;                       // برای «تقریبا پیروز»
+    private int lawnMowerKillsThisLevel = 0;
+
+    private int zombiesKilledByLawnMowerThisLevel = 0;
 
     public GameContext(Level level, Season season) {
         this.level = level;
@@ -140,6 +157,16 @@ public class GameContext {
         this.gameEnded = true;
         this.playerWon = true;
 //        UserManager.getInstance().saveToFile();
+        User currentUser = UserManager.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            if (currentUser.getDifficultyLevel() == 5) {
+                currentUser.setWinStreakAtMaxDifficulty(currentUser.getWinStreakAtMaxDifficulty() + 1);
+            } else {
+                currentUser.setWinStreakAtMaxDifficulty(0);
+            }
+
+            QuestManager.evaluateLevelEndQuests(this, currentUser);
+        }
         DataManager.getInstance().saveUser();
         ConsoleView.showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
     }
@@ -148,6 +175,10 @@ public class GameContext {
         this.gameEnded = true;
         this.playerWon = false;
 //        UserManager.getInstance().saveToFile();
+        User currentUser = UserManager.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            currentUser.setWinStreakAtMaxDifficulty(0);
+        }
         DataManager.getInstance().saveUser();
         ConsoleView.showMessage("The zombie ate your brain; LOSER!!!");
     }
@@ -373,4 +404,54 @@ public class GameContext {
     public void triggerManualWaveStart() {
         this.manualStartCommandReceived = true;
     }
+    public void recordPlantKill(Plant killer) {
+        if (killer == null) return;
+        totalKillsThisLevel++;
+        plantNamesThatKilledThisLevel.add(killer.getName());
+        if (killer.getFamily() != null) {
+            plantFamiliesUsedToKillThisLevel.add(killer.getFamily());
+        }
+    }
+    public void recordPlantPlaced(Plant plant, int row, int col) {
+        totalPlantsPlacedThisLevel++;
+        plantedRows.add(row);
+        plantedColumns.add(col);
+
+        if (plant.getFamily() == PlantFamily.EXPLOSIVE) {
+            explosivePlantsPlacedThisLevel++;
+        }
+        if (plant.getFamily() == PlantFamily.SUN_PRODUCER) {
+            sunProducerPlantsPlacedThisLevel++;
+        }
+        if (plant.getFamily() != null) plantFamiliesPlantedThisLevel.add(plant.getFamily());
+    }
+
+    public Set<String> getPlantNamesThatKilledThisLevel() { return plantNamesThatKilledThisLevel; }
+    public Set<PlantFamily> getPlantFamiliesUsedToKillThisLevel() { return plantFamiliesUsedToKillThisLevel; }
+    public Set<PlantFamily> getPlantFamiliesPlantedThisLevel() { return plantFamiliesPlantedThisLevel; }
+    public int getTotalKillsThisLevel() { return totalKillsThisLevel; }
+    public Set<Integer> getPlantedColumns() { return plantedColumns; }
+    public Set<Integer> getPlantedRows() { return plantedRows; }
+    public int getExplosivePlantsPlacedThisLevel() { return explosivePlantsPlacedThisLevel; }
+    public int getSunProducerPlantsPlacedThisLevel() { return sunProducerPlantsPlacedThisLevel; }
+    public int getTotalPlantsPlacedThisLevel() { return totalPlantsPlacedThisLevel; }
+    public int getZombiesKilledByLawnMowerThisLevel() { return zombiesKilledByLawnMowerThisLevel; }
+
+    public void recordFirstWaveStart() {
+        if (firstWaveStartTick == -1) {
+            firstWaveStartTick = timeManager.getTotalTicks();
+        }
+    }
+    public void recordZombieKillTick() {
+        earlyKillTicks.add(timeManager.getTotalTicks());
+    }
+    public long getFirstWaveStartTick() { return firstWaveStartTick; }
+    public List<Long> getEarlyKillTicks() { return earlyKillTicks; }
+
+    public void recordAlmostLostKill() { almostLostKillsThisLevel++; }
+    public int getAlmostLostKillsThisLevel() { return almostLostKillsThisLevel; }
+
+    public void recordLawnMowerKill() { lawnMowerKillsThisLevel++; }
+    public int getLawnMowerKillsThisLevel() { return lawnMowerKillsThisLevel; }
+
 }
