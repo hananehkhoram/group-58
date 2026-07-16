@@ -17,6 +17,7 @@ public class Zombie implements Damageable {
     private int hp;
     private double eatDps;
     private double eatDamageAccumulator = 0.0; // باقیمانده‌ی اعشاری دمیج خوردن گیاه بین تیک‌ها
+    private long lastEatTick = -1; // آخرین tickِ TimeManager که دمیج خوردن ازش حساب شده
     private double speed;
     private int wavePointCost;
     private int weight;
@@ -71,8 +72,9 @@ public class Zombie implements Damageable {
         boolean airborne = getJumper() != null && !getJumper().isLanded();
 
         if (!isEating && !airborne) {
-            if (isIced) speed *= 0.5;
-            x += movingBackward ? speed * deltaTime : -speed * deltaTime;
+            double effectiveSpeed = speed;
+            if (isIced) effectiveSpeed *= 0.5;
+            x += movingBackward ? effectiveSpeed * deltaTime : -effectiveSpeed * deltaTime;
         }
     }
 
@@ -81,6 +83,7 @@ public class Zombie implements Damageable {
         return (b instanceof Jumper) ? (Jumper) b : null;
     }
 
+    /** بعد از انفجار دینامیت اکتشافگر، جهت حرکتش برعکس می‌شود (به سمت راست، رو به عقب می‌خورد) */
     public void setMovingBackward(boolean movingBackward) { this.movingBackward = movingBackward; }
     public boolean isMovingBackward() { return movingBackward; }
 
@@ -102,6 +105,7 @@ public class Zombie implements Damageable {
             if (remaining <= 0) return;
         }
 
+        // شوالیه (Dark Ages Knight) کلاهخود + شانه‌بند دارد؛ هرکدام باید جدا از بین برود (صفحه ۳۴ سند).
         Armor secondary = getSecondaryArmor();
         if (secondary != null && !secondary.isDestroyed()) {
             remaining = secondary.absorb(remaining);
@@ -121,6 +125,10 @@ public class Zombie implements Damageable {
         return (b instanceof Armor) ? (Armor) b : null;
     }
 
+    /**
+     * برای گیاهانی مثل Magnetshroom که یک نوع زره‌ی خاص رو می‌قاپند (نه با آسیب رسوندن، بلکه با حذف تمیز).
+     * طبق سند: روی بوکت‌هد کل زره‌ش رو می‌قاپه، ولی روی شوالیه فقط کلاهخود رو (نه شانه‌بند).
+     */
     public boolean removeArmorOfType(ArmorType type) {
         Armor primary = getArmor();
         if (primary != null && primary.getArmorType() == type && !primary.isDestroyed()) {
@@ -146,11 +154,12 @@ public class Zombie implements Damageable {
 
     @Override
     public void takeDamage(int amount) {
-        takeDamage((double) amount);
+        takeDamage((double) amount); // از منطق آرمور/یخ موجود استفاده می‌کند
     }
 
     @Override
     public void takeArmorPiercingDamage(int amount) {
+        // برخلاف takeDamage عادی، از بلوک armor رد می‌شود و مستقیم به جان اصلی می‌زند
         hp -= amount;
     }
 
@@ -179,9 +188,28 @@ public class Zombie implements Damageable {
     public int getHp() { return hp; }
     public double getEatDps() { return eatDps; }
 
+    private static final int TICKS_PER_SECOND = 10; // مطابق TimeManager (getTotalSeconds = totalTicks/10)
 
-    public int consumeEatDamage(double deltaTime) {
-        eatDamageAccumulator += eatDps * deltaTime;
+    /**
+     * وقتی زامبی تازه به یه گیاه می‌رسه (قبلاً در حال خوردن نبوده) صدا زده میشه، تا زمان قبلی
+     * (که ربطی به این تماس جدید نداره) حساب نشه و یهو یه بار دمیج انبوه نزنه.
+     */
+    public void resetEatClock(GameContext ctx) {
+        lastEatTick = ctx.getTimeManager().getTotalTicks();
+        eatDamageAccumulator = 0;
+    }
+
+    /**
+     * دمیجی که باید به گیاه بخوره، بر اساس تعداد تیک‌های TimeManager که از آخرین بار گذشته
+     * (نه deltaTimeِ حلقه‌ی بازی) — چون همه‌ی تایمرها باید به همون ساعتِ دستی وصل باشن.
+     */
+    public int consumeEatDamage(GameContext ctx) {
+        long now = ctx.getTimeManager().getTotalTicks();
+        if (lastEatTick < 0) lastEatTick = now;
+        long elapsedTicks = now - lastEatTick;
+        lastEatTick = now;
+
+        eatDamageAccumulator += eatDps * (elapsedTicks / (double) TICKS_PER_SECOND);
         int wholeDamage = (int) eatDamageAccumulator;
         eatDamageAccumulator -= wholeDamage;
         return wholeDamage;

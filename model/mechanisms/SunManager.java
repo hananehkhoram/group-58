@@ -55,6 +55,17 @@ public class SunManager {
         view.ConsoleView.showMessage("New " + type + " sun is dropping at position (" + x + ", " + y + ")");
     }
 
+    public List<Sun> getActiveSunDrops() {
+        return activeSunDrops;
+    }
+
+    public int stealSun(Sun sun) {
+        if (!sun.isOnGround()) return 0;
+        int amount = (sun.getType() == SunType.SPECIAL) ? 100 : 25;
+        activeSunDrops.remove(sun);
+        return amount;
+    }
+
     public boolean collectSun(int x, int y, GameEngine engine) {
         Iterator<Sun> iterator = activeSunDrops.iterator();
         while (iterator.hasNext()) {

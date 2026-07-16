@@ -1,12 +1,10 @@
 package model.mechanisms;
 
-import controller.QuestManager;
 import model.GameContext;
 import model.projectile.Projectile;
 import model.level.Level;
 import model.plants.Plant;
 import model.plants.TargetingMode;
-import model.user.UserManager;
 import model.zombie.Zombie;
 import model.zombie.behavior.Behaviors;
 
@@ -45,7 +43,6 @@ public class GameEngine {
         updateLawnMowers(deltaTime);
         updatePlants(deltaTime);
         updateProjectiles(deltaTime);
-        checkZombiePlantCollisions(deltaTime);
         checkGameEnd();
     }
 
@@ -82,9 +79,6 @@ public class GameEngine {
         wave.start(ctx);
         ctx.incrementWaveIndex();
         ctx.setActiveWaveInProgress(true);
-        if (ctx.getCurrentWaveIndex() == 1) {
-            ctx.recordFirstWaveStart();
-        }
     }
 
     private void updateZombies(double deltaTime) {
@@ -109,17 +103,6 @@ public class GameEngine {
                 }
                 it.remove();
                 ctx.incrementZombieKills();
-                QuestManager.progress(UserManager.getInstance().getCurrentUser(),
-                        "chapter-hunter-" + ctx.getSeason().getName(), 1);
-
-                if (ctx.getFirstWaveStartTick() != -1) {
-                    ctx.recordZombieKillTick();
-                }
-
-                LawnMower mowerForThisRow = lawnMowers[(int) z.getY()];
-                if (z.getX() < 1.0 && !mowerForThisRow.isAvailable()) {
-                    ctx.recordAlmostLostKill();
-                }
             }
         }
     }
@@ -135,7 +118,6 @@ public class GameEngine {
 
             if (l.isDidKilled()) {
                 ctx.incrementZombieKills();
-                ctx.recordLawnMowerKill();
                 l.setDidKilled(false);
             }
         }
@@ -224,28 +206,7 @@ public class GameEngine {
         }
     }
 
-    private void checkZombiePlantCollisions(double deltaTime) {
-        for (Zombie z : ctx.getAliveZombies()) {
-            int col = (int) z.getX();
-            int row = (int) z.getY();
 
-            if (row < 0 || row >= Level.ROWS
-                    || col < 0 || col >= Level.COLS) {
-                z.setEating(false);
-                continue;
-            }
-            Plant p = ctx.getPlantGrid()[row][col];
-            if (p != null && p.getHp() > 0) {
-                z.setEating(true);
-                int damage = z.consumeEatDamage(deltaTime);
-                if (damage > 0) {
-                    p.takeDamage(damage);
-                }
-            } else {
-                z.setEating(false);
-            }
-        }
-    }
 
     private void checkGameEnd() {
         if (ctx.isGameEnded()) {
@@ -273,6 +234,7 @@ public class GameEngine {
                 return sameRow;
             }
             case NEAREST -> {
+                // برخلاف FIRST_IN_LANE، اینجا محدود به سطر خودِ گیاه نیست — نزدیک‌ترین زامبی در کل صفحه
                 List<Zombie> result = new ArrayList<>();
                 Zombie nearest = null;
                 double bestDist = Double.MAX_VALUE;
@@ -289,6 +251,7 @@ public class GameEngine {
                 return result;
             }
             case RANDOM -> {
+                // یک زامبی تصادفی از کل صفحه (نه فقط همون سطر)
                 List<Zombie> all = ctx.getAliveZombies();
                 List<Zombie> result = new ArrayList<>();
                 if (!all.isEmpty()) {

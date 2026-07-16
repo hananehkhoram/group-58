@@ -6,7 +6,7 @@ import model.plants.Tag;
 import model.zombie.Zombie;
 
 import java.util.EnumSet;
-
+//
 public class Jumper implements Behaviors {
 
     public enum JumpVariant {

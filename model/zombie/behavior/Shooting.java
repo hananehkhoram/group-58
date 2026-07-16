@@ -34,7 +34,7 @@ public class Shooting implements Behaviors {
 
     private void shootIceShard(Zombie zombie, GameContext ctx) {
         int currentSecond = ctx.getTimeManager().getTotalSeconds();
-        int cooldown = 2; // TODO: مقدار دقیق را طبق سند/csv تنظیم کنید
+        int cooldown = 2; // TODO: مقدار دقیق را طبق داک/csv تنظیم کنید
 
         if (currentSecond - lastShotSecond < cooldown) return;
 
@@ -42,9 +42,9 @@ public class Shooting implements Behaviors {
         if (target == null) return;
 
         Projectile shard = new Projectile(
-                10,                     // TODO: دمیج دقیق شرد یخی طبق سند
+                10,                     // TODO: دمیج دقیق شرد یخی طبق داک
                 zombie.getX(), zombie.getRow(), zombie.getRow(),
-                0.15,                   // TODO: سرعت پرتابه طبق سند
+                0.15,                   // TODO: سرعت پرتابه طبق داک
                 BulletType.ICE,
                 TrajectoryType.STRAIGHT,
                 true                    // isFromZombie

@@ -2,7 +2,7 @@ package model.zombie.behavior;
 
 import model.GameContext;
 import model.zombie.Zombie;
-
+//
 public class GetDamage implements Behaviors {
 
     private GetDamageType type;
@@ -18,9 +18,17 @@ public class GetDamage implements Behaviors {
     public void onHit(Zombie zombie, int damage) {}
 
     @Override
-    public boolean isDestroyed() { return false; }
+    public void onDeath(Zombie zombie, GameContext ctx) {
+        if (type == GetDamageType.SUN_THIEF) {
+            Behaviors b = zombie.getBehaviors().get("sunThief");
+            if (b instanceof SunThief sunThief) {
+                sunThief.giveBackSuns(ctx);
+            }
+        }
+    }
 
-    public void giveBackSuns() {} // Ra Zombie: drops stolen suns on death
+    @Override
+    public boolean isDestroyed() { return false; }
 
     public GetDamageType getType() { return type; }
 
