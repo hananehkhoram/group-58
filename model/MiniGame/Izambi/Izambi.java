@@ -1,29 +1,29 @@
-package model.MiniGame.VaseGame;
+package model.MiniGame.Izambi;
 
 import controller.repository.factory.LevelFactory;
 import model.GameContext;
 import model.level.Level;
 import model.mechanisms.GameEngine;
 import model.season.Season;
-import model.season.miniGameSeason.vaseSeason;
+import model.season.miniGameSeason.IzombieSeason;
 
 import java.util.List;
 
-public class Vase {
+public class Izambi {
 
     private Level currentLevel;
     private GameEngine gameEngine;
     private GameContext ctx;
 
-    public Vase() {}
+    public Izambi() {}
 
     public void startMiniGame() {
         List<Level> bowlingLevels = LevelFactory.buildWallnutsLevels();
         this.currentLevel = bowlingLevels.get(0);
 
-        Season vaseSeason = new vaseSeason(bowlingLevels);
+        Season IzombieSeason = new IzombieSeason(bowlingLevels);
 
-        this.ctx = new GameContext(this.currentLevel, vaseSeason);
+        this.ctx = new GameContext(this.currentLevel, IzombieSeason);
         this.gameEngine = new GameEngine(this.ctx);
 
         System.out.print("start\n");
@@ -45,6 +45,5 @@ public class Vase {
             System.out.println("Game engine is null");
         }
     }
-
 
 }

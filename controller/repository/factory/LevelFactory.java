@@ -1,11 +1,15 @@
 package controller.repository.factory;
 
 import controller.repository.DataManager;
+import model.MiniGame.Beghouled.Beghouled;
 import model.level.Level;
 import model.level.LevelType;
 import model.mechanisms.Wave;
 import model.plants.Plant;
 import model.season.*;
+import model.season.miniGameSeason.IzombieSeason;
+import model.season.miniGameSeason.beghouledSeason;
+import model.season.miniGameSeason.vaseSeason;
 import model.season.miniGameSeason.wallnutsSeason;
 
 import java.util.ArrayList;
@@ -135,11 +139,11 @@ public class LevelFactory {
     public static List<Level> buildWallnutsLevels() {
         List<Level> levels = new ArrayList<>();
 
-        levels.add(new Level("Wallnuts - Day 1", 5, 9, generateWaves(5, 200, 220), LevelType.Wallnuts_MG, null));
+        levels.add(new Level("Wallnuts - Day 1", 5, 9, generateWaves(5, 200, 220), LevelType.Vase_MG, null));
 
-        levels.add(new Level("Wallnuts - Day 2", 5, 9, generateWaves(6, 220, 210), LevelType.Wallnuts_MG, null));
+        levels.add(new Level("Wallnuts - Day 2", 5, 9, generateWaves(6, 220, 210), LevelType.Vase_MG, null));
 
-        levels.add(new Level("Wallnuts - Day 3", 5, 9, generateWaves(7, 240, 200), LevelType.Wallnuts_MG, null));
+        levels.add(new Level("Wallnuts - Day 3", 5, 9, generateWaves(7, 240, 200), LevelType.Vase_MG, null));
 
         for (int i = 0; i < 3; i++){
             Plant wallnutsTemp = new Plant();
@@ -158,6 +162,43 @@ public class LevelFactory {
         return  levels;
     }
 
+    public static List<Level> buildVaseLevels() {
+        List<Level> levels = new ArrayList<>();
+
+        levels.add(new Level("Vase - Day 1", 5, 9, generateWaves(5, 200, 220), LevelType.Wallnuts_MG, null));
+
+        levels.add(new Level("Vase - Day 2", 5, 9, generateWaves(6, 220, 210), LevelType.Wallnuts_MG, null));
+
+        levels.add(new Level("Vase - Day 3", 5, 9, generateWaves(7, 240, 200), LevelType.Wallnuts_MG, null));
+
+
+        return  levels;
+    }
+
+    public static List<Level> buildIzombieLevels() {
+        List<Level> levels = new ArrayList<>();
+
+        levels.add(new Level("Izombie - Day 1", 5, 9, generateWaves(5, 200, 220), LevelType.Izambie_MG, null));
+
+        levels.add(new Level("Izombie - Day 2", 5, 9, generateWaves(6, 220, 210), LevelType.Izambie_MG, null));
+
+        levels.add(new Level("Izombie - Day 3", 5, 9, generateWaves(7, 240, 200), LevelType.Izambie_MG, null));
+
+        return  levels;
+    }
+
+    public static List<Level> buldBeghouledLevels() {
+        List<Level> levels = new ArrayList<>();
+
+        levels.add(new Level("Beghouled - Day 1", 5, 9, generateWaves(5, 200, 220), LevelType.Beghouled_MG, null));
+
+        levels.add(new Level("Beghouled - Day 2", 5, 9, generateWaves(6, 220, 210), LevelType.Beghouled_MG, null));
+
+        levels.add(new Level("Beghouled - Day 3", 5, 9, generateWaves(7, 240, 200), LevelType.Beghouled_MG, null));
+
+        return levels;
+    }
+
     List<Level> egyptLevels = LevelFactory.buildAncientEgyptLevels();
     Season ancientEgypt = new AncientEgypt(egyptLevels);
 
@@ -172,5 +213,14 @@ public class LevelFactory {
 
     List<Level> wallnutsLevels = LevelFactory.buildWallnutsLevels();
     Season wallnutsSeason = new wallnutsSeason(wallnutsLevels);
+
+    List<Level> vaseLevels = LevelFactory.buildVaseLevels();
+    Season vaseSeason = new vaseSeason(vaseLevels);
+
+    List<Level> IzombieLevels = LevelFactory.buildIzombieLevels();
+    Season IzombieSeason = new IzombieSeason(IzombieLevels);
+
+    List<Level> BeghouledLevels = LevelFactory.buldBeghouledLevels();
+    Season Befghouled = new beghouledSeason(BeghouledLevels);
 
 }

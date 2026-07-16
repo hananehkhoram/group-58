@@ -4,12 +4,9 @@ import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.GameContext;
 import model.MiniGame.Beghouled.Beghouled;
-import model.MiniGame.Izambi.IzambiModel;
+import model.MiniGame.Izambi.Izambi;
 import model.MiniGame.VaseGame.Vase;
 import model.MiniGame.WallnutsGame.WallnutBowlingGame;
-import model.menus.BaseMenu;
-import model.menus.Menu;
-import model.menus.allmenus.MainMenu;
 import model.menus.allmenus.TravelMenu;
 
 public class EnterMiniGameMenu implements Command {
@@ -37,6 +34,9 @@ public class EnterMiniGameMenu implements Command {
                     case 1:
                         Vase vase = new Vase();
                         vase.startMiniGame();
+                        menuManager.setCtx(vase.getCtx());
+                        menuManager.setGameEngine(vase.getGameEngine());
+                        break;
 
                     case 2:
                         WallnutBowlingGame wBGame = new WallnutBowlingGame();
@@ -46,7 +46,7 @@ public class EnterMiniGameMenu implements Command {
                         break;
 
                     case 3:
-                        IzambiModel izambiModel = new IzambiModel();
+                        Izambi izambiModel = new Izambi();
                         izambiModel.startMiniGame();
 
                     case 4:

@@ -2,6 +2,9 @@ package controller.repository;
 
 import controller.repository.factory.LevelFactory;
 import model.season.*;
+import model.season.miniGameSeason.IzombieSeason;
+import model.season.miniGameSeason.beghouledSeason;
+import model.season.miniGameSeason.vaseSeason;
 import model.season.miniGameSeason.wallnutsSeason;
 
 import java.util.ArrayList;
@@ -20,6 +23,9 @@ public class SeasonRepository implements AssetRepository<Season> {
         Season beach = new BigWaveBeachSeason(LevelFactory.buildBigWaveBeachLevels());
         Season darkAges = new DarkAgesSeason(LevelFactory.buildDarkAgesLevels());
         Season wallnut = new wallnutsSeason(LevelFactory.buildWallnutsLevels());
+        Season vase = new vaseSeason(LevelFactory.buildVaseLevels());
+        Season Izombie = new IzombieSeason(LevelFactory.buildIzombieLevels());
+        Season Beghouled = new beghouledSeason(LevelFactory.buldBeghouledLevels());
 
         orderedSeasons.add(egypt);
         orderedSeasons.add(frozen);

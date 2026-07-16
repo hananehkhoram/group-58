@@ -5,7 +5,7 @@ import model.season.Season;
 
 import java.util.List;
 
-public class vaseSeason extends Season {
-    public vaseSeason(List<Level> levels) {}
+public class IzombieSeason extends Season {
+    public IzombieSeason(List<Level> levels) {}
 
 }

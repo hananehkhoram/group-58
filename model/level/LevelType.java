@@ -11,5 +11,8 @@ public enum LevelType {
     SAVE_QUR_SEEDS,
     TIMED_WAR,
     BOSS_FIGHT,
-    Wallnuts_MG
+    Wallnuts_MG,
+    Vase_MG,
+    Izambie_MG,
+    Beghouled_MG
 }
