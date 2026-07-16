@@ -72,7 +72,7 @@ public class ShopMenu extends BaseMenu {
         }
         ItemType item = shop.getItemById(id);
         if (item == null){
-            if (id == 6) return buyDailyOffer(count);
+            if (id == 0) return buyDailyOffer(count);
             else return  "Invalid id.";
         }
         else {

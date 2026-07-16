@@ -94,7 +94,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("grow \\((?<x>\\d+), (?<y>\\d+)\\)" , new FasterGrow(menuManager));
         registry.register("enter shop" , new EnterShop(menuManager));
         registry.register("shop (?<listORdaily>\\S+)" , new ShowProductsCommands(menuManager));
-        registry.register("shop buy -i (?<itemId>\\S+) -n (?<count>\\d+) [-t (?<plantType>\\S+)]" , new BuyCommand(menuManager));
+        registry.register("^shop buy -i (?<itemId>\\d+) -n (?<count>\\d+)(?:\\s+-t\\s+(?<plantType>\\S+))?$" , new BuyCommand(menuManager));
         registry.register("travel log page (?<pageName>\\S+)" , new ShowTravelMenu(menuManager));
         registry.register("(?i)^menu\\s+cheat\\s+add\\s+(\\d+)\\s+(coin|diamond)$",new CheatAddCurrency(menuManager));
         registry.register("cheat reset users",new CheatClearUsers());
