@@ -195,6 +195,14 @@ public class GameContext {
 
     public void addPlantFood(int amount) {
         this.plantFoodCount += amount;
+        UserManager.getInstance().getCurrentUser().setPlantFoodCount(UserManager.getInstance().getCurrentUser().getPlantFoodCount() + amount);
+    }
+
+    public boolean usePlantFood(int amount) {
+        if (this.plantFoodCount - amount < 0) return false;
+        this.plantFoodCount -= amount;
+        UserManager.getInstance().getCurrentUser().setPlantFoodCount(UserManager.getInstance().getCurrentUser().getPlantFoodCount() - amount);
+        return true;
     }
 
     public void placeGrave(Grave g, int row, int col) {
@@ -427,6 +435,10 @@ public class GameContext {
     public int getSunProducerPlantsPlacedThisLevel() { return sunProducerPlantsPlacedThisLevel; }
     public int getTotalPlantsPlacedThisLevel() { return totalPlantsPlacedThisLevel; }
     public int getZombiesKilledByLawnMowerThisLevel() { return zombiesKilledByLawnMowerThisLevel; }
+
+    public int getPlantFoodCount() {
+        return plantFoodCount;
+    }
 
     public void recordFirstWaveStart() {
         if (firstWaveStartTick == -1) {

@@ -5,6 +5,9 @@ import controller.commandHandler.Command;
 import controller.repository.DataManager;
 import model.Quest;
 import model.level.Level;
+import model.menus.Menu;
+import model.menus.allmenus.ProfileMenu;
+import model.menus.allmenus.TravelMenu;
 import model.season.Season;
 import model.user.User;
 import model.user.UserManager;
@@ -27,24 +30,28 @@ public class ShowTravelMenu implements Command {
 
     @Override
     public void execute(String[] args) {
-        if (args == null || args.length == 0) {
-            ConsoleView.showMessage("Please specify a page name.");
-            return;
-        }
+        Menu currentMenu = menuManager.getCurrentMenu();
 
-        String pageName = args[0].toLowerCase();
-        User user = UserManager.getInstance().getCurrentUser();
-        if (user == null) {
-            ConsoleView.showMessage("You must be logged in.");
-            return;
-        }
+        if (currentMenu instanceof TravelMenu) {
+            if (args == null || args.length == 0) {
+                ConsoleView.showMessage("Please specify a page name.");
+                return;
+            }
 
-        switch (pageName) {
-            case "daily" -> showQuestPage(user, Quest.QuestCategory.DAILY, "Daily Quests");
-            case "main", "adventure" -> showQuestPage(user, Quest.QuestCategory.MAIN, "Main Quests");
-            case "epic", "special", "challenge" -> showQuestPage(user, Quest.QuestCategory.EPIC, "Epic Challenges");
-            case "minigames" -> showMinigamesPage(user);
-            default -> ConsoleView.showMessage("Invalid page name. Try: daily, main, epic, minigames");
+            String pageName = args[0].toLowerCase();
+            User user = UserManager.getInstance().getCurrentUser();
+            if (user == null) {
+                ConsoleView.showMessage("You must be logged in.");
+                return;
+            }
+
+            switch (pageName) {
+                case "daily" -> showQuestPage(user, Quest.QuestCategory.DAILY, "Daily Quests");
+                case "main", "adventure" -> showQuestPage(user, Quest.QuestCategory.MAIN, "Main Quests");
+                case "epic", "special", "challenge" -> showQuestPage(user, Quest.QuestCategory.EPIC, "Epic Challenges");
+                case "minigames" -> showMinigamesPage(user);
+                default -> ConsoleView.showMessage("Invalid page name. Try: daily, main, epic, minigames");
+            }
         }
     }
 
@@ -72,8 +79,9 @@ public class ShowTravelMenu implements Command {
     }
 
     private void showMinigamesPage(User user) {
-        StringBuilder sb = new StringBuilder("=== Minigames ===\n");
-        for (Season s : DataManager.getInstance().seasons.getAll()) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Minigames ===\n");
+        for (Season s : DataManager.getInstance().seasons.getAllSeasons()) {
             if (MAIN_CHAPTER_NAMES.contains(s.getName())) continue;
 
             sb.append(s.getName()).append(":\n");
