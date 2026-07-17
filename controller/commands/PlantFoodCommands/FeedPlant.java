@@ -4,6 +4,7 @@ import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.GameContext;
 import model.plants.Plant;
+import model.user.UserManager;
 import view.ConsoleView;
 
 public class FeedPlant implements Command {
@@ -24,7 +25,7 @@ public class FeedPlant implements Command {
             return;
         }
 
-        if (ctx.getPlantFoodCount() <= 0) {
+        if (UserManager.getInstance().getCurrentUser().getPlantFoodCount() <= 0) {
             ConsoleView.showMessage("You have no plant food to use.");
             return;
         }

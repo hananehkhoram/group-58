@@ -1,14 +1,11 @@
-package controller.commands;
+package controller.commands.TravelMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;
 import controller.repository.DataManager;
 import model.Quest;
-import model.level.Level;
 import model.menus.Menu;
-import model.menus.allmenus.ProfileMenu;
 import model.menus.allmenus.TravelMenu;
-import model.season.Season;
 import model.user.User;
 import model.user.UserManager;
 import view.ConsoleView;
@@ -49,7 +46,7 @@ public class ShowTravelMenu implements Command {
                 case "daily" -> showQuestPage(user, Quest.QuestCategory.DAILY, "Daily Quests");
                 case "main", "adventure" -> showQuestPage(user, Quest.QuestCategory.MAIN, "Main Quests");
                 case "epic", "special", "challenge" -> showQuestPage(user, Quest.QuestCategory.EPIC, "Epic Challenges");
-                case "minigames" -> showMinigamesPage(user);
+                case "minigames" -> ConsoleView.showMessage("Use enter minigame command.");
                 default -> ConsoleView.showMessage("Invalid page name. Try: daily, main, epic, minigames");
             }
         }
@@ -74,21 +71,6 @@ public class ShowTravelMenu implements Command {
         }
         if (quests.isEmpty()) {
             sb.append("No quests in this page.\n");
-        }
-        ConsoleView.showMessage(sb.toString());
-    }
-
-    private void showMinigamesPage(User user) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== Minigames ===\n");
-        for (Season s : DataManager.getInstance().seasons.getAllSeasons()) {
-            if (MAIN_CHAPTER_NAMES.contains(s.getName())) continue;
-
-            sb.append(s.getName()).append(":\n");
-            for (Level lvl : s.getLevels()) {
-                boolean unlocked = user.isLevelUnlocked(lvl.getName());
-                sb.append("  ").append(unlocked ? "[UNLOCKED] " : "[LOCKED] ").append(lvl.getName()).append("\n");
-            }
         }
         ConsoleView.showMessage(sb.toString());
     }
