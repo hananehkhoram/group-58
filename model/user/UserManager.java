@@ -115,8 +115,8 @@ public class UserManager {//singelton
     }
 
     public void addQuestion(SecurityQuestions selectedQuestion, String answer) {
-        getCurrentUser().securityQuestion = selectedQuestion;
-        getCurrentUser().securityAnswer = answer;
+        this.currentUser.setSecurityQuestion(selectedQuestion);
+        this.currentUser.setSecurityAnswer(answer);
     }
 
     public boolean isAnswerCorrect(String answer, User user) {
@@ -134,8 +134,8 @@ public class UserManager {//singelton
         return true;
     }
 
-    public void changePassword(String password) {
-        currentUser.password = Security.hashPassword(password);
+    public void changePassword(String password,User user) {
+        user.setPassword(Security.hashPassword(password));
     }
 
     public boolean isEmailCorrect(String email, String name) {

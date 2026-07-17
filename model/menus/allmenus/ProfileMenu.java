@@ -23,6 +23,7 @@ public class ProfileMenu extends BaseMenu {
         if (newUsername.equals(currentUser.getUsername())) return "Username is equal to the current username";
 
         currentUser.setUsername(newUsername);
+        DataManager.getInstance().saveUser();
         return "Username successfully changed.";
     }
 
@@ -31,6 +32,7 @@ public class ProfileMenu extends BaseMenu {
         if (newNickname.equals(currentUser.getNickName())) return "Nickname is equal to the current nickname";
 
         currentUser.setNickName(newNickname);
+        DataManager.getInstance().saveUser();
         return "Nickname successfully changed.";
     }
 
@@ -39,13 +41,14 @@ public class ProfileMenu extends BaseMenu {
         if (newEmail.equals(currentUser.getEmail())) return "Email is equal to the current email";
 
         currentUser.setEmail(newEmail);
+        DataManager.getInstance().saveUser();
         return "Email successfully changed.";
     }
 
     public String changePassword(String oldPassword, String newPassword) {
         String hashedPassword = Security.hashPassword(newPassword);
-        if (hashedPassword.equals(oldPassword)) return "Password is equal to the current password";
-        if (!um.doesPasswordsMatch(currentUser.getPassword(),hashedPassword)) {
+        if (hashedPassword.equals(Security.hashPassword(oldPassword))) return "Password is equal to the current password";
+        if (!um.doesPasswordsMatch(currentUser.getPassword(),Security.hashPassword(oldPassword))) {
             return "Password is incorrect.";
         }
         if (!um.isPasswordValid(newPassword)) return "Invalid password format.";
@@ -54,6 +57,7 @@ public class ProfileMenu extends BaseMenu {
 
 
         currentUser.setPassword(hashedPassword);
+        DataManager.getInstance().saveUser();
         return "Password successfully changed.";
     }
 

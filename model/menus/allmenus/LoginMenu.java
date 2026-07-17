@@ -1,5 +1,6 @@
 package model.menus.allmenus;
 
+import controller.repository.DataManager;
 import model.GameContext;
 import model.menus.BaseMenu;
 import model.menus.MenuType;
@@ -43,7 +44,7 @@ public class LoginMenu extends BaseMenu {
 
         if (targetUser.getSecurityAnswer().equalsIgnoreCase(answer)) {
             this.currentState = ResetState.AWAITING_NEW_PASSWORD;
-            return "Answer is correct! Please enter your new password using: set-password <new_password>";
+            return "Answer is correct! Please enter your new password using: new password -p <password>";
         } else {
             resetRecovery();
             return "Error: Incorrect answer! Password recovery canceled.";
@@ -57,7 +58,8 @@ public class LoginMenu extends BaseMenu {
         String passwordValidation = um.isPasswordStrong(newPassword);
         if (!passwordValidation.equals("ok")) return passwordValidation;
 
-        um.changePassword(newPassword);
+        um.changePassword(newPassword,targetUser);
+        DataManager.getInstance().saveUser();
         resetRecovery();
         return "Password changed successfully.";
     }
@@ -65,12 +67,12 @@ public class LoginMenu extends BaseMenu {
     public String startForgetPasswordProcess(String username, String email) {
         if (!um.doesUserExist(username)) return "User does not exist!";
         User user = um.findUserByName(username);
-        if (!um.isEmailCorrect(email,name)) return "Email is incorrect.";
+        if (!um.isEmailCorrect(email,username)) return "Email is incorrect.";
 
         this.targetUser = user;
         this.currentState = ResetState.AWAITING_SECURITY_ANSWER;
 
-        return "Security Question: " + user.getSecurityQuestion() + "\nPlease enter your answer using: answer <your_answer>";
+        return "Security Question: " + user.getSecurityQuestion().getQuestionText() + "\nPlease enter your answer using: answer -a <answer>";
     }
 
     private void resetRecovery() {

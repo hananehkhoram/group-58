@@ -8,6 +8,7 @@ import controller.commands.GreenHouseCommands.CollectCommand;
 import controller.commands.GreenHouseCommands.FasterGrow;
 import controller.commands.GreenHouseCommands.PlantPot;
 import controller.commands.GreenHouseCommands.ShowGreenHouse;
+import controller.commands.LoginMenuCommands.SetNewPassword;
 import controller.commands.MainMenuCommands.EnterMiniGameMenu;
 import controller.commands.MechanismsCommands.CheatAddSun;
 import controller.commands.NewsMenuCommands.ShowAllNews;
@@ -89,7 +90,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("cheat spawn-zombie -t (?<zombieType>\\S+) -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new CheatSpawnZombie());
         registry.register("start zombie waves" , new PlantWhatYouGet());
         registry.register("show greenhouse" , new ShowGreenHouse(menuManager));
-        registry.register("plant pot at ((?<x>\\d+), (?<y>\\d+))" , new PlantPot(menuManager));
+        registry.register("plant pot at \\((?<x>\\d+), (?<y>\\d+)\\)" , new PlantPot(menuManager));
         registry.register("collect \\((?<x>\\d+), (?<y>\\d+)\\)" , new CollectCommand(menuManager));
         registry.register("grow \\((?<x>\\d+), (?<y>\\d+)\\)" , new FasterGrow(menuManager));
         registry.register("enter shop" , new EnterShop(menuManager));
@@ -102,6 +103,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("(?<enter>enter) minigame" , new EnterMiniGameMenu(menuManager, ctx));
         registry.register("(?<number>\\d+)" , new EnterMiniGameMenu(menuManager, ctx));
         registry.register("cheat remove-cooldown",new CheatRemoveCooldown(menuManager));
+        registry.register("^new password -p (?<password>.+)$",new SetNewPassword(menuManager));
     }
 }
 
