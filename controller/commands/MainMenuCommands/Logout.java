@@ -19,7 +19,8 @@ public class Logout implements Command {
         Menu currentMenu = menuManager.getCurrentMenu();
 
         if (currentMenu instanceof MainMenu){
-            menuManager.changeMenu("registermenu");
+            menuManager.forceChangeMenu("registermenu");
+            ConsoleView.showMessage("You are now in register menu.");
         }
     }
 

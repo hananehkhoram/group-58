@@ -10,6 +10,7 @@ import model.menus.MenuType;
 import model.plants.Plant;
 import model.user.User;
 import model.user.UserManager;
+import view.ConsoleView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +39,13 @@ public class GreenHouseMenu extends BaseMenu {
         sb.append("=== Welcome to the Greenhouse ===\n");
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 5; j++) {
-                Pot pot = greenHouse.getPot(i,j);
-                sb.append("---------\n").append(pot.isLocked() ? "Locked ":"Open ");
-                if (pot.isEmpty()) sb.append("Pot is empty.\n");
-                else {
-                    sb.append(pot.getPlantType().getName()).append("Remaining time: ");
+                Pot pot = greenHouse.getPot(i, j);
+                sb.append("---------\n").append(" (").append(i).append(", ").append(j).append(") ").append(pot.isLocked() ? "Locked " : "Open ");
+                if (pot.isEmpty()) {
+                    sb.append("Pot is empty.\n");
+                } else {
+                    String plantName = pot.isMarigold() ? "Marigold" : pot.getPlantType().getName();
+                    sb.append(plantName).append(" Remaining time: ");
                     sb.append(pot.getRemainingPlantedTime()).append("\n");
                     if (pot.isPlantReady()) sb.append("Plant is ready!\n");
                 }
@@ -58,11 +61,16 @@ public class GreenHouseMenu extends BaseMenu {
 
         Plant plant = determineRandomPlantToPlant();
 
-        if (plant.getName().equalsIgnoreCase("marigold")){//if its marigold
+        if (plant == null){
+            pot.setMarigold(true);
             pot.setRemainingPlantedTime(2);
+            pot.plant(null);
         }
-        else pot.setRemainingPlantedTime(8);
-        pot.plant(plant);
+        else {
+            pot.setRemainingPlantedTime(8);
+            pot.setMarigold(false);
+            pot.plant(plant);
+        }
 //        um.saveToFile();
         DataManager.getInstance().saveUser();
         return "Pot successfully planted.";
@@ -75,14 +83,15 @@ public class GreenHouseMenu extends BaseMenu {
         if (pot.isEmpty()) return "Pot is empty";
         if (!pot.isPlantReady()) return "Plant is not ready.";
 
-        Plant plant = pot.getPlantType();
 
-        if (plant.getName().equalsIgnoreCase("marigold")){//if its marigold
+
+        if (pot.isMarigold()){
             currentUser.setCoins(currentUser.getCoins() + 500);
+            ConsoleView.showMessage("Successfully collected marigold");
             pot.collectPlant();
         }
         else {
-            String plantName = plant.getName();
+            String plantName = pot.getPlantType().getName();
 
             if (currentUser.hasStoredBoost(plantName)) {
                 result =  ("Harvested " + plantName + ". You already have a stored boost for this plant, so no extra boost was added.");
@@ -95,6 +104,7 @@ public class GreenHouseMenu extends BaseMenu {
         DataManager.getInstance().saveUser();
         pot.setEmpty(true);
         pot.setPlantType(null);
+        pot.setMarigold(false);
 
 
         return result;

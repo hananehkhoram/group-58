@@ -15,6 +15,9 @@ public class SettingsMenu extends BaseMenu {
     }
 
     public String changeDifficulty(int newLevel){
+        if (newLevel < 1 || newLevel > 5) {
+            return "Difficulty level must be between 1 and 5.";
+        }
         um.getCurrentUser().setDifficultyLevel(newLevel);
         return "Successfully changed difficulty to "+newLevel;
     }

@@ -6,10 +6,10 @@ public class GreenHouse{
     private Pot[][] pots;
 
     public GreenHouse() {
-        this.pots = new Pot[3][4];
+        this.pots = new Pot[4][5];
 
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 5; j++) {
                 pots[i][j] = new Pot();
                 pots[i][j] = new Pot();
                 if (i == 1) {
@@ -33,8 +33,8 @@ public class GreenHouse{
         return false;
     }
     public boolean unlockFirstLockedPot() {
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 5; j++) {
                 if (pots[i][j].isLocked()) {
                     pots[i][j].setLocked(false);
                     return true;
@@ -50,7 +50,7 @@ public class GreenHouse{
     }
 
     private boolean isInvalidBounds(int x, int y) {
-        return x < 0 || x >= 3 || y < 0 || y >= 4;
+        return x < 0 || x >= 4 || y < 0 || y >= 5;
     }
 
 

@@ -8,6 +8,7 @@ import controller.commands.GreenHouseCommands.CollectCommand;
 import controller.commands.GreenHouseCommands.FasterGrow;
 import controller.commands.GreenHouseCommands.PlantPot;
 import controller.commands.GreenHouseCommands.ShowGreenHouse;
+import controller.commands.LoginMenuCommands.SetNewPassword;
 import controller.commands.MainMenuCommands.EnterMiniGameMenu;
 import controller.commands.MechanismsCommands.CheatAddSun;
 import controller.commands.NewsMenuCommands.ShowAllNews;
@@ -57,7 +58,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("menu coin-wallet" , new EnterCoinWallet(menuManager));
         registry.register("menu gem-wallet" , new EnterGemWallet(menuManager));
         registry.register("" , new ChooseTheWorld(menuManager));
-        registry.register("menu settings changeDifficulty -l (?<difficultyLevel>\\d+)" , new SettingsMenuCommands(menuManager));
+        registry.register("menu settings change-difficulty -l (?<difficultyLevel>\\d+)" , new SettingsMenuCommands(menuManager));
         registry.register("menu news show-unread" , new ShowUnreadNews(menuManager));
         registry.register("menu news show-all" , new ShowAllNews(menuManager));
         registry.register("menu profile change-username -u (?<username>\\S+)" , new ChangeUsername(menuManager));
@@ -71,7 +72,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("menu collection show-zombie -z (?<zombieName>\\S+)" , new ShowZombieDetails(menuManager));
         registry.register("menu collection upgrade-plant -p (?<plantName>\\S+)" , new UpgradePlant(menuManager));
         registry.register("menu collection purchase-plant -p (?<plantName>\\S+)" , new PurchasePlant(menuManager));
-        registry.register("show (?<allORavailable>) plants" , new controller.commands.PlantsList.ShowPlantsList(menuManager));
+        registry.register("show (?<allORavailable>all|available) plants" , new controller.commands.PlantsList.ShowPlantsList(menuManager));
         registry.register("add plant -t (?<type>\\S+)" , new controller.commands.PlantsList.AddPlant(menuManager));
         registry.register("remove plant -t (?<type>\\S+)" , new controller.commands.PlantsList.RemovePlant(menuManager));
         registry.register("boost plant -t (?<type>\\S+)" , new controller.commands.PlantsList.BoostPlant(menuManager));
@@ -89,7 +90,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("cheat spawn-zombie -t (?<zombieType>\\S+) -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new CheatSpawnZombie());
         registry.register("start zombie waves" , new PlantWhatYouGet());
         registry.register("show greenhouse" , new ShowGreenHouse(menuManager));
-        registry.register("plant pot at ((?<x>\\d+), (?<y>\\d+))" , new PlantPot(menuManager));
+        registry.register("plant pot at \\((?<x>\\d+), (?<y>\\d+)\\)" , new PlantPot(menuManager));
         registry.register("collect \\((?<x>\\d+), (?<y>\\d+)\\)" , new CollectCommand(menuManager));
         registry.register("grow \\((?<x>\\d+), (?<y>\\d+)\\)" , new FasterGrow(menuManager));
         registry.register("enter shop" , new EnterShop(menuManager));
@@ -102,6 +103,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("(?<enter>enter) minigame" , new EnterMiniGameMenu(menuManager, ctx));
         registry.register("(?<number>\\d+)" , new EnterMiniGameMenu(menuManager, ctx));
         registry.register("cheat remove-cooldown",new CheatRemoveCooldown(menuManager));
+        registry.register("^new password -p (?<password>.+)$",new SetNewPassword(menuManager));
     }
 }
 

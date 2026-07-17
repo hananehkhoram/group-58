@@ -1,6 +1,7 @@
 package model.mechanisms;
 
 import model.TimeManager;
+import model.user.UserManager;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,6 +38,9 @@ public class SunManager {
     private void manageNextDrop() {
         double t = timeManager.getTotalSeconds();
         double intervalSeconds = Math.max(6 + 0.05 * t, 12);
+        int dl = UserManager.getInstance().getCurrentUser().getDifficultyLevel();
+        double decreaseFactor = 3.0 / dl;
+        intervalSeconds *= decreaseFactor;
         this.nextDropTick = timeManager.getTotalTicks() + (long) (intervalSeconds * 10);
     }
 

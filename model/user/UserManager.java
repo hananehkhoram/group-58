@@ -33,9 +33,9 @@ public class UserManager {//singelton
     }
 
     public User findUserByName(String name) {
-        User foundUser = null;
-        for (User u : users) {
-            if (u.getUsername().equals(name)) {
+        User foundUser = new User();
+        for (User u : UserManager.getInstance().users) {
+            if (u.getUsername().equalsIgnoreCase(name)) {
                 foundUser = u;
                 break;
             }
@@ -60,7 +60,7 @@ public class UserManager {//singelton
     }
 
     public boolean doesUserExist(String username) {
-        for (User user : users) {
+        for (User user : UserManager.getInstance().users) {
             if (user.username.equals(username)) return true;
         }
         return false;
@@ -115,8 +115,8 @@ public class UserManager {//singelton
     }
 
     public void addQuestion(SecurityQuestions selectedQuestion, String answer) {
-        getCurrentUser().securityQuestion = selectedQuestion;
-        getCurrentUser().securityAnswer = answer;
+        this.currentUser.setSecurityQuestion(selectedQuestion);
+        this.currentUser.setSecurityAnswer(answer);
     }
 
     public boolean isAnswerCorrect(String answer, User user) {
@@ -134,12 +134,13 @@ public class UserManager {//singelton
         return true;
     }
 
-    public void changePassword(String password) {
-        currentUser.password = Security.hashPassword(password);
+    public void changePassword(String password,User user) {
+        user.setPassword(Security.hashPassword(password));
     }
 
     public boolean isEmailCorrect(String email, String name) {
         User foundUser = findUserByName(name);
+        if (foundUser == null) return false;
         if (!foundUser.getEmail().equalsIgnoreCase(email)) return false;
         return true;
     }

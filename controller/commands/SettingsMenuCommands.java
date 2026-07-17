@@ -25,7 +25,6 @@ public class SettingsMenuCommands implements Command {
         } catch (NumberFormatException e) {
             throw new CommandNotFound("Invalid difficulty!\n");
         }
-        menuManager.changeMenu("SettingsMenu");
         Menu currentMenu = menuManager.getCurrentMenu();
 
         if (currentMenu instanceof SettingsMenu){
@@ -36,5 +35,5 @@ public class SettingsMenuCommands implements Command {
 
     }
 
-    //p_13
+    //menu settings change-difficulty -l <difficulty_level>
 }

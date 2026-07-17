@@ -1,6 +1,7 @@
 package controller.repository.factory;
 
 import controller.repository.DataManager;
+import model.user.UserManager;
 import model.zombie.Zombie;
 import model.zombie.ZombieActivator;
 
@@ -16,6 +17,8 @@ public class ZombieFactory extends BaseFactory<Zombie> {
         if (template == null) {
             throw new IllegalArgumentException("Zombie template not found in repository: " + name);
         }
+        int dl = UserManager.getInstance().getCurrentUser().getDifficultyLevel();
+        double increaseFactor = dl / 3.0;
 
         Zombie newZombie = new Zombie();
         newZombie.setId(template.getId());
@@ -28,6 +31,10 @@ public class ZombieFactory extends BaseFactory<Zombie> {
         newZombie.setExtraParams(template.getExtraParams());
 
         newZombie.setBehaviors(ZombieActivator.buildBehaviors(newZombie));
+
+        newZombie.setHp((int) (newZombie.getHp() * increaseFactor));
+        newZombie.setEatDps(newZombie.getEatDps() * increaseFactor);
+        newZombie.setSpeed(newZombie.getSpeed() * increaseFactor);
 
         return newZombie;
     }

@@ -8,6 +8,7 @@ public class Pot{
     private Plant plantType;
     private double remainingPlantedTime;
     private boolean plantReady;
+    private boolean isMarigold;
 
     public boolean isEmpty() {
         return empty;
@@ -58,5 +59,13 @@ public class Pot{
 
     public void setPlantReady(boolean plantReady) {
         this.plantReady = plantReady;
+    }
+
+    public boolean isMarigold() {
+        return isMarigold;
+    }
+
+    public void setMarigold(boolean marigold) {
+        isMarigold = marigold;
     }
 }

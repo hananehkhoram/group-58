@@ -19,7 +19,7 @@ public class EnterTravelLog implements Command {
 
         if (currentMenu instanceof GameMenu) {
             menuManager.changeMenu("travelmenu");
-            ConsoleView.showMessage("");
+            ConsoleView.showMessage("You are now in travel menu");
         }
     }
 

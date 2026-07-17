@@ -1,5 +1,6 @@
 package model.menus.allmenus;
 
+import controller.repository.DataManager;
 import model.GameContext;
 import model.menus.BaseMenu;
 import model.menus.MenuType;
@@ -53,6 +54,7 @@ public class RegisterMenu extends BaseMenu {
             return "Answers don't mach!please try again.\n";
         }
         um.addQuestion(selectedQuestion,answer);
+        DataManager.getInstance().saveUser();
 
         return "Registered successfully.";
     }
