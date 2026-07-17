@@ -53,7 +53,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("menu enter chapter -c (?<chaptername>.+)" , new EnterChapter(menuManager));
         registry.register("menu greenhouse" , new EnterGreenHouse(menuManager));
         registry.register("menu travel-log" , new EnterTravelLog(menuManager));
-        registry.register("menu leaderboard" , new EnterLeaderBoard(menuManager));
+        registry.register("menu leaderboard" , new EnterLeaderBoard(menuManager, ctx));
         registry.register("menu coin-wallet" , new EnterCoinWallet(menuManager));
         registry.register("menu gem-wallet" , new EnterGemWallet(menuManager));
         registry.register("" , new ChooseTheWorld(menuManager));
