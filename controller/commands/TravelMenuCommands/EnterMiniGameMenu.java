@@ -1,4 +1,4 @@
-package controller.commands.MainMenuCommands;
+package controller.commands.TravelMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;

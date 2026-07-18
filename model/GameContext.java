@@ -31,7 +31,6 @@ public class GameContext {
     private final List<Zombie> aliveZombies = new ArrayList<>();//زامبیای زنده رو زمین
     private final Map<String, Long> plantCooldowns = new HashMap<>();
     private int sunAmount = 0;
-    private int plantFoodCount = 0;
     private int currentWaveIndex = 0;
     private boolean gameEnded = false;
     private boolean playerWon = false;
@@ -79,7 +78,6 @@ public class GameContext {
         this.plantFactory = new PlantFactory(dm);
         this.plantGrid = new Plant[level.getRows()][level.getColumns()];
         this.graveGrid = new Grave[level.getRows()][level.getColumns()];
-        this.plantFoodCount = UserManager.getInstance().getCurrentUser().getPlantFoodCount();
         if (this.levelManager != null) this.levelManager.onLevelStart(this);
         this.timeManager = new TimeManager();
         this.sunManager = new SunManager(this.timeManager, level.getRows(), level.getColumns());
@@ -194,7 +192,13 @@ public class GameContext {
     // WAVE STATE
 
     public void addPlantFood(int amount) {
-        this.plantFoodCount += amount;
+        UserManager.getInstance().getCurrentUser().setPlantFoodCount(UserManager.getInstance().getCurrentUser().getPlantFoodCount() + amount);
+    }
+
+    public boolean usePlantFood(int amount) {
+        if (UserManager.getInstance().getCurrentUser().getPlantFoodCount() - amount < 0) return false;
+        UserManager.getInstance().getCurrentUser().setPlantFoodCount(UserManager.getInstance().getCurrentUser().getPlantFoodCount() - amount);
+        return true;
     }
 
     public void placeGrave(Grave g, int row, int col) {
@@ -427,6 +431,7 @@ public class GameContext {
     public int getSunProducerPlantsPlacedThisLevel() { return sunProducerPlantsPlacedThisLevel; }
     public int getTotalPlantsPlacedThisLevel() { return totalPlantsPlacedThisLevel; }
     public int getZombiesKilledByLawnMowerThisLevel() { return zombiesKilledByLawnMowerThisLevel; }
+
 
     public void recordFirstWaveStart() {
         if (firstWaveStartTick == -1) {
