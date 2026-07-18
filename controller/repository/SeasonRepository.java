@@ -12,6 +12,7 @@ import java.util.*;
 public class SeasonRepository implements AssetRepository<Season> {
     private final Map<String, Season> seasonMap = new HashMap<>();
     private final List<Season> orderedSeasons = new ArrayList<>();
+    private final List<Season> allSeasons = new ArrayList<>(orderedSeasons);
 
     @Override
     public void load(String filePath) {
@@ -30,7 +31,6 @@ public class SeasonRepository implements AssetRepository<Season> {
         orderedSeasons.add(beach);
         orderedSeasons.add(darkAges);
 
-        List<Season> allSeasons = new ArrayList<>(orderedSeasons);
         allSeasons.add(wallnut);
         allSeasons.add(vase);
         allSeasons.add(izombie);
@@ -63,5 +63,13 @@ public class SeasonRepository implements AssetRepository<Season> {
             return null;   // یا فصل پیدا نشد، یا این آخرین فصل بود (Dark Ages)
         }
         return orderedSeasons.get(idx + 1);
+    }
+
+    public List<Season> getOrderedSeasons() {
+        return orderedSeasons;
+    }
+
+    public List<Season> getAllSeasons() {
+        return allSeasons;
     }
 }
