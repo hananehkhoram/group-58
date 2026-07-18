@@ -2,17 +2,17 @@ package model.plants.upgradeEffect;
 
 import model.plants.Plant;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class UpgradeManager {
 
-    /*
     public static void applyBehavior(Plant plant, BehaviorEffect effect) {
         if (effect != null && effect.getKey() != null) {
             plant.addBehavior(effect.getKey());
         }
     }
-
 
     public static void applyStat(Plant plant, StatEffect effect) {
         if (effect == null || effect.getKey() == null) return;
@@ -21,49 +21,62 @@ public class UpgradeManager {
 
         switch (effect.getKey()) {
             case HP:
-                // افزایش جان پایه (و جان فعلی تا گیاه بلافاصله جون بگیره)
                 plant.setBaseHp((int) (plant.getBaseHp() + amount));
                 plant.heal((int) amount);
                 break;
 
             case DMG:
-                // چون در کدهای قبلی (کلاس Lobber) دمیج از نوع String بود، اینجا هم تبدیل می‌کنیم
                 try {
                     int currentDmg = Integer.parseInt(plant.getDamage());
                     plant.setDamage(String.valueOf(currentDmg + (int) amount));
                 } catch (NumberFormatException e) {
-                    plant.setDamage(String.valueOf((int) amount)); // اگر دمیج از قبل مقدار نداشت
+                    plant.setDamage(String.valueOf((int) amount));
                 }
                 break;
 
             case COOLDOWN:
-                // تغییر زمان ساخت مجدد (اگر amount منفی باشد، زمان را کم می‌کند)
-                double newCooldown = plant.getCooldown() + amount;
-                if (newCooldown < 0) newCooldown = 0; // زمان کول‌داون نمی‌تونه منفی بشه
-                plant.setCooldown(newCooldown);
+                double newCooldown = plant.getRechargeTime() + amount;
+                plant.setRechargeTime(Math.max(newCooldown, 0));
                 break;
 
             case COST:
-                // تغییر هزینه خورشید
                 int newCost = plant.getSunCost() + (int) amount;
-                if (newCost < 0) newCost = 0;
-                plant.setSunCost(newCost);
+                plant.setSunCost(Math.max(newCost, 0));
                 break;
 
             case ATK_SPEED:
-                // اگر سرعت حمله را با یک فیلد String به نام interval ذخیره می‌کنی
-                // باید مقدار interval کاهش پیدا کند تا گیاه تندتر شلیک کند
+            case PROD_TIME:
+            case ARM_TIME:
+            case DIGEST:
+            case EAT_TIME:
+            case CHARGE_TIME:
+                if (plant.getActionInterval() != null) {
+                    double newInterval = plant.getActionInterval() + amount;
+                    plant.setActionInterval(Math.max(newInterval, 0));
+                }
                 break;
 
-            // TODO: بقیه کیس‌ها (مثل RANGE، SUN_DROP و ...) را می‌توانی بر اساس فیلدهای کلاس Plant اینجا اضافه کنی
-
             default:
-                // برای جلوگیری از گم شدن آپگریدهایی که هنوز پیاده‌سازی نشده‌اند
-                System.out.println("[سیستم ارتقا]: ارتقای " + effect.getKey() + " هنوز روی کلاس Plant مپ نشده است.");
+                Map<String, String> params = plant.getAbilityParams();
+                if (params == null) {
+                    params = new HashMap<>();
+                    plant.setAbilityParams(params);
+                }
+
+                String keyStr = effect.getKey().name();
+                try {
+                    if (params.containsKey(keyStr)) {
+                        double currentVal = Double.parseDouble(params.get(keyStr));
+                        params.put(keyStr, String.valueOf(currentVal + amount));
+                    } else {
+                        params.put(keyStr, String.valueOf(amount));
+                    }
+                } catch (NumberFormatException e) {
+                    params.put(keyStr, String.valueOf(amount));
+                }
                 break;
         }
     }
-
 
     public static void applyUpgrades(Plant plant, List<StatEffect> stats, List<BehaviorEffect> behaviors) {
         if (stats != null) {
@@ -76,5 +89,19 @@ public class UpgradeManager {
                 applyBehavior(plant, behavior);
             }
         }
-    }*/
+    }
+
+    public static void applyLevelBehaviors(Plant plant) {
+        int levelIndex = plant.getLevel() - 2;
+        List<BehaviorEffect>[] upgrades = plant.getBehaviorUpgrades();
+
+        if (upgrades != null && levelIndex >= 0 && levelIndex < upgrades.length) {
+            List<BehaviorEffect> currentLevelBehaviors = upgrades[levelIndex];
+            if (currentLevelBehaviors != null) {
+                for (BehaviorEffect effect : currentLevelBehaviors) {
+                    applyBehavior(plant, effect);
+                }
+            }
+        }
+    }
 }
