@@ -98,6 +98,12 @@ public class GameContext {
     public void clearAllCooldowns() { // برای cheat remove-cooldown
         plantCooldowns.clear();
     }
+    public double getRemainingCooldownSeconds(String plantName) {
+        long availableAt = plantCooldowns.getOrDefault(plantName, 0L);
+        long remainingTicks = availableAt - timeManager.getTotalTicks();
+        if (remainingTicks <= 0) return 0;
+        return remainingTicks / 10.0;
+    }
 
     public void produceSun(int x, int y, int amount) {
         String key = x + ", " + y;

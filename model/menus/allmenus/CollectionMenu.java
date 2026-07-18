@@ -1,6 +1,7 @@
 package model.menus.allmenus;
 
 import controller.NewsManager;
+import controller.QuestManager;
 import controller.repository.DataManager;
 import controller.repository.PlantRepository;
 import controller.repository.ZombieRepository;
@@ -39,7 +40,7 @@ public class CollectionMenu extends BaseMenu {
         this.plantRepository = dm.plants;
         this.zombieRepository = dm.zombies;
         this.seenZombies = currentUser.getSeenZombies();
-        this.allZombies = (List<Zombie>) zombieRepository.getZombieDataMap().values();
+        this.allZombies = new ArrayList<>(zombieRepository.getZombieDataMap().values());
         this.unlockedPlants = currentUser.getUnlockedPlantTypes();
         this.plantFactory = new PlantFactory(dm);
         this.name = "Collection menu";
@@ -99,7 +100,7 @@ public class CollectionMenu extends BaseMenu {
         if (plant == null) return "Invalid plant name.";
         sb.append(plantName).append("'s details ->\n");
         sb.append("Id: ").append(plant.getId());
-        sb.append(" Base ability: ").append(plant.getBaseAbility().toString());
+        sb.append(" Base ability: ").append(plant.getBaseAbility());
         sb.append(" Base hp: ").append(plant.getBaseHp());
         sb.append(" Family: ").append(plant.getFamily().name()).append("\n----------\n");
 
@@ -163,8 +164,6 @@ public class CollectionMenu extends BaseMenu {
         return "Successfully upgraded " + plantName + " to level " + nextLevel;
     }
     public String purchasePlant(String plantName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== Welcome to the Collection Menu ===\n");
         Plant plant = null;
         for (Plant p : allPlants){
             if (p.getName().equalsIgnoreCase(plantName)) plant = p;
@@ -193,6 +192,7 @@ public class CollectionMenu extends BaseMenu {
 
 //        um.saveToFile();
         DataManager.getInstance().saveUser();
+        QuestManager.progress(currentUser, "first-plant", 1);
 
         return "Successfully purchased " + newPlant.getName() + "! It is now added to your collection.";
     }
