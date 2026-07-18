@@ -8,6 +8,7 @@ import model.GreenHouseData.Pot;
 import model.menus.BaseMenu;
 import model.menus.MenuType;
 import model.plants.Plant;
+import model.plants.plantFoodEffect.PlantFoodMode;
 import model.user.User;
 import model.user.UserManager;
 import view.ConsoleView;
@@ -136,7 +137,7 @@ public class GreenHouseMenu extends BaseMenu {
 
         List<Plant> validPlants = new ArrayList<>();
         for (Plant p : unlockedPlants) {
-            if (p.isPlantFood()) {
+            if (!p.getPlantFoodMode().equals(PlantFoodMode.NONE)) {
                 validPlants.add(p);
             }
         }

@@ -254,12 +254,15 @@ public class User {
         return unlockedPlantTypes.get(randomIndex);
     }
     public boolean hasStoredBoost(String plantName) {
-        return storedBoosts.getOrDefault(plantName, false);
+        String key = plantName.toLowerCase();
+        return storedBoosts.getOrDefault(key, false);
     }
     public void addStoredBoost(String plantName){
         String key = plantName.toLowerCase();
-
         storedBoosts.put(key, true);
+    }
+    public void consumeStoredBoost(String plantName) {
+        storedBoosts.remove(plantName.toLowerCase());
     }
 
     public boolean isLevelUnlocked(String levelName) {
