@@ -9,6 +9,9 @@ import model.GameContext;
 import model.menus.BaseMenu;
 import model.menus.MenuType;
 import model.plants.Plant;
+import model.plants.upgradeEffect.BehaviorEffect;
+import model.plants.upgradeEffect.StatEffect;
+import model.plants.upgradeEffect.UpgradeManager;
 import model.user.User;
 import model.user.UserManager;
 import model.zombie.Zombie;
@@ -118,7 +121,46 @@ public class CollectionMenu extends BaseMenu {
         return sb.toString();
     }
     public String upgradePlant(String plantName) {
-        return null;// level up the plant here
+        Plant plant = null;
+        for (Plant p : unlockedPlants) {
+            if (p.getName().equalsIgnoreCase(plantName)) { plant = p; break; }
+        }
+        if (plant == null) {
+            return "You haven't unlocked this plant.";
+        }
+
+        int currentLevel = plant.getLevel();
+        if (currentLevel >= 4) {
+            return plantName + " is already at max level.";
+        }
+
+        int nextLevel = currentLevel + 1;
+        int coinsNeeded = 500 * nextLevel;
+        int seedsNeeded = 5 * nextLevel;
+
+        if (currentUser.getCoins() < coinsNeeded) {
+            return "Not enough coins! Need " + coinsNeeded + " coins to upgrade " + plantName + ".";
+        }
+        if (currentUser.getSeedCount(plantName) < seedsNeeded) {
+            return "Not enough seed packets! Need " + seedsNeeded + " packets of " + plantName + ".";
+        }
+
+        currentUser.setCoins(currentUser.getCoins() - coinsNeeded);
+        currentUser.addSeedsToInventory(plantName, -seedsNeeded);
+
+        int levelIndex = nextLevel - 2;
+        List<StatEffect>[] statUpgrades = plant.getStatUpgrades();
+        List<BehaviorEffect>[] behaviorUpgrades = plant.getBehaviorUpgrades();
+
+        List<StatEffect> stats = (statUpgrades != null && levelIndex < statUpgrades.length) ? statUpgrades[levelIndex] : null;
+        List<BehaviorEffect> behaviors = (behaviorUpgrades != null && levelIndex < behaviorUpgrades.length) ? behaviorUpgrades[levelIndex] : null;
+
+        UpgradeManager.applyUpgrades(plant, stats, behaviors);
+        plant.setLevel(nextLevel);
+
+        DataManager.getInstance().saveUser();
+
+        return "Successfully upgraded " + plantName + " to level " + nextLevel;
     }
     public String purchasePlant(String plantName) {
         StringBuilder sb = new StringBuilder();

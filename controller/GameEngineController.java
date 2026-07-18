@@ -51,7 +51,7 @@ public class GameEngineController {
     public void loop() {
         while (isRunning) {
             processInput();
-            update();
+            //update(); فقط با advance time باید بره جلو بازی
         }
     }
 

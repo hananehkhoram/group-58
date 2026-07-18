@@ -153,11 +153,46 @@ public class GameContext {
             } else {
                 currentUser.setWinStreakAtMaxDifficulty(0);
             }
+            currentUser.setNumberOfPassedLevels(currentUser.getNumberOfPassedLevels() + 1);
+            List<Level> levelsInSeason = this.season.getLevels();
+            int levelIndex = levelsInSeason.indexOf(this.level);
 
+            currentUser.setLastLevel(levelIndex + 1);
+
+            currentUser.setLastSeason(DataManager.getInstance().seasons.getChapterNumber(this.season));
+
+            if (levelIndex + 1 < levelsInSeason.size()) {
+                currentUser.unlockLevel(levelsInSeason.get(levelIndex + 1).getName());
+                NewsManager.addNews("New Level In Season","You unlocked new level: "+
+                        levelsInSeason.get(levelIndex + 1).getName()+" in seasson: "+currentUser.getLastSeason());
+            } else {
+                Season nextSeason = DataManager.getInstance().seasons.getNextSeason(this.season);
+                if (nextSeason != null && !nextSeason.getLevels().isEmpty()) {
+                    currentUser.unlockLevel(nextSeason.getLevels().get(0).getName());
+                    NewsManager.addNews("New Season","You unlocked season: "+nextSeason.getName());
+                }
+                String minigameName = getRelatedMinigame(this.season.getName());
+                if (minigameName != null) {
+                    Season minigame = DataManager.getInstance().seasons.get(minigameName);
+                    if (minigame != null && !minigame.getLevels().isEmpty()) {
+                        currentUser.unlockLevel(minigame.getLevels().get(0).getName());
+                        NewsManager.addNews("New Minigame","You unlocked new minigame: "+minigameName);
+                    }
+                }
+            }
             QuestManager.evaluateLevelEndQuests(this, currentUser);
         }
         DataManager.getInstance().saveUser();
         ConsoleView.showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
+    }
+    private String getRelatedMinigame(String seasonName) {
+        return switch (seasonName) {
+            case "Ancient Egypt" -> "Vasebreaker";
+            case "Frozen Caves" -> "Wallnut Bowling";
+            case "Big Wave Beach" -> "I, Zombie";
+            case "Dark Ages" -> "Beghouled";
+            default -> null;
+        };
     }
 
     public void triggerPlayerLoss() {

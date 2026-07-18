@@ -22,9 +22,9 @@ import controller.commands.GreenHouseCommands.EnterShop;
 import controller.commands.ShopCommands.ShowProductsCommands;
 import controller.commands.SpecialLevelsCommands.PlantWhatYouGet;
 import controller.commands.TravelMenuCommands.ShowTravelMenu;
-import controller.commands.status.ShowMap;
-import controller.commands.status.ShowPlantsStatus;
-import controller.commands.status.ShowTileStatus;
+import controller.commands.Status.ShowMap;
+import controller.commands.Status.ShowPlantsStatus;
+import controller.commands.Status.ShowTileStatus;
 import model.GameContext;
 
 
@@ -84,7 +84,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("plant plant -t (?<type>\\S+) -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new Planting(menuManager));
         registry.register("pluck plant -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new Plucking(menuManager));
         registry.register("feed plant -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new FeedPlant(menuManager));
-        registry.register("show map" , new ShowMap());
+        registry.register("show map" , new ShowMap(menuManager));
         registry.register("show plants status" , new ShowPlantsStatus());
         registry.register("show tile status -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new ShowTileStatus());
         registry.register("zombies info" , new ShowZombiesInfo());

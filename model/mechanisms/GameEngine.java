@@ -291,4 +291,8 @@ public class GameEngine {
     public Zombie[] getRowsZombies(int row) {
         return null;
     }
+
+    public LawnMower[] getLawnMowers() {
+        return lawnMowers;
+    }
 }

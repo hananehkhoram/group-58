@@ -1,4 +1,4 @@
-package controller.commands.status;
+package controller.commands.Status;
 
 import controller.commandHandler.Command;
 
