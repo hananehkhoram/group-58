@@ -4,12 +4,11 @@ import model.GameContext;
 import model.plants.plantAbilities.BaseAbility;
 import model.plants.plantFoodEffect.PlantFoodMode;
 import model.plants.upgradeEffect.BehaviorEffect;
+import model.plants.upgradeEffect.BehaviorKey;
 import model.plants.upgradeEffect.StatEffect;
 import model.projectile.Damageable;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Plant implements Damageable {
     // from csv file
@@ -308,15 +307,16 @@ public class Plant implements Damageable {
     public void setPlantFoodActive(boolean plantFoodActive) {
         this.plantFoodActive = plantFoodActive;
     }
-    /*
+
     private Set<BehaviorKey> activeBehaviors = new HashSet<>();
 
     public boolean hasBehavior(BehaviorKey key) {
-    return activeBehaviors.add(key);
+    return activeBehaviors.contains(key);
     }
 
-    public vid addBehavior(BehaviorKey key) {
+    public void addBehavior(BehaviorKey key) {
     this.activeBehaviors.add(key);
     }
-     */
+
+
 }
