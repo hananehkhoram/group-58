@@ -1,39 +1,34 @@
-package model.MiniGame.WallnutsGame;
+package model.MiniGame.VaseGame;
 
 import controller.repository.factory.LevelFactory;
 import model.GameContext;
 import model.level.Level;
 import model.mechanisms.GameEngine;
-import model.plants.Plant;
 import model.season.Season;
-import model.season.miniGameSeason.wallnutsSeason;
-import java.util.ArrayList;
+import model.season.miniGameSeason.vaseSeason;
+
 import java.util.List;
 
-public class WallnutBowlingGame {
+public class Vasecheccker {
+
     private Level currentLevel;
     private GameEngine gameEngine;
     private GameContext ctx;
 
-    public WallnutBowlingGame() {
-    }
+    public Vasecheccker() {}
 
-    public void start() {
-
+    public void startMiniGame() {
         List<Level> bowlingLevels = LevelFactory.buildWallnutsLevels();
         this.currentLevel = bowlingLevels.get(0);
 
-        Season bowlingSeason = new wallnutsSeason(bowlingLevels);
+        Season vaseSeason = new vaseSeason(bowlingLevels);
 
-        this.ctx = new GameContext(this.currentLevel, bowlingSeason);
+        this.ctx = new GameContext(this.currentLevel, vaseSeason);
         this.gameEngine = new GameEngine(this.ctx);
 
-        this.ctx.setBattleStarted(true);
-
         System.out.print("start\n");
-    }
 
-    // ---- Getter ----
+    }
 
     public GameContext getCtx(){
         return  this.ctx;
@@ -44,15 +39,12 @@ public class WallnutBowlingGame {
     }
 
     public void advancedTimeCommand(double sec){
-        if (this.gameEngine != null && this.ctx != null) {
-            int ticks = (int) (sec * 10);
-
-            if (this.ctx.getTimeManager() != null) {
-                this.ctx.getTimeManager().advanceTime(ticks);
-            }
+        if (this.gameEngine != null) {
             this.gameEngine.update(sec);
         }else {
             System.out.println("Game engine is null");
         }
     }
+
+
 }

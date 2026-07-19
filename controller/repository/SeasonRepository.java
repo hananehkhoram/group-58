@@ -36,6 +36,9 @@ public class SeasonRepository implements AssetRepository<Season> {
         allSeasons.add(izombie);
         allSeasons.add(beghouled);
 
+        for (Season s : orderedSeasons) {
+            seasonMap.put(s.getName(), s);
+        }
         for (Season s : allSeasons) {
             seasonMap.put(s.getName(), s);
         }

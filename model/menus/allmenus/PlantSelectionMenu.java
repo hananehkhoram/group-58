@@ -120,7 +120,7 @@ public class PlantSelectionMenu extends BaseMenu {
 
         if (currentUser.getGems() < 2) return "You don't have enough gems.";
         currentUser.setGems(currentUser.getGems() - 2);
-        plantInCtx.setPlantFood(true);
+        plantInCtx.setPlantFoodActive(true);
 
         return "Successfully boosted "+plantInCtx.getName()+"from your plants.";
 

@@ -1,6 +1,8 @@
 package model.mechanisms;
 
 import model.GameContext;
+import model.MiniGame.VaseGame.Vase;
+import model.MiniGame.VaseGame.VaseContent;
 import model.projectile.Projectile;
 import model.level.Level;
 import model.plants.Plant;
@@ -20,6 +22,8 @@ public class GameEngine {
     private Tile[][] tiles;
     private LawnMower[] lawnMowers;
     private final Random random = new Random();
+    private int waveTimer = 0;
+    private boolean isFirstWaveTimerSet = false;
 
     public GameEngine(GameContext ctx) {
         this.ctx = ctx;
@@ -32,43 +36,98 @@ public class GameEngine {
     }
 
     public void update(double deltaTime) {
-        if (!ctx.isBattleStarted() || ctx.isGameEnded()) return;
+        // این پیام رو خودت داشتی
+        System.out.print("GameEngine is updating for " + deltaTime + " seconds.....\n");
 
-        if (ctx.getLevelManager() != null) {
-            ctx.getLevelManager().onUpdate(deltaTime, ctx);
+        // مظنون اول: آیا بازی شروع نشده؟
+        //if (!ctx.isBattleStarted()) {
+            //System.out.println("[STOP] Battle is NOT started! Returning...");
+            //return;
+        //}
+
+        // مظنون دوم: آیا بازی تمام شده؟
+        if (ctx.isGameEnded()) {
+            System.out.println("[STOP] Game is already ended! Returning...");
+            return;
         }
-        ctx.getSunManager().update(this);
-        updateWave(deltaTime);
-        updateZombies(deltaTime);
-        updateLawnMowers(deltaTime);
-        updatePlants(deltaTime);
-        updateProjectiles(deltaTime);
-        checkGameEnd();
+
+        try {
+            // مظنون سوم: ارور مخفی در LevelManager
+            if (ctx.getLevelManager() != null) {
+                ctx.getLevelManager().onUpdate(deltaTime, ctx);
+            }
+
+            // مظنون چهارم: ارور مخفی در SunManager (چون مینی‌گیم بولینگ خورشید ندارد، احتمالاً این null است و ارور می‌دهد!)
+            if (ctx.getSunManager() != null) {
+                ctx.getSunManager().update(this);
+            }
+
+            System.out.println("[SUCCESS] Reached updateWave!");
+            updateWave(deltaTime);
+
+            updateZombies(deltaTime);
+            updateLawnMowers(deltaTime);
+            updatePlants(deltaTime);
+            checkGameEnd();
+
+        } catch (Exception e) {
+            // اگر اروری مخفی شده باشد، اینجا لو می‌رود!
+            System.out.println("[CRASH] An error occurred in update: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void updateWave(double deltaTime) {
-        if (ctx.getLevel().getLevelType() == model.level.LevelType.PLANT_WHAT_YOU_GET) {
-            if (!ctx.isManualStartCommandReceived()) {
-                return;
-            }
-        }
-
         Wave[] waves = ctx.getLevel().getWaves();
+
         if (waves == null || waves.length == 0) {
             ctx.setWaveSpawningFinished(true);
             return;
         }
 
-        if (ctx.getCurrentWaveIndex() == 0) {
-            spawnWave(waves[0]);
+        if (!isFirstWaveTimerSet) {
+            waveTimer = waves[0].getWaveDelay();
+            isFirstWaveTimerSet = true;
+        }
+
+        if (waveTimer > 0) {
+            waveTimer -= 1;
+        }
+
+        int currentIndex = ctx.getCurrentWaveIndex();
+
+        // اگر همه موج‌ها اسپاون شدن، دیگه با این متد کاری نداریم و ترمز کشیده می‌شه
+        if (currentIndex >= waves.length) {
+            ctx.setWaveSpawningFinished(true);
             return;
         }
 
-        Wave previousWave = waves[ctx.getCurrentWaveIndex() - 1];
+        // --- هندل کردن موج اول ---
+        if (currentIndex == 0) {
+            if (waveTimer <= 0) {
+                spawnWave(waves[0]);
 
-        if (previousWave.isThresholdReached()) {
-            if (ctx.getCurrentWaveIndex() < waves.length) {
-                spawnWave(waves[ctx.getCurrentWaveIndex()]);
+                // * این همون ترمزیه که جا مونده بود! رفتن به موج بعدی *
+                ctx.setCurrentWaveIndex(1);
+
+                if (waves.length > 1) {
+                    waveTimer = waves[1].getWaveDelay();
+                }
+            }
+            return;
+        }
+
+        // --- هندل کردن موج‌های بعدی ---
+        Wave previousWave = waves[currentIndex - 1];
+
+        if (previousWave.isThresholdReached() || waveTimer <= 0) {
+            spawnWave(waves[currentIndex]);
+
+            // * رفتن به موج بعدی برای موج‌های دوم به بعد *
+            ctx.incrementWaveIndex();
+
+            if (currentIndex + 1 < waves.length) {
+                waveTimer = waves[currentIndex + 1].getWaveDelay();
             } else {
                 ctx.setWaveSpawningFinished(true);
             }
@@ -288,7 +347,43 @@ public class GameEngine {
         return tiles[x][y];
     }
 
+    public void smashVase(int row, int col) {
+        Tile tile = this.getTiles(row, col);
+
+        if (tile == null){
+            view.ConsoleView.simplePrint("Invalid coordinates!");
+            return;
+        }
+
+        Vase vase = tile.getVase();
+
+        if (vase == null){
+            view.ConsoleView.simplePrint("There is no vase at (" +  row + ", " + col + ")!");
+            return;
+        }
+
+        if (vase.isBroken()){
+            view.ConsoleView.simplePrint("Vase broken!");
+            return;
+        }
+
+        vase.setBroken(true);
+        view.ConsoleView.simplePrint("Crash! you smashed the vase at (" +  row + ", " + col + ")!");
+
+        if (vase.getContent() == VaseContent.ZOMBIE){
+            //spawn zombie
+            view.ConsoleView.simplePrint("Zombie popped out!");
+        } else if (vase.getContent() == VaseContent.PLANT) {
+            view.ConsoleView.simplePrint("Plant seed popped!");
+            // plant plant
+        }
+    }
+
     public Zombie[] getRowsZombies(int row) {
         return null;
+    }
+
+    public LawnMower[] getLawnMowers() {
+        return lawnMowers;
     }
 }

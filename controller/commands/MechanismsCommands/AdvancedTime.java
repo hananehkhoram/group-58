@@ -21,8 +21,10 @@ public class AdvancedTime implements Command {
         } catch (NumberFormatException e) {
             throw new CommandNotFound("Invalid tick amount!");
         }
-        menuManager.getCtx().getTimeManager().advanceTime(ticks);
-        ConsoleView.showMessage("Advanced time %d ticks.",ticks);
+        for (int i = 0; i < ticks; i++) {
+            menuManager.getCtx().getTimeManager().advanceTime(1);
+            menuManager.getGameEngine().update(0.1);
+        }        ConsoleView.showMessage("Advanced time %d ticks.",ticks);
 
     }
 

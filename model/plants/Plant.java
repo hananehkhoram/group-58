@@ -27,7 +27,6 @@ public class Plant implements Damageable {
 
     private boolean hasLilyPadUnderneath;
 
-    private boolean plantFood;
 
     // Index 0 = upgrades unlocked at level 2, index 1 = level 3, index 2 = level 4.
     private List<StatEffect>[] statUpgrades;
@@ -44,7 +43,7 @@ public class Plant implements Damageable {
 
     private int hp;
     private int row, col;
-    private boolean plantFoodActive;
+    private boolean plantFoodActive = false;
     private double attackCooldown;
 
     private int freezeLevel = 0;
@@ -249,13 +248,6 @@ public class Plant implements Damageable {
         this.col = col;
     }
 
-    public boolean isPlantFood() {
-        return plantFood;
-    }
-
-    public void setPlantFood(boolean plantFood) {
-        this.plantFood = plantFood;
-    }
 
     public int getLastActionSecond() {
         return lastActionSecond;
@@ -308,6 +300,13 @@ public class Plant implements Damageable {
         return hp;
     }
 
+    public boolean isPlantFoodActive() {
+        return plantFoodActive;
+    }
+
+    public void setPlantFoodActive(boolean plantFoodActive) {
+        this.plantFoodActive = plantFoodActive;
+    }
 
     private Set<BehaviorKey> activeBehaviors = new HashSet<>();
 

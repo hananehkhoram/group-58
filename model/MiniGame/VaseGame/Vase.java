@@ -1,50 +1,28 @@
 package model.MiniGame.VaseGame;
 
-import controller.repository.factory.LevelFactory;
-import model.GameContext;
-import model.level.Level;
-import model.mechanisms.GameEngine;
-import model.season.Season;
-import model.season.miniGameSeason.vaseSeason;
-
-import java.util.List;
-
 public class Vase {
+    private VaseContent content;
+    private String hiddenEntityName;
+    private boolean isBroken;
 
-    private Level currentLevel;
-    private GameEngine gameEngine;
-    private GameContext ctx;
-
-    public Vase() {}
-
-    public void startMiniGame() {
-        List<Level> bowlingLevels = LevelFactory.buildWallnutsLevels();
-        this.currentLevel = bowlingLevels.get(0);
-
-        Season vaseSeason = new vaseSeason(bowlingLevels);
-
-        this.ctx = new GameContext(this.currentLevel, vaseSeason);
-        this.gameEngine = new GameEngine(this.ctx);
-
-        System.out.print("start\n");
-
+    public Vase(VaseContent content, String hiddenEntityName) {
+        this.content = content;
+        this.hiddenEntityName = hiddenEntityName;
+        this.isBroken = false;
     }
 
-    public GameContext getCtx(){
-        return  this.ctx;
+    public VaseContent getContent() {
+        return content;
+    }
+    public String getHiddenEntityName() {
+        return hiddenEntityName;
     }
 
-    public GameEngine getGameEngine(){
-        return this.gameEngine;
+    public boolean isBroken() {
+        return isBroken;
     }
 
-    public void advancedTimeCommand(double sec){
-        if (this.gameEngine != null) {
-            this.gameEngine.update(sec);
-        }else {
-            System.out.println("Game engine is null");
-        }
+    public void setBroken(boolean broken) {
+        isBroken = broken;
     }
-
-
 }

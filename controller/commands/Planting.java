@@ -8,6 +8,8 @@ import model.TimeManager;
 import model.mechanisms.GameEngine;
 import model.mechanisms.Tile;
 import model.plants.Plant;
+import model.user.User;
+import model.user.UserManager;
 import view.ConsoleView;
 
 public class Planting implements Command {
@@ -68,6 +70,15 @@ public class Planting implements Command {
         tile.setPlant(newPlant);
         ctx.getPlantGrid()[x][y] = newPlant;
         ctx.getAlivePlants().add(newPlant);
+
+        User currentUser = UserManager.getInstance().getCurrentUser();
+        if (template.isPlantFoodActive() || currentUser.hasStoredBoost(type)) {
+            newPlant.activatePlantFood(ctx);
+            if (currentUser.hasStoredBoost(type)) {
+                currentUser.consumeStoredBoost(type);
+            }
+            ConsoleView.showMessage("Boosted plant food effect activated on planting!");
+        }
 
         if (needsSun) {
             ctx.setSunAmount(ctx.getSunAmount() - template.getSunCost());

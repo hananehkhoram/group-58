@@ -1,6 +1,7 @@
 package model.menus.allmenus;
 
 import controller.NewsManager;
+import controller.QuestManager;
 import controller.repository.DataManager;
 import controller.repository.PlantRepository;
 import controller.repository.ZombieRepository;
@@ -9,6 +10,10 @@ import model.GameContext;
 import model.menus.BaseMenu;
 import model.menus.MenuType;
 import model.plants.Plant;
+import model.plants.plantAbilities.*;
+import model.plants.upgradeEffect.BehaviorEffect;
+import model.plants.upgradeEffect.StatEffect;
+import model.plants.upgradeEffect.UpgradeManager;
 import model.user.User;
 import model.user.UserManager;
 import model.zombie.Zombie;
@@ -36,7 +41,7 @@ public class CollectionMenu extends BaseMenu {
         this.plantRepository = dm.plants;
         this.zombieRepository = dm.zombies;
         this.seenZombies = currentUser.getSeenZombies();
-        this.allZombies = (List<Zombie>) zombieRepository.getZombieDataMap().values();
+        this.allZombies = new ArrayList<>(zombieRepository.getZombieDataMap().values());
         this.unlockedPlants = currentUser.getUnlockedPlantTypes();
         this.plantFactory = new PlantFactory(dm);
         this.name = "Collection menu";
@@ -94,9 +99,20 @@ public class CollectionMenu extends BaseMenu {
             if (p.getName().equalsIgnoreCase(plantName)) plant = p;
         }
         if (plant == null) return "Invalid plant name.";
-        sb.append(plantName).append("'s details ->\n");
+
+        String baseAbility = "-";
+        if (plant.getBaseAbility() instanceof Shooters) baseAbility = "Shooter";
+        else if (plant.getBaseAbility() instanceof WallNut) baseAbility = "Wall Nut";
+        else if (plant.getBaseAbility() instanceof SunProducers) baseAbility = "Sun Producer";
+        else if (plant.getBaseAbility() instanceof Explosive) baseAbility = "Explosive";
+        else if (plant.getBaseAbility() instanceof Lobber) baseAbility = "Lobber";
+        else if (plant.getBaseAbility() instanceof MeleeAttackers) baseAbility = "MeleeAttackers";
+        else if (plant.getBaseAbility() instanceof Modifier) baseAbility = "Modifier";
+        else if (plant.getBaseAbility() instanceof PlantFooder) baseAbility = "Plant fooder";
+
+                sb.append(plantName).append("'s details ->\n");
         sb.append("Id: ").append(plant.getId());
-        sb.append(" Base ability: ").append(plant.getBaseAbility().toString());
+        sb.append(" Base ability: ").append(baseAbility);
         sb.append(" Base hp: ").append(plant.getBaseHp());
         sb.append(" Family: ").append(plant.getFamily().name()).append("\n----------\n");
 
@@ -118,11 +134,48 @@ public class CollectionMenu extends BaseMenu {
         return sb.toString();
     }
     public String upgradePlant(String plantName) {
-        return null;// level up the plant here
+        Plant plant = null;
+        for (Plant p : unlockedPlants) {
+            if (p.getName().equalsIgnoreCase(plantName)) { plant = p; break; }
+        }
+        if (plant == null) {
+            return "You haven't unlocked this plant.";
+        }
+
+        int currentLevel = plant.getLevel();
+        if (currentLevel >= 4) {
+            return plantName + " is already at max level.";
+        }
+
+        int nextLevel = currentLevel + 1;
+        int coinsNeeded = 500 * nextLevel;
+        int seedsNeeded = 5 * nextLevel;
+
+        if (currentUser.getCoins() < coinsNeeded) {
+            return "Not enough coins! Need " + coinsNeeded + " coins to upgrade " + plantName + ".";
+        }
+        if (currentUser.getSeedCount(plantName) < seedsNeeded) {
+            return "Not enough seed packets! Need " + seedsNeeded + " packets of " + plantName + ".";
+        }
+
+        currentUser.setCoins(currentUser.getCoins() - coinsNeeded);
+        currentUser.addSeedsToInventory(plantName, -seedsNeeded);
+
+        int levelIndex = nextLevel - 2;
+        List<StatEffect>[] statUpgrades = plant.getStatUpgrades();
+        List<BehaviorEffect>[] behaviorUpgrades = plant.getBehaviorUpgrades();
+
+        List<StatEffect> stats = (statUpgrades != null && levelIndex < statUpgrades.length) ? statUpgrades[levelIndex] : null;
+        List<BehaviorEffect> behaviors = (behaviorUpgrades != null && levelIndex < behaviorUpgrades.length) ? behaviorUpgrades[levelIndex] : null;
+
+        UpgradeManager.applyUpgrades(plant, stats, behaviors);
+        plant.setLevel(nextLevel);
+
+        DataManager.getInstance().saveUser();
+
+        return "Successfully upgraded " + plantName + " to level " + nextLevel;
     }
     public String purchasePlant(String plantName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== Welcome to the Collection Menu ===\n");
         Plant plant = null;
         for (Plant p : allPlants){
             if (p.getName().equalsIgnoreCase(plantName)) plant = p;
@@ -151,6 +204,7 @@ public class CollectionMenu extends BaseMenu {
 
 //        um.saveToFile();
         DataManager.getInstance().saveUser();
+        QuestManager.progress(currentUser, "first-plant", 1);
 
         return "Successfully purchased " + newPlant.getName() + "! It is now added to your collection.";
     }

@@ -27,8 +27,8 @@ public class StartGame implements Command {
             ConsoleView.showMessage(result);
 
             if (result.startsWith("Let's begin")) {
-                menuManager.changeMenu("gamemenu");
+                menuManager.forceChangeMenu("gamemenu");
             }
         }
-    }
+    }//start game
 }

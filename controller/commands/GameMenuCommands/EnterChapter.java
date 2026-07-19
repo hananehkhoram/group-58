@@ -38,6 +38,10 @@ public class EnterChapter implements Command {
             ConsoleView.showMessage("Chapter not found: " + chapterName);
             return;
         }
+        if (!isChapterUnlocked(chapter, UserManager.getInstance().getCurrentUser())) {
+            ConsoleView.showMessage("This chapter is locked.");
+            return;
+        }
 
         Menu currentMenu = menuManager.getCurrentMenu();
         Level levelToPlay = firstUnfinishedLevel(chapter, UserManager.getInstance().getCurrentUser());

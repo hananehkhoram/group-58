@@ -9,6 +9,7 @@ import view.ConsoleView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class Wave {
     private final int waveNumber;
@@ -67,7 +68,9 @@ public class Wave {
         int remainingBudget = budget;
         Random random = new Random();
 
-        List<String> availableZombieNames = new ArrayList<>(ctx.getDataManager().zombies.getZombieDataMap().keySet());
+        List<String> availableZombieNames = ctx.getDataManager().zombies.getZombieDataMap().keySet().stream()
+                .filter(name -> ctx.getDataManager().zombies.isAvailableInChapter(name, ctx.getSeason().getName()))
+                .collect(Collectors.toList());
         if (availableZombieNames.isEmpty()) return;
 
         ZombieFactory factory = new ZombieFactory(ctx.getDataManager());

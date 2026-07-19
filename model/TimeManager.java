@@ -7,6 +7,7 @@ public class TimeManager {
     public void advanceTime(int ticks){
         totalTicks += ticks;
         currentTick = ticks;
+
     }
     public long getTotalTicks() {
         return totalTicks;

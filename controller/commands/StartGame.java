@@ -7,7 +7,7 @@ import model.menus.Menu;
 import model.menus.allmenus.PlantSelectionMenu;
 import view.ConsoleView;
 
-public class StartGame implements Command {
+public class StartGame implements Command {//اضافی
     private MenuManager menuManager;
 
     public StartGame(MenuManager menuManager) {
