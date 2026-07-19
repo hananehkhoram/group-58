@@ -9,6 +9,7 @@ import controller.commands.GreenHouseCommands.FasterGrow;
 import controller.commands.GreenHouseCommands.PlantPot;
 import controller.commands.GreenHouseCommands.ShowGreenHouse;
 import controller.commands.LoginMenuCommands.SetNewPassword;
+import controller.commands.PlantsList.StartGame;
 import controller.commands.TravelMenuCommands.EnterMiniGameMenu;
 import controller.commands.MechanismsCommands.CheatAddSun;
 import controller.commands.NewsMenuCommands.ShowAllNews;
@@ -67,8 +68,8 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("menu profile change-email -e (?<email>\\S+)" , new ChangeEmail(menuManager));
         registry.register("menu profile change-password -p (?<newPassword>\\S+) -o (?<oldPassword>\\S+)" , new ChangePassword(menuManager));
         registry.register("menu profile show-info" , new ShowInfo(menuManager));
-        registry.register("menu collection show-(?<g>\\S+) plants" , new ShowPlantsCollection(menuManager));
-        registry.register("menu collection show-(?<d>\\S+) zombies" , new ShowZombiesCollection(menuManager));
+        registry.register("^menu collection show-(?:(?<g>all)-)?plants$" , new ShowPlantsCollection(menuManager));
+        registry.register("^menu collection show-(?:(?<d>all)-)?zombies$" , new ShowZombiesCollection(menuManager));
         registry.register("menu collection show-plant -p (?<plantName>.+)" , new ShowPlantDetails(menuManager));
         registry.register("menu collection show-zombie -z (?<zombieName>.+)" , new ShowZombieDetails(menuManager));
         registry.register("menu collection upgrade-plant -p (?<plantName>.+)" , new UpgradePlant(menuManager));
@@ -101,8 +102,8 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("(?i)^menu\\s+cheat\\s+add\\s+(\\d+)\\s+(coin|diamond)$",new CheatAddCurrency(menuManager));
         registry.register("cheat reset users",new CheatClearUsers());
         registry.register("^\\/\\/cheat add -n (\\d+) suns$",new CheatAddSun(menuManager));
-        registry.register("(?<enter>enter) minigame" , new EnterMiniGameMenu(menuManager, ctx));
-        registry.register("(?<number>\\d+)" , new EnterMiniGameMenu(menuManager, ctx));
+        registry.register("(?<enter>enter) minigame" , new EnterMiniGameMenu(menuManager));
+        registry.register("(?<number>\\d+)" , new EnterMiniGameMenu(menuManager));
         registry.register("cheat remove-cooldown",new CheatRemoveCooldown(menuManager));
         registry.register("^new password -p (?<password>.+)$",new SetNewPassword(menuManager));
     }

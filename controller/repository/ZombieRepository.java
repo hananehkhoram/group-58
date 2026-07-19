@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ZombieRepository implements AssetRepository<Zombie>{
     private Map<String, Zombie> zombieDataMap = new HashMap<>();
@@ -46,5 +47,32 @@ public class ZombieRepository implements AssetRepository<Zombie>{
 
     public Map<String, Zombie> getZombieDataMap() {
         return zombieDataMap;
+    }
+    // ZombieRepository.java
+    private static final Map<String, Set<String>> CHAPTER_EXCLUSIVE_ZOMBIES = Map.ofEntries(
+            Map.entry("Ra Zombie", Set.of("Ancient Egypt")),
+            Map.entry("Explorer Zombie", Set.of("Ancient Egypt")),
+            Map.entry("Tombraiser", Set.of("Ancient Egypt")),
+
+            Map.entry("Dodo Rider Zombie", Set.of("Frozen Caves")),
+            Map.entry("Hunter Zombie", Set.of("Frozen Caves")),
+            Map.entry("Troglobite", Set.of("Frozen Caves")),
+
+            Map.entry("Fisherman Zombie", Set.of("Big Wave Beach")),
+            Map.entry("Snorkel Zombie", Set.of("Big Wave Beach")),
+            Map.entry("Octopus Zombie", Set.of("Big Wave Beach")),
+
+            Map.entry("Jester Zombie", Set.of("Dark Ages")),
+            Map.entry("Wizard Zombie", Set.of("Dark Ages")),
+            Map.entry("King", Set.of("Dark Ages")),
+            Map.entry("Imp Dragon", Set.of("Dark Ages"))
+    );
+
+    public boolean isAvailableInChapter(String zombieName, String chapterName) {
+        Set<String> exclusiveTo = CHAPTER_EXCLUSIVE_ZOMBIES.get(zombieName);
+        if (exclusiveTo == null) {
+            return true;   // زامبی‌های عادی (مشترک بین همه چپترها) همه‌جا مجازن
+        }
+        return exclusiveTo.contains(chapterName);
     }
 }

@@ -43,6 +43,7 @@ public class MenuManager {
         EXIT_TARGET.put(MenuType.TRAVEL, MenuType.GAME);
         EXIT_TARGET.put(MenuType.GREENHOUSE, MenuType.GAME);
         EXIT_TARGET.put(MenuType.SHOP, MenuType.GREENHOUSE);
+        EXIT_TARGET.put(MenuType.SELECT_PLANTS, MenuType.GAME);
     }
 
 

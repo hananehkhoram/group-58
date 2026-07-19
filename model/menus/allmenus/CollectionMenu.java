@@ -10,6 +10,7 @@ import model.GameContext;
 import model.menus.BaseMenu;
 import model.menus.MenuType;
 import model.plants.Plant;
+import model.plants.plantAbilities.*;
 import model.plants.upgradeEffect.BehaviorEffect;
 import model.plants.upgradeEffect.StatEffect;
 import model.plants.upgradeEffect.UpgradeManager;
@@ -98,9 +99,20 @@ public class CollectionMenu extends BaseMenu {
             if (p.getName().equalsIgnoreCase(plantName)) plant = p;
         }
         if (plant == null) return "Invalid plant name.";
-        sb.append(plantName).append("'s details ->\n");
+
+        String baseAbility = "-";
+        if (plant.getBaseAbility() instanceof Shooters) baseAbility = "Shooter";
+        else if (plant.getBaseAbility() instanceof WallNut) baseAbility = "Wall Nut";
+        else if (plant.getBaseAbility() instanceof SunProducers) baseAbility = "Sun Producer";
+        else if (plant.getBaseAbility() instanceof Explosive) baseAbility = "Explosive";
+        else if (plant.getBaseAbility() instanceof Lobber) baseAbility = "Lobber";
+        else if (plant.getBaseAbility() instanceof MeleeAttackers) baseAbility = "MeleeAttackers";
+        else if (plant.getBaseAbility() instanceof Modifier) baseAbility = "Modifier";
+        else if (plant.getBaseAbility() instanceof PlantFooder) baseAbility = "Plant fooder";
+
+                sb.append(plantName).append("'s details ->\n");
         sb.append("Id: ").append(plant.getId());
-        sb.append(" Base ability: ").append(plant.getBaseAbility());
+        sb.append(" Base ability: ").append(baseAbility);
         sb.append(" Base hp: ").append(plant.getBaseHp());
         sb.append(" Family: ").append(plant.getFamily().name()).append("\n----------\n");
 

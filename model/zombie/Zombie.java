@@ -243,7 +243,7 @@ public class Zombie implements Damageable {
     public void setBehaviors (Map <String, Behaviors> behaviors){this.behaviors = behaviors;}
 
     public String zombieInfo() {
-        return String.format("[%s] \n   HP:%d \n    Armors:%s \n    Position:%f , %f \n     Effects:%s",
+        return String.format("[%s] \nHP:%d \nArmors:%s \nPosition:%f , %f \nEffects:%s",
                 name, hp, getStringArmor(), x, y, getStringEffects());
     }
 
