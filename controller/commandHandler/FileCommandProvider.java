@@ -9,6 +9,7 @@ import controller.commands.GreenHouseCommands.FasterGrow;
 import controller.commands.GreenHouseCommands.PlantPot;
 import controller.commands.GreenHouseCommands.ShowGreenHouse;
 import controller.commands.LoginMenuCommands.SetNewPassword;
+import controller.commands.PlantFoodCommands.CheatAddPlantFood;
 import controller.commands.PlantsList.StartGame;
 import controller.commands.TravelMenuCommands.EnterMiniGameMenu;
 import controller.commands.MechanismsCommands.CheatAddSun;
@@ -106,6 +107,8 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("(?<number>\\d+)" , new EnterMiniGameMenu(menuManager));
         registry.register("cheat remove-cooldown",new CheatRemoveCooldown(menuManager));
         registry.register("^new password -p (?<password>.+)$",new SetNewPassword(menuManager));
+        registry.register("cheat add-plant-food",new CheatAddPlantFood(menuManager));
+        registry.register("show current plant food",new );
     }
 }
 
