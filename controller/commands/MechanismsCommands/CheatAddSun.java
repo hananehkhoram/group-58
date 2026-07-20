@@ -24,4 +24,4 @@ public class CheatAddSun implements Command {
         menuManager.getCtx().addSun(amount);
         ConsoleView.showMessage("Added %d to your suns.\n",amount);
     }
-}//cheat add -n 5000 suns
+}//cheat add -n <count> suns

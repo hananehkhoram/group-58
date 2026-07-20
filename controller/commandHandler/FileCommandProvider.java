@@ -82,7 +82,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("advance time -t (?<count>\\d+) ticks" , new controller.commands.MechanismsCommands.AdvancedTime(menuManager));
         registry.register("collect sun -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new controller.commands.MechanismsCommands.CollectSun(menuManager));
         registry.register("show sun amount" , new controller.commands.MechanismsCommands.ShowSunAmount(menuManager));
-        registry.register("plant plant -t (?<type>\\S+) -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new Planting(menuManager));
+        registry.register("^plant plant -t (?<type>.+?) -l \\((?<x>\\d+), (?<y>\\d+)\\)$" , new Planting(menuManager));
         registry.register("pluck plant -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new Plucking(menuManager));
         registry.register("feed plant -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new FeedPlant(menuManager));
         registry.register("show map" , new ShowMap(menuManager));
@@ -101,7 +101,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("travel log page (?<pageName>.+)" , new ShowTravelMenu(menuManager));
         registry.register("(?i)^menu\\s+cheat\\s+add\\s+(\\d+)\\s+(coin|diamond)$",new CheatAddCurrency(menuManager));
         registry.register("cheat reset users",new CheatClearUsers());
-        registry.register("^\\/\\/cheat add -n (\\d+) suns$",new CheatAddSun(menuManager));
+        registry.register("cheat add -n (?<count>\\d+) suns",new CheatAddSun(menuManager));
         registry.register("(?<enter>enter) minigame" , new EnterMiniGameMenu(menuManager));
         registry.register("(?<number>\\d+)" , new EnterMiniGameMenu(menuManager));
         registry.register("cheat remove-cooldown",new CheatRemoveCooldown(menuManager));

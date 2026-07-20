@@ -57,7 +57,7 @@ public class EnterChapter implements Command {
 
                 ConsoleView.showMessage("Let's begin this level: %s\n" , menuManager.getCtx().getLevel().getName());
                 menuManager.forceChangeMenu("gamemenu");
-                GameContext.setBattleStarted(true);
+                menuManager.getCtx().setBattleStarted(true);
             }else {
                 menuManager.changeMenu("plantselectionmenu");
                 ConsoleView.showMessage("Entering %s. Choose your plants.", levelToPlay.getName());

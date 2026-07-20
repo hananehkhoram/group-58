@@ -198,6 +198,9 @@ public class GameEngine {
                 for (Zombie z : ctx.getAliveZombies()) {
                     if (z.getRow() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.5) {
                         p.onHit(z);
+                        if (z.isDead()) {
+                            ctx.recordPlantKill(p.getOwnerPlant());
+                        }
                         if (!p.isActive()) it.remove();
                         break;
                     }

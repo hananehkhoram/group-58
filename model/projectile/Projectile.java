@@ -1,5 +1,7 @@
 package model.projectile;
 
+import model.plants.Plant;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,6 +11,7 @@ public class Projectile {
     protected int row;
     protected double speed;
     protected boolean isActive;
+    private Plant ownerPlant;
 
     protected final BulletType bulletType;
     protected final TrajectoryType trajectory;
@@ -133,4 +136,6 @@ public class Projectile {
     public BulletType getBulletType() { return bulletType; }
     public TrajectoryType getTrajectory() { return trajectory; }
     public boolean isFromZombie() { return isFromZombie; }
+    public Plant getOwnerPlant() {return ownerPlant;}
+    public void setOwnerPlant(Plant ownerPlant) {this.ownerPlant = ownerPlant;}
 }

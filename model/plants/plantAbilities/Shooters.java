@@ -74,6 +74,7 @@ public class Shooters implements BaseAbility {
                     double startY = row + dir[1] * 0.3 * i;
                     Projectile p = new Projectile(damageOfPlant, startX, startY, row,
                             DEFAULT_PROJECTILE_SPEED, bulletType, trajectory, false, dir[0], dir[1]);
+                    p.setOwnerPlant(self);
                     ctx.setNewProjectiles(p);
                     firedAny = true;
                 }
@@ -137,6 +138,7 @@ public class Shooters implements BaseAbility {
         Projectile p = new Projectile(damageOfPlant, self.getX(), self.getRow(), self.getRow(),
                 DEFAULT_PROJECTILE_SPEED, bulletType, TrajectoryType.HOMING, false);
         p.setHomingTarget(target);
+        p.setOwnerPlant(self);
         ctx.setNewProjectiles(p);
         return true;
     }

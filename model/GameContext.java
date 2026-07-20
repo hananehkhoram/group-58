@@ -51,7 +51,7 @@ public class GameContext {
     private LevelManager levelManager;
     private boolean activeWaveInProgress = false;
     private boolean manualStartCommandReceived = false;
-    public boolean battleStarted = false;
+    private boolean battleStarted = false;
 
     private final Set<PlantFamily> plantFamiliesUsedToKillThisLevel = new HashSet<>();
     private final Set<PlantFamily> plantFamiliesPlantedThisLevel = new HashSet<>();
@@ -417,8 +417,8 @@ public class GameContext {
         return battleStarted;
     }
 
-    public static void setBattleStarted(boolean battleStarted) {
-        battleStarted = battleStarted;
+    public void setBattleStarted(boolean battleStarted) {
+        this.battleStarted = battleStarted;
     }
 
     public boolean isActiveWaveInProgress() {
