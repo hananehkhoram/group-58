@@ -37,7 +37,7 @@ public class Wave {
 
     public void start(GameContext ctx) {
         if (started) {
-            return; // یک موج فقط یک بار باید start بشه
+            return;
         }
         started = true;
 
@@ -118,7 +118,7 @@ public class Wave {
 
             ConsoleView.showMessage(String.format(
                     "Zombie %s spawned at wave %d in lane %d which costed %d.\n",
-                    zombie.getName(), waveNumber, (int) zombie.getY() + 1, cost));
+                    zombie.getName(), waveNumber, (int) zombie.getY(), cost));
         }
     }
 

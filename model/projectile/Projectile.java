@@ -68,7 +68,7 @@ public class Projectile {
                 }
                 break;
             case LOBBED:
-            case STRAIGHT:
+//            case STRAIGHT:
             case PIERCING:
             case BOWLING:
             default:
