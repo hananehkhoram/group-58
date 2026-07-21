@@ -155,7 +155,6 @@ public class GameContext {
     public void triggerPlayerWin() {
         this.gameEnded = true;
         this.playerWon = true;
-//        UserManager.getInstance().saveToFile();
         User currentUser = UserManager.getInstance().getCurrentUser();
         if (currentUser != null) {
             if (currentUser.getDifficultyLevel() == 5) {
@@ -318,6 +317,7 @@ public class GameContext {
             case LOCKED_PLANTS:
                 return new LockedPlantsManager(level.getBannedPlants(), level.getForcedPlants());
             case NORMAL:
+                return null;
             default:
                 return null;
         }
