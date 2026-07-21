@@ -7,7 +7,7 @@ import view.ConsoleView;
 import java.util.ArrayList;
 
 public class LawnMower {
-    private final double TRIGGER_X = 1;
+    private final double TRIGGER_X = 0.1;
     private final int row;
     private boolean isActivated = false;
     private boolean isAvailable = true;
