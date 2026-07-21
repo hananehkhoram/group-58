@@ -1,11 +1,13 @@
 package model.MiniGame.VaseGame;
 
+import controller.MenuManager;
 import controller.repository.factory.LevelFactory;
 import model.GameContext;
 import model.level.Level;
 import model.mechanisms.GameEngine;
 import model.season.Season;
 import model.season.miniGameSeason.vaseSeason;
+import view.ConsoleView;
 
 import java.util.List;
 
@@ -24,7 +26,7 @@ public class Vase {
         Season vaseSeason = new vaseSeason(bowlingLevels);
 
         this.ctx = new GameContext(this.currentLevel, vaseSeason);
-        this.gameEngine = new GameEngine(this.ctx);
+        this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));
 
         System.out.print("start\n");
 
@@ -42,7 +44,7 @@ public class Vase {
         if (this.gameEngine != null) {
             this.gameEngine.update(sec);
         }else {
-            System.out.println("Game engine is null");
+            ConsoleView.showMessage("Game engine is null");
         }
     }
 

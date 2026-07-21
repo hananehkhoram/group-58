@@ -1,11 +1,13 @@
 package model.MiniGame.Izambi;
 
+import controller.MenuManager;
 import controller.repository.factory.LevelFactory;
 import model.GameContext;
 import model.level.Level;
 import model.mechanisms.GameEngine;
 import model.season.Season;
 import model.season.miniGameSeason.IzombieSeason;
+import view.ConsoleView;
 
 import java.util.List;
 
@@ -24,7 +26,7 @@ public class Izambi {
         Season IzombieSeason = new IzombieSeason(bowlingLevels);
 
         this.ctx = new GameContext(this.currentLevel, IzombieSeason);
-        this.gameEngine = new GameEngine(this.ctx);
+        this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));
 
         System.out.print("start\n");
 
@@ -42,7 +44,7 @@ public class Izambi {
         if (this.gameEngine != null) {
             this.gameEngine.update(sec);
         }else {
-            System.out.println("Game engine is null");
+            ConsoleView.showMessage("Game engine is null");
         }
     }
 

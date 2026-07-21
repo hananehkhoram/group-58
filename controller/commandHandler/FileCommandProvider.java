@@ -108,7 +108,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("cheat remove-cooldown",new CheatRemoveCooldown(menuManager));
         registry.register("^new password -p (?<password>.+)$",new SetNewPassword(menuManager));
         registry.register("cheat add-plant-food",new CheatAddPlantFood(menuManager));
-        registry.register("show current plant food",new );
+//        registry.register("show current plant food",new );
     }
 }
 

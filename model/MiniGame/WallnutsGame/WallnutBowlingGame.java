@@ -1,5 +1,6 @@
 package model.MiniGame.WallnutsGame;
 
+import controller.MenuManager;
 import controller.repository.factory.LevelFactory;
 import model.GameContext;
 import model.level.Level;
@@ -7,6 +8,8 @@ import model.mechanisms.GameEngine;
 import model.plants.Plant;
 import model.season.Season;
 import model.season.miniGameSeason.wallnutsSeason;
+import view.ConsoleView;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,9 +29,9 @@ public class WallnutBowlingGame {
         Season bowlingSeason = new wallnutsSeason(bowlingLevels);
 
         this.ctx = new GameContext(this.currentLevel, bowlingSeason);
-        this.gameEngine = new GameEngine(this.ctx);
+        this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));
 
-        System.out.print("start\n");
+        ConsoleView.showMessage("start\n");
     }
 
     // ---- Getter ----
@@ -45,7 +48,7 @@ public class WallnutBowlingGame {
         if (this.gameEngine != null) {
             this.gameEngine.update(sec);
         }else {
-            System.out.println("Game engine is null");
+            ConsoleView.showMessage("Game engine is null");
         }
     }
 

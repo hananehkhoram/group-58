@@ -23,16 +23,9 @@ public class LevelFactory {
 
     private static Wave[] generateWaves(int waveCount, int baseCost, int waveDelayTicks) {
         Wave[] waves = new Wave[waveCount];
-        double cost = baseCost;
         for (int i = 0; i < waveCount; i++) {
             boolean isLast = (i == waveCount - 1);
-            if (isLast) {
-                cost *= 2; // ابرموج flag
-            }
-            waves[i] = new Wave(i + 1,waveDelayTicks, isLast, (int) Math.round(cost));
-            if (!isLast) {
-                cost *= 1.25;
-            }
+            waves[i] = new Wave(baseCost, waveDelayTicks, isLast, i + 1);
         }
         return waves;
     }

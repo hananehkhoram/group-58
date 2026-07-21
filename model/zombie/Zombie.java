@@ -9,6 +9,7 @@ import model.zombie.behavior.Behaviors;
 import model.zombie.behavior.Jumper;
 import model.zombie.behavior.ProjectileDeflector;
 import model.zombie.behavior.Submerge;
+import view.ConsoleView;
 
 import java.util.List;
 import java.util.Map;
@@ -95,7 +96,6 @@ public class Zombie implements Damageable {
         return (b instanceof Submerge) ? (Submerge) b : null;
     }
 
-    /** بعد از انفجار دینامیت اکتشافگر، جهت حرکتش برعکس می‌شود (به سمت راست، رو به عقب می‌خورد) */
     public void setMovingBackward(boolean movingBackward) { this.movingBackward = movingBackward; }
     public boolean isMovingBackward() { return movingBackward; }
 
@@ -104,7 +104,7 @@ public class Zombie implements Damageable {
             iceHp -= damage;
             if (iceHp <= 0) {
                 isIced = false;
-                System.out.println("Zombie broke free from ice!");
+                ConsoleView.showMessage("Zombie broke free from ice!");
             }
             return;
         }
@@ -124,6 +124,9 @@ public class Zombie implements Damageable {
         }
 
         hp -= remaining;
+        if (hp <= 0){
+            ConsoleView.showMessage("Zombie of type "+this.getName() +" is dead at " + this.getX() + ", " + this.getY());
+        }
     }
 
     public Armor getArmor() {

@@ -1,5 +1,6 @@
 package model.mechanisms;
 
+import controller.MenuManager;
 import model.GameContext;
 import model.projectile.Projectile;
 import model.level.Level;
@@ -9,6 +10,7 @@ import model.zombie.Zombie;
 import model.zombie.behavior.Behaviors;
 import model.zombie.behavior.ProjectileDeflector;
 import model.zombie.behavior.Submerge;
+import view.ConsoleView;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,11 +24,13 @@ public class GameEngine {
     private Tile[][] tiles;
     private LawnMower[] lawnMowers;
     private final Random random = new Random();
+    private MenuManager menuManager;
 
-    public GameEngine(GameContext ctx) {
+    public GameEngine(GameContext ctx, MenuManager menuManager) {
         this.ctx = ctx;
         this.tiles = buildTiles(ctx);
         this.lawnMowers = buildLawnMowers();
+        this.menuManager = menuManager;
     }
 
     public GameContext getCtx() {
@@ -224,6 +228,8 @@ public class GameEngine {
 
     private void checkGameEnd() {
         if (ctx.isGameEnded()) {
+            ConsoleView.showMessage("You are now in Game Menu.");
+            menuManager.forceChangeMenu("gamemenu");
             return;
         }
         boolean allSpawned = ctx.isWaveSpawningFinished() ||
@@ -305,4 +311,6 @@ public class GameEngine {
     public Zombie[] getRowsZombies(int row) {
         return null;
     }
+
+    public LawnMower[] getLawnMowers() {return lawnMowers;}
 }
