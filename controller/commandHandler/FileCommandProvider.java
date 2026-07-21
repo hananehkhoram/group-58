@@ -104,6 +104,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("travel log page (?<pageName>.+)" , new ShowTravelMenu(menuManager));
         registry.register("(?i)^menu\\s+cheat\\s+add\\s+(\\d+)\\s+(coin|diamond)$",new CheatAddCurrency(menuManager));
         registry.register("cheat reset users",new CheatClearUsers());
+        registry.register("release the nuke", new ReleaseTheNuke(menuManager));
         registry.register("cheat add -n (?<count>\\d+) suns",new CheatAddSun(menuManager));
         registry.register("(?<enter>enter) minigame" , new EnterMiniGameMenu(menuManager));
         registry.register("(?<number>\\d+)" , new EnterMiniGameMenu(menuManager));
