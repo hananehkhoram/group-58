@@ -1,6 +1,7 @@
 package model.projectile;
 
 import model.plants.Plant;
+import view.ConsoleView;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -44,6 +45,7 @@ public class Projectile {
         this.dirX = dirX;
         this.dirY = dirY;
         this.ownerPlant = ownerPlant;
+        ConsoleView.showMessage("Projectile created at" + x + " , " + y + "from"+ ownerPlant.getName());
     }
 
 
@@ -66,7 +68,7 @@ public class Projectile {
                 }
                 break;
             case LOBBED:
-            case STRAIGHT:
+//            case STRAIGHT:
             case PIERCING:
             case BOWLING:
             default:

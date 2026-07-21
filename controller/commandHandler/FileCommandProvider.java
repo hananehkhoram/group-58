@@ -10,6 +10,7 @@ import controller.commands.GreenHouseCommands.PlantPot;
 import controller.commands.GreenHouseCommands.ShowGreenHouse;
 import controller.commands.LoginMenuCommands.SetNewPassword;
 import controller.commands.PlantFoodCommands.CheatAddPlantFood;
+import controller.commands.PlantFoodCommands.ShowCurrentPlantFood;
 import controller.commands.PlantsList.StartGame;
 import controller.commands.TravelMenuCommands.EnterMiniGameMenu;
 import controller.commands.MechanismsCommands.CheatAddSun;
@@ -55,13 +56,13 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("forget password -u (?<username>\\S+) -e (?<email>\\S+)" , new controller.commands.LoginMenuCommands.ForgetPassword(menuManager));
         registry.register("answer -a (?<answer>.+)" , new controller.commands.LoginMenuCommands.Answer(menuManager));
         registry.register("menu logout" , new controller.commands.MainMenuCommands.Logout(menuManager));
-        registry.register("menu enter chapter -c (?<chaptername>.+)" , new EnterChapter(menuManager));
+        registry.register("menu enter chapter -c (?<chaptername>.+)( -l (?<levelNumber>\\\\d+))?" , new EnterChapter(menuManager));
         registry.register("menu greenhouse" , new EnterGreenHouse(menuManager));
         registry.register("menu travel-log" , new EnterTravelLog(menuManager));
         registry.register("menu leaderboard" , new EnterLeaderBoard(menuManager, ctx));
         registry.register("menu coin-wallet" , new EnterCoinWallet(menuManager));
         registry.register("menu gem-wallet" , new EnterGemWallet(menuManager));
-        registry.register("" , new ChooseTheWorld(menuManager));
+        registry.register("choose world -w (?<worldName>.+)" , new ChooseTheWorld(menuManager));
         registry.register("menu settings change-difficulty -l (?<difficultyLevel>\\d+)" , new SettingsMenuCommands(menuManager));
         registry.register("menu news show-unread" , new ShowUnreadNews(menuManager));
         registry.register("menu news show-all" , new ShowAllNews(menuManager));
@@ -110,7 +111,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("^new password -p (?<password>.+)$",new SetNewPassword(menuManager));
         registry.register("smash vase -l ((?<x>\\d+), (?<y>\\d+))", new smashVase(menuManager));
         registry.register("cheat add-plant-food",new CheatAddPlantFood(menuManager));
-//        registry.register("show current plant food",new );
+        registry.register("show current plant food",new ShowCurrentPlantFood(menuManager));
     }
 }
 

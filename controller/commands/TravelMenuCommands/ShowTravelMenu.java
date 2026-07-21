@@ -64,8 +64,10 @@ public class ShowTravelMenu implements Command {
             int progress = user.getQuestProgress(q.getId());
             sb.append(done ? "[DONE] " : "[ ] ")
                     .append(q.getName()).append(" - ").append(q.getDescription());
-            if (!done && q.getTargetProgress() > 1) {
-                sb.append(" (").append(progress).append("/").append(q.getTargetProgress()).append(")");
+            if (!done) {
+                sb.append(q.getTargetProgress() > 1
+                        ? " (" + progress + "/" + q.getTargetProgress() + ")"
+                        : " (not completed yet)");
             }
             sb.append("\n");
         }

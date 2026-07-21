@@ -9,4 +9,9 @@ menu enter chapter -c Ancient Egypt
 add plant -t PeaShooter
 add plant -t Sunflower
 start game
-advance time -t 400 ticks
+advance time -t 40 ticks
+
+plant plant -t Peashooter -l (1, 1)
+plant plant -t Sunflower -l (1, 2)
+ cheat add -n 20 suns
+ show sun amount

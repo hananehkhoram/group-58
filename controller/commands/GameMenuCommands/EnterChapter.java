@@ -15,6 +15,8 @@ import model.user.User;
 import model.user.UserManager;
 import view.ConsoleView;
 
+import java.util.List;
+
 public class EnterChapter implements Command {
 
     private MenuManager menuManager;
@@ -25,12 +27,13 @@ public class EnterChapter implements Command {
 
     @Override
     public void execute(String[] args) {
-        if (args == null || args.length == 0) {
+        if (args == null || args.length == 0 || args[0] == null) {
             ConsoleView.showMessage("Please enter a chapter name.");
             return;
         }
 
-        String chapterName = String.join(" ", args).trim();
+        // نام چپتر مستقیماً آرگومان اول (گروه اول رجکس) است
+        String chapterName = args[0].trim();
 
         Season chapter = DataManager.getInstance().seasons.get(chapterName);
 
@@ -44,7 +47,26 @@ public class EnterChapter implements Command {
         }
 
         Menu currentMenu = menuManager.getCurrentMenu();
-        Level levelToPlay = firstUnfinishedLevel(chapter, UserManager.getInstance().getCurrentUser());
+        Level levelToPlay;
+
+        // اگر آرگومان دوم (شماره مرحله) وجود داشت و نال نبود
+        if (args.length > 1 && args[1] != null) {
+            int levelNumber = Integer.parseInt(args[1].trim());
+            List<Level> levels = chapter.getLevels();
+            if (levelNumber < 1 || levelNumber > levels.size()) {
+                ConsoleView.showMessage("Invalid level number.");
+                return;
+            }
+            Level requested = levels.get(levelNumber - 1);
+            if (!UserManager.getInstance().getCurrentUser().isLevelUnlocked(requested.getName())) {
+                ConsoleView.showMessage("This level is locked.");
+                return;
+            }
+            levelToPlay = requested;
+        } else {
+            levelToPlay = firstUnfinishedLevel(chapter, UserManager.getInstance().getCurrentUser());
+        }
+
 
         if (currentMenu instanceof GameMenu) {
             menuManager.startBattle(levelToPlay, chapter);

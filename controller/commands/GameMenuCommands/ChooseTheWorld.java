@@ -31,5 +31,5 @@ public class ChooseTheWorld implements Command {
             ((GameMenu) currentMenu).switchWorld(worldName);
         }
 
-    }
+    }//menu enter chapter -c <chaptername> (-l <levelNumber>)
 }
