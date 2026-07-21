@@ -62,7 +62,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("menu leaderboard" , new EnterLeaderBoard(menuManager, ctx));
         registry.register("menu coin-wallet" , new EnterCoinWallet(menuManager));
         registry.register("menu gem-wallet" , new EnterGemWallet(menuManager));
-        registry.register("choose world -w (?<world name>.+)" , new ChooseTheWorld(menuManager));
+        registry.register("choose world -w (?<worldName>.+)" , new ChooseTheWorld(menuManager));
         registry.register("menu settings change-difficulty -l (?<difficultyLevel>\\d+)" , new SettingsMenuCommands(menuManager));
         registry.register("menu news show-unread" , new ShowUnreadNews(menuManager));
         registry.register("menu news show-all" , new ShowAllNews(menuManager));
