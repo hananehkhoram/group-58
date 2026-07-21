@@ -7,6 +7,9 @@ import model.zombie.behavior.Armor;
 import model.zombie.behavior.ArmorType;
 import model.zombie.behavior.Behaviors;
 import model.zombie.behavior.Jumper;
+import model.zombie.behavior.ProjectileDeflector;
+import model.zombie.behavior.Submerge;
+import view.ConsoleView;
 
 import java.util.List;
 import java.util.Map;
@@ -83,7 +86,16 @@ public class Zombie implements Damageable {
         return (b instanceof Jumper) ? (Jumper) b : null;
     }
 
-    /** بعد از انفجار دینامیت اکتشافگر، جهت حرکتش برعکس می‌شود (به سمت راست، رو به عقب می‌خورد) */
+    public ProjectileDeflector getDeflector() {
+        Behaviors b = behaviors.get("deflector");
+        return (b instanceof ProjectileDeflector) ? (ProjectileDeflector) b : null;
+    }
+
+    public Submerge getSubmerge() {
+        Behaviors b = behaviors.get("submerge");
+        return (b instanceof Submerge) ? (Submerge) b : null;
+    }
+
     public void setMovingBackward(boolean movingBackward) { this.movingBackward = movingBackward; }
     public boolean isMovingBackward() { return movingBackward; }
 
@@ -92,7 +104,7 @@ public class Zombie implements Damageable {
             iceHp -= damage;
             if (iceHp <= 0) {
                 isIced = false;
-                System.out.println("Zombie broke free from ice!");
+                ConsoleView.showMessage("Zombie broke free from ice!");
             }
             return;
         }
@@ -105,7 +117,6 @@ public class Zombie implements Damageable {
             if (remaining <= 0) return;
         }
 
-        // شوالیه (Dark Ages Knight) کلاهخود + شانه‌بند دارد؛ هرکدام باید جدا از بین برود (صفحه ۳۴ سند).
         Armor secondary = getSecondaryArmor();
         if (secondary != null && !secondary.isDestroyed()) {
             remaining = secondary.absorb(remaining);
@@ -113,6 +124,9 @@ public class Zombie implements Damageable {
         }
 
         hp -= remaining;
+        if (hp <= 0){
+            ConsoleView.showMessage("Zombie of type "+this.getName() +" is dead at " + this.getX() + ", " + this.getY());
+        }
     }
 
     public Armor getArmor() {
@@ -125,10 +139,6 @@ public class Zombie implements Damageable {
         return (b instanceof Armor) ? (Armor) b : null;
     }
 
-    /**
-     * برای گیاهانی مثل Magnetshroom که یک نوع زره‌ی خاص رو می‌قاپند (نه با آسیب رسوندن، بلکه با حذف تمیز).
-     * طبق سند: روی بوکت‌هد کل زره‌ش رو می‌قاپه، ولی روی شوالیه فقط کلاهخود رو (نه شانه‌بند).
-     */
     public boolean removeArmorOfType(ArmorType type) {
         Armor primary = getArmor();
         if (primary != null && primary.getArmorType() == type && !primary.isDestroyed()) {
@@ -154,12 +164,11 @@ public class Zombie implements Damageable {
 
     @Override
     public void takeDamage(int amount) {
-        takeDamage((double) amount); // از منطق آرمور/یخ موجود استفاده می‌کند
+        takeDamage((double) amount);
     }
 
     @Override
     public void takeArmorPiercingDamage(int amount) {
-        // برخلاف takeDamage عادی، از بلوک armor رد می‌شود و مستقیم به جان اصلی می‌زند
         hp -= amount;
     }
 
@@ -169,15 +178,13 @@ public class Zombie implements Damageable {
             iceHp = 0;
             isIced = false;
         }
-        // مکانیزم پیوسته‌ی ذوب (۶۰ سلامتی/ثانیه در مجاورت گیاه آتشین) اینجا نیست؛
-        // آن باید جدا در GameEngine روی زامبی‌های مجاور یک گیاه آتشین tick بخورد.
     }
 
     @Override
     public void applySlowOrFreeze() {
         if (!isIced) {
             isIced = true;
-            iceHp = 300; // TODO: مقدار دقیق را طبق سند/csv تنظیم کنید
+            iceHp = 300;
         }
     }
 
@@ -188,21 +195,13 @@ public class Zombie implements Damageable {
     public int getHp() { return hp; }
     public double getEatDps() { return eatDps; }
 
-    private static final int TICKS_PER_SECOND = 10; // مطابق TimeManager (getTotalSeconds = totalTicks/10)
+    private static final int TICKS_PER_SECOND = 10;
 
-    /**
-     * وقتی زامبی تازه به یه گیاه می‌رسه (قبلاً در حال خوردن نبوده) صدا زده میشه، تا زمان قبلی
-     * (که ربطی به این تماس جدید نداره) حساب نشه و یهو یه بار دمیج انبوه نزنه.
-     */
     public void resetEatClock(GameContext ctx) {
         lastEatTick = ctx.getTimeManager().getTotalTicks();
         eatDamageAccumulator = 0;
     }
 
-    /**
-     * دمیجی که باید به گیاه بخوره، بر اساس تعداد تیک‌های TimeManager که از آخرین بار گذشته
-     * (نه deltaTimeِ حلقه‌ی بازی) — چون همه‌ی تایمرها باید به همون ساعتِ دستی وصل باشن.
-     */
     public int consumeEatDamage(GameContext ctx) {
         long now = ctx.getTimeManager().getTotalTicks();
         if (lastEatTick < 0) lastEatTick = now;
@@ -243,7 +242,7 @@ public class Zombie implements Damageable {
     public void setBehaviors (Map <String, Behaviors> behaviors){this.behaviors = behaviors;}
 
     public String zombieInfo() {
-        return String.format("[%s] \nHP:%d \nArmors:%s \nPosition:%f , %f \nEffects:%s",
+        return String.format("[%s] \n   HP:%d \n    Armors:%s \n    Position:%f , %f \n     Effects:%s",
                 name, hp, getStringArmor(), x, y, getStringEffects());
     }
 
@@ -274,4 +273,6 @@ public class Zombie implements Damageable {
     public void setBoss(boolean boss) {
         isBoss = boss;
     }
+
+    public void setRow (int r){this.y = r;}
 }

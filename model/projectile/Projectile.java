@@ -24,19 +24,14 @@ public class Projectile {
     private final Set<Damageable> alreadyHit = new HashSet<>(); // فقط برای PIERCING
 
     public Projectile(int damage, double x, double y, int row, double speed,
-                      BulletType bulletType, TrajectoryType trajectory, boolean isFromZombie) {
+                      BulletType bulletType, TrajectoryType trajectory, boolean isFromZombie, Plant ownerPlant) {
         this(damage, x, y, row, speed, bulletType, trajectory, isFromZombie,
-                isFromZombie ? -1.0 : 1.0, 0.0);
+                isFromZombie ? -1.0 : 1.0, 0.0, ownerPlant);
     }
 
-    /**
-     * برای شلیک‌های مورب/رو-به-عقب (QUAD_DIAGONAL, FRONT_AND_BACK, STAR_BURST) که جهت واقعی‌شون
-     * با پیش‌فرض ساده‌ی isFromZombie (فقط جلو/عقب در همون row) فرق می‌کنه.
-     * dirX/dirY باید یک بردار یکه (unit vector) باشن.
-     */
     public Projectile(int damage, double x, double y, int row, double speed,
                       BulletType bulletType, TrajectoryType trajectory, boolean isFromZombie,
-                      double dirX, double dirY) {
+                      double dirX, double dirY, Plant ownerPlant) {
         this.damage = damage;
         this.x = x;
         this.y = y;
@@ -48,7 +43,9 @@ public class Projectile {
         this.isFromZombie = isFromZombie;
         this.dirX = dirX;
         this.dirY = dirY;
+        this.ownerPlant = ownerPlant;
     }
+
 
     public void update(double time) {
         if (!isActive) return;
@@ -124,7 +121,6 @@ public class Projectile {
         this.homingTarget = target;
     }
 
-    /** برای وقتی که تیر (مثلاً یک شلیک مورب) از بالا/پایین صفحه خارج می‌شود */
     public void deactivate() { this.isActive = false; }
 
     public double getX() { return x; }
@@ -137,5 +133,4 @@ public class Projectile {
     public TrajectoryType getTrajectory() { return trajectory; }
     public boolean isFromZombie() { return isFromZombie; }
     public Plant getOwnerPlant() {return ownerPlant;}
-    public void setOwnerPlant(Plant ownerPlant) {this.ownerPlant = ownerPlant;}
 }

@@ -73,8 +73,7 @@ public class Shooters implements BaseAbility {
                     double startX = self.getX() + dir[0] * 0.3 * i;
                     double startY = row + dir[1] * 0.3 * i;
                     Projectile p = new Projectile(damageOfPlant, startX, startY, row,
-                            DEFAULT_PROJECTILE_SPEED, bulletType, trajectory, false, dir[0], dir[1]);
-                    p.setOwnerPlant(self);
+                            DEFAULT_PROJECTILE_SPEED, bulletType, trajectory, false, dir[0], dir[1], self);
                     ctx.setNewProjectiles(p);
                     firedAny = true;
                 }
@@ -136,9 +135,8 @@ public class Shooters implements BaseAbility {
         Zombie target = candidates.get(0);
 
         Projectile p = new Projectile(damageOfPlant, self.getX(), self.getRow(), self.getRow(),
-                DEFAULT_PROJECTILE_SPEED, bulletType, TrajectoryType.HOMING, false);
+                DEFAULT_PROJECTILE_SPEED, bulletType, TrajectoryType.HOMING, false, self);
         p.setHomingTarget(target);
-        p.setOwnerPlant(self);
         ctx.setNewProjectiles(p);
         return true;
     }

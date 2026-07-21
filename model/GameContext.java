@@ -6,6 +6,7 @@ import controller.SpecialLevelManager.*;
 import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
 import model.level.Level;
+import model.mechanisms.GameEngine;
 import model.mechanisms.SunManager;
 import model.plants.Plant;
 import model.plants.PlantFamily;
@@ -70,6 +71,8 @@ public class GameContext {
 
     private int zombiesKilledByLawnMowerThisLevel = 0;
 
+    private GameEngine gameEngine;
+
     public GameContext(Level level, Season season) {
         this.level = level;
         this.levelManager = createManagerForLevel(level);
@@ -81,6 +84,7 @@ public class GameContext {
         if (this.levelManager != null) this.levelManager.onLevelStart(this);
         this.timeManager = new TimeManager();
         this.sunManager = new SunManager(this.timeManager, level.getRows(), level.getColumns());
+
     }
 
     // SUN
@@ -266,6 +270,8 @@ public class GameContext {
         return currentWaveIndex;
     }
 
+    public  void setCurrentWaveIndex(int currentWaveIndex) {this.currentWaveIndex = currentWaveIndex;}
+
     // MISC
 
     public void incrementWaveIndex() {
@@ -427,6 +433,14 @@ public class GameContext {
 
     public void setActiveWaveInProgress(boolean activeWaveInProgress) {
         this.activeWaveInProgress = activeWaveInProgress;
+    }
+
+    public GameEngine getGameEngine() {
+        return this.gameEngine;
+    }
+
+    public void setGameEngine(GameEngine gameEngine) {
+        this.gameEngine = gameEngine;
     }
 
     public boolean isManualStartCommandReceived() {

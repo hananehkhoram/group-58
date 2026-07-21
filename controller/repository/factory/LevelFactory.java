@@ -1,9 +1,13 @@
 package controller.repository.factory;
 
 import controller.repository.DataManager;
-import model.MiniGame.Beghouled.Beghouled;
+import model.GameContext;
+import model.MiniGame.VaseGame.Vasecheccker;
+import model.MiniGame.VaseGame.VaseContent;
+import model.MiniGame.VaseGame.Vase;
 import model.level.Level;
 import model.level.LevelType;
+import model.mechanisms.Tile;
 import model.mechanisms.Wave;
 import model.plants.Plant;
 import model.season.*;
@@ -13,6 +17,8 @@ import model.season.miniGameSeason.vaseSeason;
 import model.season.miniGameSeason.wallnutsSeason;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class LevelFactory {
@@ -23,16 +29,9 @@ public class LevelFactory {
 
     private static Wave[] generateWaves(int waveCount, int baseCost, int waveDelayTicks) {
         Wave[] waves = new Wave[waveCount];
-        double cost = baseCost;
         for (int i = 0; i < waveCount; i++) {
             boolean isLast = (i == waveCount - 1);
-            if (isLast) {
-                cost *= 2; // ابرموج flag
-            }
-            waves[i] = new Wave(i + 1,waveDelayTicks, isLast, (int) Math.round(cost));
-            if (!isLast) {
-                cost *= 1.25;
-            }
+            waves[i] = new Wave(baseCost, waveDelayTicks, isLast, i + 1);
         }
         return waves;
     }
@@ -139,11 +138,11 @@ public class LevelFactory {
     public static List<Level> buildWallnutsLevels() {
         List<Level> levels = new ArrayList<>();
 
-        levels.add(new Level("Wallnuts - Day 1", 5, 9, generateWaves(5, 200, 220), LevelType.Vase_MG, null));
+        levels.add(new Level("Wallnuts - Day 1", 5, 9, generateWaves(5, 200, 220), LevelType.Wallnuts_MG, null));
 
-        levels.add(new Level("Wallnuts - Day 2", 5, 9, generateWaves(6, 220, 210), LevelType.Vase_MG, null));
+        levels.add(new Level("Wallnuts - Day 2", 5, 9, generateWaves(6, 220, 210), LevelType.Wallnuts_MG, null));
 
-        levels.add(new Level("Wallnuts - Day 3", 5, 9, generateWaves(7, 240, 200), LevelType.Vase_MG, null));
+        levels.add(new Level("Wallnuts - Day 3", 5, 9, generateWaves(7, 240, 200), LevelType.Wallnuts_MG, null));
 
         for (int i = 0; i < 3; i++){
             Plant wallnutsTemp = new Plant();
@@ -165,11 +164,11 @@ public class LevelFactory {
     public static List<Level> buildVaseLevels() {
         List<Level> levels = new ArrayList<>();
 
-        levels.add(new Level("Vase - Day 1", 5, 9, generateWaves(5, 200, 220), LevelType.Wallnuts_MG, null));
+        levels.add(new Level("Vase - Day 1", 5, 9, generateWaves(0, 200, 0), LevelType.Vase_MG, null));
 
-        levels.add(new Level("Vase - Day 2", 5, 9, generateWaves(6, 220, 210), LevelType.Wallnuts_MG, null));
+        levels.add(new Level("Vase - Day 2", 5, 9, generateWaves(0, 220, 0), LevelType.Vase_MG, null));
 
-        levels.add(new Level("Vase - Day 3", 5, 9, generateWaves(7, 240, 200), LevelType.Wallnuts_MG, null));
+        levels.add(new Level("Vase - Day 3", 5, 9, generateWaves(0, 240, 0), LevelType.Vase_MG, null));
 
 
         return  levels;
@@ -197,6 +196,45 @@ public class LevelFactory {
         levels.add(new Level("Beghouled - Day 3", 5, 9, generateWaves(7, 240, 200), LevelType.Beghouled_MG, null));
 
         return levels;
+    }
+
+    public static void setUpVases(GameContext ctx){
+        List<Vase> vasePool = new ArrayList<>();
+
+        for (int i = 0; i < 20; i++) {
+            vasePool.add(new Vase(VaseContent.ZOMBIE, "Zombie"));
+        }
+
+        for (int i = 0; i < 8; i++) {
+            vasePool.add(new Vase(VaseContent.PLANT, "peashooter"));
+        }
+
+        for (int i = 0; i < 3; i++) {
+            vasePool.add(new Vase(VaseContent.PLANT, "squash"));
+        }
+
+        for (int i = 0; i < 8; i++) {
+            vasePool.add(new Vase(VaseContent.PLANT, "Winter Melon"));
+        }
+
+        Collections.shuffle(vasePool);
+
+        int rows = ctx.getLevel().getRows();
+        int columns = ctx.getLevel().getColumns();
+        int vaseIndex = 0;
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < columns; c++) {
+                if (vaseIndex < vasePool.size()) {
+                    Tile currentTile = ctx.getGameEngine().getTiles(r, c);
+
+                    if (currentTile != null) {
+                        currentTile.setVase(vasePool.get(vaseIndex));
+                        vaseIndex++;
+                    }
+                }
+            }
+        }
     }
 
     List<Level> egyptLevels = LevelFactory.buildAncientEgyptLevels();

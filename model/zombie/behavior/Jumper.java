@@ -18,7 +18,7 @@ public class Jumper implements Behaviors {
     }
 
     private static final int TICKS_PER_SECOND = 10;
-    private static final int HIGH_HP_OBSTACLE_THRESHOLD = 4000; // TODO: آستانه‌ی دقیق «جان زیاد مثل wall-nut» را با plants.csv تطبیق دهید
+    private static final int HIGH_HP_OBSTACLE_THRESHOLD = 4000;
 
     private JumpVariant variant;
     private boolean landed;
@@ -68,13 +68,13 @@ public class Jumper implements Behaviors {
 
     /**
      * صدا زده می‌شود توسط Gargantuar (در Shooting.GARGANTUAR) وقتی جانش به نصف می‌رسد.
-     * طبق سند: Imp دقیقاً در ستون سوم از چپ (index=2) همان سطر فرود می‌آید.
+     * Imp دقیقاً در ستون سوم از چپ (index=2) همان سطر فرود می‌آید.
      */
     public void throwFrom(GameContext ctx, Zombie zombie, double apex, double flightTime) {
         this.startColumn = zombie.getX();
         this.apex = (int) apex;
         this.timeToTravel = (float) flightTime;
-        this.targetColumn = 2; // ستون سوم از چپ طبق سند
+        this.targetColumn = 2;
         this.startTick = ctx.getTimeManager().getTotalTicks();
         this.landed = false;
     }

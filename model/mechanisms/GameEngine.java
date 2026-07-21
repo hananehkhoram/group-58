@@ -1,12 +1,18 @@
 package model.mechanisms;
 
+import controller.MenuManager;
 import model.GameContext;
+import model.MiniGame.VaseGame.Vase;
+import model.MiniGame.VaseGame.VaseContent;
 import model.projectile.Projectile;
 import model.level.Level;
 import model.plants.Plant;
 import model.plants.TargetingMode;
 import model.zombie.Zombie;
 import model.zombie.behavior.Behaviors;
+import model.zombie.behavior.ProjectileDeflector;
+import model.zombie.behavior.Submerge;
+import view.ConsoleView;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -20,11 +26,15 @@ public class GameEngine {
     private Tile[][] tiles;
     private LawnMower[] lawnMowers;
     private final Random random = new Random();
+    private MenuManager menuManager;
+    private int waveTimer = 0;
+    private boolean isFirstWaveTimerSet = false;
 
-    public GameEngine(GameContext ctx) {
+    public GameEngine(GameContext ctx, MenuManager menuManager) {
         this.ctx = ctx;
         this.tiles = buildTiles(ctx);
         this.lawnMowers = buildLawnMowers();
+        this.menuManager = menuManager;
     }
 
     public GameContext getCtx() {
@@ -54,6 +64,7 @@ public class GameEngine {
         }
 
         Wave[] waves = ctx.getLevel().getWaves();
+
         if (waves == null || waves.length == 0) {
             ctx.setWaveSpawningFinished(true);
             return;
@@ -197,11 +208,20 @@ public class GameEngine {
             } else {
                 for (Zombie z : ctx.getAliveZombies()) {
                     if (z.getRow() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.5) {
-                        p.onHit(z);
-                        if (z.isDead()) {
-                            ctx.recordPlantKill(p.getOwnerPlant());
+                        ProjectileDeflector deflector = z.getDeflector();
+                        Submerge submerge = z.getSubmerge();
+
+                        if (deflector != null && deflector.canDeflect(p)) {
+                            deflector.deflect(p, ctx, z);
+                            it.remove();
+                        } else if (submerge != null
+                                && !submerge.isVulnerableTo(p.getOwnerPlant().getName(),p.getOwnerPlant().isPlantFoodActive())) {
+                            // زیر آبه و این پرتابه (طبق لیست damageWhileSubmerged) بهش نمی‌رسه؛
+                            // بدون اثر رد میشه، نه نابود میشه و نه دمیجی میزنه
+                        } else {
+                            p.onHit(z);
+                            if (!p.isActive()) it.remove();
                         }
-                        if (!p.isActive()) it.remove();
                         break;
                     }
                 }
@@ -213,6 +233,8 @@ public class GameEngine {
 
     private void checkGameEnd() {
         if (ctx.isGameEnded()) {
+            ConsoleView.showMessage("You are now in Game Menu.");
+            menuManager.forceChangeMenu("gamemenu");
             return;
         }
         boolean allSpawned = ctx.isWaveSpawningFinished() ||
@@ -281,7 +303,7 @@ public class GameEngine {
     private LawnMower[] buildLawnMowers() {
         LawnMower[] mowers = new LawnMower[Level.ROWS];
         for (int r = 0; r < Level.ROWS; r++) {
-            mowers[r] = new LawnMower(r);
+            mowers[r] = new LawnMower(r + 1);
         }
         return mowers;
     }
@@ -291,11 +313,41 @@ public class GameEngine {
         return tiles[x][y];
     }
 
+    public void smashVase(int row, int col) {
+        Tile tile = this.getTiles(row, col);
+
+        if (tile == null){
+            view.ConsoleView.simplePrint("Invalid coordinates!");
+            return;
+        }
+
+        Vase vase = tile.getVase();
+
+        if (vase == null){
+            view.ConsoleView.simplePrint("There is no vase at (" +  row + ", " + col + ")!");
+            return;
+        }
+
+        if (vase.isBroken()){
+            view.ConsoleView.simplePrint("Vase broken!");
+            return;
+        }
+
+        vase.setBroken(true);
+        view.ConsoleView.simplePrint("Crash! you smashed the vase at (" +  row + ", " + col + ")!");
+
+        if (vase.getContent() == VaseContent.ZOMBIE){
+            //spawn zombie
+            view.ConsoleView.simplePrint("Zombie popped out!");
+        } else if (vase.getContent() == VaseContent.PLANT) {
+            view.ConsoleView.simplePrint("Plant seed popped!");
+            // plant plant
+        }
+    }
+
     public Zombie[] getRowsZombies(int row) {
         return null;
     }
 
-    public LawnMower[] getLawnMowers() {
-        return lawnMowers;
-    }
+    public LawnMower[] getLawnMowers() {return lawnMowers;}
 }

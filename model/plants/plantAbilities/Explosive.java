@@ -99,7 +99,8 @@ public class Explosive implements BaseAbility {
                                 4.0,
                                 BulletType.NORMAL,
                                 TrajectoryType.LOBBED,
-                                false
+                                false,
+                                plant
                         );
                         ctx.setNewProjectiles(shrapnel);
                     }

@@ -70,9 +70,15 @@ public class ZombieRepository implements AssetRepository<Zombie>{
 
     public boolean isAvailableInChapter(String zombieName, String chapterName) {
         Set<String> exclusiveTo = CHAPTER_EXCLUSIVE_ZOMBIES.get(zombieName);
+
         if (exclusiveTo == null) {
             return true;   // زامبی‌های عادی (مشترک بین همه چپترها) همه‌جا مجازن
         }
+
+        if (chapterName == null) {
+            return false;
+        }
+
         return exclusiveTo.contains(chapterName);
     }
 }

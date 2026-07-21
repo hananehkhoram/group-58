@@ -28,6 +28,7 @@ import controller.commands.TravelMenuCommands.ShowTravelMenu;
 import controller.commands.Status.ShowMap;
 import controller.commands.Status.ShowPlantsStatus;
 import controller.commands.Status.ShowTileStatus;
+import controller.commands.TravelMenuCommands.smashVase;
 import model.GameContext;
 
 
@@ -108,6 +109,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("(?<number>\\d+)" , new EnterMiniGameMenu(menuManager));
         registry.register("cheat remove-cooldown",new CheatRemoveCooldown(menuManager));
         registry.register("^new password -p (?<password>.+)$",new SetNewPassword(menuManager));
+        registry.register("smash vase -l ((?<x>\\d+), (?<y>\\d+))", new smashVase(menuManager));
         registry.register("cheat add-plant-food",new CheatAddPlantFood(menuManager));
         registry.register("show current plant food",new ShowCurrentPlantFood(menuManager));
     }

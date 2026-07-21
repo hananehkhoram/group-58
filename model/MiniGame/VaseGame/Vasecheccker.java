@@ -1,4 +1,4 @@
-package model.MiniGame.Izambi;
+package model.MiniGame.VaseGame;
 
 import controller.MenuManager;
 import controller.repository.factory.LevelFactory;
@@ -6,27 +6,29 @@ import model.GameContext;
 import model.level.Level;
 import model.mechanisms.GameEngine;
 import model.season.Season;
-import model.season.miniGameSeason.IzombieSeason;
-import view.ConsoleView;
+import model.season.miniGameSeason.vaseSeason;
 
 import java.util.List;
 
-public class Izambi {
+public class Vasecheccker {
 
     private Level currentLevel;
     private GameEngine gameEngine;
     private GameContext ctx;
 
-    public Izambi() {}
+    public Vasecheccker() {}
 
-    public void startMiniGame() {
-        List<Level> bowlingLevels = LevelFactory.buildWallnutsLevels();
+    public void startMiniGame(MenuManager menuManager) {
+        List<Level> bowlingLevels = LevelFactory.buildVaseLevels();
         this.currentLevel = bowlingLevels.get(0);
 
-        Season IzombieSeason = new IzombieSeason(bowlingLevels);
+        Season vaseSeason = new vaseSeason(bowlingLevels);
 
-        this.ctx = new GameContext(this.currentLevel, IzombieSeason);
-        this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));
+        this.ctx = new GameContext(this.currentLevel, vaseSeason);
+        this.gameEngine = new GameEngine(this.ctx, menuManager);
+        this.ctx.setGameEngine(this.gameEngine);
+
+        LevelFactory.setUpVases(this.ctx);
 
         System.out.print("start\n");
 
@@ -44,8 +46,9 @@ public class Izambi {
         if (this.gameEngine != null) {
             this.gameEngine.update(sec);
         }else {
-            ConsoleView.showMessage("Game engine is null");
+            System.out.println("Game engine is null");
         }
     }
+
 
 }

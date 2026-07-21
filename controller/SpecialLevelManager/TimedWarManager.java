@@ -3,6 +3,7 @@ package controller.SpecialLevelManager;
 import model.GameContext;
 import model.level.Level;
 import model.plants.Plant;
+import view.ConsoleView;
 
 public class TimedWarManager implements LevelManager{
     private double timeRemaining;
@@ -45,7 +46,7 @@ public class TimedWarManager implements LevelManager{
 
         this.targetAmount = isSunMode ? level.getTimedWarTargetSun() : level.getTimedWarTargetZombies();
 
-        System.out.println("Timed War started! Time: " + timeRemaining + "s  Target: " + targetAmount);
+        ConsoleView.showMessage("Timed War started! Time: " + timeRemaining + "s  Target: " + targetAmount);
     }
     public double getTimeRemaining() {
         return Math.max(0, timeRemaining);

@@ -1,11 +1,13 @@
 package model.MiniGame.Beghouled;
 
+import controller.MenuManager;
 import controller.repository.factory.LevelFactory;
 import model.GameContext;
 import model.level.Level;
 import model.mechanisms.GameEngine;
 import model.season.Season;
 import model.season.miniGameSeason.beghouledSeason;
+import view.ConsoleView;
 
 import java.util.List;
 
@@ -24,7 +26,7 @@ public class Beghouled {
         Season beghouledSeason = new beghouledSeason(bowlingLevels);
 
         this.ctx = new GameContext(this.currentLevel, beghouledSeason);
-        this.gameEngine = new GameEngine(this.ctx);
+        this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));
 
         System.out.print("start\n");
 
@@ -42,7 +44,7 @@ public class Beghouled {
         if (this.gameEngine != null) {
             this.gameEngine.update(sec);
         }else {
-            System.out.println("Game engine is null");
+            ConsoleView.showMessage("Game engine is null");
         }
     }
 }

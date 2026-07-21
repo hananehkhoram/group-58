@@ -1,6 +1,7 @@
 package model.mechanisms;
 
 import model.GameContext;
+import model.MiniGame.VaseGame.Vase;
 import model.plants.*;
 import model.zombie.Zombie;
 
@@ -8,6 +9,7 @@ public class Tile {
     private int x;
     private int y;
     private GameContext ctx;
+    private Vase vase;
 
     public Tile(int x, int y, GameContext ctx) {
         this.x = x;
@@ -21,6 +23,14 @@ public class Tile {
 
     public int getY() {
         return y;
+    }
+
+    public Vase getVase() {
+        return vase;
+    }
+
+    public void setVase(Vase vase) {
+        this.vase = vase;
     }
 
     public TerrainType getTerrainType() {
