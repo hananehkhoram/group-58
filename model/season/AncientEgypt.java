@@ -3,7 +3,6 @@ package model.season;
 import model.GameContext;
 import model.GridCell;
 import model.level.Level;
-import model.zombie.Zombie;
 import view.ConsoleView;
 
 import java.util.List;
@@ -19,25 +18,7 @@ public class AncientEgypt extends Season{
 
     public void onWaveStart(GameContext ctx, int waveNumber, boolean isLastWave) {
         if (!isLastWave) return;
-
         ConsoleView.simplePrint("A sandstorm is approaching!\n");
-
-        List<Zombie> zombiesInThisWave = ctx.getActiveZombies();
-
-        for (Zombie zombie : zombiesInThisWave) {
-            if (random.nextBoolean()) {
-                int extraColumns = 1 + random.nextInt(4);
-
-                int newCol = (int) (zombie.getY() - extraColumns);
-
-                if (newCol < 0) newCol = 0;
-
-                zombie.setY(newCol);
-
-                // در صورت تمایل می‌توانی یک فلگ روی زامبی ست کنی که نشان دهد با گردباد آمده
-                // zombie.setSpawnedBySandstorm(true);
-            }
-        }
     }
     public void onLevelStart(GameContext ctx) {
         int gravesToSpawn = 5;

@@ -4,6 +4,7 @@ import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
 import model.GameContext;
 import model.plants.Plant;
+import view.ConsoleView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +58,7 @@ public class ConveyorBeltManager implements LevelManager{
                 Plant newPlantCard = plantFactory.create(randomPlantTemplate.getName());
 
                 conveyorBelt.add(newPlantCard);
-                System.out.println("New plant added to conveyor belt: " + newPlantCard.getName());
+                ConsoleView.showMessage("New plant added to conveyor belt: " + newPlantCard.getName());
             }
         }
     }

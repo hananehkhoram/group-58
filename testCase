@@ -5,3 +5,8 @@ menu enter loginmenu
 login -u hana -p #hH12345678
 menu enter gamemenu
 menu enter chapter -c Ancient Egypt
+
+add plant -t PeaShooter
+add plant -t Sunflower
+start game
+advance time -t 400 ticks

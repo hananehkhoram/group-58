@@ -1,5 +1,6 @@
 package model.mechanisms;
 
+import controller.MenuManager;
 import model.GameContext;
 import model.MiniGame.VaseGame.Vase;
 import model.MiniGame.VaseGame.VaseContent;
@@ -11,6 +12,7 @@ import model.zombie.Zombie;
 import model.zombie.behavior.Behaviors;
 import model.zombie.behavior.ProjectileDeflector;
 import model.zombie.behavior.Submerge;
+import view.ConsoleView;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,13 +26,15 @@ public class GameEngine {
     private Tile[][] tiles;
     private LawnMower[] lawnMowers;
     private final Random random = new Random();
+    private MenuManager menuManager;
     private int waveTimer = 0;
     private boolean isFirstWaveTimerSet = false;
 
-    public GameEngine(GameContext ctx) {
+    public GameEngine(GameContext ctx, MenuManager menuManager) {
         this.ctx = ctx;
         this.tiles = buildTiles(ctx);
         this.lawnMowers = buildLawnMowers();
+        this.menuManager = menuManager;
     }
 
     public GameContext getCtx() {
@@ -38,48 +42,27 @@ public class GameEngine {
     }
 
     public void update(double deltaTime) {
-        // این پیام رو خودت داشتی
-        System.out.print("GameEngine is updating for " + deltaTime + " seconds.....\n");
+        if (!ctx.isBattleStarted() || ctx.isGameEnded()) return;
 
-        // مظنون اول: آیا بازی شروع نشده؟
-        //if (!ctx.isBattleStarted()) {
-            //System.out.println("[STOP] Battle is NOT started! Returning...");
-            //return;
-        //}
-
-        // مظنون دوم: آیا بازی تمام شده؟
-        if (ctx.isGameEnded()) {
-            System.out.println("[STOP] Game is already ended! Returning...");
-            return;
+        if (ctx.getLevelManager() != null) {
+            ctx.getLevelManager().onUpdate(deltaTime, ctx);
         }
-
-        try {
-            // مظنون سوم: ارور مخفی در LevelManager
-            if (ctx.getLevelManager() != null) {
-                ctx.getLevelManager().onUpdate(deltaTime, ctx);
-            }
-
-            // مظنون چهارم: ارور مخفی در SunManager (چون مینی‌گیم بولینگ خورشید ندارد، احتمالاً این null است و ارور می‌دهد!)
-            if (ctx.getSunManager() != null) {
-                ctx.getSunManager().update(this);
-            }
-
-            System.out.println("[SUCCESS] Reached updateWave!");
-            updateWave(deltaTime);
-
-            updateZombies(deltaTime);
-            updateLawnMowers(deltaTime);
-            updatePlants(deltaTime);
-            checkGameEnd();
-
-        } catch (Exception e) {
-            // اگر اروری مخفی شده باشد، اینجا لو می‌رود!
-            System.out.println("[CRASH] An error occurred in update: " + e.getMessage());
-            e.printStackTrace();
-        }
+        ctx.getSunManager().update(this);
+        updateWave(deltaTime);
+        updateZombies(deltaTime);
+        updateLawnMowers(deltaTime);
+        updatePlants(deltaTime);
+        updateProjectiles(deltaTime);
+        checkGameEnd();
     }
 
     private void updateWave(double deltaTime) {
+        if (ctx.getLevel().getLevelType() == model.level.LevelType.PLANT_WHAT_YOU_GET) {
+            if (!ctx.isManualStartCommandReceived()) {
+                return;
+            }
+        }
+
         Wave[] waves = ctx.getLevel().getWaves();
 
         if (waves == null || waves.length == 0) {
@@ -87,49 +70,16 @@ public class GameEngine {
             return;
         }
 
-        if (!isFirstWaveTimerSet) {
-            waveTimer = waves[0].getWaveDelay();
-            isFirstWaveTimerSet = true;
-        }
-
-        if (waveTimer > 0) {
-            waveTimer -= 1;
-        }
-
-        int currentIndex = ctx.getCurrentWaveIndex();
-
-        // اگر همه موج‌ها اسپاون شدن، دیگه با این متد کاری نداریم و ترمز کشیده می‌شه
-        if (currentIndex >= waves.length) {
-            ctx.setWaveSpawningFinished(true);
+        if (ctx.getCurrentWaveIndex() == 0) {
+            spawnWave(waves[0]);
             return;
         }
 
-        // --- هندل کردن موج اول ---
-        if (currentIndex == 0) {
-            if (waveTimer <= 0) {
-                spawnWave(waves[0]);
+        Wave previousWave = waves[ctx.getCurrentWaveIndex() - 1];
 
-                // * این همون ترمزیه که جا مونده بود! رفتن به موج بعدی *
-                ctx.setCurrentWaveIndex(1);
-
-                if (waves.length > 1) {
-                    waveTimer = waves[1].getWaveDelay();
-                }
-            }
-            return;
-        }
-
-        // --- هندل کردن موج‌های بعدی ---
-        Wave previousWave = waves[currentIndex - 1];
-
-        if (previousWave.isThresholdReached() || waveTimer <= 0) {
-            spawnWave(waves[currentIndex]);
-
-            // * رفتن به موج بعدی برای موج‌های دوم به بعد *
-            ctx.incrementWaveIndex();
-
-            if (currentIndex + 1 < waves.length) {
-                waveTimer = waves[currentIndex + 1].getWaveDelay();
+        if (previousWave.isThresholdReached()) {
+            if (ctx.getCurrentWaveIndex() < waves.length) {
+                spawnWave(waves[ctx.getCurrentWaveIndex()]);
             } else {
                 ctx.setWaveSpawningFinished(true);
             }
@@ -283,6 +233,8 @@ public class GameEngine {
 
     private void checkGameEnd() {
         if (ctx.isGameEnded()) {
+            ConsoleView.showMessage("You are now in Game Menu.");
+            menuManager.forceChangeMenu("gamemenu");
             return;
         }
         boolean allSpawned = ctx.isWaveSpawningFinished() ||
@@ -396,4 +348,6 @@ public class GameEngine {
     public Zombie[] getRowsZombies(int row) {
         return null;
     }
+
+    public LawnMower[] getLawnMowers() {return lawnMowers;}
 }

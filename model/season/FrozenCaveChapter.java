@@ -80,8 +80,8 @@ public class FrozenCaveChapter extends Season {
             int randomCol = minCol + random.nextInt(cols - minCol);
 
             Zombie frozenZombie = zombieFactory.create("normal");
-            frozenZombie.setX(randomRow);
-            frozenZombie.setY(randomCol);
+            frozenZombie.setX(randomCol);
+            frozenZombie.setY(randomRow);
             //spawn zombie
 
             frozenZombie.setAsInitialFrozenBlock();

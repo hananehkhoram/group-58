@@ -1,5 +1,6 @@
 package model.MiniGame.VaseGame;
 
+import controller.MenuManager;
 import controller.repository.factory.LevelFactory;
 import model.GameContext;
 import model.level.Level;
@@ -17,14 +18,14 @@ public class Vasecheccker {
 
     public Vasecheccker() {}
 
-    public void startMiniGame() {
+    public void startMiniGame(MenuManager menuManager) {
         List<Level> bowlingLevels = LevelFactory.buildVaseLevels();
         this.currentLevel = bowlingLevels.get(0);
 
         Season vaseSeason = new vaseSeason(bowlingLevels);
 
         this.ctx = new GameContext(this.currentLevel, vaseSeason);
-        this.gameEngine = new GameEngine(this.ctx);
+        this.gameEngine = new GameEngine(this.ctx, menuManager);
         this.ctx.setGameEngine(this.gameEngine);
 
         LevelFactory.setUpVases(this.ctx);

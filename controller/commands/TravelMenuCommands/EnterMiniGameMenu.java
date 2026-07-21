@@ -31,7 +31,7 @@ public class EnterMiniGameMenu implements Command {
                 switch (number){
                     case 1:
                         Vasecheccker vaseGame = new Vasecheccker();
-                        vaseGame.startMiniGame();
+                        vaseGame.startMiniGame(menuManager);
                         menuManager.setCtx(vaseGame.getCtx());
                         menuManager.setGameEngine(vaseGame.getGameEngine());
                         break;
