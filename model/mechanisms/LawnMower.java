@@ -12,7 +12,7 @@ public class LawnMower {
     private boolean isActivated = false;
     private boolean isAvailable = true;
     private double x = 0;
-    private double velocityX = 2;
+    private double velocityX = 40;
     private final ArrayList<Zombie> killedZombies = new ArrayList<>();
     private boolean didKilled = false;
 
