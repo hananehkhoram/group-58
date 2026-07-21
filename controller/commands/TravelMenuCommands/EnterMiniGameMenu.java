@@ -2,6 +2,7 @@ package controller.commands.TravelMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;
+import controller.repository.factory.LevelFactory;
 import model.MiniGame.Beghouled.Beghouled;
 import model.MiniGame.Izambi.Izambi;
 import model.MiniGame.VaseGame.Vasecheccker;
@@ -29,10 +30,10 @@ public class EnterMiniGameMenu implements Command {
 
                 switch (number){
                     case 1:
-                        Vasecheccker vasecheccker = new Vasecheccker();
-                        vasecheccker.startMiniGame();
-                        menuManager.setCtx(vasecheccker.getCtx());
-                        menuManager.setGameEngine(vasecheccker.getGameEngine());
+                        Vasecheccker vaseGame = new Vasecheccker();
+                        vaseGame.startMiniGame();
+                        menuManager.setCtx(vaseGame.getCtx());
+                        menuManager.setGameEngine(vaseGame.getGameEngine());
                         break;
 
                     case 2:

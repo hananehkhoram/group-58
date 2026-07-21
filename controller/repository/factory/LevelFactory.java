@@ -205,7 +205,7 @@ public class LevelFactory {
         return levels;
     }
 
-    public void setUpVases(GameContext ctx){
+    public static void setUpVases(GameContext ctx){
         List<Vase> vasePool = new ArrayList<>();
 
         for (int i = 0; i < 20; i++) {

@@ -18,13 +18,16 @@ public class Vasecheccker {
     public Vasecheccker() {}
 
     public void startMiniGame() {
-        List<Level> bowlingLevels = LevelFactory.buildWallnutsLevels();
+        List<Level> bowlingLevels = LevelFactory.buildVaseLevels();
         this.currentLevel = bowlingLevels.get(0);
 
         Season vaseSeason = new vaseSeason(bowlingLevels);
 
         this.ctx = new GameContext(this.currentLevel, vaseSeason);
         this.gameEngine = new GameEngine(this.ctx);
+        this.ctx.setGameEngine(this.gameEngine);
+
+        LevelFactory.setUpVases(this.ctx);
 
         System.out.print("start\n");
 

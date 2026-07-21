@@ -436,7 +436,11 @@ public class GameContext {
     }
 
     public GameEngine getGameEngine() {
-        return this.getGameEngine();
+        return this.gameEngine;
+    }
+
+    public void setGameEngine(GameEngine gameEngine) {
+        this.gameEngine = gameEngine;
     }
 
     public boolean isManualStartCommandReceived() {
