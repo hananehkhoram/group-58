@@ -108,5 +108,5 @@ public class EnterChapter implements Command {
             }
         }
         return currentLevel;
-    }//menu enter chapter -c
+    }//menu enter chapter -c <chapter> -l <levelNumber>
 }
