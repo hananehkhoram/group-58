@@ -92,7 +92,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("show plants status" , new ShowPlantsStatus(menuManager));
         registry.register("show tile status -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new ShowTileStatus(menuManager));
         registry.register("zombies info" , new ShowZombiesInfo());
-        registry.register("cheat spawn-zombie -t (?<zombieType>.+) -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new CheatSpawnZombie());
+        registry.register("cheat spawn-zombie -t (?<zombieType>.+) -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new CheatSpawnZombie(menuManager));
         registry.register("start zombie waves" , new PlantWhatYouGet());
         registry.register("show greenhouse" , new ShowGreenHouse(menuManager));
         registry.register("plant pot at \\((?<x>\\d+), (?<y>\\d+)\\)" , new PlantPot(menuManager));
@@ -111,7 +111,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("^new password -p (?<password>.+)$",new SetNewPassword(menuManager));
         registry.register("smash vase -l ((?<x>\\d+), (?<y>\\d+))", new smashVase(menuManager));
         registry.register("cheat add-plant-food",new CheatAddPlantFood(menuManager));
-        registry.register("show current plant food",new ShowCurrentPlantFood(menuManager));
+        registry.register("show current plant food",new ShowCurrentPlantFood(menuManager));;
     }
 }
 
