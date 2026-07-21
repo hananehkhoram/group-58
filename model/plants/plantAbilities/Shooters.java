@@ -16,11 +16,13 @@ import java.util.List;
 
 public class Shooters implements BaseAbility {
 
+    // TODO: هیچ ستون سرعتی توی plants.csv نیست؛ فعلاً یک مقدار ثابت معقول در نظر گرفته شده
     private static final double DEFAULT_PROJECTILE_SPEED = 8.0;
 
     @Override
     public void activate(Plant self, GameContext ctx) {
         //check for striker here
+        //check for homing (cat-tail - 14 - 15)
     }
 
     public void shoot(String damage, int amount, String interval, ShootType shootType, BulletType bulletType, Plant self, GameEngine engine) {
@@ -30,7 +32,7 @@ public class Shooters implements BaseAbility {
         boolean everyRound = interval.equals("everyRound");
         boolean canFireNow;
         if (everyRound) {
-            canFireNow = true;
+            canFireNow = true; // بدون کول‌داون؛ هر بار activate صدا زده بشه شلیک می‌کنه
         } else {
             int intervalOfPlant = Integer.parseInt(interval);
             canFireNow = currentSecond - self.getLastActionSecond() >= intervalOfPlant;
@@ -64,6 +66,9 @@ public class Shooters implements BaseAbility {
             default -> TrajectoryType.STRAIGHT;
         };
 
+        // amount فقط برای STRAIGHT_SEQUENTIAL (Repeater) به معنی «چندبار پشت‌سرهم شلیک کن»ه؛
+        // برای TRI_LANE به معنی «چند لاین» است (در resolveLanes مدیریت شده)، و برای شلیک‌های چندجهته
+        // (QUAD_DIAGONAL/FRONT_AND_BACK/STAR_BURST) هرجهت خودش یک شلیک همزمانه، نه تکراری.
         int shotsPerLane = (shootType == ShootType.STRAIGHT_SEQUENTIAL) ? Math.max(1, amount) : 1;
 
         boolean firedAny = false;
@@ -74,7 +79,8 @@ public class Shooters implements BaseAbility {
                     double startY = row + dir[1] * 0.3 * i;
                     Projectile p = new Projectile(damageOfPlant, startX, startY, row,
                             DEFAULT_PROJECTILE_SPEED, bulletType, trajectory, false, dir[0], dir[1]);
-                    p.setOwnerPlant(self);
+                    p.setSourcePlantName(self.getName());
+                    p.setPlantFoodBoosted(self.isPlantFoodActive());
                     ctx.setNewProjectiles(p);
                     firedAny = true;
                 }
@@ -127,6 +133,7 @@ public class Shooters implements BaseAbility {
         return lanes;
     }
 
+    /** هدف‌گیری هومینگ: NEAREST_TARGET (Cat-tail) → نزدیک‌ترین زامبی کل صفحه؛ RANDOM_HOMING (Caulipower) → یک زامبی تصادفی کل صفحه */
     private boolean shootHoming(String damage, BulletType bulletType, ShootType shootType, Plant self, GameContext ctx, GameEngine engine) {
         int damageOfPlant = Integer.parseInt(damage);
 
@@ -136,9 +143,10 @@ public class Shooters implements BaseAbility {
         Zombie target = candidates.get(0);
 
         Projectile p = new Projectile(damageOfPlant, self.getX(), self.getRow(), self.getRow(),
-                DEFAULT_PROJECTILE_SPEED, bulletType, TrajectoryType.HOMING, false);
+                DEFAULT_PROJECTILE_SPEED, bulletType, TrajectoryType.HOMING, false, self);
         p.setHomingTarget(target);
-        p.setOwnerPlant(self);
+        p.setSourcePlantName(self.getName());
+        p.setPlantFoodBoosted(self.isPlantFoodActive());
         ctx.setNewProjectiles(p);
         return true;
     }

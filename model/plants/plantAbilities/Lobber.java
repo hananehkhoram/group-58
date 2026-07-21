@@ -76,7 +76,8 @@ public class Lobber implements BaseAbility {
                 4.0,
                 type,
                 TrajectoryType.LOBBED,
-                false
+                false,
+                plant
         );
         ctx.setNewProjectiles(p);
     }

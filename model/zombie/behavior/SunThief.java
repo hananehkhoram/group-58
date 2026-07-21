@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class SunThief implements Behaviors {
 
-    private static final int TICKS_PER_SECOND = 10; // مطابق TimeManager
+    private static final int TICKS_PER_SECOND = 10;
 
     private int stolenSuns;
     private int maxClaimedSuns;  // ZombieRa: 250
@@ -31,7 +31,7 @@ public class SunThief implements Behaviors {
         if (lastStealTick >= 0 && (now - lastStealTick) < (long) rate * TICKS_PER_SECOND) return;
 
         for (Sun sun : new ArrayList<>(ctx.getSunManager().getActiveSunDrops())) {
-            if (!sun.isOnGround()) continue; // فقط خورشیدهای رو زمین قابل قاپیدنن، نه هنوز در حال سقوط
+            if (!sun.isOnGround()) continue;
 
             double dRow = sun.getY() - zombie.getRow();
             double dCol = sun.getX() - zombie.getX();
@@ -53,7 +53,6 @@ public class SunThief implements Behaviors {
     public boolean isDestroyed() { return false; }
 
     public void giveBackSuns(GameContext ctx) {
-        // طبق سند: بعد از مرگ، همه‌ی خورشیدهای دزدیده‌شده برمی‌گردن به بازیکن
         if (stolenSuns > 0) {
             ctx.addSun(stolenSuns);
             stolenSuns = 0;

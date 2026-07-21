@@ -9,8 +9,6 @@ import model.zombie.Zombie;
 import java.util.List;
 
 /**
- * Handles zombies whose special behavior maps to an "Actions" entry in zombies.json.
- *
  * Zombies:
  *   ZombieIceAgeTroglobite → PUSH_GRID_ITEM
  *   ZombieBeachOctopus     → OCTOPUS_PROJECTILE
@@ -18,6 +16,7 @@ import java.util.List;
  *   ZombieArcade           → ARCADE_PUSH
  *   ZombieDarkKing         → KNIGHT_KNIGHTING
  */
+
 public class ActionBehavior implements Behaviors {
 
     public enum ActionType {
@@ -63,10 +62,10 @@ public class ActionBehavior implements Behaviors {
         Projectile ink = new Projectile(
                 0,
                 zombie.getX(), zombie.getRow(), zombie.getRow(),
-                0.12,                   // TODO: سرعت طبق سند
+                0.12,
                 BulletType.IMMOBILIZE,
                 TrajectoryType.STRAIGHT,
-                true
+                true, null
         );
         ctx.getProjectiles().add(ink);
     }
