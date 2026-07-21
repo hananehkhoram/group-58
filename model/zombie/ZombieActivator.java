@@ -44,7 +44,7 @@ public class ZombieActivator {
                         false, new double[]{0.666, 0.333}));
                 break;
 
-            case "ZombieDarkArmor3": // Dark Ages Knight — کلاهخود + شانه‌بند، هرکدام جدا (صفحه ۳۴ سند)
+            case "ZombieDarkArmor3":
                 behaviors.put("armor", new Armor(          // کلاهخود — magnetshroom می‌تونه اینو بقاپه
                         ArmorType.SHOULDER_CROWN, ArmorType.SHOULDER_CROWN.baseHealth,
                         true, new double[]{0.666, 0.333}));
@@ -192,8 +192,10 @@ public class ZombieActivator {
 
             // MODERN DAY / LOST CITY / NEON MIXTAPE
 
-            case "ZombieModernAllStar":
-                behaviors.put("damage", new Damage());
+            case "ZombieModernAllStar": // با سرعت زیاد وارد میشه، اولین برخورد رو می‌کشه، بعدش خیلی آروم می‌شه
+                behaviors.put("damage", new Damage(
+                        List.of(Damage.TargetType.PLANT, Damage.TargetType.HYPNOTIZED_ZOMBIE),
+                        0.2)); // TODO: ضریب دقیق کاهش سرعت طبق سند مشخص نیست؛ فعلاً تخمینی
                 break;
 
             case "ZombieLostCityJane": // Umbrella Leaf zombie
@@ -232,6 +234,10 @@ public class ZombieActivator {
                 behaviors.put("jumper", new Jumper(0, 0, 0, true));
                 behaviors.put("laser", new LaserShooting(
                         LaserShooting.GunType.DYNAMITE, 0, 0, 0));
+                break;
+
+            case "ZombieParasol":
+                behaviors.put("deflector", new ProjectileDeflector());
                 break;
 
             // NEON MIXTAPE

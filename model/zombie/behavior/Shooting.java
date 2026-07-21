@@ -15,7 +15,7 @@ public class Shooting implements Behaviors {
     private int ammo;             // TombRaiser: tombstone count remaining
     private int timeBetweenCasts; // ms between cast sequences
 
-    private int lastShotSecond = -1; // TODO: مقدار اولیه/کولداون دقیق را طبق csv تنظیم کنید
+    private int lastShotSecond = 1 ;
 
     public Shooting(ShootingType shootingType, int rate, int amount) {
         this.shootingType = shootingType;
@@ -34,7 +34,7 @@ public class Shooting implements Behaviors {
 
     private void shootIceShard(Zombie zombie, GameContext ctx) {
         int currentSecond = ctx.getTimeManager().getTotalSeconds();
-        int cooldown = 2; // TODO: مقدار دقیق را طبق داک/csv تنظیم کنید
+        int cooldown = 2;
 
         if (currentSecond - lastShotSecond < cooldown) return;
 
@@ -42,12 +42,13 @@ public class Shooting implements Behaviors {
         if (target == null) return;
 
         Projectile shard = new Projectile(
-                10,                     // TODO: دمیج دقیق شرد یخی طبق داک
+                10,
                 zombie.getX(), zombie.getRow(), zombie.getRow(),
-                0.15,                   // TODO: سرعت پرتابه طبق داک
+                0.15,
                 BulletType.ICE,
                 TrajectoryType.STRAIGHT,
-                true                    // isFromZombie
+                true,
+                null
         );
         ctx.getProjectiles().add(shard);
         lastShotSecond = currentSecond;

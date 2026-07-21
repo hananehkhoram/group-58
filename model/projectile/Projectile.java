@@ -1,5 +1,7 @@
 package model.projectile;
 
+import model.plants.Plant;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,6 +11,7 @@ public class Projectile {
     protected int row;
     protected double speed;
     protected boolean isActive;
+    private Plant ownerPlant;
 
     protected final BulletType bulletType;
     protected final TrajectoryType trajectory;
@@ -21,16 +24,11 @@ public class Projectile {
     private final Set<Damageable> alreadyHit = new HashSet<>(); // فقط برای PIERCING
 
     public Projectile(int damage, double x, double y, int row, double speed,
-                      BulletType bulletType, TrajectoryType trajectory, boolean isFromZombie) {
+                      BulletType bulletType, TrajectoryType trajectory, boolean isFromZombie, Plant ownerPlant) {
         this(damage, x, y, row, speed, bulletType, trajectory, isFromZombie,
                 isFromZombie ? -1.0 : 1.0, 0.0);
     }
 
-    /**
-     * برای شلیک‌های مورب/رو-به-عقب (QUAD_DIAGONAL, FRONT_AND_BACK, STAR_BURST) که جهت واقعی‌شون
-     * با پیش‌فرض ساده‌ی isFromZombie (فقط جلو/عقب در همون row) فرق می‌کنه.
-     * dirX/dirY باید یک بردار یکه (unit vector) باشن.
-     */
     public Projectile(int damage, double x, double y, int row, double speed,
                       BulletType bulletType, TrajectoryType trajectory, boolean isFromZombie,
                       double dirX, double dirY) {
@@ -46,6 +44,7 @@ public class Projectile {
         this.dirX = dirX;
         this.dirY = dirY;
     }
+
 
     public void update(double time) {
         if (!isActive) return;
@@ -121,7 +120,6 @@ public class Projectile {
         this.homingTarget = target;
     }
 
-    /** برای وقتی که تیر (مثلاً یک شلیک مورب) از بالا/پایین صفحه خارج می‌شود */
     public void deactivate() { this.isActive = false; }
 
     public double getX() { return x; }
@@ -133,4 +131,5 @@ public class Projectile {
     public BulletType getBulletType() { return bulletType; }
     public TrajectoryType getTrajectory() { return trajectory; }
     public boolean isFromZombie() { return isFromZombie; }
+    public Plant getOwnerPlant() {return ownerPlant;}
 }

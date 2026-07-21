@@ -73,7 +73,7 @@ public class PlantSelectionMenu extends BaseMenu {
 
         Plant newPlant = plantFactory.create(String.valueOf(inUserPlant.getName()));
         ctx.getActivePlants().add(newPlant);
-        return "Successfully added "+newPlant.getName()+"to your plants.";
+        return "Successfully added "+newPlant.getName()+" to your plants.";
     }
     public String removePlant(String plantType) {
         List<Plant> allPlants = new ArrayList<>(plantRepository.getPlantDataMap().values());

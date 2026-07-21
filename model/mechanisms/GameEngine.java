@@ -9,6 +9,8 @@ import model.plants.Plant;
 import model.plants.TargetingMode;
 import model.zombie.Zombie;
 import model.zombie.behavior.Behaviors;
+import model.zombie.behavior.ProjectileDeflector;
+import model.zombie.behavior.Submerge;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -256,8 +258,20 @@ public class GameEngine {
             } else {
                 for (Zombie z : ctx.getAliveZombies()) {
                     if (z.getRow() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.5) {
-                        p.onHit(z);
-                        if (!p.isActive()) it.remove();
+                        ProjectileDeflector deflector = z.getDeflector();
+                        Submerge submerge = z.getSubmerge();
+
+                        if (deflector != null && deflector.canDeflect(p)) {
+                            deflector.deflect(p, ctx, z);
+                            it.remove();
+                        } else if (submerge != null
+                                && !submerge.isVulnerableTo(p.getOwnerPlant().getName(),p.getOwnerPlant().isPlantFoodActive())) {
+                            // زیر آبه و این پرتابه (طبق لیست damageWhileSubmerged) بهش نمی‌رسه؛
+                            // بدون اثر رد میشه، نه نابود میشه و نه دمیجی میزنه
+                        } else {
+                            p.onHit(z);
+                            if (!p.isActive()) it.remove();
+                        }
                         break;
                     }
                 }
@@ -381,9 +395,5 @@ public class GameEngine {
 
     public Zombie[] getRowsZombies(int row) {
         return null;
-    }
-
-    public LawnMower[] getLawnMowers() {
-        return lawnMowers;
     }
 }

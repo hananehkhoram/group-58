@@ -1,5 +1,6 @@
 package model.plants.plantAbilities;
 
+import controller.MenuManager;
 import model.GameContext;
 import model.mechanisms.GameEngine;
 import model.plants.Plant;
@@ -95,6 +96,7 @@ public class MeleeAttackers implements BaseAbility {
                     if (targets != null && !targets.isEmpty()) {
                         for (Zombie z : targets) {
                             z.takeDamage(damage);
+                            //if (z.getHp() <= 0) ctx.recordPlantKill(self);
                             hit = true;
                         }
                     }

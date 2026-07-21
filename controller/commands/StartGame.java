@@ -17,7 +17,7 @@ public class StartGame implements Command {//اضافی
     public void execute(String[] args) {
 
         menuManager.changeMenu("GameMenu");
-        GameContext.setBattleStarted(true);
+        menuManager.getCtx().setBattleStarted(true);
     }
 
     //start game
