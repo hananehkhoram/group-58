@@ -303,7 +303,7 @@ public class GameEngine {
     private LawnMower[] buildLawnMowers() {
         LawnMower[] mowers = new LawnMower[Level.ROWS];
         for (int r = 0; r < Level.ROWS; r++) {
-            mowers[r] = new LawnMower(r);
+            mowers[r] = new LawnMower(r + 1);
         }
         return mowers;
     }
@@ -350,4 +350,5 @@ public class GameEngine {
     }
 
     public LawnMower[] getLawnMowers() {return lawnMowers;}
+
 }

@@ -4,12 +4,12 @@ import controller.MenuManager;
 import controller.SpecialLevelManager.LevelManager;
 import controller.commandHandler.Command;
 import model.GameContext;
-import model.TimeManager;
 import model.mechanisms.GameEngine;
 import model.mechanisms.Tile;
 import model.plants.Plant;
 import model.user.User;
 import model.user.UserManager;
+import model.projectile.BowlingWallnut;
 import view.ConsoleView;
 
 public class Planting implements Command {
@@ -20,7 +20,7 @@ public class Planting implements Command {
     }
 
     @Override
-    public void execute(String[] args) {//اگه لول Conveyor belt بود نیازی به افتاب نداریم. از نوار انتخاب کن
+    public void execute(String[] args) {
         String type = args[0];
         int x = Integer.parseInt(args[1]);
         int y = Integer.parseInt(args[2]);
@@ -65,6 +65,24 @@ public class Planting implements Command {
             return;
         }
 
+        boolean isBowlingLevel = false;
+        if (ctx.getLevel() != null && ctx.getLevel().getName() != null) {
+            isBowlingLevel = ctx.getLevel().getName().toLowerCase().contains("wallnuts");
+        }
+
+        if (isBowlingLevel && (type.equalsIgnoreCase("Wall-nut") || type.equalsIgnoreCase("Explode-o-nut") || type.equalsIgnoreCase("Giant Wall-nut"))) {
+
+            BowlingWallnut rollingNut = new BowlingWallnut(500, x, y, x, 2.0, null);
+            ctx.getProjectiles().add(rollingNut);
+
+            if (levelManager != null) {
+                levelManager.onPlantSuccess(template, ctx);
+            }
+
+            ConsoleView.showMessage("BOWL! " + type + " is rolling!");
+            return;
+        }
+
         ctx.setCooldown(type, template.getRechargeTime());
         Plant newPlant = ctx.getPlantFactory().create(String.valueOf(template.getName()));
         tile.setPlant(newPlant);
@@ -89,11 +107,7 @@ public class Planting implements Command {
         }
 
         ctx.setCooldown(type, template.getRechargeTime());
-        ConsoleView.showMessage("Planted %s at (%d, %d).",type,x,y);
+        ConsoleView.showMessage("Planted %s at (%d, %d).", type, x, y);
         ctx.recordPlantPlaced(newPlant, x, y);
     }
-
-    //Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.
-
-    //plant plant -t <type> -l (<x>, <y>)
 }
