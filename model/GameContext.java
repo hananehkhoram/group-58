@@ -25,11 +25,11 @@ public class GameContext {
     private final Level level;
     private final Season season;
     private final Plant[][] plantGrid;
-    private final List<Plant> alivePlants = new ArrayList<>();//گیاهای زنده روی زمین
+    private List<Plant> alivePlants = new ArrayList<>();//گیاهای زنده روی زمین
     private final Grave[][] graveGrid;
-    private final List<Plant> activePlants = new ArrayList<>();//گیاهای انتخاب شده
-    private final List<Zombie> activeZombies = new ArrayList<>();//zombies to spawn
-    private final List<Zombie> aliveZombies = new ArrayList<>();//زامبیای زنده رو زمین
+    private List<Plant> activePlants = new ArrayList<>();//گیاهای انتخاب شده
+    private List<Zombie> activeZombies = new ArrayList<>();//zombies to spawn
+    private List<Zombie> aliveZombies = new ArrayList<>();//زامبیای زنده رو زمین
     private final Map<String, Long> plantCooldowns = new HashMap<>();
     private int sunAmount = 0;
     private int currentWaveIndex = 0;

@@ -19,14 +19,17 @@ public class CheatSpawnZombie implements Command {
         String type = args[0];
         int x = Integer.parseInt(args[1]);
         int y = Integer.parseInt(args[2]);
-        Zombie z = ctx.getDataManager().zombies.get(type);
+        ZombieFactory factory = new ZombieFactory(ctx.getDataManager());
+        Zombie z = factory.create(type);
+
         if (z == null) {
-            ConsoleView.showMessage("No such zombie");
+            ConsoleView.showMessage("No such zombie: " + type);
             return;
         }
         z.setX(x);
         z.setY(y);
-        ctx.getAliveZombies().add(z);
+        ctx.addZombie(z);
+        ctx.getActiveZombies().add(z);
         ConsoleView.showMessage("Zombie " + z.getName() + " has been spawned.");
     }
 

@@ -16,7 +16,7 @@ public class ReleaseTheNuke implements Command {
     @Override
     public void execute(String[] args) {
         GameContext ctx = menuManager.getCtx();
-        for (Zombie z : ctx.getActiveZombies()) {
+        for (Zombie z : ctx.getAliveZombies()) {
             z.setHp(0);
         }
         ConsoleView.showMessage("All Zombies are killed.");

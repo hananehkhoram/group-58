@@ -7,12 +7,12 @@ import view.ConsoleView;
 import java.util.ArrayList;
 
 public class LawnMower {
-    private final double TRIGGER_X = 1;
+    private final double TRIGGER_X = 0.1;
     private final int row;
     private boolean isActivated = false;
     private boolean isAvailable = true;
     private double x = 0;
-    private double velocityX = 2;
+    private double velocityX = 40;
     private final ArrayList<Zombie> killedZombies = new ArrayList<>();
     private boolean didKilled = false;
 
