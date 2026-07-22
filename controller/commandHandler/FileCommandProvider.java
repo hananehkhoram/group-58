@@ -28,7 +28,7 @@ import controller.commands.TravelMenuCommands.ShowTravelMenu;
 import controller.commands.Status.ShowMap;
 import controller.commands.Status.ShowPlantsStatus;
 import controller.commands.Status.ShowTileStatus;
-import controller.commands.TravelMenuCommands.smashVase;
+import controller.commands.TravelMenuCommands.SmashVase;
 import model.GameContext;
 
 
@@ -56,7 +56,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("forget password -u (?<username>\\S+) -e (?<email>\\S+)" , new controller.commands.LoginMenuCommands.ForgetPassword(menuManager));
         registry.register("answer -a (?<answer>.+)" , new controller.commands.LoginMenuCommands.Answer(menuManager));
         registry.register("menu logout" , new controller.commands.MainMenuCommands.Logout(menuManager));
-        registry.register("menu enter chapter -c (?<chaptername>.+)( -l (?<levelNumber>\\\\d+))?" , new EnterChapter(menuManager));
+        registry.register("menu enter chapter -c (?<chaptername>.+?)(?: -l (?<levelNumber>\\d+))?" , new EnterChapter(menuManager));
         registry.register("menu greenhouse" , new EnterGreenHouse(menuManager));
         registry.register("menu travel-log" , new EnterTravelLog(menuManager));
         registry.register("menu leaderboard" , new EnterLeaderBoard(menuManager, ctx));
@@ -110,7 +110,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("(?<number>\\d+)" , new EnterMiniGameMenu(menuManager));
         registry.register("cheat remove-cooldown",new CheatRemoveCooldown(menuManager));
         registry.register("^new password -p (?<password>.+)$",new SetNewPassword(menuManager));
-        registry.register("smash vase -l ((?<x>\\d+), (?<y>\\d+))", new smashVase(menuManager));
+        registry.register("smash vase -l ((?<x>\\d+), (?<y>\\d+))", new SmashVase(menuManager));
         registry.register("cheat add-plant-food",new CheatAddPlantFood(menuManager));
         registry.register("show current plant food",new ShowCurrentPlantFood(menuManager));;
     }

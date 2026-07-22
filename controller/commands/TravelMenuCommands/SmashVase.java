@@ -4,11 +4,11 @@ import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.GameContext;
 
-public class smashVase implements Command {
+public class SmashVase implements Command {
 
     private MenuManager menuManager;
 
-    public smashVase(MenuManager menuManager) {
+    public SmashVase(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
 

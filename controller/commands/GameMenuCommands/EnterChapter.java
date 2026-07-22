@@ -32,7 +32,6 @@ public class EnterChapter implements Command {
             return;
         }
 
-        // نام چپتر مستقیماً آرگومان اول (گروه اول رجکس) است
         String chapterName = args[0].trim();
 
         Season chapter = DataManager.getInstance().seasons.get(chapterName);
@@ -49,7 +48,6 @@ public class EnterChapter implements Command {
         Menu currentMenu = menuManager.getCurrentMenu();
         Level levelToPlay;
 
-        // اگر آرگومان دوم (شماره مرحله) وجود داشت و نال نبود
         if (args.length > 1 && args[1] != null) {
             int levelNumber = Integer.parseInt(args[1].trim());
             List<Level> levels = chapter.getLevels();

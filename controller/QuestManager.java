@@ -110,7 +110,6 @@ public class QuestManager {
         return !ctx.getAlivePlants().isEmpty();
     }
 
-    // ==================== شمارنده‌های تجمعی (نوع A/B) ====================
     public static void progress(User user, String questId, int amount) {
         Quest quest = DataManager.getInstance().quests.get(questId);
         if (quest == null || user.isQuestCompleted(questId)) return;
@@ -123,7 +122,6 @@ public class QuestManager {
         }
     }
 
-    // ==================== هسته‌ی مشترک ====================
     private static void complete(User user, String questId) {
         Quest q = DataManager.getInstance().quests.get(questId);
         if (q == null || user.isQuestCompleted(questId)) return;
@@ -163,7 +161,6 @@ public class QuestManager {
         return locked.get((int) (Math.random() * locked.size()));
     }
 
-    // ==================== کمکی: تقارن باغچه ====================
     private static boolean isGardenSymmetric(GameContext ctx, boolean exceptMiddleRow) {
         Plant[][] grid = ctx.getPlantGrid();
         int rows = grid.length;

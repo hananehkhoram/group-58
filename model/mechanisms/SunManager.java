@@ -23,7 +23,12 @@ public class SunManager {
     }
 
     public void update(GameEngine engine) {
-        if (engine.getCtx().getSeason() == null || engine.getCtx().getSeason().sunFallsFromSky()) {
+        boolean seasonAllowsSun = engine.getCtx().getSeason() == null ||
+                engine.getCtx().getSeason().sunFallsFromSky();
+        boolean levelManagerBlocksSun = engine.getCtx().getLevelManager() != null &&
+                engine.getCtx().getLevelManager().disableSkySun();
+
+        if (seasonAllowsSun && !levelManagerBlocksSun) {
             if (timeManager.getTotalTicks() >= nextDropTick) {
                 generateRandom();
                 manageNextDrop();
