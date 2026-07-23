@@ -81,26 +81,12 @@ public class GameEngine {
             return;
         }
 
-        if (waveTimer > 0) {
-            waveTimer -= deltaTime;
-            return;
-        }
-
         Wave previousWave = waves[ctx.getCurrentWaveIndex() - 1];
         if (previousWave.isThresholdReached()) {
             Wave nextWave = waves[ctx.getCurrentWaveIndex()];
-
-            if (!isFirstWaveTimerSet && nextWave.getWaveDelay() > 0) {
-                this.waveTimer = nextWave.getWaveDelay();
-                this.isFirstWaveTimerSet = true;
-                return;
-            }
-
             spawnWave(nextWave);
-            this.isFirstWaveTimerSet = false;
         }
-    }
-    private void spawnWave(Wave wave) {
+    }    private void spawnWave(Wave wave) {
         wave.start(ctx);
         ctx.incrementWaveIndex();
         ctx.setActiveWaveInProgress(true);

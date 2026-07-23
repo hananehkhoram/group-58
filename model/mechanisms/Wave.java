@@ -17,7 +17,7 @@ public class Wave {
     private static final double WAVE_DIFFICULTY_GROWTH = 1.25;
     private static final double FINAL_WAVE_MULTIPLIER = 2.0;
     private static final double THRESHOLD_HP_RATIO = 0.25;
-    private static final int BASE_DIFFICULTY = 3;
+    private static final double BASE_DIFFICULTY = 3.0;
 
     private final int waveNumber;
     private final int waveCost;
@@ -48,7 +48,10 @@ public class Wave {
         }
 
         spawnZombies(ctx, calculateEffectiveBudget());
-        initialTotalHp = spawnedZombies.stream().mapToInt(Zombie::getHp).sum();
+
+        initialTotalHp = spawnedZombies.stream()
+                .mapToInt(Zombie::getHp)
+                .sum();
     }
 
     private void announceStart() {
@@ -66,7 +69,7 @@ public class Wave {
         }
 
         int difficultyLevel = UserManager.getInstance().getCurrentUser().getDifficultyLevel();
-        budget *= (double) BASE_DIFFICULTY / difficultyLevel;
+        budget *= (BASE_DIFFICULTY / difficultyLevel);
 
         return (int) Math.max(1, Math.round(budget));
     }
@@ -157,7 +160,7 @@ public class Wave {
                 .mapToInt(Zombie::getHp)
                 .sum();
 
-        return (double) currentTotalHp / initialTotalHp <= THRESHOLD_HP_RATIO;
+        return ((double) currentTotalHp / initialTotalHp) <= THRESHOLD_HP_RATIO;
     }
 
     public int getWaveNumber() { return waveNumber; }

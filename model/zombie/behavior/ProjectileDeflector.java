@@ -5,16 +5,7 @@ import model.projectile.BulletType;
 import model.projectile.Projectile;
 import model.projectile.TrajectoryType;
 import model.zombie.Zombie;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 
-/**
- * Used by:
- *   - ZombieDarkJuggler  — spins and redirects direct shots back at plants
- *   - ZombieLostCityJane — bounces specific lobbed projectiles back
- *   - ZombieParasol      — کاملاً بی‌اثر می‌کنه شلیک‌های lobber
- */
 public class ProjectileDeflector implements Behaviors {
 
     public enum DeflectMode {
@@ -33,6 +24,7 @@ public class ProjectileDeflector implements Behaviors {
 
     private static final int TICKS_PER_SECOND = 10;
     private static final double SPIN_IDLE_TIMEOUT_SECONDS = 1.5;
+
     public ProjectileDeflector(DeflectMode mode,
                                double bounceDistance, double bounceHeight, double bounceTime) { //parasol
         this.mode = mode;
@@ -69,37 +61,29 @@ public class ProjectileDeflector implements Behaviors {
     public void deflect(Projectile p, GameContext ctx, Zombie zombie) {
         p.deactivate();
 
-        if (mode == DeflectMode.BLOCK){
-            if (p.getTrajectory() == TrajectoryType.LOBBED) {
-                p.deactivate();
-                return;
-            }
+        if (mode == DeflectMode.BLOCK) {
+            return;
         }
 
         lastHitTick = ctx.getTimeManager().getTotalTicks();
         if (!spinning) {
             spinning = true;
             baseSpeed = zombie.getSpeed();
-        zombie.setSpeed(baseSpeed * moveSpeedMultiplierWhileJuggling);
+            zombie.setSpeed(baseSpeed * moveSpeedMultiplierWhileJuggling);
         }
 
-    if (mode == DeflectMode.JUGGLE || mode == DeflectMode.BOUNCE) {
-
-        boolean isIceProjectile = p.getBulletType() != null &&
-                (p.getBulletType() == BulletType.ICE);
-
-        Projectile reflected = new Projectile(
-                p.getDamage(),
-                p.getX(),
-                p.getY(),
-                p.getRow(),
-                p.getSpeed(),
-                p.getBulletType(),
-                p.getTrajectory(),
-                true,
-                null
-        );
-        ctx.setNewProjectiles(reflected);
+        if (mode == DeflectMode.JUGGLE) {
+            Projectile reflected = new Projectile(
+                    p.getDamage(),
+                    p.getX(),
+                    p.getY(),
+                    p.getRow(),
+                    p.getSpeed(),
+                    p.getBulletType(),
+                    p.getTrajectory(),
+                    true,
+                    p.getOwnerPlant());
+            ctx.setNewProjectiles(reflected);
+        }
     }
-}
 }
