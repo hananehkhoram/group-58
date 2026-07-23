@@ -36,13 +36,10 @@ public class LeaderBoardMenu extends BaseMenu {
             view.ConsoleView.simplePrint(rank + "- " + user.getUsername() +
                                             " | Score: " + user.getMaxMewPoint() +
                                             " | Season: " + user.getLastSeason() +
-                                            " | Level: " + user.getLastLevel());
+                                            " | Level: " + user.getLastLevel() + "\n");
             rank++;
         }
 
         view.ConsoleView.simplePrint("\n==========================================\n");
     }
-
-
-
 }

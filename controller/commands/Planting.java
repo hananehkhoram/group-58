@@ -88,15 +88,13 @@ public class Planting implements Command {
         if (isBowlingLevel && (type.equalsIgnoreCase("Wall-nut") || type.equalsIgnoreCase("Explode-o-nut") || type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut") || type.equalsIgnoreCase("Cherry Bomb"))) {
 
             if (type.equalsIgnoreCase("Explode-o-nut") || type.equalsIgnoreCase("Cherry Bomb")) {
-                model.projectile.ExplodeONut explodeNut = new model.projectile.ExplodeONut(500, x, y, x, 2.0, null, ctx);
+                model.projectile.ExplodeONut explodeNut = new model.projectile.ExplodeONut(500, x, y, x, 2.0, template, ctx);
                 ctx.getProjectiles().add(explodeNut);
-
-            } else if (type.equalsIgnoreCase("Tall-nut") || type.equalsIgnoreCase("Tall-nut")) {
-                model.projectile.GiantWallnut giantNut = new model.projectile.GiantWallnut(500, x, y, x, 2.0, null);
+            } else if (type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut")) {
+                model.projectile.GiantWallnut giantNut = new model.projectile.GiantWallnut(500, x, y, x, 2.0, template);
                 ctx.getProjectiles().add(giantNut);
-
             } else {
-                model.projectile.BowlingWallnut rollingNut = new model.projectile.BowlingWallnut(500, x, y, x, 2.0, null);
+                model.projectile.BowlingWallnut rollingNut = new model.projectile.BowlingWallnut(500, x, y, x, 2.0, template);
                 ctx.getProjectiles().add(rollingNut);
             }
 

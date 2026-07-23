@@ -509,4 +509,7 @@ public class GameContext {
     public void recordLawnMowerKill() { lawnMowerKillsThisLevel++; }
     public int getLawnMowerKillsThisLevel() { return lawnMowerKillsThisLevel; }
 
+    public void setLevelManager(LevelManager levelManager) {
+        this.levelManager = levelManager;
+    }
 }
