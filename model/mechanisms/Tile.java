@@ -34,20 +34,20 @@ public class Tile {
     }
 
     public TerrainType getTerrainType() {
-        if (ctx.getGraveGrid()[x][y] != null) {
+        if (ctx.getGraveGrid()[y][x] != null) {
             return TerrainType.GRAVE;
         }
-        if (ctx.getSeason().isNecromancyCell(x, y)) {
+        if (ctx.getSeason().isNecromancyCell(y,x)) {
             return TerrainType.NECROMANCY;
         }
-        if (ctx.getSeason().isWaterCell(x, y, ctx)) {
+        if (ctx.getSeason().isWaterCell(y,x, ctx)) {
             return TerrainType.WATER;
         }
-        int slideTo = ctx.getSeason().getSliderNextRow(x, y);
-        if (slideTo < x) return TerrainType.SLIPPERY_UP;
-        if (slideTo > x) return TerrainType.SLIPPERY_DOWN;
+        int slideTo = ctx.getSeason().getSliderNextRow(y,x);
+        if (slideTo < y) return TerrainType.SLIPPERY_UP;
+        if (slideTo > y) return TerrainType.SLIPPERY_DOWN;
 
-        Plant p = ctx.getPlantGrid()[x][y];
+        Plant p = ctx.getPlantGrid()[y][x];
         if (p != null && p.getFreezeLevel() >= 3) {
             return TerrainType.FROZEN;
         }
