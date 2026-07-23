@@ -110,7 +110,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("(?<number>\\d+)" , new EnterMiniGameMenu(menuManager));
         registry.register("cheat remove-cooldown",new CheatRemoveCooldown(menuManager));
         registry.register("^new password -p (?<password>.+)$",new SetNewPassword(menuManager));
-        registry.register("smash vase -l ((?<x>\\d+), (?<y>\\d+))", new SmashVase(menuManager));
+        registry.register("smash vase -l \\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)", new SmashVase(menuManager));
         registry.register("cheat add-plant-food",new CheatAddPlantFood(menuManager));
         registry.register("show current plant food",new ShowCurrentPlantFood(menuManager));;
     }

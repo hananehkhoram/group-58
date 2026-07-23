@@ -248,7 +248,7 @@ public class GameEngine {
 
     private void checkGameEnd() {
         if (ctx.isGameEnded()) {
-            ConsoleView.showMessage("You are now in Game Menu.");
+            ConsoleView.showMessage("You are now in Game Menu.\n");
             menuManager.forceChangeMenu("gamemenu");
             return;
         }
@@ -328,34 +328,34 @@ public class GameEngine {
         return tiles[x][y];
     }
 
-    public void smashVase(int row, int col) {
+    public void smashVase(int row, int col, GameContext ctx) {
         Tile tile = this.getTiles(row, col);
 
         if (tile == null){
-            view.ConsoleView.simplePrint("Invalid coordinates!");
+            view.ConsoleView.simplePrint("Invalid coordinates!\n");
             return;
         }
 
         Vase vase = tile.getVase();
 
         if (vase == null){
-            view.ConsoleView.simplePrint("There is no vase at (" +  row + ", " + col + ")!");
+            view.ConsoleView.simplePrint("There is no vase at (" +  row + ", " + col + ")!\n");
             return;
         }
 
         if (vase.isBroken()){
-            view.ConsoleView.simplePrint("Vase broken!");
+            view.ConsoleView.simplePrint("Vase broken!\n");
             return;
         }
 
         vase.setBroken(true);
-        view.ConsoleView.simplePrint("Crash! you smashed the vase at (" +  row + ", " + col + ")!");
+        view.ConsoleView.simplePrint("Crash! you smashed the vase at (" +  row + ", " + col + ")!\n");
 
         if (vase.getContent() == VaseContent.ZOMBIE){
             //spawn zombie
-            view.ConsoleView.simplePrint("Zombie popped out!");
+            view.ConsoleView.simplePrint("Zombie popped out!\n");
         } else if (vase.getContent() == VaseContent.PLANT) {
-            view.ConsoleView.simplePrint("Plant seed popped!");
+            view.ConsoleView.simplePrint("Plant seed popped!\n");
             // plant plant
         }
     }

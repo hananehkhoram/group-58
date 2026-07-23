@@ -46,7 +46,7 @@ public class Vasecheccker {
         if (this.gameEngine != null) {
             this.gameEngine.update(sec);
         }else {
-            System.out.println("Game engine is null");
+            System.out.println("Game engine is null\n");
         }
     }
 

@@ -18,6 +18,6 @@ public class SmashVase implements Command {
         int y = Integer.parseInt(args[1]);
 
         GameContext ctx = menuManager.getCtx();
-        ctx.getGameEngine().smashVase(x, y);
+        ctx.getGameEngine().smashVase(x, y, ctx);
     }
 }
