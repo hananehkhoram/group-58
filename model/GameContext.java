@@ -316,6 +316,8 @@ public class GameContext {
                 return new PlantWhatYouGetManager();
             case LOCKED_PLANTS:
                 return new LockedPlantsManager(level.getBannedPlants(), level.getForcedPlants());
+            case Wallnuts_MG:
+                return new ConveyorBeltManager();
             case NORMAL:
                 return null;
             default:

@@ -9,4 +9,8 @@ public class wallnutsSeason extends Season {
     public wallnutsSeason(List<Level> levels) {
         super("Wallnutbowling", levels, 0);
     }
+
+    @Override
+    public boolean sunFallsFromSky() { return false; }
+
 }

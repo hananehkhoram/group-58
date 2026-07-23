@@ -12,7 +12,7 @@ import java.util.List;
 public class ConveyorBeltManager implements LevelManager{
     private final List<Plant> conveyorBelt = new ArrayList<>();
     private double conveyorTimer = 0.0;
-    private static final double CONVEYOR_INTERVAL = 120.0;
+    private static final double CONVEYOR_INTERVAL = 12.0;
     private static final int MAX_CAPACITY = 5;
 
     private DataManager dm;

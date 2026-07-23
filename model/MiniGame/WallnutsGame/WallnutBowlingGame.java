@@ -58,4 +58,5 @@ public class WallnutBowlingGame {
             ConsoleView.showMessage("Game engine is null");
         }
     }
+
 }
