@@ -70,16 +70,26 @@ public class Planting implements Command {
             isBowlingLevel = ctx.getLevel().getName().toLowerCase().contains("wallnuts");
         }
 
-        if (isBowlingLevel && (type.equalsIgnoreCase("Wall-nut") || type.equalsIgnoreCase("Explode-o-nut") || type.equalsIgnoreCase("Giant Wall-nut"))) {
+        if (isBowlingLevel && (type.equalsIgnoreCase("Wall-nut") || type.equalsIgnoreCase("Explode-o-nut") || type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut") || type.equalsIgnoreCase("Cherry Bomb"))) {
 
-            BowlingWallnut rollingNut = new BowlingWallnut(500, x, y, x, 2.0, null);
-            ctx.getProjectiles().add(rollingNut);
+            if (type.equalsIgnoreCase("Explode-o-nut") || type.equalsIgnoreCase("Cherry Bomb")) {
+                model.projectile.ExplodeONut explodeNut = new model.projectile.ExplodeONut(500, x, y, x, 2.0, null, ctx);
+                ctx.getProjectiles().add(explodeNut);
+
+            } else if (type.equalsIgnoreCase("Tall-nut") || type.equalsIgnoreCase("Tall-nut")) {
+                model.projectile.GiantWallnut giantNut = new model.projectile.GiantWallnut(500, x, y, x, 2.0, null);
+                ctx.getProjectiles().add(giantNut);
+
+            } else {
+                model.projectile.BowlingWallnut rollingNut = new model.projectile.BowlingWallnut(500, x, y, x, 2.0, null);
+                ctx.getProjectiles().add(rollingNut);
+            }
 
             if (levelManager != null) {
                 levelManager.onPlantSuccess(template, ctx);
             }
 
-            ConsoleView.showMessage("BOWL! " + type + " is rolling!");
+            view.ConsoleView.showMessage("BOWL! " + type + " is rolling!");
             return;
         }
 

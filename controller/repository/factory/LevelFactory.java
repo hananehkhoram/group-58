@@ -147,15 +147,15 @@ public class LevelFactory {
         for (int i = 0; i < 3; i++){
             Plant wallnutsTemp = new Plant();
             Plant eNutTemp = new Plant();
-            Plant bwallnutsTemp = new Plant();
+            Plant GiantWallnutsTemp = new Plant();
 
             wallnutsTemp.setName("Wall-nut");
             eNutTemp.setName("Explode-o-nut");
-            bwallnutsTemp.setName("Giant Wall-nut");
+            GiantWallnutsTemp.setName("Tall-nut");
 
             levels.get(i).getConveyorPlantPool().add(wallnutsTemp);
             levels.get(i).getConveyorPlantPool().add(eNutTemp);
-            levels.get(i).getConveyorPlantPool().add(bwallnutsTemp);
+            levels.get(i).getConveyorPlantPool().add(GiantWallnutsTemp);
         }
 
         return  levels;
@@ -224,7 +224,7 @@ public class LevelFactory {
         int vaseIndex = 0;
 
         for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < columns; c++) {
+            for (int c = 4; c < columns; c++) {
                 if (vaseIndex < vasePool.size()) {
                     Tile currentTile = ctx.getGameEngine().getTiles(r, c);
 
