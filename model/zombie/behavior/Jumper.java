@@ -24,7 +24,6 @@ public class Jumper implements Behaviors {
     private boolean landed;
     public boolean reverseTheWay;
 
-    // پارامترهای قوس پرش (مشترک بین IMP/DRAGON_IMP/DODO/PROSPECTOR)
     private int apex;
     private float timeToTravel;
     private int stunTime;
@@ -48,7 +47,6 @@ public class Jumper implements Behaviors {
         this.fireDamageMultiplier = 1.0;
     }
 
-    /** Prospector */
     public Jumper(int apex, float timeToTravel, int stunTime, boolean reverseTheWay) {
         this.variant = JumpVariant.PROSPECTOR;
         this.apex = apex;
@@ -66,10 +64,6 @@ public class Jumper implements Behaviors {
         this.fireDamageMultiplier = (variant == JumpVariant.DRAGON_IMP) ? 0.0 : 1.0;
     }
 
-    /**
-     * صدا زده می‌شود توسط Gargantuar (در Shooting.GARGANTUAR) وقتی جانش به نصف می‌رسد.
-     * Imp دقیقاً در ستون سوم از چپ (index=2) همان سطر فرود می‌آید.
-     */
     public void throwFrom(GameContext ctx, Zombie zombie, double apex, double flightTime) {
         this.startColumn = zombie.getX();
         this.apex = (int) apex;
@@ -79,7 +73,6 @@ public class Jumper implements Behaviors {
         this.landed = false;
     }
 
-    /** شروع پرش عمومی روی یک ستون هدف دلخواه؛ برای DODO داخلی و برای PROSPECTOR از بیرون (توسط LaserShooting) استفاده می‌شود */
     public void startJump(GameContext ctx, Zombie zombie, int targetCol, float flightSeconds, int apexValue) {
         this.startColumn = zombie.getX();
         this.targetColumn = targetCol;
@@ -106,7 +99,6 @@ public class Jumper implements Behaviors {
         // PROSPECTOR: شروع پرش توسط LaserShooting (بعد از ۱۰ ثانیه انفجار دینامیت) صدا زده خواهد شد
     }
 
-    /** جابه‌جایی خطی روی قوس پرش، بر اساس تعداد تیک سپری‌شده (نه deltaTime، چون onTick آن را ندارد) */
     private void advanceFlight(Zombie zombie, GameContext ctx) {
         long elapsedTicks = ctx.getTimeManager().getTotalTicks() - startTick;
         double elapsedSeconds = elapsedTicks / (double) TICKS_PER_SECOND;
@@ -123,10 +115,6 @@ public class Jumper implements Behaviors {
         }
     }
 
-    /**
-     * دودو سوار: بررسی می‌کند آیا خانه‌ی جلوی زامبی یک «مانع» است
-     * (گیاه پرجان مثل wall-nut، یا تگ MOVE_ZOMBIES/TRAP) — از گردوی بلند رد نمی‌شود.
-     */
     private void checkDodoObstacle(GameContext ctx, Zombie zombie) {
         int row = zombie.getRow();
         int aheadCol = (int) Math.floor(zombie.getX()) - 1;
@@ -136,7 +124,7 @@ public class Jumper implements Behaviors {
         if (!isObstacle(ahead)) return;
 
         int landingCol = Math.max(0, aheadCol - 1);
-        startJump(ctx, zombie, landingCol, 0.6f, 40); // TODO: زمان/ارتفاع دقیق پرش را طبق سند تنظیم کنید
+        startJump(ctx, zombie, landingCol, 0.6f, 40);
     }
 
     private boolean isObstacle(Plant p) {

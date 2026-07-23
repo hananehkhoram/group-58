@@ -8,21 +8,10 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Random;
 
-/**
- * ZombiePiano — طبق سند این پروژه (صفحه ۳۷)، نه طبق زامبی واقعیِ PvZ2 که این کلاس اصلش
- * برایش نوشته شده بود (که «rolling» و «breakPlants» داشت). طبق سند:
- *   - با سرعت عادی حرکت می‌کند (بدون حالت rolling سریع)
- *   - هر گیاهی که با آن برخورد کند از بین می‌رود
- *   - همیشه پیانو می‌نوازد؛ هرچند ثانیه یک‌بار، سطر HR همه‌ی زامبی‌های روی زمین رو با یکی از
- *     سطرهای همسایه‌شون به‌صورت تصادفی جابه‌جا می‌کند
- *
- * فیلدهای rolling/rollSpeed/breakPlants و... حفظ شدن (چون امضای سازنده جای دیگه صدا زده میشه)
- * ولی طبق این سند استفاده‌ای ندارن.
- */
 public class PianoCharge implements Behaviors {
 
     private static final int TICKS_PER_SECOND = 10;
-    private static final float ROW_SWAP_INTERVAL_SECONDS = 5f; // TODO: «هرچند ثانیه» دقیق تو سند نیست
+    private static final float ROW_SWAP_INTERVAL_SECONDS = 5f;
 
     private boolean rolling;  // طبق سند این پروژه استفاده نمی‌شه؛ برای سازگاری با سازنده‌ی قبلی نگه داشته شده
     private double rollSpeed;         // 0.4 — استفاده نمی‌شه

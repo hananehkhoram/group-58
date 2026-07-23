@@ -6,7 +6,7 @@ import model.zombie.Zombie;
 
 public class LaserShooting implements Behaviors {
 
-    private static final int TICKS_PER_SECOND = 10; // مطابق TimeManager
+    private static final int TICKS_PER_SECOND = 10;
 
     private int distance;        // distance from target to start firing
     private int damageRange;     // beam/explosion range
@@ -15,14 +15,14 @@ public class LaserShooting implements Behaviors {
     private GunType gunType;
 
     // --- Prospector (DYNAMITE) ---
-    private static final int DYNAMITE_FUSE_SECONDS = 10; // طبق سند: بعد از ۱۰ ثانیه منفجر می‌شود
+    private static final int DYNAMITE_FUSE_SECONDS = 10;
     private long dynamiteSpawnTick = -1;
     private boolean exploded = false;
     private boolean disarmed = false;
 
     // --- CrystalSkull / Turquoise (LASER) ---
     private int chargingTime;                       // seconds to charge (default 5)
-    private double chargingTimeDecrementPerFiveSun;  // 0.2 — TODO: هنوز اعمال نشده، پایین توضیح داده شده
+    private double chargingTimeDecrementPerFiveSun;  // 0.2 — TODO: هنوز اعمال نشده
     private int laserBeamDamage;                     // 4001 (instakill)
     private int laserBeamLength;                     // 220 — واحد بصری؛ در منطق شبکه‌ای استفاده نمی‌شود
     private int laserCooldownTime;                   // 5 seconds
@@ -62,8 +62,6 @@ public class LaserShooting implements Behaviors {
         }
     }
 
-    // ================= Prospector =================
-
     private void tickDynamite(Zombie zombie, GameContext ctx) {
         if (exploded || disarmed) return;
 
@@ -72,7 +70,6 @@ public class LaserShooting implements Behaviors {
         }
 
         if (zombie.isIced()) {
-            // طبق سند: اگر تیر یخی بهش بخورد، دینامیت خاموش می‌شود و دیگر منفجر نمی‌شود
             disarmed = true;
             return;
         }
@@ -88,11 +85,9 @@ public class LaserShooting implements Behaviors {
         Jumper jumper = zombie.getJumper();
         if (jumper == null) return;
         jumper.turnBackward();
-        // طبق سند: به انتهای سطر (کنار خانه‌ی بازیکن) پرتاب می‌شود؛ ستون ۰ = کنار خانه
         jumper.startJump(ctx, zombie, 0, 0.6f, 40);
     }
 
-    // ================= Turquoise (CrystalSkull) =================
 
     private void tickLaser(Zombie zombie, GameContext ctx) {
         long now = ctx.getTimeManager().getTotalTicks();
@@ -112,7 +107,6 @@ public class LaserShooting implements Behaviors {
 
         int elapsedSeconds = (int) ((now - chargeStartTick) / TICKS_PER_SECOND);
 
-        // هر ثانیه (تا قبل از پایان شارژ) ۲۵ واحد خورشید از بازیکن می‌دزدد
         if (elapsedSeconds > lastStolenSecond && elapsedSeconds < chargingTime) {
             int stealAmount = Math.min(SUN_STEAL_PER_SECOND, ctx.getSunAmount());
             if (stealAmount > 0) {
@@ -123,7 +117,6 @@ public class LaserShooting implements Behaviors {
         }
 
         // TODO chargingTimeDecrementPerFiveSun: طبق سند هرچه خورشید بیشتری دزدیده شود شارژ سریع‌تر تمام می‌شود.
-        // فعلاً chargingTime ثابت در نظر گرفته شده؛ می‌توان اینجا هر ۵ واحد دزدیده‌شده،
         // chargingTime را به‌اندازه‌ی chargingTimeDecrementPerFiveSun کم کرد.
         if (elapsedSeconds >= chargingTime) {
             fireLaser(zombie, ctx);
