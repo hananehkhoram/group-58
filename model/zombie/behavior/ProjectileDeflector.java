@@ -46,17 +46,11 @@ public class ProjectileDeflector implements Behaviors {
     private static final int TICKS_PER_SECOND = 10;
     private static final double SPIN_IDLE_TIMEOUT_SECONDS = 1.5;
     public ProjectileDeflector(DeflectMode mode,
-                               List<String> bounceableProjectiles,
-                               double bounceDistance, double bounceHeight, double bounceTime) {
+                               double bounceDistance, double bounceHeight, double bounceTime) { //parasol
         this.mode = mode;
-        this.bounceableProjectiles = new HashSet<>(bounceableProjectiles);
         this.bounceDistance = bounceDistance;
         this.bounceHeight = bounceHeight;
         this.bounceTime = bounceTime;
-    }
-
-    public ProjectileDeflector() {
-        this.mode = DeflectMode.BLOCK;
         this.bounceableProjectiles = new HashSet<>();
     }
 
@@ -113,8 +107,11 @@ public class ProjectileDeflector implements Behaviors {
     public void deflect(Projectile p, GameContext ctx, Zombie zombie) {
         p.deactivate();
 
-        if (mode == DeflectMode.BLOCK) {
-            return;
+        if (mode == DeflectMode.BLOCK){
+            if (p.getTrajectory() == TrajectoryType.LOBBED) {
+                p.deactivate();
+                return;
+            }
         }
 
         lastHitTick = ctx.getTimeManager().getTotalTicks();

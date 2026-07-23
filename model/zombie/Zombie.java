@@ -3,12 +3,7 @@ package model.zombie;
 import model.GameContext;
 import model.projectile.Damageable;
 import model.season.Season;
-import model.zombie.behavior.Armor;
-import model.zombie.behavior.ArmorType;
-import model.zombie.behavior.Behaviors;
-import model.zombie.behavior.Jumper;
-import model.zombie.behavior.ProjectileDeflector;
-import model.zombie.behavior.Submerge;
+import model.zombie.behavior.*;
 import view.ConsoleView;
 
 import java.util.List;
@@ -155,6 +150,11 @@ public class Zombie implements Damageable {
 
     public boolean isDead() { return hp <= 0; }
 
+    @Override
+    public String name() {
+        return name;
+    }
+
     // --- Damageable ---
 
     @Override
@@ -188,6 +188,24 @@ public class Zombie implements Damageable {
         }
     }
 
+    public Armor removeArmor() {
+        Armor primary = getArmor();
+        if (primary != null && !primary.isDestroyed()) {
+            primary.afterDestroy(this);
+            behaviors.remove("armor");
+
+            return primary;
+        }
+        Armor secondary = getSecondaryArmor();
+        if (secondary != null && !secondary.isDestroyed()) {
+            secondary.afterDestroy(this);
+            behaviors.remove("armor2");
+            return secondary;
+        }
+
+        return null;
+    }
+
     // --- Getters / Setters ---
 
     public String getId() { return id; }
@@ -217,7 +235,6 @@ public class Zombie implements Damageable {
     public int getWavePointCost() { return wavePointCost; }
     public int getWeight() { return weight; }
     public Map<String, Behaviors> getBehaviors() { return behaviors; }
-    public List<Effects> getEffects() { return effects; }
     public Map<String, Object> getExtraParams() { return extraParams; }
     public double getX() { return x; }
     public double getY() { return y; }
@@ -232,7 +249,6 @@ public class Zombie implements Damageable {
     public void setSpeed(double speed) { this.speed = speed; }
     public void setWavePointCost(int wpc) { this.wavePointCost = wpc; }
     public void setWeight(int weight) { this.weight = weight; }
-    public void setEffects(List<Effects> effects) { this.effects = effects; }
     public void setExtraParams(Map<String, Object> p) { this.extraParams = p; }
     public void setX(double x) { this.x = x; }
     public void setY(double y) { this.y = y; }
@@ -242,7 +258,7 @@ public class Zombie implements Damageable {
     public void setBehaviors (Map <String, Behaviors> behaviors){this.behaviors = behaviors;}
 
     public String zombieInfo() {
-        return String.format("[%s] \n   HP:%d \n    Armors:%s \n    Position:%f , %f \n     Effects:%s",
+        return String.format("[%s] \n   HP:%d \n    Armors:%s \n    Position: %f , %f \n    Effects:%s",
                 name, hp, getStringArmor(), x, y, getStringEffects());
     }
 
@@ -250,7 +266,7 @@ public class Zombie implements Damageable {
         StringBuilder sb = new StringBuilder();
         for (Behaviors b : behaviors.values()) {
             if (b instanceof Armor) {
-                sb.append("\n").append(((Armor) b).getArmorType())
+                sb.append("\n       ").append(((Armor) b).getArmorType())
                         .append(": ").append(((Armor) b).getArmorHP());
             }
         }
@@ -265,14 +281,8 @@ public class Zombie implements Damageable {
         }
         return sb.toString();
     }
-
     public boolean isBoss() {
         return isBoss;
     }
-
-    public void setBoss(boolean boss) {
-        isBoss = boss;
-    }
-
     public void setRow (int r){this.y = r;}
 }

@@ -29,28 +29,28 @@ public class ZombieActivator {
             case "ZombieArmor1": // Cone Head
                 behaviors.put("armor", new Armor(
                         ArmorType.CONE, ArmorType.CONE.baseHealth,
-                        false, new double[]{0.666, 0.333}));
+                        false, zombie.getX(), zombie.getY()));
                 break;
 
             case "ZombieArmor2": // Bucket Head
                 behaviors.put("armor", new Armor(
                         ArmorType.BUCKET, ArmorType.BUCKET.baseHealth,
-                        true, new double[]{0.666, 0.333}));
+                        true, zombie.getX(), zombie.getY()));
                 break;
 
             case "ZombieArmor4": // Brick Head (unused in vanilla but in data)
                 behaviors.put("armor", new Armor(
                         ArmorType.BRICK, ArmorType.BRICK.baseHealth,
-                        false, new double[]{0.666, 0.333}));
+                        false,zombie.getX(), zombie.getY()));
                 break;
 
             case "ZombieDarkArmor3":
                 behaviors.put("armor", new Armor(          // کلاهخود — magnetshroom می‌تونه اینو بقاپه
                         ArmorType.SHOULDER_CROWN, ArmorType.SHOULDER_CROWN.baseHealth,
-                        true, new double[]{0.666, 0.333}));
+                        true,zombie.getX(), zombie.getY()));
                 behaviors.put("armor2", new Armor(         // شانه‌بند — magnetshroom نمی‌تونه اینو بقاپه
                         ArmorType.SHOULDER_ARMOR, ArmorType.SHOULDER_ARMOR.baseHealth,
-                        true, new double[]{0.666, 0.333}));
+                        true,zombie.getX(), zombie.getY()));
                 break;
 
             // NEWSPAPER
@@ -58,7 +58,7 @@ public class ZombieActivator {
             case "ZombieNewspaper":
                 behaviors.put("armor", new Armor(
                         ArmorType.NEWSPAPER, ArmorType.NEWSPAPER.baseHealth,
-                        false, new double[]{0.5}, 4.0, 4.0));
+                        false,zombie.getX(), zombie.getY()));
                 break;
 
             // GARGANTUAR + IMP
@@ -79,8 +79,7 @@ public class ZombieActivator {
             //  RA ZOMBIE
 
             case "ZombieRa":
-                behaviors.put("sunThief", new SunThief(250, 1, 1));
-                behaviors.put("getDamage", new GetDamage(GetDamage.GetDamageType.SUN_THIEF));
+                behaviors.put("sunThief", new SunThief(250, 100, 5));
                 break;
 
             // EXPLORER
@@ -192,24 +191,16 @@ public class ZombieActivator {
 
             // MODERN DAY / LOST CITY / NEON MIXTAPE
 
-            case "ZombieModernAllStar": // با سرعت زیاد وارد میشه، اولین برخورد رو می‌کشه، بعدش خیلی آروم می‌شه
+            case "ZombieModernAllStar":
                 behaviors.put("damage", new Damage(
                         List.of(Damage.TargetType.PLANT, Damage.TargetType.HYPNOTIZED_ZOMBIE),
-                        0.2)); // TODO: ضریب دقیق کاهش سرعت طبق سند مشخص نیست؛ فعلاً تخمینی
+                        0.2));
                 break;
 
             case "ZombieLostCityJane": // Umbrella Leaf zombie
                 behaviors.put("deflector", new ProjectileDeflector(
-                        ProjectileDeflector.DeflectMode.BOUNCE,
-                        List.of("CabbageDefault","MegaCabbageDefault","KernelDefault",
-                                "ButterDefault","MelonDefault","MegaMelonDefault",
-                                "WinterMelonDefault","WinterMegaMelonDefault",
-                                "PepperpultDefault","AkeeDefault","MegaAkeeDefault",
-                                "SporeshroomDefault","BloomingHeartsDefault",
-                                "DusklobberDefault","AppleMortarDefault",
-                                "SlingPeaDefault","BuduhBoomDefaultProjectile",
-                                "DragonBruitDefault","DragonBabyBruitDefault"),
-                        160, 120, 0.9));
+                        ProjectileDeflector.DeflectMode.BLOCK,
+                        0, 0, 0.9));
                 break;
 
             case "ZombieArcade":
@@ -234,10 +225,6 @@ public class ZombieActivator {
                 behaviors.put("jumper", new Jumper(0, 0, 0, true));
                 behaviors.put("laser", new LaserShooting(
                         LaserShooting.GunType.DYNAMITE, 0, 0, 0));
-                break;
-
-            case "ZombieParasol":
-                behaviors.put("deflector", new ProjectileDeflector());
                 break;
 
             // NEON MIXTAPE

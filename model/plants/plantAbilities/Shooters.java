@@ -10,20 +10,21 @@ import model.projectile.TrajectoryType;
 import model.plants.enums.ShootType;
 import model.plants.plantFoodEffect.PlantFoodMode;
 import model.zombie.Zombie;
+import model.zombie.behavior.Armor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Shooters implements BaseAbility {
 
-    private static final double DEFAULT_PROJECTILE_SPEED = 8.0;
+    private static final double DEFAULT_PROJECTILE_SPEED = 1.0;
 
     @Override
     public void activate(Plant self, GameContext ctx) {
         //check for striker here
     }
 
-    public void shoot(String damage, int amount, String interval, ShootType shootType, BulletType bulletType, Plant self, GameEngine engine) {
+    public void shoot(int damage, int amount, String interval, ShootType shootType, BulletType bulletType, Plant self, GameEngine engine) {
         GameContext ctx = engine.getCtx();
         int currentSecond = ctx.getTimeManager().getTotalSeconds();
 
@@ -49,9 +50,7 @@ public class Shooters implements BaseAbility {
         }
     }
 
-    /** شلیک‌های مستقیم/چندلاینی/سریالی/موربی (هرکدوم یک Projectile واقعی با جهت درست خودشون می‌فرستن) */
-    private boolean shootDirectional(String damage, int amount, ShootType shootType, BulletType bulletType, Plant self, GameContext ctx) {
-        int damageOfPlant = Integer.parseInt(damage);
+    private boolean shootDirectional(int damage, int amount, ShootType shootType, BulletType bulletType, Plant self, GameContext ctx) {
 
         List<Integer> lanes = resolveLanes(shootType, self, ctx);
         if (lanes.isEmpty()) return false;
@@ -72,7 +71,7 @@ public class Shooters implements BaseAbility {
                 for (int i = 0; i < shotsPerLane; i++) {
                     double startX = self.getX() + dir[0] * 0.3 * i;
                     double startY = row + dir[1] * 0.3 * i;
-                    Projectile p = new Projectile(damageOfPlant, startX, startY, row,
+                    Projectile p = new Projectile(damage, startX, startY, row,
                             DEFAULT_PROJECTILE_SPEED, bulletType, trajectory, false, dir[0], dir[1], self);
                     ctx.setNewProjectiles(p);
                     firedAny = true;
@@ -82,10 +81,6 @@ public class Shooters implements BaseAbility {
         return firedAny;
     }
 
-    /**
-     * بردار جهت (یکه) هر شلیک، جدا از لِین. اکثر انواع فقط رو به جلو (۱و۰) شلیک می‌کنن؛
-     * سه مورد نیاز به جهت واقعی مورب/رو-به-عقب دارن که حالا Projectile ازش پشتیبانی می‌کنه:
-     */
     private List<double[]> resolveDirections(ShootType shootType) {
         List<double[]> dirs = new ArrayList<>();
         switch (shootType) {
@@ -97,16 +92,16 @@ public class Shooters implements BaseAbility {
                 dirs.add(new double[]{-d, -d});
             }
             case FRONT_AND_BACK -> {
-                dirs.add(new double[]{1, 0});  // Split Pea: یک شلیک رو به جلو
-                dirs.add(new double[]{-1, 0}); // و یکی رو به عقب
+                dirs.add(new double[]{1, 0});
+                dirs.add(new double[]{-1, 0});
             }
             case STAR_BURST -> {
-                for (int i = 0; i < 5; i++) { // Starfruit: پنج شلیک هم‌زمان به شکل ستاره
+                for (int i = 0; i < 5; i++) {
                     double angle = Math.toRadians(72 * i);
                     dirs.add(new double[]{Math.cos(angle), Math.sin(angle)});
                 }
             }
-            default -> dirs.add(new double[]{1, 0}); // بقیه: یک شلیک ساده رو به جلو
+            default -> dirs.add(new double[]{1, 0});
         }
         return dirs;
     }
@@ -126,19 +121,37 @@ public class Shooters implements BaseAbility {
         return lanes;
     }
 
-    private boolean shootHoming(String damage, BulletType bulletType, ShootType shootType, Plant self, GameContext ctx, GameEngine engine) {
-        int damageOfPlant = Integer.parseInt(damage);
+    private boolean shootHoming(int damage, BulletType bulletType, ShootType shootType, Plant self, GameContext ctx, GameEngine engine) {
+
+        if ("Magnet-shroom".equalsIgnoreCase(self.getName())) {
+            return handleMagnetShroomAction(self, ctx);
+        }
 
         TargetingMode mode = (shootType == ShootType.NEAREST_TARGET) ? TargetingMode.NEAREST : TargetingMode.RANDOM;
         List<Zombie> candidates = engine.findTargets(self.getRow(), self.getCol(), mode);
         if (candidates == null || candidates.isEmpty()) return false;
         Zombie target = candidates.get(0);
 
-        Projectile p = new Projectile(damageOfPlant, self.getX(), self.getRow(), self.getRow(),
+        Projectile p = new Projectile(damage, self.getX(), self.getRow(), self.getRow(),
                 DEFAULT_PROJECTILE_SPEED, bulletType, TrajectoryType.HOMING, false, self);
         p.setHomingTarget(target);
         ctx.setNewProjectiles(p);
         return true;
+    }
+
+    private boolean handleMagnetShroomAction(Plant self, GameContext ctx) {
+        for (Zombie z : ctx.getAliveZombies()) {
+            Armor armor = z.getArmor();
+            if (armor == null) {
+                armor = z.getSecondaryArmor();
+            }
+            if (armor != null && !armor.isDestroyed() && armor.isMetallic()) {
+                armor.setMagetized(true);
+                z.removeArmor();
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

@@ -45,7 +45,7 @@ public class Projectile {
         this.dirX = dirX;
         this.dirY = dirY;
         this.ownerPlant = ownerPlant;
-        ConsoleView.showMessage("Projectile created at" + x + " , " + y + "from"+ ownerPlant.getName());
+        ConsoleView.showMessage("Projectile created at " + x + ", " + y + " from "+ ownerPlant.getName());
     }
 
 
@@ -67,10 +67,10 @@ public class Projectile {
                     row = (int) Math.round(y);
                 }
                 break;
-            case LOBBED:
+//            case LOBBED:
 //            case STRAIGHT:
-            case PIERCING:
-            case BOWLING:
+//            case PIERCING:
+//            case BOWLING:
             default:
                 x += dirX * speed * time;
                 if (dirY != 0) {
@@ -88,6 +88,7 @@ public class Projectile {
 
         switch (bulletType) {
             case FIRE:
+                if (target.name().equals("Imp Dragon")){break;}
                 target.takeDamage(damage * 2);
                 target.meltIce();
                 break;
@@ -105,8 +106,14 @@ public class Projectile {
                 target.applySlowOrFreeze();
                 break;
             case MAGIC:
+                target.takeDamage(damage);
+                break;
             case SMOKE:
+                target.takeDamage(damage);
+                break;
             case NORMAL:
+                target.takeDamage(damage);
+                break;
             default:
                 target.takeDamage(damage);
                 break;

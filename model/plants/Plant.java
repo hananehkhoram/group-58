@@ -88,6 +88,11 @@ public class Plant implements Damageable {
     }
 
     @Override
+    public String name() {
+        return name;
+    }
+
+    @Override
     public void meltIce() {
         if (isIced) {
             damageIce(iceHp); // ذوب کامل؛ iceHp را صفر و isIced را false می‌کند
@@ -295,25 +300,16 @@ public class Plant implements Damageable {
     public void setHasLilyPadUnderneath(boolean hasLilyPadUnderneath) {
         this.hasLilyPadUnderneath = hasLilyPadUnderneath;
     }
-
     public int getHp() {
         return hp;
     }
-
     public boolean isPlantFoodActive() {
         return plantFoodActive;
     }
-
     public void setPlantFoodActive(boolean plantFoodActive) {
         this.plantFoodActive = plantFoodActive;
     }
-
     private Set<BehaviorKey> activeBehaviors = new HashSet<>();
-
-    public boolean hasBehavior(BehaviorKey key) {
-    return activeBehaviors.contains(key);
-    }
-
     public void addBehavior(BehaviorKey key) {
     this.activeBehaviors.add(key);
     }

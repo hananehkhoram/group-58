@@ -13,8 +13,8 @@ public class Jumper implements Behaviors {
         EXPLORER,    // مشعل‌دار — پرشی ندارد؛ منطق واقعی‌اش در Area است، این کلاس برایش no-op می‌ماند
         DODO,        // دودو سوار — از موانع خاص (نه هر گیاهی) می‌پرد
         PROSPECTOR,  // اکتشافگر — بعد از انفجار دینامیت (۱۰ ثانیه) به انتهای سطر پرتاب و برعکس می‌شود
-        IMP,         // توسط Gargantuar پرتاب می‌شود؛ دقیقاً در ستون سوم از چپ فرود می‌آید
-        DRAGON_IMP   // مثل IMP، فقط FireDamageMultiplier=0
+        IMP,        
+        DRAGON_IMP
     }
 
     private static final int TICKS_PER_SECOND = 10;
@@ -32,19 +32,15 @@ public class Jumper implements Behaviors {
     private double startColumn;
     private long startTick;
 
-    private double fireDamageMultiplier;
-
     public Jumper() {
         this.variant = JumpVariant.EXPLORER;
         this.landed = true;
-        this.fireDamageMultiplier = 1.0;
     }
 
     public Jumper(float initialChance, float addChancePerGrid,
                   int minGridSquares, int maxGridSquares) {
         this.variant = JumpVariant.DODO;
         this.landed = true;
-        this.fireDamageMultiplier = 1.0;
     }
 
     public Jumper(int apex, float timeToTravel, int stunTime, boolean reverseTheWay) {
@@ -54,14 +50,12 @@ public class Jumper implements Behaviors {
         this.stunTime = stunTime;
         this.reverseTheWay = reverseTheWay;
         this.landed = true;
-        this.fireDamageMultiplier = 1.0;
     }
 
     /** Imp / DragonImp — پرتاب‌شده توسط Gargantuar */
     public Jumper(JumpVariant variant) {
         this.variant = variant;
-        this.landed = true; // با پای زمین شروع می‌شه؛ فقط throwFrom() (توسط Gargantuar) بی‌زمینش می‌کنه
-        this.fireDamageMultiplier = (variant == JumpVariant.DRAGON_IMP) ? 0.0 : 1.0;
+        this.landed = true;
     }
 
     public void throwFrom(GameContext ctx, Zombie zombie, double apex, double flightTime) {
@@ -151,5 +145,4 @@ public class Jumper implements Behaviors {
     public int getApex() { return apex; }
     public int getStunTime() { return stunTime; }
     public int getTargetColumn() { return targetColumn; }
-    public double getFireDamageMultiplier() { return fireDamageMultiplier; }
 }

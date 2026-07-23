@@ -148,15 +148,6 @@ public class GameEngine {
         }
     }
 
-    public boolean addZombie(Zombie z, int row) {
-        if (row < 0 || row >= Level.ROWS) {
-            return false;
-        }
-        z.setX(Level.COLS - 1 + ZOMBIE_SPAWN_X_OFFSET);
-        z.setY(row);
-        ctx.getAliveZombies().add(z);
-        return true;
-    }
 
     public Zombie[] getRowZombies(int row) {
         return ctx.getAliveZombies().stream()
@@ -206,8 +197,8 @@ public class GameEngine {
                 continue;
             }
 
-            int totalRows = ctx.getPlantGrid().length;
-            int totalCols = ctx.getPlantGrid()[0].length;
+            int totalRows = Level.ROWS;
+            int totalCols = Level.COLS;
             if (p.getRow() < 0 || p.getRow() >= totalRows || p.getX() < -1 || p.getX() > totalCols) {
                 p.deactivate();
                 it.remove();
@@ -222,7 +213,7 @@ public class GameEngine {
                 }
             } else {
                 for (Zombie z : ctx.getAliveZombies()) {
-                    if (z.getRow() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.5) {
+                    if (z.getRow() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.4) {
                         ProjectileDeflector deflector = z.getDeflector();
                         Submerge submerge = z.getSubmerge();
 
@@ -231,8 +222,6 @@ public class GameEngine {
                             it.remove();
                         } else if (submerge != null
                                 && !submerge.isVulnerableTo(p.getOwnerPlant().getName(),p.getOwnerPlant().isPlantFoodActive())) {
-                            // زیر آبه و این پرتابه (طبق لیست damageWhileSubmerged) بهش نمی‌رسه؛
-                            // بدون اثر رد میشه، نه نابود میشه و نه دمیجی میزنه
                         } else {
                             p.onHit(z);
                             if (!p.isActive()) it.remove();
@@ -274,7 +263,6 @@ public class GameEngine {
                 return sameRow;
             }
             case NEAREST -> {
-                // برخلاف FIRST_IN_LANE، اینجا محدود به سطر خودِ گیاه نیست — نزدیک‌ترین زامبی در کل صفحه
                 List<Zombie> result = new ArrayList<>();
                 Zombie nearest = null;
                 double bestDist = Double.MAX_VALUE;
@@ -291,7 +279,6 @@ public class GameEngine {
                 return result;
             }
             case RANDOM -> {
-                // یک زامبی تصادفی از کل صفحه (نه فقط همون سطر)
                 List<Zombie> all = ctx.getAliveZombies();
                 List<Zombie> result = new ArrayList<>();
                 if (!all.isEmpty()) {
