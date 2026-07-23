@@ -1,6 +1,7 @@
 package model.zombie.behavior;
 
 import model.GameContext;
+import model.projectile.BulletType;
 import model.projectile.Projectile;
 import model.projectile.TrajectoryType;
 import model.zombie.Zombie;
@@ -23,21 +24,8 @@ public class ProjectileDeflector implements Behaviors {
     }
 
     private DeflectMode mode;
-    private Set<String> juggleableProjectiles;
-    private Set<String> bounceableProjectiles;
-    private Set<String> angleAgnosticProjectiles;
-    private Set<String> unthrowableProjectiles;
 
-    // Physics params
-    private double bounceDistance;   // 160 grid units
-    private double bounceHeight;     // 80 (Juggler) / 120 (Jane)
-    private double bounceTime;       // 0.9 seconds
-
-    // Juggler-specific
-    private int catchArcDegrees;              // 120 — cone in front of zombie
-    private int juggleLaunchDelay;            // 2 ticks between catching and re-throwing
-    private int maxProjectilesToJuggle;       // 1000 (effectively unlimited)
-    private double moveSpeedMultiplierWhileJuggling; // 1.1 — slightly faster while juggling
+    private double moveSpeedMultiplierWhileJuggling = 1.5;
 
     private boolean spinning = false;
     private double baseSpeed = -1;
@@ -48,32 +36,6 @@ public class ProjectileDeflector implements Behaviors {
     public ProjectileDeflector(DeflectMode mode,
                                double bounceDistance, double bounceHeight, double bounceTime) { //parasol
         this.mode = mode;
-        this.bounceDistance = bounceDistance;
-        this.bounceHeight = bounceHeight;
-        this.bounceTime = bounceTime;
-        this.bounceableProjectiles = new HashSet<>();
-    }
-
-    // Full constructor for Juggler
-    public ProjectileDeflector(List<String> juggleableProjectiles,
-                               List<String> bounceableProjectiles,
-                               List<String> angleAgnosticProjectiles,
-                               List<String> unthrowableProjectiles,
-                               int catchArcDegrees, int juggleLaunchDelay,
-                               int maxProjectilesToJuggle, double moveSpeedMultiplier,
-                               double bounceDistance, double bounceHeight, double bounceTime) {
-        this.mode = DeflectMode.JUGGLE;
-        this.juggleableProjectiles = new HashSet<>(juggleableProjectiles);
-        this.bounceableProjectiles = new HashSet<>(bounceableProjectiles);
-        this.angleAgnosticProjectiles = new HashSet<>(angleAgnosticProjectiles);
-        this.unthrowableProjectiles = new HashSet<>(unthrowableProjectiles);
-        this.catchArcDegrees = catchArcDegrees;
-        this.juggleLaunchDelay = juggleLaunchDelay;
-        this.maxProjectilesToJuggle = maxProjectilesToJuggle;
-        this.moveSpeedMultiplierWhileJuggling = moveSpeedMultiplier;
-        this.bounceDistance = bounceDistance;
-        this.bounceHeight = bounceHeight;
-        this.bounceTime = bounceTime;
     }
 
     @Override
@@ -118,27 +80,26 @@ public class ProjectileDeflector implements Behaviors {
         if (!spinning) {
             spinning = true;
             baseSpeed = zombie.getSpeed();
-            zombie.setSpeed(baseSpeed * 1.1);
+        zombie.setSpeed(baseSpeed * moveSpeedMultiplierWhileJuggling);
         }
 
+    if (mode == DeflectMode.JUGGLE || mode == DeflectMode.BOUNCE) {
+
+        boolean isIceProjectile = p.getBulletType() != null &&
+                (p.getBulletType() == BulletType.ICE);
+
         Projectile reflected = new Projectile(
-                p.getDamage(), p.getX(), p.getY(), p.getRow(),
-                p.getSpeed(), p.getBulletType(), p.getTrajectory(),
-                true, null
+                p.getDamage(),
+                p.getX(),
+                p.getY(),
+                p.getRow(),
+                p.getSpeed(),
+                p.getBulletType(),
+                p.getTrajectory(),
+                true,
+                null
         );
         ctx.setNewProjectiles(reflected);
     }
-
-    public boolean canThrowBack(String projectileId) {
-        return mode == DeflectMode.JUGGLE
-                && !unthrowableProjectiles.contains(projectileId);
-    }
-
-    public DeflectMode getMode() { return mode; }
-    public double getBounceDistance() { return bounceDistance; }
-    public double getBounceHeight() { return bounceHeight; }
-    public double getBounceTime() { return bounceTime; }
-    public double getMoveSpeedMultiplierWhileJuggling() { return moveSpeedMultiplierWhileJuggling; }
-    public int getCatchArcDegrees() { return catchArcDegrees; }
-    public boolean isSpinning() { return spinning; }
+}
 }

@@ -155,22 +155,8 @@ public class ZombieActivator {
 
             case "ZombieDarkJuggler":
                 behaviors.put("deflector", new ProjectileDeflector(
-                        List.of("PeaDefault","ThreepeaterPeaDefault","FirePeaDefault",
-                                "SnowPeaDefault","CannonballDefault","CabbageDefault",
-                                "MelonDefault","WinterMelonDefault","KernelDefault","ButterDefault",
-                                "StarFruitShot","BloomerangDefault","HomingThistleDefault",
-                                "PepperpultDefault","AkeeDefault","GrapeshotDefaultProjectile"),
-                        List.of("BuduhBoomDefaultProjectile","ButterDefault"),
-                        List.of("HomingThistleDefault","HomingThistlePlantfood",
-                                "BuduhBoomDefaultProjectile","ButterDefault"),
-                        List.of(),
-                        120,
-                        2,
-                        1000,
-                        1.1,
-                        160,
-                        80,
-                        0.9));
+                        ProjectileDeflector.DeflectMode.JUGGLE,
+                        0, 0, 0));
                 break;
 
             case "ZombieWizard":
