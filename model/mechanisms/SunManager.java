@@ -2,6 +2,7 @@ package model.mechanisms;
 
 import model.TimeManager;
 import model.user.UserManager;
+import view.ConsoleView;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -72,6 +73,7 @@ public class SunManager {
         if (!sun.isOnGround()) return 0;
         int amount = (sun.getType() == SunType.SPECIAL) ? 100 : 25;
         activeSunDrops.remove(sun);
+        ConsoleView.showMessage("Ra stealed a sun at " + sun.getX() + ", " + sun.getY());
         return amount;
     }
 

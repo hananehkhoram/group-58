@@ -3,12 +3,7 @@ package model.zombie;
 import model.GameContext;
 import model.projectile.Damageable;
 import model.season.Season;
-import model.zombie.behavior.Armor;
-import model.zombie.behavior.ArmorType;
-import model.zombie.behavior.Behaviors;
-import model.zombie.behavior.Jumper;
-import model.zombie.behavior.ProjectileDeflector;
-import model.zombie.behavior.Submerge;
+import model.zombie.behavior.*;
 import view.ConsoleView;
 
 import java.util.List;
@@ -240,7 +235,6 @@ public class Zombie implements Damageable {
     public int getWavePointCost() { return wavePointCost; }
     public int getWeight() { return weight; }
     public Map<String, Behaviors> getBehaviors() { return behaviors; }
-    public List<Effects> getEffects() { return effects; }
     public Map<String, Object> getExtraParams() { return extraParams; }
     public double getX() { return x; }
     public double getY() { return y; }
@@ -255,7 +249,6 @@ public class Zombie implements Damageable {
     public void setSpeed(double speed) { this.speed = speed; }
     public void setWavePointCost(int wpc) { this.wavePointCost = wpc; }
     public void setWeight(int weight) { this.weight = weight; }
-    public void setEffects(List<Effects> effects) { this.effects = effects; }
     public void setExtraParams(Map<String, Object> p) { this.extraParams = p; }
     public void setX(double x) { this.x = x; }
     public void setY(double y) { this.y = y; }

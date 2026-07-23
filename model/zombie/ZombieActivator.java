@@ -79,8 +79,7 @@ public class ZombieActivator {
             //  RA ZOMBIE
 
             case "ZombieRa":
-                behaviors.put("sunThief", new SunThief(250, 1, 1));
-                behaviors.put("getDamage", new GetDamage(GetDamage.GetDamageType.SUN_THIEF));
+                behaviors.put("sunThief", new SunThief(250, 100, 5));
                 break;
 
             // EXPLORER
