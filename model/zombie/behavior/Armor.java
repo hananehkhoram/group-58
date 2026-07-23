@@ -8,26 +8,23 @@ public class Armor implements Behaviors {
     private int armorHP;
     private ArmorType armorType;
     private boolean metallic;
-    private double[] layerThresholds; // visual damage layer breakpoints e.g. [0.666, 0.333]
-
     // Enrage fields (Newspaper zombie: EnragedDamageScale=4, EnragedSpeedScale=4)
     private boolean enrageable;
     private double enragedDamageScale;
     private double enragedSpeedScale;
     private boolean enraged;
 
-    public Armor(ArmorType armorType, int armorHP, boolean metallic, double[] layerThresholds) {
+    public Armor(ArmorType armorType, int armorHP, boolean metallic) {
         this.armorType = armorType;
         this.armorHP = armorHP;
         this.metallic = metallic;
-        this.layerThresholds = layerThresholds;
         this.enrageable = false;
     }
 
     /** Constructor for Newspaper zombie. */
-    public Armor(ArmorType armorType, int armorHP, boolean metallic, double[] layerThresholds,
+    public Armor(ArmorType armorType, int armorHP, boolean metallic,
                  double enragedDamageScale, double enragedSpeedScale) {
-        this(armorType, armorHP, metallic, layerThresholds);
+        this(armorType, armorHP, metallic);
         this.enrageable = true;
         this.enragedDamageScale = enragedDamageScale;
         this.enragedSpeedScale = enragedSpeedScale;

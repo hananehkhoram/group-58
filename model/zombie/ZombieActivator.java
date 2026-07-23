@@ -29,28 +29,28 @@ public class ZombieActivator {
             case "ZombieArmor1": // Cone Head
                 behaviors.put("armor", new Armor(
                         ArmorType.CONE, ArmorType.CONE.baseHealth,
-                        false, new double[]{0.666, 0.333}));
+                        false));
                 break;
 
             case "ZombieArmor2": // Bucket Head
                 behaviors.put("armor", new Armor(
                         ArmorType.BUCKET, ArmorType.BUCKET.baseHealth,
-                        true, new double[]{0.666, 0.333}));
+                        true));
                 break;
 
             case "ZombieArmor4": // Brick Head (unused in vanilla but in data)
                 behaviors.put("armor", new Armor(
                         ArmorType.BRICK, ArmorType.BRICK.baseHealth,
-                        false, new double[]{0.666, 0.333}));
+                        false));
                 break;
 
             case "ZombieDarkArmor3":
                 behaviors.put("armor", new Armor(          // کلاهخود — magnetshroom می‌تونه اینو بقاپه
                         ArmorType.SHOULDER_CROWN, ArmorType.SHOULDER_CROWN.baseHealth,
-                        true, new double[]{0.666, 0.333}));
+                        true));
                 behaviors.put("armor2", new Armor(         // شانه‌بند — magnetshroom نمی‌تونه اینو بقاپه
                         ArmorType.SHOULDER_ARMOR, ArmorType.SHOULDER_ARMOR.baseHealth,
-                        true, new double[]{0.666, 0.333}));
+                        true));
                 break;
 
             // NEWSPAPER
@@ -58,7 +58,7 @@ public class ZombieActivator {
             case "ZombieNewspaper":
                 behaviors.put("armor", new Armor(
                         ArmorType.NEWSPAPER, ArmorType.NEWSPAPER.baseHealth,
-                        false, new double[]{0.5}, 4.0, 4.0));
+                        false));
                 break;
 
             // GARGANTUAR + IMP
