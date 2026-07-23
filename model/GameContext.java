@@ -220,9 +220,9 @@ public class GameContext {
         this.totalZombiesKilledInLevel++;
     }
 
-    public void incrementPlantsLost() {
+    public void incrementPlantsLost(Plant p) {
         this.totalLostPlants++;
-        ConsoleView.showMessage("A plant was destroyed! Total lost: %d\n", totalLostPlants);
+        ConsoleView.showMessage("Plant "+p.getName()+" at "+p.getCol()+", "+p.getRow()+" is destroyed.");
     }
 
     public void addZombie(Zombie z) {
@@ -474,6 +474,8 @@ public class GameContext {
             sunProducerPlantsPlacedThisLevel++;
         }
         if (plant.getFamily() != null) plantFamiliesPlantedThisLevel.add(plant.getFamily());
+        plant.setRow(row);
+        plant.setCol(col);
     }
 
     public Set<String> getPlantNamesThatKilledThisLevel() { return plantNamesThatKilledThisLevel; }

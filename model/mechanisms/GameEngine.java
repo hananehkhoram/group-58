@@ -4,6 +4,7 @@ import controller.MenuManager;
 import model.GameContext;
 import model.MiniGame.VaseGame.Vase;
 import model.MiniGame.VaseGame.VaseContent;
+import model.plants.PlantActivator;
 import model.projectile.Projectile;
 import model.level.Level;
 import model.plants.Plant;
@@ -70,40 +71,33 @@ public class GameEngine {
             return;
         }
 
-        // اسپاون موج اول
         if (ctx.getCurrentWaveIndex() == 0) {
             spawnWave(waves[0]);
             return;
         }
 
-        // اگر تمام موج‌ها اسپاون شده‌اند، نیازی به بررسی بیشتر نیست
         if (ctx.getCurrentWaveIndex() >= waves.length) {
             ctx.setWaveSpawningFinished(true);
             return;
         }
 
-        // اگر موج فعلی در حال شمارش معکوس/تاخیر برای شروع است
         if (waveTimer > 0) {
-            waveTimer -= deltaTime; // یا براساس تیک: waveTimer--
+            waveTimer -= deltaTime;
             return;
         }
 
         Wave previousWave = waves[ctx.getCurrentWaveIndex() - 1];
-
-        // چک کردن شرط رسیدن جان زامبی‌ها به حد نصاب
         if (previousWave.isThresholdReached()) {
             Wave nextWave = waves[ctx.getCurrentWaveIndex()];
 
-            // اگر موج جدید تاخیر دارد، تایمر را تنظیم می‌کنیم تا بلافاصله اسپاون نشود
             if (!isFirstWaveTimerSet && nextWave.getWaveDelay() > 0) {
                 this.waveTimer = nextWave.getWaveDelay();
                 this.isFirstWaveTimerSet = true;
-                return; // منتظر می‌مانیم تا waveTimer صفر شود
+                return;
             }
 
-            // اسپاون موج بعدی پس از پایان تاخیر
             spawnWave(nextWave);
-            this.isFirstWaveTimerSet = false; // ریست کردن برای موج بعدی
+            this.isFirstWaveTimerSet = false;
         }
     }
     private void spawnWave(Wave wave) {
@@ -175,10 +169,11 @@ public class GameEngine {
         while (it.hasNext()) {
             Plant p = it.next();
             p.update(ctx);
+            PlantActivator.activate(p, ctx, this);
             if (p.getHp() <= 0) {
                 ctx.getPlantGrid()[p.getRow()][p.getCol()] = null;
                 it.remove();
-                ctx.incrementPlantsLost();
+                ctx.incrementPlantsLost(p);
             }
         }
     }

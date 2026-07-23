@@ -91,7 +91,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("show map" , new ShowMap(menuManager));
         registry.register("show plants status" , new ShowPlantsStatus(menuManager));
         registry.register("show tile status -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new ShowTileStatus(menuManager));
-        registry.register("zombies info" , new ShowZombiesInfo());
+        registry.register("zombies info" , new ShowZombiesInfo(menuManager));
         registry.register("cheat spawn-zombie -t (?<zombieType>.+) -l \\((?<x>\\d+), (?<y>\\d+)\\)" , new CheatSpawnZombie(menuManager));
         registry.register("start zombie waves" , new PlantWhatYouGet());
         registry.register("show greenhouse" , new ShowGreenHouse(menuManager));

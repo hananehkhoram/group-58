@@ -62,7 +62,7 @@ public class Jumper implements Behaviors {
     /** Imp / DragonImp — پرتاب‌شده توسط Gargantuar */
     public Jumper(JumpVariant variant) {
         this.variant = variant;
-        this.landed = (variant == JumpVariant.DRAGON_IMP);
+        this.landed = true; // با پای زمین شروع می‌شه؛ فقط throwFrom() (توسط Gargantuar) بی‌زمینش می‌کنه
         this.fireDamageMultiplier = (variant == JumpVariant.DRAGON_IMP) ? 0.0 : 1.0;
     }
 
@@ -102,6 +102,8 @@ public class Jumper implements Behaviors {
         if (variant == JumpVariant.DODO) {
             checkDodoObstacle(ctx, zombie);
         }
+        // EXPLORER: بدون کاری — رفتار واقعی‌اش در Area پیاده می‌شود
+        // PROSPECTOR: شروع پرش توسط LaserShooting (بعد از ۱۰ ثانیه انفجار دینامیت) صدا زده خواهد شد
     }
 
     /** جابه‌جایی خطی روی قوس پرش، بر اساس تعداد تیک سپری‌شده (نه deltaTime، چون onTick آن را ندارد) */

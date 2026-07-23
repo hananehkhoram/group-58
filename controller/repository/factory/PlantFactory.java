@@ -27,6 +27,7 @@ public class PlantFactory extends BaseFactory<Plant> {
         newPlant.setSunCost(template.getSunCost());
         newPlant.setBaseHp(template.getBaseHp());
         newPlant.setDamage(template.getDamage());
+        newPlant.heal(template.getBaseHp());
 
         if (template.getBaseAbility() != null) {
             String abilityClassName = template.getBaseAbility().getClass().getSimpleName();
