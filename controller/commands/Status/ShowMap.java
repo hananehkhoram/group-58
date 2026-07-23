@@ -10,6 +10,7 @@ import model.plants.Plant;
 import model.projectile.Projectile;
 import model.user.UserManager;
 import model.zombie.Zombie;
+import model.zombie.behavior.Armor;
 import view.ConsoleView;
 
 public class ShowMap implements Command {
@@ -57,23 +58,26 @@ public class ShowMap implements Command {
                 StringBuilder projectileSymbol = new StringBuilder();
                 for (Projectile p : ctx.getProjectiles()) {
                     if ((int) Math.round(p.getY()) == r && (int) Math.floor(p.getX()) == c){
-                        projectileSymbol.append("+");
+                        if (!p.isFromZombie()) projectileSymbol.append("+");
+                        if (p.isFromZombie()) projectileSymbol.append("-");
                     }
                 }
 
                 StringBuilder zombieSymbol = new StringBuilder();
                 for (Zombie z : ctx.getAliveZombies()) {
                     if ((int) Math.round(z.getY()) == r && (int) Math.floor(z.getX()) == c) {
-                        if (z.getArmor() != null && !z.getArmor().isDestroyed()){
-                            zombieSymbol.append("(");
+                        if (z.getArmor() != null && !z.getArmor().isDestroyed()) {
+                            zombieSymbol.append("Z");
+                        }else {
+                                zombieSymbol.append("z");
                         }
-                        zombieSymbol.append("Z");
+
                     }
                 }
 
                 sb.append("[").append(terrainSymbol).append(plantSymbol)
-                        .append(zombieSymbol.isEmpty() ? "  " : zombieSymbol).append("]")
-                        .append(projectileSymbol.isEmpty() ? "  " : projectileSymbol);
+                        .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]")
+                        .append(projectileSymbol.isEmpty() ? " " : projectileSymbol);
             }
             sb.append("\n");
         }
