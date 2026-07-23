@@ -1,5 +1,7 @@
 package model.zombie.behavior;
 
+import controller.repository.ZombieRepository;
+import controller.repository.factory.ZombieFactory;
 import model.GameContext;
 import model.plants.Plant;
 import model.projectile.BulletType;
@@ -14,6 +16,7 @@ public class Shooting implements Behaviors {
     private int amount;           // projectile count
     private int ammo;             // TombRaiser: tombstone count remaining
     private int timeBetweenCasts; // ms between cast sequences
+    private boolean imped = false;
 
     private int lastShotSecond = 1 ;
 
@@ -28,9 +31,64 @@ public class Shooting implements Behaviors {
         switch (shootingType) {
             case HUNTER -> shootIceShard(zombie, ctx);
             // GARGANTUAR, TOMBRAISER, FISHERMAN بعداً
+            case GARGANTUAR -> shootImp(zombie, ctx);
             default -> {}
         }
     }
+
+    private void shootImp(Zombie gargantuar, GameContext ctx) {
+        if (gargantuar.getHp() > 1800 || imped) {
+            return;
+        }
+
+        Zombie imp = null;
+        for (Zombie z : ctx.getAliveZombies()) {
+            if ("Imp".equalsIgnoreCase(z.getName()) && z.getRow() == gargantuar.getRow()) {
+                if (z.getJumper() != null && z.getJumper().isLanded()) {
+                    imp = z;
+                    break;
+                }
+            }
+        }
+        boolean isNewImp = false;
+        if (imp == null) {
+            imp = createNewImp(gargantuar, ctx);
+            isNewImp = true;
+        }
+
+        if (imp != null) {
+            Jumper jumper = imp.getJumper();
+            if (jumper == null) {
+                jumper = new Jumper(Jumper.JumpVariant.IMP);
+                imp.getBehaviors().put("jumper", jumper);
+            }
+
+            int targetCol = Math.max(0, (int) gargantuar.getX() - 3);
+            float flightTime = 1.0f;
+            int apex = 1;
+
+            jumper.startJump(ctx, imp, targetCol, flightTime, apex);
+
+            if (isNewImp) {
+                ctx.addZombie(imp);
+            }
+
+            imped = true;
+        }
+    }
+
+    private Zombie createNewImp(Zombie gargantuar, GameContext ctx) {
+        if (ctx.getDataManager() == null) return null;
+
+        ZombieFactory zf = new ZombieFactory(ctx.getDataManager());
+        Zombie imp = zf.create("Imp");
+        if (imp != null) {
+            imp.setX(gargantuar.getX());
+            imp.setY(gargantuar.getRow());
+        }
+        return imp;
+    }
+
 
     private void shootIceShard(Zombie zombie, GameContext ctx) {
         int currentSecond = ctx.getTimeManager().getTotalSeconds();

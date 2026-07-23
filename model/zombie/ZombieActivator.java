@@ -192,7 +192,7 @@ public class ZombieActivator {
 
             // MODERN DAY / LOST CITY / NEON MIXTAPE
 
-            case "ZombieModernAllStar": // با سرعت زیاد وارد میشه، اولین برخورد رو می‌کشه، بعدش خیلی آروم می‌شه
+            case "ZombieModernAllStar":
                 behaviors.put("damage", new Damage(
                         List.of(Damage.TargetType.PLANT, Damage.TargetType.HYPNOTIZED_ZOMBIE),
                         0.2)); // TODO: ضریب دقیق کاهش سرعت طبق سند مشخص نیست؛ فعلاً تخمینی
