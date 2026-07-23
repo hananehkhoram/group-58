@@ -15,5 +15,7 @@ public enum TrajectoryType {
     /** Ignores obstacles/gravestones, lands directly on the target (Lobber family; only type that hits divers underwater). */
     LOBBED,
     /** Rolls forward, changes lane by 45/90 degrees on impact (Bowling minigame). */
-    BOWLING
+    BOWLING,
+    /** Fixed after Parasol touches it **/
+    FIX
 }

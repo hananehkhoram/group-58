@@ -7,5 +7,4 @@ public enum Effects {
     STUNNED,       // temporarily unable to act
     HYPNOTIZED,    // turned against other zombies
     ELECTROCUTED,  // shocked
-    ENRAGED        // increased speed/damage (e.g. Newspaper after paper destroyed)
 }

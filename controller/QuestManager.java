@@ -38,14 +38,18 @@ public class QuestManager {
         }
 
         for (int col = 0; col < ctx.getLevel().getColumns(); col++) {
-            if (!ctx.getPlantedColumns().contains(col)) {
-                complete(user, "one-less-column-" + col);
+            String questId = "one-less-column-" + col;
+            if (!ctx.getPlantedColumns().contains(col) && !user.isQuestCompleted(questId)) {
+                complete(user, questId);
+                break;
             }
         }
 
         for (int row = 0; row < ctx.getLevel().getRows(); row++) {
-            if (!ctx.getPlantedRows().contains(row)) {
-                complete(user, "undefended-row-" + row);
+            String questId = "undefended-row-" + row;
+            if (!ctx.getPlantedRows().contains(row) && !user.isQuestCompleted(questId)) {
+                complete(user, questId);
+                break;
             }
         }
 
@@ -69,8 +73,10 @@ public class QuestManager {
         }
 
         for (PlantFamily family : PlantFamily.values()) {
-            if (!ctx.getPlantFamiliesPlantedThisLevel().contains(family)) {
-                complete(user, "family-avoid-" + family);
+            String questId = "family-avoid-" + family;
+            if (!ctx.getPlantFamiliesPlantedThisLevel().contains(family) && !user.isQuestCompleted(questId)) {
+                complete(user, questId);
+                break;
             }
         }
         for (int n : new int[]{10, 20, 30, 40, 50}) {

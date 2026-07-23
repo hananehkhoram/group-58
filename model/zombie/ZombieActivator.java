@@ -79,8 +79,7 @@ public class ZombieActivator {
             //  RA ZOMBIE
 
             case "ZombieRa":
-                behaviors.put("sunThief", new SunThief(250, 1, 1));
-                behaviors.put("getDamage", new GetDamage(GetDamage.GetDamageType.SUN_THIEF));
+                behaviors.put("sunThief", new SunThief(250, 100, 5));
                 break;
 
             // EXPLORER
@@ -156,22 +155,8 @@ public class ZombieActivator {
 
             case "ZombieDarkJuggler":
                 behaviors.put("deflector", new ProjectileDeflector(
-                        List.of("PeaDefault","ThreepeaterPeaDefault","FirePeaDefault",
-                                "SnowPeaDefault","CannonballDefault","CabbageDefault",
-                                "MelonDefault","WinterMelonDefault","KernelDefault","ButterDefault",
-                                "StarFruitShot","BloomerangDefault","HomingThistleDefault",
-                                "PepperpultDefault","AkeeDefault","GrapeshotDefaultProjectile"),
-                        List.of("BuduhBoomDefaultProjectile","ButterDefault"),
-                        List.of("HomingThistleDefault","HomingThistlePlantfood",
-                                "BuduhBoomDefaultProjectile","ButterDefault"),
-                        List.of(),
-                        120,
-                        2,
-                        1000,
-                        1.1,
-                        160,
-                        80,
-                        0.9));
+                        ProjectileDeflector.DeflectMode.JUGGLE,
+                        0, 0, 0));
                 break;
 
             case "ZombieWizard":
@@ -195,21 +180,13 @@ public class ZombieActivator {
             case "ZombieModernAllStar":
                 behaviors.put("damage", new Damage(
                         List.of(Damage.TargetType.PLANT, Damage.TargetType.HYPNOTIZED_ZOMBIE),
-                        0.2)); // TODO: ضریب دقیق کاهش سرعت طبق سند مشخص نیست؛ فعلاً تخمینی
+                        0.2));
                 break;
 
             case "ZombieLostCityJane": // Umbrella Leaf zombie
                 behaviors.put("deflector", new ProjectileDeflector(
-                        ProjectileDeflector.DeflectMode.BOUNCE,
-                        List.of("CabbageDefault","MegaCabbageDefault","KernelDefault",
-                                "ButterDefault","MelonDefault","MegaMelonDefault",
-                                "WinterMelonDefault","WinterMegaMelonDefault",
-                                "PepperpultDefault","AkeeDefault","MegaAkeeDefault",
-                                "SporeshroomDefault","BloomingHeartsDefault",
-                                "DusklobberDefault","AppleMortarDefault",
-                                "SlingPeaDefault","BuduhBoomDefaultProjectile",
-                                "DragonBruitDefault","DragonBabyBruitDefault"),
-                        160, 120, 0.9));
+                        ProjectileDeflector.DeflectMode.BLOCK,
+                        0, 0, 0.9));
                 break;
 
             case "ZombieArcade":
@@ -234,10 +211,6 @@ public class ZombieActivator {
                 behaviors.put("jumper", new Jumper(0, 0, 0, true));
                 behaviors.put("laser", new LaserShooting(
                         LaserShooting.GunType.DYNAMITE, 0, 0, 0));
-                break;
-
-            case "ZombieParasol":
-                behaviors.put("deflector", new ProjectileDeflector());
                 break;
 
             // NEON MIXTAPE
