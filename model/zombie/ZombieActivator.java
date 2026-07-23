@@ -85,8 +85,7 @@ public class ZombieActivator {
             // EXPLORER
 
             case "ZombieExplorer":
-                behaviors.put("area", new Area(37,
-                        List.of("frostbonnet", "blazingknight")));
+                behaviors.put("area", new Area());
                 behaviors.put("jumper", new Jumper());
                 break;
 

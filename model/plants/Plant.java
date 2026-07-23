@@ -262,15 +262,9 @@ public class Plant implements Damageable {
         this.lastActionSecond = lastActionSecond;
     }
 
-    public boolean hasFireTag(){
+    public boolean hasTheTag(Tag tag){
         for (Tag t : tags){
-            if (t.equals(Tag.FIRE)) return true;
-        }
-        return false;
-    }
-    public boolean hasWaterTag(){
-        for (Tag t : tags){
-            if (t.equals(Tag.WATER)) return true;
+            if (t.equals(tag)) return true;
         }
         return false;
     }
