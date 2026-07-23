@@ -111,38 +111,57 @@ public class Jumper implements Behaviors {
 
     private void checkDodoObstacle(GameContext ctx, Zombie zombie) {
         int row = zombie.getRow();
-        int aheadCol = (int) Math.floor(zombie.getX()) - 1;
-        if (aheadCol < 0) return;
+        int totalCols = ctx.getPlantGrid()[0].length;
 
-        Plant ahead = ctx.getPlantGrid()[row][aheadCol];
-        if (!isObstacle(ahead)) return;
+        for (int col = 0; col < totalCols; col++) {
+            Plant plant = ctx.getPlantGrid()[row][col];
+            if (plant == null || plant.isDead()) continue;
 
-        int landingCol = Math.max(0, aheadCol - 1);
-        startJump(ctx, zombie, landingCol, 0.6f, 40);
+            double distance = zombie.getX() - plant.getCol();
+
+            if (distance > 0 && distance <= 1.2) {
+
+                if (isTallNut(plant)) {
+                    return;
+                }
+
+                if (isObstacle(plant)) {
+                    int landingCol = Math.max(0, (int) plant.getCol() - 1);
+                    startJump(ctx, zombie, landingCol, 0.6f, 40);
+                    break;
+                }
+            }
+        }
+    }
+
+    private boolean isTallNut(Plant p) {
+        if (p == null || p.getName() == null) return false;
+        String name = p.getName().toLowerCase();
+        return name.contains("tall") && name.contains("nut");
     }
 
     private boolean isObstacle(Plant p) {
         if (p == null || p.isDead()) return false;
+
         String name = p.getName() == null ? "" : p.getName().toLowerCase();
-        if (name.contains("tall") && name.contains("nut")) return false;
+
+        if (name.equals("Wall-nut")) {
+            return true;
+        }
+
+        if (p.getHp() >= HIGH_HP_OBSTACLE_THRESHOLD) {
+            return true;
+        }
 
         EnumSet<Tag> tags = p.getTags();
-        if (tags != null && (tags.contains(Tag.MOVE_ZOMBIES) || tags.contains(Tag.TRAP))) return true;
+        if (tags != null) {
+            if (tags.contains(Tag.MOVE_ZOMBIES) || tags.contains(Tag.TRAP) || tags.contains(Tag.EXPLOSIVE_TAG)) {
+                return true;
+            }
+        }
 
-        return p.getHp() >= HIGH_HP_OBSTACLE_THRESHOLD;
+        return false;
     }
 
-    @Override
-    public void onHit(Zombie zombie, int damage) {
-        // DragonImp: مصونیت از آتش در GetDamage/Damage اعمال می‌شود (با استفاده از fireDamageMultiplier)
-    }
-
-    @Override
-    public boolean isDestroyed() { return false; }
-
-    public JumpVariant getVariant() { return variant; }
     public boolean isLanded() { return landed; }
-    public int getApex() { return apex; }
-    public int getStunTime() { return stunTime; }
-    public int getTargetColumn() { return targetColumn; }
 }

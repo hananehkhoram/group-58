@@ -92,7 +92,7 @@ public class ZombieActivator {
             // TOMB RAISER
 
             case "ZombieTombRaiser":
-                behaviors.put("shooting", new Shooting(Shooting.ShootingType.TOMBRAISER, 0, 0));
+                behaviors.put("shooting", new Shooting(Shooting.ShootingType.TOMBRAISER, 2, 0));
                 break;
 
             // ICE AGE
