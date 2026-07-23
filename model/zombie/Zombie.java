@@ -155,6 +155,11 @@ public class Zombie implements Damageable {
 
     public boolean isDead() { return hp <= 0; }
 
+    @Override
+    public String name() {
+        return name;
+    }
+
     // --- Damageable ---
 
     @Override

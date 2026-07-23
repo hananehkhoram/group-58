@@ -13,7 +13,7 @@ advance time -t 10 ticks
 show map
 zombies info
 
-cheat spawn-zombie -t knight -l (8, 0)
+cheat spawn-zombie -t Gargantuar -l (8, 0)
 
  cheat add -n 20000 suns
 plant plant -t Peashooter -l (1, 0)

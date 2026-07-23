@@ -6,14 +6,13 @@ public enum ArmorType {
     BRICK(2200, false),
     SHOULDER_ARMOR(1600, true),  // شوالیه: شانه‌بند — magnetshroom نمی‌تونه بقاپدش
     SHOULDER_CROWN(1600, true),  // شوالیه: کلاهخود — magnetshroom (صفحه ۳۴ سند)
-    NEWSPAPER(800, false),
+    NEWSPAPER(190, false),
     SARCOPHAGUS(0, false),
     SURFBOARD(0, false),
     KNIGHT_SHIELD(0, true),
     ARCADE(0, false),
     PARASOL(0, false),
-    PIANO(0, false),
-    DRAGON_IMP(0, false);
+    PIANO(0, false);
 
     public final int baseHealth;
     public final boolean metallic;

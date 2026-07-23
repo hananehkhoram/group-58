@@ -88,6 +88,7 @@ public class Projectile {
 
         switch (bulletType) {
             case FIRE:
+                if (target.name().equals("Imp Dragon")){break;}
                 target.takeDamage(damage * 2);
                 target.meltIce();
                 break;

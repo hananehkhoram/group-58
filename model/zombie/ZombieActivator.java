@@ -195,21 +195,13 @@ public class ZombieActivator {
             case "ZombieModernAllStar":
                 behaviors.put("damage", new Damage(
                         List.of(Damage.TargetType.PLANT, Damage.TargetType.HYPNOTIZED_ZOMBIE),
-                        0.2)); // TODO: ضریب دقیق کاهش سرعت طبق سند مشخص نیست؛ فعلاً تخمینی
+                        0.2));
                 break;
 
             case "ZombieLostCityJane": // Umbrella Leaf zombie
                 behaviors.put("deflector", new ProjectileDeflector(
-                        ProjectileDeflector.DeflectMode.BOUNCE,
-                        List.of("CabbageDefault","MegaCabbageDefault","KernelDefault",
-                                "ButterDefault","MelonDefault","MegaMelonDefault",
-                                "WinterMelonDefault","WinterMegaMelonDefault",
-                                "PepperpultDefault","AkeeDefault","MegaAkeeDefault",
-                                "SporeshroomDefault","BloomingHeartsDefault",
-                                "DusklobberDefault","AppleMortarDefault",
-                                "SlingPeaDefault","BuduhBoomDefaultProjectile",
-                                "DragonBruitDefault","DragonBabyBruitDefault"),
-                        160, 120, 0.9));
+                        ProjectileDeflector.DeflectMode.BLOCK,
+                        0, 0, 0.9));
                 break;
 
             case "ZombieArcade":
@@ -234,10 +226,6 @@ public class ZombieActivator {
                 behaviors.put("jumper", new Jumper(0, 0, 0, true));
                 behaviors.put("laser", new LaserShooting(
                         LaserShooting.GunType.DYNAMITE, 0, 0, 0));
-                break;
-
-            case "ZombieParasol":
-                behaviors.put("deflector", new ProjectileDeflector());
                 break;
 
             // NEON MIXTAPE

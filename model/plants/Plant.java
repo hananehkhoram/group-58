@@ -88,6 +88,11 @@ public class Plant implements Damageable {
     }
 
     @Override
+    public String name() {
+        return name;
+    }
+
+    @Override
     public void meltIce() {
         if (isIced) {
             damageIce(iceHp); // ذوب کامل؛ iceHp را صفر و isIced را false می‌کند

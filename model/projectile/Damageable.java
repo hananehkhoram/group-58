@@ -4,6 +4,7 @@ public interface Damageable {
     double getX();
     int getRow();
     boolean isDead();
+    String name ();
 
     void takeDamage(int amount);
 
