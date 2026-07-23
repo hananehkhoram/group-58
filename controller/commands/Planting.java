@@ -124,6 +124,6 @@ public class Planting implements Command {
 
         ctx.setCooldown(type, template.getRechargeTime());
         ConsoleView.showMessage("Planted %s at (%d, %d).", type, x, y);
-        ctx.recordPlantPlaced(newPlant, x, y);
+        ctx.recordPlantPlaced(newPlant, y, x);
     }
 }//plant plant -t <type> -l (<x>, <y>)

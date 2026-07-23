@@ -206,8 +206,8 @@ public class GameEngine {
                 continue;
             }
 
-            int totalRows = ctx.getPlantGrid().length;
-            int totalCols = ctx.getPlantGrid()[0].length;
+            int totalRows = Level.ROWS;
+            int totalCols = Level.COLS;
             if (p.getRow() < 0 || p.getRow() >= totalRows || p.getX() < -1 || p.getX() > totalCols) {
                 p.deactivate();
                 it.remove();
@@ -222,7 +222,7 @@ public class GameEngine {
                 }
             } else {
                 for (Zombie z : ctx.getAliveZombies()) {
-                    if (z.getRow() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.5) {
+                    if (z.getRow() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.4) {
                         ProjectileDeflector deflector = z.getDeflector();
                         Submerge submerge = z.getSubmerge();
 

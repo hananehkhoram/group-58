@@ -7,6 +7,7 @@ import model.mechanisms.GameEngine;
 import model.mechanisms.LawnMower;
 import model.mechanisms.Tile;
 import model.plants.Plant;
+import model.projectile.Projectile;
 import model.user.UserManager;
 import model.zombie.Zombie;
 import view.ConsoleView;
@@ -53,16 +54,26 @@ public class ShowMap implements Command {
                 String plantSymbol = (plant != null)
                         ? plant.getName().substring(0, Math.min(2, plant.getName().length()))
                         : "..";
+                StringBuilder projectileSymbol = new StringBuilder();
+                for (Projectile p : ctx.getProjectiles()) {
+                    if ((int) Math.round(p.getY()) == r && (int) Math.floor(p.getX()) == c){
+                        projectileSymbol.append("+");
+                    }
+                }
 
                 StringBuilder zombieSymbol = new StringBuilder();
                 for (Zombie z : ctx.getAliveZombies()) {
                     if ((int) Math.round(z.getY()) == r && (int) Math.floor(z.getX()) == c) {
+                        if (z.getArmor() != null && !z.getArmor().isDestroyed()){
+                            zombieSymbol.append("(");
+                        }
                         zombieSymbol.append("Z");
                     }
                 }
 
                 sb.append("[").append(terrainSymbol).append(plantSymbol)
-                        .append(zombieSymbol.isEmpty() ? "  " : zombieSymbol).append("]");
+                        .append(zombieSymbol.isEmpty() ? "  " : zombieSymbol).append("]")
+                        .append(projectileSymbol.isEmpty() ? "  " : projectileSymbol);
             }
             sb.append("\n");
         }

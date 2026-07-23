@@ -7,9 +7,11 @@ menu enter gamemenu
 menu enter chapter -c Ancient Egypt
 
 add plant -t PeaShooter
-add plant -t Sunflower
+add plant -t Sunflowers
 start game
-advance time -t 40 ticks
+advance time -t 10 ticks
+show map
+zombies info
 
 cheat spawn-zombie -t Default -l (8, 0)
 
