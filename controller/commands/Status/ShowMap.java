@@ -44,10 +44,12 @@ public class ShowMap implements Command {
                     .append(" [Mower: ").append(mowers[r].isAvailable() ? "OK" : "USED").append("] ");
 
             for (int c = 0; c < cols; c++) {
+
                 Tile tile = engine.getTiles(c, r);
                 String terrainSymbol = terrainSymbol(tile);
 
                 Plant plant = (tile != null) ? tile.getPlant() : null;
+
                 String plantSymbol = (plant != null)
                         ? plant.getName().substring(0, Math.min(2, plant.getName().length()))
                         : "..";

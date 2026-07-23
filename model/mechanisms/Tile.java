@@ -54,12 +54,12 @@ public class Tile {
         return TerrainType.NORMAL;
     }
 
-    public Plant getPlant() { return ctx.getPlantGrid()[x][y]; }
+    public Plant getPlant() { return ctx.getPlantGrid()[y][x]; }
 
     public boolean setPlant(Plant plant) {
-        if (ctx.getPlantGrid()[x][y] != null) return false;
+        if (ctx.getPlantGrid()[y][x] != null) return false;
         if (!isPlantable()) return false;
-        ctx.getPlantGrid()[x][y] = plant;
+        ctx.getPlantGrid()[y][x] = plant;
         return true;
     }
 
