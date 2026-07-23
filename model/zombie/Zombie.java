@@ -188,6 +188,24 @@ public class Zombie implements Damageable {
         }
     }
 
+    public Armor removeArmor() {
+        Armor primary = getArmor();
+        if (primary != null && !primary.isDestroyed()) {
+            primary.afterDestroy(this);
+            behaviors.remove("armor");
+
+            return primary;
+        }
+        Armor secondary = getSecondaryArmor();
+        if (secondary != null && !secondary.isDestroyed()) {
+            secondary.afterDestroy(this);
+            behaviors.remove("armor2");
+            return secondary;
+        }
+
+        return null;
+    }
+
     // --- Getters / Setters ---
 
     public String getId() { return id; }
@@ -265,14 +283,8 @@ public class Zombie implements Damageable {
         }
         return sb.toString();
     }
-
     public boolean isBoss() {
         return isBoss;
     }
-
-    public void setBoss(boolean boss) {
-        isBoss = boss;
-    }
-
     public void setRow (int r){this.y = r;}
 }

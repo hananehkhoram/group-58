@@ -295,25 +295,16 @@ public class Plant implements Damageable {
     public void setHasLilyPadUnderneath(boolean hasLilyPadUnderneath) {
         this.hasLilyPadUnderneath = hasLilyPadUnderneath;
     }
-
     public int getHp() {
         return hp;
     }
-
     public boolean isPlantFoodActive() {
         return plantFoodActive;
     }
-
     public void setPlantFoodActive(boolean plantFoodActive) {
         this.plantFoodActive = plantFoodActive;
     }
-
     private Set<BehaviorKey> activeBehaviors = new HashSet<>();
-
-    public boolean hasBehavior(BehaviorKey key) {
-    return activeBehaviors.contains(key);
-    }
-
     public void addBehavior(BehaviorKey key) {
     this.activeBehaviors.add(key);
     }
