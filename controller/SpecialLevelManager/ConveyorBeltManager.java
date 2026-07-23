@@ -38,13 +38,11 @@ public class ConveyorBeltManager implements LevelManager{
 
     @Override
     public boolean canPlant(String plantName, GameContext context) {
-        // چک می‌کند آیا این گیاه روی نوار نقاله هست یا نه
         return conveyorBelt.stream().anyMatch(p -> p.getName().equalsIgnoreCase(plantName));
     }
 
     @Override
     public void onPlantSuccess(Plant plantedPlant, GameContext context) {
-        // حذف گیاه از روی نوار پس از کاشت موفق
         conveyorBelt.removeIf(p -> p.getName().equalsIgnoreCase(plantedPlant.getName()));
     }
 
@@ -53,7 +51,11 @@ public class ConveyorBeltManager implements LevelManager{
             List<Plant> pool = context.getLevel().getConveyorPlantPool();
             if (pool != null && !pool.isEmpty()) {
                 java.util.Random random = new java.util.Random();
-                Plant randomPlantTemplate = pool.get(random.nextInt(pool.size()));
+
+                Plant randomPlantTemplate;
+                do {
+                    randomPlantTemplate = pool.get(random.nextInt(pool.size()));
+                } while (randomPlantTemplate.getName().equalsIgnoreCase("sunflower"));
 
                 Plant newPlantCard = plantFactory.create(randomPlantTemplate.getName());
 
@@ -65,5 +67,9 @@ public class ConveyorBeltManager implements LevelManager{
 
     public List<Plant> getConveyorBelt() {
         return conveyorBelt;
+    }
+    @Override
+    public boolean disableSkySun() {
+        return true;
     }
 }

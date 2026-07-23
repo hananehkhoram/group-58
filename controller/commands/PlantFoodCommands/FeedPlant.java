@@ -29,7 +29,7 @@ public class FeedPlant implements Command {
             ConsoleView.showMessage("You have no plant food to use.");
             return;
         }
-        Plant plant = ctx.getPlantGrid()[x][y];
+        Plant plant = ctx.getPlantGrid()[y][x];
         if (plant == null) {
             ConsoleView.showMessage("There is no plant at (" + x + ", " + y + ").");
             return;
