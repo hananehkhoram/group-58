@@ -2,24 +2,19 @@ package model.zombie.behavior;
 
 import model.GameContext;
 import model.plants.Plant;
+import model.plants.Tag;
+import model.projectile.BulletType;
+import model.projectile.Projectile;
 import model.zombie.Zombie;
 
 public class Area implements Behaviors {
     private String season;
-    private int torchReach;
-    private java.util.List<String> targetPlants;
     private boolean torchLit = true;
 
     public Area() {}
 
     public Area(String season) {
         this.season = season;
-    }
-
-    // For ZombieExplorer
-    public Area(int torchReach, java.util.List<String> targetPlants) {
-        this.torchReach = torchReach;
-        this.targetPlants = targetPlants;
     }
 
     @Override
@@ -29,13 +24,19 @@ public class Area implements Behaviors {
 
         int row = zombie.getRow();
         int totalCols = ctx.getPlantGrid()[0].length;
-        int frontCol = zombie.isMovingBackward()
-                ? (int) Math.ceil(zombie.getX()) + 1
-                : (int) Math.floor(zombie.getX()) - 1;
-        if (frontCol < 0 || frontCol >= totalCols) return;
-        Plant target = ctx.getPlantGrid()[row][frontCol];
-        if (target != null && !target.isDead()) {
-            target.takeDamage(Integer.MAX_VALUE);
+
+        for (int col = 0; col < totalCols; col++) {
+            Plant target = ctx.getPlantGrid()[row][col];
+            if (target != null && !target.isDead()) {
+
+                double distance = zombie.isMovingBackward()
+                        ? target.getCol() - zombie.getX()
+                        : zombie.getX() - target.getCol();
+
+                if (distance > 0 && distance < 1.0) {
+                    target.takeDamage(Integer.MAX_VALUE);
+                }
+            }
         }
     }
 
@@ -46,29 +47,30 @@ public class Area implements Behaviors {
         for (int col = 0; col < totalCols; col++) {
             Plant p = ctx.getPlantGrid()[row][col];
             if (p == null || p.isDead()) continue;
-            if (Math.abs(p.getCol() - zombie.getX()) > 1.0) continue;
 
-            if (p.hasWaterTag()) {
-                torchLit = false;
-            } else if (p.hasFireTag()) {
-                torchLit = true;
+            if (Math.abs(p.getCol() - zombie.getX()) <= 1.0) {
+                if (p.hasTheTag(Tag.ICE)) {
+                    torchLit = false;
+                }
+                else if (p.hasTheTag(Tag.FIRE)) {
+                    torchLit = true;
+                }
+            }
+        }
+
+        for (Projectile p : ctx.getProjectiles()) {
+            if (p.getRow() == zombie.getRow() && Math.abs(p.getX() - zombie.getX()) < 0.5) {
+                if (p.getBulletType() == BulletType.ICE) {
+                    torchLit = false;
+                } else if (p.getBulletType() == BulletType.FIRE) {
+                    torchLit = true;
+                }
             }
         }
 
         if (zombie.isIced()) {
             torchLit = false;
         }
-        // TODO: «پرتابه‌ی آتشین روشنش می‌کنه» هنوز جایی وصل نیست — هیچ فلگ عمومی «آتش گرفتن» روی Zombie نداریم
     }
 
-    @Override
-    public void onHit(Zombie zombie, int damage) {}
-
-    @Override
-    public boolean isDestroyed() { return false; }
-
-    public boolean isTorchLit() { return torchLit; }
-    public String getSeason() { return season; }
-    public int getTorchReach() { return torchReach; }
-    public java.util.List<String> getTargetPlants() { return targetPlants; }
 }

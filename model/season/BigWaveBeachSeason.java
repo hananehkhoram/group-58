@@ -4,6 +4,7 @@ import model.GameContext;
 import model.GridCell;
 import model.level.Level;
 import model.plants.Plant;
+import model.plants.Tag;
 import view.ConsoleView;
 
 import java.util.List;
@@ -62,7 +63,7 @@ public class BigWaveBeachSeason extends Season{
                                 if (isWaterCell(r, c, ctx)) {
                                         Plant plant = grid[r][c];
                                         if (plant != null) {
-                                                if (!plant.hasWaterTag() && !plant.isHasLilyPadUnderneath()) {
+                                                if (!plant.hasTheTag(Tag.WATER) && !plant.isHasLilyPadUnderneath()) {
                                                         ConsoleView.simplePrint(plant.getName() + " drowned at [" + r + "," + c + "]!\n");
                                                         grid[r][c] = null;
                                                         ctx.getAlivePlants().remove(plant);
