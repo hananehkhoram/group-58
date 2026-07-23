@@ -110,4 +110,4 @@ public class Planting implements Command {
         ConsoleView.showMessage("Planted %s at (%d, %d).", type, x, y);
         ctx.recordPlantPlaced(newPlant, x, y);
     }
-}
+}//plant plant -t <type> -l (<x>, <y>)

@@ -11,7 +11,10 @@ add plant -t Sunflower
 start game
 advance time -t 40 ticks
 
+cheat spawn-zombie -t Default -l (8, 0)
+
+ cheat add -n 20000 suns
 plant plant -t Peashooter -l (1, 1)
 plant plant -t Sunflower -l (1, 2)
- cheat add -n 20 suns
+cheat remove-cooldown
  show sun amount

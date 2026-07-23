@@ -67,4 +67,4 @@ public class ShowTileStatus implements Command {
 
         ConsoleView.showMessage(sb.toString());
     }
-}
+}//show tile status -l (x, y)

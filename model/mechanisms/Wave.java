@@ -111,7 +111,6 @@ public class Wave {
 
             Zombie zombie = factory.create(name);
             placeZombie(ctx, zombie, random);
-
             ctx.addZombie(zombie);
             spawnedZombies.add(zombie);
             remainingBudget -= cost;
@@ -131,7 +130,7 @@ public class Wave {
 
     private void placeZombie(GameContext ctx, Zombie zombie, Random random) {
         int lane = random.nextInt(ctx.getLevel().getRows());
-        double col = ctx.getLevel().getColumns() - 1;
+        double col = ctx.getLevel().getColumns();
 
         if (isAncientEgyptFlagWave(ctx)) {
             int colOffset = random.nextInt(4) + 1;

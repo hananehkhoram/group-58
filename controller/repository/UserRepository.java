@@ -77,6 +77,12 @@ public class UserRepository implements AssetRepository<User> {
                         .map(e -> e.getKey() + PLANT_SEP + e.getValue())
                         .toList());
 
+        String storedBoostsStr = String.join(LIST_SEP,
+                u.getStoredBoosts().entrySet().stream()
+                        .filter(java.util.Map.Entry::getValue)
+                        .map(java.util.Map.Entry::getKey)
+                        .toList());
+
         StringBuilder greenhouseSb = new StringBuilder();
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 5; j++) {
@@ -125,8 +131,9 @@ public class UserRepository implements AssetRepository<User> {
                 seedPackets,                                                  // 26
                 greenhouseSb.toString(),                                      // 27
                 dailyOffer,                                                   // 28
-                String.valueOf(u.getWinStreakAtMaxDifficulty()),              // 29 ← جدید
-                questProgressStr                                              // 30 ← جدید
+                String.valueOf(u.getWinStreakAtMaxDifficulty()),              // 29
+                questProgressStr,                                              // 30
+                storedBoostsStr                                                // 31
         );
     }
 
@@ -244,6 +251,11 @@ public class UserRepository implements AssetRepository<User> {
                 }
             }
             u.setAllQuestProgress(progress);
+        }
+        if (f.length > 31 && !f[31].isBlank()) {
+            for (String plantName : f[31].split(LIST_SEP)) {
+                u.addStoredBoost(plantName);
+            }
         }
 
         return u;

@@ -6,18 +6,20 @@ import model.GameContext;
 import model.zombie.Zombie;
 import view.ConsoleView;
 
-public class ShowZombiesInfo implements Command {
+public class ReleaseTheNuke implements Command {
     private MenuManager menuManager;
-    public ShowZombiesInfo(MenuManager menuManager) {
+
+    public ReleaseTheNuke(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
+
     @Override
     public void execute(String[] args) {
         GameContext ctx = menuManager.getCtx();
-        for (Zombie z : ctx.getAliveZombies()){
-            ConsoleView.showMessage(z.zombieInfo());
+        for (Zombie z : ctx.getAliveZombies()) {
+            z.setHp(0);
         }
+        ConsoleView.showMessage("All Zombies are killed.");
     }
-
-    //zombies info
 }
+

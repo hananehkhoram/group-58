@@ -4,6 +4,7 @@ import controller.MenuManager;
 import model.GameContext;
 import model.MiniGame.VaseGame.Vase;
 import model.MiniGame.VaseGame.VaseContent;
+import model.plants.PlantActivator;
 import model.projectile.Projectile;
 import model.level.Level;
 import model.plants.Plant;
@@ -75,17 +76,30 @@ public class GameEngine {
             return;
         }
 
-        Wave previousWave = waves[ctx.getCurrentWaveIndex() - 1];
+        if (ctx.getCurrentWaveIndex() >= waves.length) {
+            ctx.setWaveSpawningFinished(true);
+            return;
+        }
 
+        if (waveTimer > 0) {
+            waveTimer -= deltaTime;
+            return;
+        }
+
+        Wave previousWave = waves[ctx.getCurrentWaveIndex() - 1];
         if (previousWave.isThresholdReached()) {
-            if (ctx.getCurrentWaveIndex() < waves.length) {
-                spawnWave(waves[ctx.getCurrentWaveIndex()]);
-            } else {
-                ctx.setWaveSpawningFinished(true);
+            Wave nextWave = waves[ctx.getCurrentWaveIndex()];
+
+            if (!isFirstWaveTimerSet && nextWave.getWaveDelay() > 0) {
+                this.waveTimer = nextWave.getWaveDelay();
+                this.isFirstWaveTimerSet = true;
+                return;
             }
+
+            spawnWave(nextWave);
+            this.isFirstWaveTimerSet = false;
         }
     }
-
     private void spawnWave(Wave wave) {
         wave.start(ctx);
         ctx.incrementWaveIndex();
@@ -155,10 +169,11 @@ public class GameEngine {
         while (it.hasNext()) {
             Plant p = it.next();
             p.update(ctx);
+            PlantActivator.activate(p, ctx, this);
             if (p.getHp() <= 0) {
                 ctx.getPlantGrid()[p.getRow()][p.getCol()] = null;
                 it.remove();
-                ctx.incrementPlantsLost();
+                ctx.incrementPlantsLost(p);
             }
         }
     }

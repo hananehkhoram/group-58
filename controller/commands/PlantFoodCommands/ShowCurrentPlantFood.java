@@ -18,4 +18,4 @@ public class ShowCurrentPlantFood implements Command {
         User user = UserManager.getInstance().getCurrentUser();
         ConsoleView.showMessage("You have %d plant food",user.getPlantFoodCount());
     }
-}
+}//show current plant food
