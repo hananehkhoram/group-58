@@ -60,7 +60,7 @@ public class Jumper implements Behaviors {
     /** Imp / DragonImp — پرتاب‌شده توسط Gargantuar */
     public Jumper(JumpVariant variant) {
         this.variant = variant;
-        this.landed = true; // با پای زمین شروع می‌شه؛ فقط throwFrom() (توسط Gargantuar) بی‌زمینش می‌کنه
+        this.landed = true;
         this.fireDamageMultiplier = (variant == JumpVariant.DRAGON_IMP) ? 0.0 : 1.0;
     }
 

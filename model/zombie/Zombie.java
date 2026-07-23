@@ -188,6 +188,24 @@ public class Zombie implements Damageable {
         }
     }
 
+    public Armor removeArmor() {
+        Armor primary = getArmor();
+        if (primary != null && !primary.isDestroyed()) {
+            primary.afterDestroy(this);
+            behaviors.remove("armor");
+
+            return primary;
+        }
+        Armor secondary = getSecondaryArmor();
+        if (secondary != null && !secondary.isDestroyed()) {
+            secondary.afterDestroy(this);
+            behaviors.remove("armor2");
+            return secondary;
+        }
+
+        return null;
+    }
+
     // --- Getters / Setters ---
 
     public String getId() { return id; }
@@ -242,7 +260,7 @@ public class Zombie implements Damageable {
     public void setBehaviors (Map <String, Behaviors> behaviors){this.behaviors = behaviors;}
 
     public String zombieInfo() {
-        return String.format("[%s] \n   HP:%d \n    Armors:%s \n    Position:%f , %f \n     Effects:%s",
+        return String.format("[%s] \n   HP:%d \n    Armors:%s \n    Position: %f , %f \n    Effects:%s",
                 name, hp, getStringArmor(), x, y, getStringEffects());
     }
 
@@ -250,7 +268,7 @@ public class Zombie implements Damageable {
         StringBuilder sb = new StringBuilder();
         for (Behaviors b : behaviors.values()) {
             if (b instanceof Armor) {
-                sb.append("\n").append(((Armor) b).getArmorType())
+                sb.append("\n       ").append(((Armor) b).getArmorType())
                         .append(": ").append(((Armor) b).getArmorHP());
             }
         }
@@ -265,14 +283,8 @@ public class Zombie implements Damageable {
         }
         return sb.toString();
     }
-
     public boolean isBoss() {
         return isBoss;
     }
-
-    public void setBoss(boolean boss) {
-        isBoss = boss;
-    }
-
     public void setRow (int r){this.y = r;}
 }

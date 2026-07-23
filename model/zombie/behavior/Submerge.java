@@ -1,6 +1,7 @@
 package model.zombie.behavior;
 
 import model.GameContext;
+import model.level.Level;
 import model.plants.Plant;
 import model.zombie.Zombie;
 import java.util.List;
@@ -41,8 +42,8 @@ public class Submerge implements Behaviors {
     public void onTick(Zombie zombie, GameContext ctx) {
         int row = zombie.getRow();
         int col = (int) zombie.getX();
-        int totalRows = ctx.getPlantGrid().length;
-        int totalCols = ctx.getPlantGrid()[0].length;
+        int totalRows = Level.ROWS;
+        int totalCols = Level.COLS;
 
         Plant target = (row >= 0 && row < totalRows && col >= 0 && col < totalCols)
                 ? ctx.getPlantGrid()[row][col] : null;

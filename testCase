@@ -9,12 +9,27 @@ menu enter chapter -c Ancient Egypt
 add plant -t PeaShooter
 add plant -t Sunflower
 start game
-advance time -t 40 ticks
+advance time -t 10 ticks
+show map
+zombies info
 
-cheat spawn-zombie -t Default -l (8, 0)
+cheat spawn-zombie -t knight -l (8, 0)
 
  cheat add -n 20000 suns
-plant plant -t Peashooter -l (1, 1)
-plant plant -t Sunflower -l (1, 2)
+plant plant -t Peashooter -l (1, 0)
+plant plant -t Sunflower -l (0, 0)
 cheat remove-cooldown
+plant plant -t Peashooter -l (1, 1)
+plant plant -t Sunflower -l (0, 1)
+cheat remove-cooldown
+plant plant -t Peashooter -l (1, 2)
+plant plant -t Sunflower -l (0, 2)
+cheat remove-cooldown
+plant plant -t Peashooter -l (1, 3)
+plant plant -t Sunflower -l (0, 3)
+cheat remove-cooldown
+plant plant -t Peashooter -l (1, 4)
+plant plant -t Sunflower -l (0, 4)
+cheat remove-cooldown
+
  show sun amount

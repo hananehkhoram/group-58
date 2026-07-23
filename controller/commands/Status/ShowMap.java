@@ -7,8 +7,10 @@ import model.mechanisms.GameEngine;
 import model.mechanisms.LawnMower;
 import model.mechanisms.Tile;
 import model.plants.Plant;
+import model.projectile.Projectile;
 import model.user.UserManager;
 import model.zombie.Zombie;
+import model.zombie.behavior.Armor;
 import view.ConsoleView;
 
 public class ShowMap implements Command {
@@ -44,23 +46,38 @@ public class ShowMap implements Command {
                     .append(" [Mower: ").append(mowers[r].isAvailable() ? "OK" : "USED").append("] ");
 
             for (int c = 0; c < cols; c++) {
-                Tile tile = engine.getTiles(r, c);
+
+                Tile tile = engine.getTiles(c, r);
                 String terrainSymbol = terrainSymbol(tile);
 
                 Plant plant = (tile != null) ? tile.getPlant() : null;
+
                 String plantSymbol = (plant != null)
                         ? plant.getName().substring(0, Math.min(2, plant.getName().length()))
                         : "..";
+                StringBuilder projectileSymbol = new StringBuilder();
+                for (Projectile p : ctx.getProjectiles()) {
+                    if ((int) Math.round(p.getY()) == r && (int) Math.floor(p.getX()) == c){
+                        if (!p.isFromZombie()) projectileSymbol.append("+");
+                        if (p.isFromZombie()) projectileSymbol.append("-");
+                    }
+                }
 
                 StringBuilder zombieSymbol = new StringBuilder();
                 for (Zombie z : ctx.getAliveZombies()) {
                     if ((int) Math.round(z.getY()) == r && (int) Math.floor(z.getX()) == c) {
-                        zombieSymbol.append("Z");
+                        if (z.getArmor() != null && !z.getArmor().isDestroyed()) {
+                            zombieSymbol.append("Z");
+                        }else {
+                                zombieSymbol.append("z");
+                        }
+
                     }
                 }
 
                 sb.append("[").append(terrainSymbol).append(plantSymbol)
-                        .append(zombieSymbol.isEmpty() ? "  " : zombieSymbol).append("]");
+                        .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]")
+                        .append(projectileSymbol.isEmpty() ? " " : projectileSymbol);
             }
             sb.append("\n");
         }

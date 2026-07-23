@@ -206,8 +206,8 @@ public class GameEngine {
                 continue;
             }
 
-            int totalRows = ctx.getPlantGrid().length;
-            int totalCols = ctx.getPlantGrid()[0].length;
+            int totalRows = Level.ROWS;
+            int totalCols = Level.COLS;
             if (p.getRow() < 0 || p.getRow() >= totalRows || p.getX() < -1 || p.getX() > totalCols) {
                 p.deactivate();
                 it.remove();
@@ -222,7 +222,7 @@ public class GameEngine {
                 }
             } else {
                 for (Zombie z : ctx.getAliveZombies()) {
-                    if (z.getRow() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.5) {
+                    if (z.getRow() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.4) {
                         ProjectileDeflector deflector = z.getDeflector();
                         Submerge submerge = z.getSubmerge();
 
@@ -309,7 +309,7 @@ public class GameEngine {
         Tile[][] grid = new Tile[Level.ROWS][Level.COLS];
         for (int r = 0; r < Level.ROWS; r++) {
             for (int c = 0; c < Level.COLS; c++) {
-                grid[r][c] = new Tile(r, c, ctx);
+                grid[r][c] = new Tile(c,r, ctx);
             }
         }
         return grid;
@@ -324,8 +324,8 @@ public class GameEngine {
     }
 
     public Tile getTiles(int x, int y) {
-        if (x < 0 || x >= tiles.length || y < 0 || y >= tiles[0].length) return null;
-        return tiles[x][y];
+        if (y < 0 || y >= tiles.length || x < 0 || x >= tiles[0].length) return null;
+        return tiles[y][x];
     }
 
     public void smashVase(int row, int col, GameContext ctx) {

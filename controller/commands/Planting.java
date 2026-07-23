@@ -33,16 +33,31 @@ public class Planting implements Command {
             return;
         }
 
+        LevelManager levelManager = ctx.getLevelManager();
+        boolean isConveyorLevel = levelManager instanceof controller.SpecialLevelManager.ConveyorBeltManager;
+
         Plant template = null;
-        for (Plant p : ctx.getActivePlants()) {
-            if (p.getName().equalsIgnoreCase(type)) { template = p; break; }
-        }
-        if (template == null) {
-            ConsoleView.showMessage("You haven't selected this plant for this level.");
-            return;
+
+        if (isConveyorLevel) {
+            controller.SpecialLevelManager.ConveyorBeltManager conveyorManager =
+                    (controller.SpecialLevelManager.ConveyorBeltManager) levelManager;
+            for (Plant p : conveyorManager.getConveyorBelt()) {
+                if (p.getName().equalsIgnoreCase(type)) { template = p; break; }
+            }
+            if (template == null) {
+                ConsoleView.showMessage("This plant is not on the conveyor belt.");
+                return;
+            }
+        } else {
+            for (Plant p : ctx.getActivePlants()) {
+                if (p.getName().equalsIgnoreCase(type)) { template = p; break; }
+            }
+            if (template == null) {
+                ConsoleView.showMessage("You haven't selected this plant for this level.");
+                return;
+            }
         }
 
-        LevelManager levelManager = ctx.getLevelManager();
         if (levelManager != null && !levelManager.canPlant(type, ctx)) {
             ConsoleView.showMessage("You can't plant this here.");
             return;
@@ -54,7 +69,7 @@ public class Planting implements Command {
             return;
         }
 
-        if (ctx.isOnCooldown(type)) {
+        if (ctx.isOnCooldown(type) && !isConveyorLevel) {
             ConsoleView.showMessage("This plant is still recharging.");
             return;
         }
@@ -93,10 +108,11 @@ public class Planting implements Command {
             return;
         }
 
-        ctx.setCooldown(type, template.getRechargeTime());
+        if (!isConveyorLevel) ctx.setCooldown(type, template.getRechargeTime());
+
         Plant newPlant = ctx.getPlantFactory().create(String.valueOf(template.getName()));
         tile.setPlant(newPlant);
-        ctx.getPlantGrid()[x][y] = newPlant;
+        ctx.getPlantGrid()[y][x] = newPlant;
         ctx.getAlivePlants().add(newPlant);
 
         User currentUser = UserManager.getInstance().getCurrentUser();
@@ -118,6 +134,6 @@ public class Planting implements Command {
 
         ctx.setCooldown(type, template.getRechargeTime());
         ConsoleView.showMessage("Planted %s at (%d, %d).", type, x, y);
-        ctx.recordPlantPlaced(newPlant, x, y);
+        ctx.recordPlantPlaced(newPlant, y, x);
     }
 }//plant plant -t <type> -l (<x>, <y>)
