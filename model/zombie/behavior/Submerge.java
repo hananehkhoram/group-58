@@ -49,12 +49,10 @@ public class Submerge implements Behaviors {
         boolean hasLiveTarget = target != null && !target.isDead();
 
         if (submerged) {
-            // زیر آب: فقط اگه گیاهی که میخواد بخوره جلوش باشه، میاد بالا سطح آب
             if (hasLiveTarget && willSurfaceFor(target.getName())) {
                 surface();
             }
         } else if (!hasLiveTarget) {
-            // گیاهی که براش اومده بالا خورده شده/از بین رفته؛ دوباره میره زیر آب
             submerge();
         }
     }

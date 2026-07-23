@@ -6,14 +6,9 @@ import model.zombie.Zombie;
 
 public class Area implements Behaviors {
     private String season;
-
-    // Explorer: max torch reach in grid units
     private int torchReach;
-
-    // Explorer: specific plants it can eat (includelist)
     private java.util.List<String> targetPlants;
-
-    private boolean torchLit = true; // مشعل با روشن شروع میشه
+    private boolean torchLit = true;
 
     public Area() {}
 
@@ -38,15 +33,12 @@ public class Area implements Behaviors {
                 ? (int) Math.ceil(zombie.getX()) + 1
                 : (int) Math.floor(zombie.getX()) - 1;
         if (frontCol < 0 || frontCol >= totalCols) return;
-
-        // گیاهانی که «کمتر از یک خانه جلویش» هستن رو نابود می‌کنه
         Plant target = ctx.getPlantGrid()[row][frontCol];
         if (target != null && !target.isDead()) {
             target.takeDamage(Integer.MAX_VALUE);
         }
     }
 
-    /** گیاهان آتشین/یخی مجاور، مشعل رو روشن/خاموش می‌کنن */
     private void updateTorchState(Zombie zombie, GameContext ctx) {
         int row = zombie.getRow();
         int totalCols = ctx.getPlantGrid()[0].length;
@@ -54,7 +46,7 @@ public class Area implements Behaviors {
         for (int col = 0; col < totalCols; col++) {
             Plant p = ctx.getPlantGrid()[row][col];
             if (p == null || p.isDead()) continue;
-            if (Math.abs(p.getCol() - zombie.getX()) > 1.0) continue; // فقط مجاورت خیلی نزدیک
+            if (Math.abs(p.getCol() - zombie.getX()) > 1.0) continue;
 
             if (p.hasWaterTag()) {
                 torchLit = false;
@@ -63,7 +55,6 @@ public class Area implements Behaviors {
             }
         }
 
-        // طبق سند، پرتابه‌های یخی هم مشعل رو خاموش می‌کنن؛ چون فلگ یخ‌زدگی زامبی عمومیه، از همون استفاده می‌کنیم
         if (zombie.isIced()) {
             torchLit = false;
         }
