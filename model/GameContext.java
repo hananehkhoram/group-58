@@ -237,6 +237,7 @@ public class GameContext {
 
     public void incrementPlantsLost(Plant p) {
         this.totalLostPlants++;
+        resetKillStreak();
         ConsoleView.showMessage("Plant "+p.getName()+" at "+p.getCol()+", "+p.getRow()+" is destroyed.");
     }
 
