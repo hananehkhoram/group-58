@@ -33,7 +33,7 @@ cheat remove-cooldown
 plant plant -t SunFlower -l (5, 0)
 
  show sun amount
- advance time -t 10 ticks
+ advance time -t 100 ticks
  show map
 
  zombies info

@@ -291,7 +291,8 @@ public class Zombie implements Damageable {
     }
     public void setRow (int r){this.y = r;}
 
-    public boolean searchEffect(Effects effects) {
-        return this.effects.contains(effects);
+    public boolean searchEffect(Effects effect) {
+        if (effect == null || this.effects == null) return false;
+        return this.effects.contains(effect);
     }
 }

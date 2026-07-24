@@ -1,12 +1,12 @@
 package model.zombie;
 
 import model.zombie.behavior.*;
+import model.zombie.behavior.ArmorType;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import model.zombie.behavior.ArmorType;
 
 public class ZombieActivator {
 
@@ -126,30 +126,7 @@ public class ZombieActivator {
                 break;
 
             case "ZombieBeachSnorkel":
-                behaviors.put("submerge", new Submerge(
-                        List.of("ghostpepper","homingthistle","jalapeno","cherry_bomb","squash",
-                                "iceburg","lavaguava","strawburst","electricblueberry","grapeshot",
-                                "cabbagepult","akee","melonpult","kernelpult","wintermelon","banana",
-                                "phatbeet","kiwibeast","sapfling","pepperpult","sporeshroom",
-                                "shrinkingviolet","bloominghearts","dusklobber","applemortar",
-                                "witchhazel","missiletoe","hotdate","tanglekelp","blastberry",
-                                "blastspinner","frostbonnet","hammeruit","devourbloom"),
-                        List.of("banana","ghostpepper","homingthistle","chomper","jalapeno",
-                                "cherry_bomb","squash","iceburg","lavaguava","toadstool",
-                                "strawburst","electricblueberry","grapeshot","jackolantern",
-                                "cabbagepult","akee","melonpult","kernelpult","wintermelon",
-                                "phatbeet","kiwibeast","sapfling","pepperpult","sporeshroom",
-                                "shrinkingviolet","bloominghearts","dusklobber","applemortar",
-                                "witchhazel","missiletoe","hotdate","tanglekelp","blastberry",
-                                "solarsage","guardshroom","blastspinner","hammeruit"),
-                        List.of("bowlingbulb","ghostpepper","homingthistle","chomper","fumeshroom",
-                                "snapdragon","coconutcannon","bloomerang","spikeweed","spikerock",
-                                "guacodile","laser_bean","firepeashooter","lavaguava","toadstool",
-                                "cabbagepult","akee","melonpult","kernelpult","wintermelon","banana",
-                                "phatbeet","kiwibeast","coldsnapdragon","sapfling","pepperpult",
-                                "sporeshroom","shrinkingviolet","dandelion","applemortar","witchhazel",
-                                "parsnip","missiletoe","shadowpeashooter","tanglekelp","ultomato",
-                                "solarsage","frostbonnet","devourbloom","brainstem")));
+                behaviors.put("submerge", new Submerge());
                 break;
 
             // DARK AGES
