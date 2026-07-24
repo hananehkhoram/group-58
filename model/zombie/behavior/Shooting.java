@@ -1,10 +1,8 @@
 package model.zombie.behavior;
 
-import controller.repository.ZombieRepository;
 import controller.repository.factory.ZombieFactory;
 import model.GameContext;
 import model.level.Level;
-import model.mechanisms.TerrainType;
 import model.plants.Plant;
 import model.projectile.BulletType;
 import model.projectile.Projectile;
@@ -12,6 +10,8 @@ import model.projectile.TrajectoryType;
 import model.season.Grave;
 import model.zombie.Zombie;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Shooting implements Behaviors {
@@ -20,11 +20,10 @@ public class Shooting implements Behaviors {
     private int rate;             // shots per interval
     private int amount;           // projectile count
     private int ammo;             // TombRaiser: tombstone count remaining
-    private int timeBetweenCasts; // ms between cast sequences
     private boolean imped = false;
     private boolean hasShot;
 
-    private int lastShotSecond = 1 ;
+    private int lastShotSecond = 1;
 
     public Shooting(ShootingType shootingType, int rate, int amount) {
         this.shootingType = shootingType;
@@ -35,12 +34,66 @@ public class Shooting implements Behaviors {
     @Override
     public void onTick(Zombie zombie, GameContext ctx) {
         switch (shootingType) {
-            case HUNTER -> shootIceShard(zombie, ctx);
-            // FISHERMAN بعداً
+            case HUNTER -> handleShooter(zombie, ctx, BulletType.ICE, 5);
+            case OCTOPUS -> handleShooter(zombie, ctx, BulletType.OCTOPUS, 6);
             case GARGANTUAR -> shootImp(zombie, ctx);
-            case TOMBRAISER -> raiseTomb (zombie, ctx);
+            case TOMBRAISER -> raiseTomb(zombie, ctx);
+            // FISHERMAN بعداً
             default -> {}
         }
+    }
+
+    private void handleShooter(Zombie zombie, GameContext ctx, BulletType bulletType, int cooldownSeconds) {
+        int currentSecond = ctx.getTimeManager().getTotalSeconds();
+        if (currentSecond - lastShotSecond < cooldownSeconds) return;
+
+        Plant target = findTargetPlant(zombie, ctx, bulletType);
+        if (target == null) return;
+
+        shootProjectile(zombie, ctx, bulletType);
+        lastShotSecond = currentSecond;
+    }
+
+    private void shootProjectile(Zombie zombie, GameContext ctx, BulletType bulletType) {
+        double speed = 0.8;
+
+        Projectile projectile = new Projectile(
+                10,
+                zombie.getX(),
+                zombie.getRow(),
+                zombie.getRow(),
+                speed,
+                bulletType,
+                TrajectoryType.STRAIGHT,
+                true,
+                null
+        );
+
+        ctx.getProjectiles().add(projectile);
+    }
+
+    private Plant findTargetPlant(Zombie zombie, GameContext ctx, BulletType bulletType) {
+        int row = zombie.getRow();
+        Plant nearestPlant = null;
+        double minDistance = Double.MAX_VALUE;
+
+        for (int c = 0; c < Level.COLS; c++) {
+            Plant p = ctx.getPlantGrid()[row][c];
+            if (p != null && !p.isDead() && c <= zombie.getX()) {
+
+                boolean isAlreadyAffected = (bulletType == BulletType.ICE && p.isIced()) ||
+                        (bulletType == BulletType.OCTOPUS && p.isOctopused());
+
+                if (!isAlreadyAffected) {
+                    double dist = zombie.getX() - c;
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        nearestPlant = p;
+                    }
+                }
+            }
+        }
+        return nearestPlant;
     }
 
     private void raiseTomb(Zombie zombie, GameContext ctx) {
@@ -48,7 +101,7 @@ public class Shooting implements Behaviors {
         int cooldown = 7;
         if (currentSecond - lastShotSecond < cooldown) return;
 
-        java.util.List<int[]> emptyTiles = new java.util.ArrayList<>();
+        List<int[]> emptyTiles = new ArrayList<>();
         for (int r = 0; r < Level.ROWS; r++) {
             for (int c = 0; c < Level.COLS; c++) {
                 boolean hasPlant = ctx.getPlantGrid()[r][c] != null;
@@ -77,7 +130,9 @@ public class Shooting implements Behaviors {
         }
 
         lastShotSecond = currentSecond;
-    }    private void shootImp(Zombie gargantuar, GameContext ctx) {
+    }
+
+    private void shootImp(Zombie gargantuar, GameContext ctx) {
         if (gargantuar.getHp() > 1800 || imped) {
             return;
         }
@@ -130,43 +185,7 @@ public class Shooting implements Behaviors {
         return imp;
     }
 
-
-    private void shootIceShard(Zombie zombie, GameContext ctx) {
-        int currentSecond = ctx.getTimeManager().getTotalSeconds();
-        int cooldown = 2;
-
-        if (currentSecond - lastShotSecond < cooldown) return;
-
-        Plant target = ctx.findNearestPlantInRow(zombie);
-        if (target == null) return;
-
-        Projectile shard = new Projectile(
-                10,
-                zombie.getX(), zombie.getRow(), zombie.getRow(),
-                0.15,
-                BulletType.ICE,
-                TrajectoryType.STRAIGHT,
-                true,
-                null
-        );
-        ctx.getProjectiles().add(shard);
-        lastShotSecond = currentSecond;
-    }
-
-    @Override
-    public void onHit(Zombie zombie, int damage) {}
-
-    @Override
-    public boolean isDestroyed() { return false; }
-
-    public void makeTomb() {}
-
-    public ShootingType getShootingType() { return shootingType; }
-    public int getRate() { return rate; }
-    public int getAmmo() { return ammo; }
-    public void setAmmo(int ammo) { this.ammo = ammo; }
-
     public enum ShootingType {
-        GARGANTUAR, TOMBRAISER, HUNTER, FISHERMAN
+        GARGANTUAR, TOMBRAISER, HUNTER, FISHERMAN, OCTOPUS
     }
 }

@@ -63,7 +63,7 @@ public class ActionBehavior implements Behaviors {
                 0,
                 zombie.getX(), zombie.getRow(), zombie.getRow(),
                 0.12,
-                BulletType.IMMOBILIZE,
+                BulletType.OCTOPUS,
                 TrajectoryType.STRAIGHT,
                 true, null
         );

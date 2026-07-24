@@ -5,12 +5,15 @@ import model.GameContext;
 import model.MiniGame.VaseGame.Vase;
 import model.MiniGame.VaseGame.VaseContent;
 import model.plants.PlantActivator;
+import model.projectile.BulletType;
 import model.projectile.Projectile;
 import model.level.Level;
 import model.plants.Plant;
 import model.plants.TargetingMode;
+import model.projectile.TrajectoryType;
 import model.zombie.Zombie;
 import model.zombie.behavior.Behaviors;
+import model.zombie.behavior.LaserShooting;
 import model.zombie.behavior.ProjectileDeflector;
 import model.zombie.behavior.Submerge;
 import view.ConsoleView;
@@ -21,20 +24,17 @@ import java.util.List;
 import java.util.Random;
 
 public class GameEngine {
-    private static final double ZOMBIE_SPAWN_X_OFFSET = 1.0;
     private static final double LOSS_X = 0.0;
     private final GameContext ctx;
     private Tile[][] tiles;
     private LawnMower[] lawnMowers;
     private final Random random = new Random();
     private MenuManager menuManager;
-    private int waveTimer = 0;
-    private boolean isFirstWaveTimerSet = false;
 
     public GameEngine(GameContext ctx, MenuManager menuManager) {
         this.ctx = ctx;
-        this.tiles = buildTiles(ctx);
-        this.lawnMowers = buildLawnMowers();
+        this.tiles = Tile.buildTiles(ctx);
+        this.lawnMowers = LawnMower.buildLawnMowers();
         this.menuManager = menuManager;
     }
 
@@ -99,7 +99,7 @@ public class GameEngine {
             Zombie z = it.next();
             z.update(ctx, deltaTime);
 
-            if (z.getX() <= LOSS_X) {
+            if (!z.isMovingBackward() && z.getX() <= LOSS_X) {
                 LawnMower mower = lawnMowers[(int) z.getY()];
                 if (!mower.isAvailable()) {
                     ctx.triggerPlayerLoss();
@@ -113,6 +113,7 @@ public class GameEngine {
                 for (Behaviors b : z.getBehaviors().values()) {
                     b.onDeath(z, ctx);
                 }
+                LootItem.tryDropLoot(ctx, (int) Math.floor(z.getX()), z.getRow());
                 it.remove();
                 ctx.incrementZombieKills();
                 deathsThisTick.add(z);
@@ -148,7 +149,6 @@ public class GameEngine {
         Iterator<Plant> it = ctx.getAlivePlants().iterator();
         while (it.hasNext()) {
             Plant p = it.next();
-            p.update(ctx);
             PlantActivator.activate(p, ctx, this);
             if (p.getHp() <= 0) {
                 ctx.getPlantGrid()[p.getRow()][p.getCol()] = null;
@@ -156,16 +156,6 @@ public class GameEngine {
                 ctx.incrementPlantsLost(p);
             }
         }
-    }
-
-    public boolean canPlacePlant(Plant p, int row, int col) {
-        if (row < 0 || row >= Level.ROWS) {
-            return false;
-        }
-        if (col < 0 || col >= Level.COLS) {
-            return false;
-        }
-        return ctx.getPlantGrid()[row][col] == null;
     }
 
     public void removePlant(int row, int col) {
@@ -181,53 +171,99 @@ public class GameEngine {
         while (it.hasNext()) {
             Projectile p = it.next();
             p.update(deltaTime);
-            if (!p.isActive()) {
-                it.remove();
-                continue;
-            }
 
-            int totalRows = Level.ROWS;
-            int totalCols = Level.COLS;
-            if (p.getRow() < 0 || p.getRow() >= totalRows || p.getX() < -1 || p.getX() > totalCols) {
+            if (!p.isActive() || p.isOutOfBounds()) {
                 p.deactivate();
                 it.remove();
                 continue;
             }
 
             if (p.isFromZombie()) {
-                Plant target = ctx.getPlantGrid()[p.getRow()][(int) p.getX()];
-                if (target != null && !target.isDead()) {
-                    p.onHit(target);
-                    if (!p.isActive()) it.remove();
-                }
+                handleZombieProjectile(p, it);
             } else {
-                for (Zombie z : ctx.getAliveZombies()) {
-                    if (z.getRow() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.4) {
-                        ProjectileDeflector deflector = z.getDeflector();
-                        Submerge submerge = z.getSubmerge();
-
-                        if (deflector != null && deflector.canDeflect(p)) {
-                            deflector.deflect(p, ctx, z);
-                            it.remove();
-                        } else if (submerge != null
-                                && !submerge.isVulnerableTo(p.getOwnerPlant().getName(),p.getOwnerPlant().isPlantFoodActive())) {
-                        } else {
-                            p.onHit(z);
-                            if (!p.isActive()) it.remove();
-                        }
-                        break;
-                    }
-                }
+                handlePlantProjectile(p, it);
             }
         }
     }
 
+    private void handleZombieProjectile(Projectile p, Iterator<Projectile> it) {
+        Plant target = ctx.getPlantGrid()[p.getRow()][(int) p.getX()];
+        if (target != null && !target.isDead()) {
+            p.onHit(target);
+            if (!p.isActive()) {
+                it.remove();
+            }
+        }
+    }
 
+    private void handlePlantProjectile(Projectile p, Iterator<Projectile> it) {
+        if (checkPlantObstacle(p)) {
+            p.deactivate();
+            it.remove();
+            return;
+        }
 
+        checkZombieHit(p, it);
+    }
+
+    private boolean checkPlantObstacle(Projectile p) {
+        int pRow = p.getRow();
+        int pCol = (int) Math.floor(p.getX());
+
+        if (pCol < 0 || pCol >= Level.COLS) return false;
+
+        Plant plantInCell = ctx.getPlantGrid()[pRow][pCol];
+        if (plantInCell == null || plantInCell.isDead()) return false;
+
+        boolean isBlocked = plantInCell.isIced() || plantInCell.isOctopused();
+        if (isBlocked && p.getTrajectory() != TrajectoryType.LOBBED) {
+            double effectiveDamage = (p.getBulletType() == BulletType.FIRE) ? p.getDamage() * 2 : p.getDamage();
+
+            if (plantInCell.isOctopused()) {
+                plantInCell.damageOctopuse(effectiveDamage);
+            } else if (plantInCell.isIced()) {
+                if (p.getBulletType() == BulletType.FIRE) {
+                    plantInCell.meltIce();
+                } else {
+                    plantInCell.damageIce(effectiveDamage);
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void checkZombieHit(Projectile p, Iterator<Projectile> it) {
+        for (Zombie z : ctx.getAliveZombies()) {
+            if (z.getRow() == p.getRow() && Math.abs(z.getX() - p.getX()) < 0.4) {
+                ProjectileDeflector deflector = z.getDeflector();
+                Submerge submerge = z.getSubmerge();
+
+                if (deflector != null && deflector.canDeflect(p)) {
+                    deflector.deflect(p, ctx, z);
+                    it.remove();
+                } else if (submerge != null && !submerge.isVulnerableTo(p.getOwnerPlant().getName(), p.getOwnerPlant().isPlantFoodActive())) {
+                } else {
+                    p.onHit(z);
+
+                    LaserShooting laser = (LaserShooting) z.getBehaviors().get("laser");
+                    if (laser != null) {
+                        laser.onProjectileHit(p.getBulletType());
+                    }
+
+                    if (!p.isActive()) {
+                        it.remove();
+                    }
+                }
+                break;
+            }
+        }
+    }
     private void checkGameEnd() {
         if (ctx.isGameEnded()) {
             ConsoleView.showMessage("You are now in Game Menu.\n");
             menuManager.forceChangeMenu("gamemenu");
+            ctx.clearLoots();
             return;
         }
         boolean allSpawned = ctx.isWaveSpawningFinished() ||
@@ -242,14 +278,10 @@ public class GameEngine {
         for (Zombie z : ctx.getAliveZombies()) {
             if ((int) z.getY() == row) sameRow.add(z);
         }
-
         switch (mode) {
             case FIRST_IN_LANE -> {
                 sameRow.sort((a, b) -> Double.compare(a.getX(), b.getX()));
                 return sameRow.isEmpty() ? sameRow : sameRow.subList(0, 1);
-            }
-            case ALL_IN_ROW -> {
-                return sameRow;
             }
             case NEAREST -> {
                 List<Zombie> result = new ArrayList<>();
@@ -280,30 +312,10 @@ public class GameEngine {
             }
         }
     }
-
-    private Tile[][] buildTiles(GameContext ctx) {
-        Tile[][] grid = new Tile[Level.ROWS][Level.COLS];
-        for (int r = 0; r < Level.ROWS; r++) {
-            for (int c = 0; c < Level.COLS; c++) {
-                grid[r][c] = new Tile(c,r, ctx);
-            }
-        }
-        return grid;
-    }
-
-    private LawnMower[] buildLawnMowers() {
-        LawnMower[] mowers = new LawnMower[Level.ROWS];
-        for (int r = 0; r < Level.ROWS; r++) {
-            mowers[r] = new LawnMower(r);
-        }
-        return mowers;
-    }
-
     public Tile getTiles(int x, int y) {
         if (y < 0 || y >= tiles.length || x < 0 || x >= tiles[0].length) return null;
         return tiles[y][x];
     }
-
     public void smashVase(int row, int col, GameContext ctx) {
         Tile tile = this.getTiles(row, col);
 
@@ -332,14 +344,8 @@ public class GameEngine {
             view.ConsoleView.simplePrint("Zombie popped out!\n");
         } else if (vase.getContent() == VaseContent.PLANT) {
             view.ConsoleView.simplePrint("Plant seed popped!\n");
-            // plant plant
         }
     }
-
-    public Zombie[] getRowsZombies(int row) {
-        return null;
-    }
-
     public LawnMower[] getLawnMowers() {return lawnMowers;}
 
 }

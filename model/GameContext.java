@@ -8,6 +8,7 @@ import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
 import model.level.Level;
 import model.mechanisms.GameEngine;
+import model.mechanisms.LootItem;
 import model.mechanisms.SunManager;
 import model.plants.Plant;
 import model.plants.PlantFamily;
@@ -42,6 +43,7 @@ public class GameContext {
     private List<Projectile> projectiles = new ArrayList<>();
     private TimeManager timeManager;
     private Map<String, Integer> producedSuns = new HashMap<>();
+    private final List<LootItem> activeLoots = new ArrayList<>();
     private SunManager sunManager;
     private int totalSunProducedInLevel = 0;
     private int totalLostPlants = 0;
@@ -233,7 +235,6 @@ public class GameContext {
 
     public void incrementPlantsLost(Plant p) {
         this.totalLostPlants++;
-        resetKillStreak();
         ConsoleView.showMessage("Plant "+p.getName()+" at "+p.getCol()+", "+p.getRow()+" is destroyed.");
     }
 
@@ -266,23 +267,10 @@ public class GameContext {
         graveGrid[row][col] = null;
     }
 
-    public int getWaveDurationRemaining() {
-        return waveDurationRemaining;
-    }
-
-    public void setWaveDurationRemaining(int ticks) {
-        this.waveDurationRemaining = ticks;
-    }
-
-    public void decrementWaveDelay() {
-        waveDurationRemaining--;
-    }
-
     public int getCurrentWaveIndex() {
         return currentWaveIndex;
     }
 
-    public  void setCurrentWaveIndex(int currentWaveIndex) {this.currentWaveIndex = currentWaveIndex;}
 
     // MISC
 
@@ -462,21 +450,6 @@ public class GameContext {
         return manualStartCommandReceived;
     }
 
-    public void setManualStartCommandReceived(boolean manualStartCommandReceived) {
-        this.manualStartCommandReceived = manualStartCommandReceived;
-    }
-
-    public void triggerManualWaveStart() {
-        this.manualStartCommandReceived = true;
-    }
-    public void recordPlantKill(Plant killer) {
-        if (killer == null) return;
-        totalKillsThisLevel++;
-        plantNamesThatKilledThisLevel.add(killer.getName());
-        if (killer.getFamily() != null) {
-            plantFamiliesUsedToKillThisLevel.add(killer.getFamily());
-        }
-    }
     public void recordPlantPlaced(Plant plant, int row, int col) {
         totalPlantsPlacedThisLevel++;
         plantedRows.add(row);
@@ -502,28 +475,28 @@ public class GameContext {
     public int getExplosivePlantsPlacedThisLevel() { return explosivePlantsPlacedThisLevel; }
     public int getSunProducerPlantsPlacedThisLevel() { return sunProducerPlantsPlacedThisLevel; }
     public int getTotalPlantsPlacedThisLevel() { return totalPlantsPlacedThisLevel; }
-    public int getZombiesKilledByLawnMowerThisLevel() { return zombiesKilledByLawnMowerThisLevel; }
 
-
-    public void recordFirstWaveStart() {
-        if (firstWaveStartTick == -1) {
-            firstWaveStartTick = timeManager.getTotalTicks();
-        }
-    }
-    public void recordZombieKillTick() {
-        earlyKillTicks.add(timeManager.getTotalTicks());
-    }
     public long getFirstWaveStartTick() { return firstWaveStartTick; }
     public List<Long> getEarlyKillTicks() { return earlyKillTicks; }
 
-    public void recordAlmostLostKill() { almostLostKillsThisLevel++; }
     public int getAlmostLostKillsThisLevel() { return almostLostKillsThisLevel; }
 
-    public void recordLawnMowerKill() { lawnMowerKillsThisLevel++; }
     public int getLawnMowerKillsThisLevel() { return lawnMowerKillsThisLevel; }
 
     public void setLevelManager(LevelManager levelManager) {
         this.levelManager = levelManager;
+    }
+
+    public List<LootItem> getActiveLoots() {
+        return activeLoots;
+    }
+    public void addLoot(LootItem loot) {
+        if (loot != null) {
+            activeLoots.add(loot);
+        }
+    }
+    public void clearLoots() {
+        activeLoots.clear();
     }
 
     public void incrementMultiKillPattern() { multiKillPatternCount++; }

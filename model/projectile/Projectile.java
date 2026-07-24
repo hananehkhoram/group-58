@@ -1,7 +1,7 @@
 package model.projectile;
 
+import model.level.Level;
 import model.plants.Plant;
-import view.ConsoleView;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -48,8 +48,6 @@ public class Projectile {
         this.dirX = dirX;
         this.dirY = dirY;
         this.ownerPlant = ownerPlant;
-        ConsoleView.showMessage("Projectile created at " + x + ", " + y + " from "
-                + (ownerPlant != null ? ownerPlant.getName() : "zombie"));
     }
 
 
@@ -88,32 +86,37 @@ public class Projectile {
 
         switch (bulletType) {
             case FIRE:
-                if (target.name().equals("Imp Dragon")){break;}
+                if ("Imp Dragon".equals(target.name())) { break; }
                 target.takeDamage(damage * 2);
                 target.meltIce();
                 break;
+
             case POISON:
                 target.takeArmorPiercingDamage(damage);
                 break;
+
             case ICE:
                 target.takeDamage(damage);
+                if ("Dodo".equals(target.name()) || "Hunter".equals(target.name()) ||
+                        "Troglobite".equals(target.name())) { break; }
                 target.applySlowOrFreeze();
                 break;
+
             case ELECTRIC:
                 target.takeDamage(Integer.MAX_VALUE);
                 break;
-            case IMMOBILIZE:
-                target.applySlowOrFreeze();
+
+            case OCTOPUS:
+                if (target instanceof Plant plant) {
+                    plant.setOctopused(true);
+                } else {
+                    target.applySlowOrFreeze();
+                }
                 break;
+
             case MAGIC:
-                target.takeDamage(damage);
-                break;
             case SMOKE:
-                target.takeDamage(damage);
-                break;
             case NORMAL:
-                target.takeDamage(damage);
-                break;
             default:
                 target.takeDamage(damage);
                 break;
@@ -125,7 +128,6 @@ public class Projectile {
             isActive = false;
         }
     }
-
     public void setHomingTarget(Damageable target) {
         this.homingTarget = target;
     }
@@ -142,6 +144,9 @@ public class Projectile {
     public TrajectoryType getTrajectory() { return trajectory; }
     public boolean isFromZombie() { return isFromZombie; }
     public Plant getOwnerPlant() {return ownerPlant;}
+    public boolean isOutOfBounds() {
+        return this.getRow() < 0 || this.getRow() >= Level.ROWS || this.getX() < -1 || this.getX() > Level.COLS;
+    }
     public void incrementKillCount() { killCount++; }
     public int getKillCount() { return killCount; }
 }

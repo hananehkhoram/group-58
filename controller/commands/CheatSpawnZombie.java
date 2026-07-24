@@ -4,6 +4,7 @@ import controller.MenuManager;
 import controller.commandHandler.Command;
 import controller.repository.factory.ZombieFactory;
 import model.GameContext;
+import model.level.Level;
 import model.zombie.Zombie;
 import view.ConsoleView;
 
@@ -26,6 +27,11 @@ public class CheatSpawnZombie implements Command {
             ConsoleView.showMessage("No such zombie: " + type);
             return;
         }
+        if (x >= Level.COLS || x < 0 || y < 0 || y >= Level.ROWS) {
+            ConsoleView.showMessage("Invalid coordinates: " + x + ", " + y);
+            return;
+        }
+
         z.setX(x);
         z.setY(y);
         ctx.addZombie(z);

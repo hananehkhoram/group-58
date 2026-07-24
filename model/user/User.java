@@ -99,9 +99,6 @@ public class User {
         this.lastDailyOfferDate = lastDailyOfferDate;
     }
 
-    public void addSeedPackets(String plantType, int count){}
-    public void getUnlockedPotCount(){}
-
     public int getPlantFoodCount() {
         return plantFoodCount;
     }

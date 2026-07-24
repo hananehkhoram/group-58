@@ -31,6 +31,13 @@ public class Jumper implements Behaviors {
 
     private double startColumn;
     private long startTick;
+    private static final double PROSPECTOR_THROW_SPEED = 6.0;
+
+    public void throwToColumnAtFixedSpeed(GameContext ctx, Zombie zombie, int targetCol) {
+        double distance = Math.abs(zombie.getX() - targetCol);
+        float flightSeconds = (float) Math.max(0.05, distance / PROSPECTOR_THROW_SPEED);
+        startJump(ctx, zombie, targetCol, flightSeconds, 1);
+    }
 
     public Jumper() {
         this.variant = JumpVariant.EXPLORER;
@@ -52,7 +59,6 @@ public class Jumper implements Behaviors {
         this.landed = true;
     }
 
-    /** Imp / DragonImp — پرتاب‌شده توسط Gargantuar */
     public Jumper(JumpVariant variant) {
         this.variant = variant;
         this.landed = true;
@@ -89,7 +95,6 @@ public class Jumper implements Behaviors {
         if (variant == JumpVariant.DODO) {
             checkDodoObstacle(ctx, zombie);
         }
-        // EXPLORER: بدون کاری — رفتار واقعی‌اش در Area پیاده می‌شود
         // PROSPECTOR: شروع پرش توسط LaserShooting (بعد از ۱۰ ثانیه انفجار دینامیت) صدا زده خواهد شد
     }
 

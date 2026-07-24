@@ -55,6 +55,7 @@ public class ShowMap implements Command {
                 String plantSymbol = (plant != null)
                         ? plant.getName().substring(0, Math.min(2, plant.getName().length()))
                         : "..";
+
                 StringBuilder projectileSymbol = new StringBuilder();
                 for (Projectile p : ctx.getProjectiles()) {
                     if ((int) Math.round(p.getY()) == r && (int) Math.floor(p.getX()) == c){
@@ -76,8 +77,8 @@ public class ShowMap implements Command {
                 }
 
                 sb.append("[").append(terrainSymbol).append(plantSymbol)
-                        .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]")
-                        .append(projectileSymbol.isEmpty() ? " " : projectileSymbol);
+                        .append(projectileSymbol.isEmpty() ? " " : projectileSymbol)
+                        .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]");
             }
             sb.append("\n");
         }
