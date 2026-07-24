@@ -69,7 +69,6 @@ public class Tile {
     public boolean isPlantable() {
         TerrainType t = getTerrainType();
         return t != TerrainType.WATER && t != TerrainType.GRAVE;
-        //بعضی گیاها روی این توع زمینم میتونن کاشته بشن.برای اونا باید جدای این متد چک بشه
     }
 
     public void setDroppedSeed(String seedName, int lifespanTicks) {
@@ -99,10 +98,6 @@ public class Tile {
         }
     }
 
-    public boolean blocksProjectile() {
-        return getTerrainType() == TerrainType.GRAVE;
-    }
-
     public static Tile[][] buildTiles(GameContext ctx) {
         Tile[][] grid = new Tile[Level.ROWS][Level.COLS];
         for (int r = 0; r < Level.ROWS; r++) {
@@ -112,4 +107,12 @@ public class Tile {
         }
         return grid;
     }
+
+    public void meltIce() {
+        Plant p = getPlant();
+        if (p != null) {
+            p.meltIce();
+        }
+    }
+
 }

@@ -34,8 +34,7 @@ public final class PlantActivator {
 
         } else if (ability instanceof Lobber lobber) {
             LobType lobType = LobType.valueOf(p.get("lobType"));
-            String interval = actionIntervalAsWholeSeconds(plant);
-            lobber.lob(lobType, interval, plant, ctx);
+            lobber.lob(lobType, plant, ctx);
 
         } else if (ability instanceof Explosive explosive) {
             ExplosiveType type = ExplosiveType.valueOf(p.get("explosiveType"));
