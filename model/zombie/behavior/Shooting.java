@@ -38,7 +38,6 @@ public class Shooting implements Behaviors {
             case OCTOPUS -> handleShooter(zombie, ctx, BulletType.OCTOPUS, 6);
             case GARGANTUAR -> shootImp(zombie, ctx);
             case TOMBRAISER -> raiseTomb(zombie, ctx);
-            // FISHERMAN بعداً
             default -> {}
         }
     }
@@ -186,6 +185,6 @@ public class Shooting implements Behaviors {
     }
 
     public enum ShootingType {
-        GARGANTUAR, TOMBRAISER, HUNTER, FISHERMAN, OCTOPUS
+        GARGANTUAR, TOMBRAISER, HUNTER, OCTOPUS
     }
 }

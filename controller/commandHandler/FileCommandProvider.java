@@ -113,7 +113,8 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("^new password -p (?<password>.+)$",new SetNewPassword(menuManager));
         registry.register("smash vase -l \\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)", new SmashVase(menuManager));
         registry.register("cheat add-plant-food",new CheatAddPlantFood(menuManager));
-        registry.register("show current plant food",new ShowCurrentPlantFood(menuManager));;
+        registry.register("show current plant food",new ShowCurrentPlantFood(menuManager));
+        registry.register("^pick up \\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)$", new PickUpSeed(menuManager));
     }
 }
 

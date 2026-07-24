@@ -115,7 +115,7 @@ public class ZombieActivator {
             // BEACH
 
             case "ZombieBeachFisherman":
-                behaviors.put("shooting", new Shooting(Shooting.ShootingType.FISHERMAN, 0, 0));
+                behaviors.put("area", new Area(Area.AreaType.FISHERMAN));
                 break;
 
             case "ZombieBeachOctopus":

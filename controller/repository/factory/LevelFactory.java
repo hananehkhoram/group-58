@@ -208,8 +208,12 @@ public class LevelFactory {
     public static void setUpVases(GameContext ctx){
         List<Vase> vasePool = new ArrayList<>();
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 18; i++) {
             vasePool.add(new Vase(VaseContent.ZOMBIE, "Zombie"));
+        }
+
+        for (int i = 0; i < 2; i++) {
+            vasePool.add(new Vase(VaseContent.ZOMBIE, "Gargantuar"));
         }
 
         for (int i = 0; i < 8; i++) {
@@ -233,7 +237,7 @@ public class LevelFactory {
         for (int r = 0; r < rows; r++) {
             for (int c = 4; c < columns; c++) {
                 if (vaseIndex < vasePool.size()) {
-                    Tile currentTile = ctx.getGameEngine().getTiles(r, c);
+                    Tile currentTile = ctx.getGameEngine().getTiles(c, r);
 
                     if (currentTile != null) {
                         currentTile.setVase(vasePool.get(vaseIndex));

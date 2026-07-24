@@ -38,28 +38,35 @@ public class Planting implements Command {
         boolean isConveyorLevel = levelManager instanceof controller.SpecialLevelManager.ConveyorBeltManager;
 
         Plant template = null;
+        boolean hasCard = false;
+        Plant plantToRemoveFromBelt = null; // برای جلوگیری از باگ غیب شدن کارت
 
         if (isConveyorLevel) {
-            controller.SpecialLevelManager.ConveyorBeltManager conveyorManager =
-                    (controller.SpecialLevelManager.ConveyorBeltManager) levelManager;
-            for (Plant p : conveyorManager.getConveyorBelt()) {
-                if (p.getName().equalsIgnoreCase(type)) { template = p; break; }
-            }
-            if (template == null) {
-                ConsoleView.showMessage("This plant is not on the conveyor belt.");
-                return;
+            controller.SpecialLevelManager.ConveyorBeltManager cbm = (controller.SpecialLevelManager.ConveyorBeltManager) levelManager;
+            for (model.plants.Plant p : cbm.getConveyorBelt()) {
+                if (p.getName().equalsIgnoreCase(type)) {
+                    hasCard = true;
+                    template = p;
+                    plantToRemoveFromBelt = p; // فقط پیداش می‌کنیم، الان حذفش نمی‌کنیم
+                    break;
+                }
             }
         } else {
-            for (Plant p : ctx.getActivePlants()) {
-                if (p.getName().equalsIgnoreCase(type)) { template = p; break; }
-            }
-            if (template == null) {
-                ConsoleView.showMessage("You haven't selected this plant for this level.");
-                return;
+            // در مراحل عادی، گیاه را از فکتوری می‌گیریم تا اطلاعاتش (مثل آفتاب و کول‌داون) خوانده شود
+            try {
+                template = ctx.getPlantFactory().create(type);
+                hasCard = true; // اگر متدی برای چک کردن کارت‌های اول بازی داری، اینجا اضافه‌اش کن
+            } catch (Exception e) {
+                hasCard = false;
             }
         }
         if (ctx.getSeason().isWaterCell(y,x,ctx) && !template.hasTheTag(Tag.WATER) && !template.isHasLilyPadUnderneath()){
             ConsoleView.showMessage("You can't plant this on a water cell!");
+            return;
+        }
+
+        if (!hasCard || template == null) {
+            ConsoleView.simplePrint("You haven't selected this plant for this level.");
             return;
         }
 
@@ -79,7 +86,7 @@ public class Planting implements Command {
             return;
         }
 
-        boolean needsSun = !(levelManager instanceof controller.SpecialLevelManager.ConveyorBeltManager);
+        boolean needsSun = !isConveyorLevel;
         if (needsSun && ctx.getSunAmount() < template.getSunCost()) {
             ConsoleView.showMessage("Not enough sun.");
             return;
@@ -90,11 +97,11 @@ public class Planting implements Command {
             isBowlingLevel = ctx.getLevel().getName().toLowerCase().contains("wallnuts");
         }
 
+        // بخش مربوط به مینی‌گیم بولینگ
         if (isBowlingLevel && (type.equalsIgnoreCase("Wall-nut") || type.equalsIgnoreCase("Explode-o-nut") || type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut") || type.equalsIgnoreCase("Cherry Bomb"))) {
 
             if (type.equalsIgnoreCase("Explode-o-nut") || type.equalsIgnoreCase("Cherry Bomb")) {
-                model.projectile.ExplodeONut explodeNut = new model.projectile.ExplodeONut(500, x, y, x, 2.0, template, ctx);
-                ctx.getProjectiles().add(explodeNut);
+                model.projectile.ExplodeONut explodeNut = new model.projectile.ExplodeONut(500, x, y, x, 2.0, template, ctx);ctx.getProjectiles().add(explodeNut);
             } else if (type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut")) {
                 model.projectile.GiantWallnut giantNut = new model.projectile.GiantWallnut(500, x, y, x, 2.0, template);
                 ctx.getProjectiles().add(giantNut);
@@ -107,13 +114,19 @@ public class Planting implements Command {
                 levelManager.onPlantSuccess(template, ctx);
             }
 
-            view.ConsoleView.showMessage("BOWL! " + type + " is rolling!");
+            // حذف گیاه از نوار نقاله در صورت پرتاب موفق
+            if (plantToRemoveFromBelt != null) {
+                ((controller.SpecialLevelManager.ConveyorBeltManager) levelManager).getConveyorBelt().remove(plantToRemoveFromBelt);
+            }
+
+            ConsoleView.showMessage("BOWL! " + type + " is rolling!");
             return;
         }
 
+        // بخش کاشت عادی گیاهان
         if (!isConveyorLevel) ctx.setCooldown(type, template.getRechargeTime());
 
-        Plant newPlant = ctx.getPlantFactory().create(String.valueOf(template.getName()));
+        Plant newPlant = ctx.getPlantFactory().create(template.getName());
         tile.setPlant(newPlant);
         ctx.getPlantGrid()[y][x] = newPlant;
         ctx.getAlivePlants().add(newPlant);
@@ -135,8 +148,13 @@ public class Planting implements Command {
             levelManager.onPlantSuccess(newPlant, ctx);
         }
 
+        // حذف گیاه از نوار نقاله پس از کاشت موفقیت‌آمیز
+        if (plantToRemoveFromBelt != null) {
+            ((controller.SpecialLevelManager.ConveyorBeltManager) levelManager).getConveyorBelt().remove(plantToRemoveFromBelt);
+        }
+
         ctx.setCooldown(type, template.getRechargeTime());
         ConsoleView.showMessage("Planted %s at (%d, %d).", type, x, y);
         ctx.recordPlantPlaced(newPlant, y, x);
     }
-}//plant plant -t <type> -l (<x>, <y>)
+}

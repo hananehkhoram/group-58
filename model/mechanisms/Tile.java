@@ -11,6 +11,8 @@ public class Tile {
     private int y;
     private GameContext ctx;
     private Vase vase;
+    private String droppedSeed = null;
+    private int seedDespawnTimer = 0;
 
     public Tile(int x, int y, GameContext ctx) {
         this.x = x;
@@ -65,8 +67,8 @@ public class Tile {
     }
 
     public Plant removePlant() {
-        Plant p = ctx.getPlantGrid()[x][y];
-        ctx.getPlantGrid()[x][y] = null;
+        Plant p = ctx.getPlantGrid()[y][x];
+        ctx.getPlantGrid()[y][x] = null;
         return p;
     }
 
@@ -81,6 +83,33 @@ public class Tile {
         TerrainType t = getTerrainType();
         return t != TerrainType.WATER && t != TerrainType.GRAVE;
         //بعضی گیاها روی این توع زمینم میتونن کاشته بشن.برای اونا باید جدای این متد چک بشه
+    }
+
+    public void setDroppedSeed(String seedName, int lifespanTicks) {
+        this.droppedSeed = seedName;
+        this.seedDespawnTimer = lifespanTicks;
+    }
+
+    public String getDroppedSeed() {
+        return this.droppedSeed;
+    }
+
+    public boolean hasDroppedSeed() {
+        return this.droppedSeed != null;
+    }
+
+    public void clearDroppedSeed() {
+        this.droppedSeed = null;
+        this.seedDespawnTimer = 0;
+    }
+
+    public void updateSeedTimer(int passedTicks) {
+        if (this.droppedSeed != null) {
+            this.seedDespawnTimer -= passedTicks;
+            if (this.seedDespawnTimer <= 0) {
+                this.droppedSeed = null;
+            }
+        }
     }
 
     public boolean blocksProjectile() {

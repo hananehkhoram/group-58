@@ -10,7 +10,7 @@ import model.plants.Plant;
 import model.projectile.Projectile;
 import model.user.UserManager;
 import model.zombie.Zombie;
-import model.zombie.behavior.Armor;
+import model.MiniGame.VaseGame.Vase;
 import view.ConsoleView;
 
 public class ShowMap implements Command {
@@ -50,6 +50,23 @@ public class ShowMap implements Command {
                 Tile tile = engine.getTiles(c, r);
                 String terrainSymbol = terrainSymbol(tile);
 
+                // --- بخش جدید: تشخیص نوع کوزه ---
+                String vaseSymbol = "";
+                if (tile != null && tile.getVase() != null && !tile.getVase().isBroken()) {
+                    Vase vase = tile.getVase();
+                    String contentName = vase.getContent().toString(); // کلمه PLANT یا ZOMBIE
+                    String hiddenEntity = vase.getHiddenEntityName();
+
+                    if (contentName.equals("PLANT")) {
+                        vaseSymbol = "VP"; // کوزه گیاه
+                    } else if (hiddenEntity != null && hiddenEntity.toLowerCase().contains("gargantuar")) {
+                        vaseSymbol = "VG"; // کوزه غول (Gargantuar)
+                    } else {
+                        vaseSymbol = "V.";  // کوزه معمولی
+                    }
+                }
+                // ---------------------------------
+
                 Plant plant = (tile != null) ? tile.getPlant() : null;
 
                 String plantSymbol = (plant != null)
@@ -69,13 +86,16 @@ public class ShowMap implements Command {
                     if ((int) Math.round(z.getY()) == r && (int) Math.floor(z.getX()) == c) {
                         if (z.getArmor() != null && !z.getArmor().isDestroyed()) {
                             zombieSymbol.append("Z");
-                        }else {
-                                zombieSymbol.append("z");
+                        } else {
+                            zombieSymbol.append("z");
                         }
 
                     }
                 }
 
+                String contentSymbol = !vaseSymbol.isEmpty() ? vaseSymbol : plantSymbol;sb.append("[").append(terrainSymbol).append(contentSymbol)
+                        .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]")
+                        .append(projectileSymbol.isEmpty() ? " " : projectileSymbol);
                 sb.append("[").append(terrainSymbol).append(plantSymbol)
                         .append(projectileSymbol.isEmpty() ? " " : projectileSymbol)
                         .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]");
@@ -85,6 +105,7 @@ public class ShowMap implements Command {
 
         ConsoleView.showMessage(sb.toString());
     }
+
     private String terrainSymbol(Tile tile) {
         if (tile == null) return "?";
         return switch (tile.getTerrainType()) {
@@ -98,6 +119,4 @@ public class ShowMap implements Command {
             default -> ".";
         };
     }
-
-    //show map
 }
