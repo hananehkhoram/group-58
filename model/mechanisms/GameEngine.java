@@ -112,6 +112,7 @@ public class GameEngine {
                 for (Behaviors b : z.getBehaviors().values()) {
                     b.onDeath(z, ctx);
                 }
+                LootItem.tryDropLoot(ctx, (int) Math.floor(z.getX()), z.getRow());
                 it.remove();
                 ctx.incrementZombieKills();
             }
@@ -259,6 +260,7 @@ public class GameEngine {
         if (ctx.isGameEnded()) {
             ConsoleView.showMessage("You are now in Game Menu.\n");
             menuManager.forceChangeMenu("gamemenu");
+            ctx.clearLoots();
             return;
         }
         boolean allSpawned = ctx.isWaveSpawningFinished() ||
