@@ -37,4 +37,4 @@ plant plant -t SunFlower -l (5, 0)
  show map
 
  zombies info
- cheat spawn-zombie -t Piano -l (8, 0)
+ cheat spawn-zombie -t Troglobite -l (8, 0)

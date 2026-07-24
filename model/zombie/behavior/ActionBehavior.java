@@ -11,7 +11,6 @@ import java.util.List;
 /**
  * Zombies:
  *   ZombieIceAgeTroglobite → PUSH_GRID_ITEM
- *   ZombieBeachOctopus     → OCTOPUS_PROJECTILE
  *   ZombieWizard           → DARK_WIZARD_ZAP
  *   ZombieArcade           → ARCADE_PUSH
  *   ZombieDarkKing         → KNIGHT_KNIGHTING

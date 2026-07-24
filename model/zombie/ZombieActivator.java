@@ -24,7 +24,7 @@ public class ZombieActivator {
                 // No special behavior; just walks and eats
                 break;
 
-            //ARMOR ZOMBIES
+            // ARMOR ZOMBIES
 
             case "ZombieArmor1": // Cone Head
                 behaviors.put("armor", new Armor(
@@ -41,16 +41,16 @@ public class ZombieActivator {
             case "ZombieArmor4": // Brick Head (unused in vanilla but in data)
                 behaviors.put("armor", new Armor(
                         ArmorType.BRICK, ArmorType.BRICK.baseHealth,
-                        false,zombie.getX(), zombie.getY()));
+                        false, zombie.getX(), zombie.getY()));
                 break;
 
             case "ZombieDarkArmor3":
                 behaviors.put("armor", new Armor(          // کلاهخود — magnetshroom می‌تونه اینو بقاپه
                         ArmorType.SHOULDER_CROWN, ArmorType.SHOULDER_CROWN.baseHealth,
-                        true,zombie.getX(), zombie.getY()));
+                        true, zombie.getX(), zombie.getY()));
                 behaviors.put("armor2", new Armor(         // شانه‌بند — magnetshroom نمی‌تونه اینو بقاپه
                         ArmorType.SHOULDER_ARMOR, ArmorType.SHOULDER_ARMOR.baseHealth,
-                        true,zombie.getX(), zombie.getY()));
+                        true, zombie.getX(), zombie.getY()));
                 break;
 
             // NEWSPAPER
@@ -58,7 +58,7 @@ public class ZombieActivator {
             case "ZombieNewspaper":
                 behaviors.put("armor", new Armor(
                         ArmorType.NEWSPAPER, ArmorType.NEWSPAPER.baseHealth,
-                        false,zombie.getX(), zombie.getY()));
+                        false, zombie.getX(), zombie.getY()));
                 break;
 
             // GARGANTUAR + IMP
@@ -76,7 +76,7 @@ public class ZombieActivator {
                 behaviors.put("jumper", new Jumper(Jumper.JumpVariant.DRAGON_IMP));
                 break;
 
-            //  RA ZOMBIE
+            // RA ZOMBIE
 
             case "ZombieRa":
                 behaviors.put("sunThief", new SunThief(250, 100, 5));
@@ -106,10 +106,13 @@ public class ZombieActivator {
                 break;
 
             case "ZombieIceAgeTroglobite":
-                ActionBehavior.ActionParams trogParams = new ActionBehavior.ActionParams();
-                trogParams.numberOfIceblocks = 3;
-                trogParams.chillInsteadOfFreeze = true;
-                behaviors.put("action", new ActionBehavior(ActionBehavior.ActionType.PUSH_GRID_ITEM, trogParams));
+                behaviors.put("pusher", new Pusher(Pusher.PushType.TROGLOBITE));
+                break;
+
+            // PIRATE / SEAS
+
+            case "ZombieBarrelRoller":
+                behaviors.put("pusher", new Pusher(Pusher.PushType.BARREL_ROLLER));
                 break;
 
             // BEACH
@@ -188,9 +191,7 @@ public class ZombieActivator {
                 break;
 
             case "ZombieArcade":
-                ActionBehavior.ActionParams arcadeParams = new ActionBehavior.ActionParams();
-                arcadeParams.jamStyle = "jam_8bit";
-                behaviors.put("action", new ActionBehavior(ActionBehavior.ActionType.ARCADE_PUSH, arcadeParams));
+                behaviors.put("pusher", new Pusher(Pusher.PushType.ARCADE));
                 break;
 
             // ANCIENT EGYPT SPECIAL

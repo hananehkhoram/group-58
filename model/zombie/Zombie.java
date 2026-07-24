@@ -290,4 +290,8 @@ public class Zombie implements Damageable {
         return isBoss;
     }
     public void setRow (int r){this.y = r;}
+
+    public boolean searchEffect(Effects effects) {
+        return this.effects.contains(effects);
+    }
 }
