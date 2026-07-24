@@ -93,15 +93,16 @@ public class ShowMap implements Command {
                     }
                 }
 
-                String contentSymbol = !vaseSymbol.isEmpty() ? vaseSymbol : plantSymbol;sb.append("[").append(terrainSymbol).append(contentSymbol)
-                        .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]")
-                        .append(projectileSymbol.isEmpty() ? " " : projectileSymbol);
-                sb.append("[").append(terrainSymbol).append(plantSymbol)
-                        .append(projectileSymbol.isEmpty() ? " " : projectileSymbol)
-                        .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]");
+                String contentSymbol = !vaseSymbol.isEmpty() ? vaseSymbol : plantSymbol;
+
+                sb.append("[")
+                        .append(terrainSymbol)
+                        .append(contentSymbol)
+                        .append(zombieSymbol.length() > 0 ? zombieSymbol : " ")
+                        .append(projectileSymbol.length() > 0 ? projectileSymbol : " ")
+                        .append("]");
             }
-            sb.append("\n");
-        }
+            sb.append("\n");}
 
         ConsoleView.showMessage(sb.toString());
     }

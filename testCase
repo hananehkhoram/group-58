@@ -38,3 +38,5 @@ plant plant -t SunFlower -l (5, 0)
 
  zombies info
  cheat spawn-zombie -t Troglobite -l (8, 0)
+
+

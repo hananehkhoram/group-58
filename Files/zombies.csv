@@ -25,6 +25,5 @@ Umbrella,100,350,0.25,200,-,ZombieLostCityJane,,,,
 Turquoise,100,250,0.185,500,-,ZombieCrystalSkull,,,,
 Prospector,100,190,0.16,200,-,ZombieProspector,,,,
 Piano,4000,840,0.12,450,-,ZombiePiano,,,,
-News Paper,200,460,0.22,700,Newspaper,ZombieNewspaper
-
-
+News Paper,200,460,0.22,700,Newspaper,ZombieNewspaper,,,,
+Barrel Roller,100,190,0.20000000000000001,300,-,ZombieDarkBarrelRoller
