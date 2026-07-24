@@ -109,6 +109,7 @@ public class GameEngine {
     }
 
     private void updateZombies(double deltaTime) {
+        List<Zombie> deathsThisTick = new ArrayList<>();
         Iterator<Zombie> it = ctx.getAliveZombies().iterator();
         while (it.hasNext()) {
             Zombie z = it.next();
@@ -131,8 +132,10 @@ public class GameEngine {
                 LootItem.tryDropLoot(ctx, (int) Math.floor(z.getX()), z.getRow());
                 it.remove();
                 ctx.incrementZombieKills();
+                deathsThisTick.add(z);
             }
         }
+        controller.ScoringManager.onZombiesDied(ctx, deathsThisTick);
     }
 
     private void updateLawnMowers(double deltaTime) {

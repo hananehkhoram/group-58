@@ -11,15 +11,15 @@ import java.util.Random;
 public class PianoCharge implements Behaviors {
 
     private static final int TICKS_PER_SECOND = 10;
-    private static final float ROW_SWAP_INTERVAL_SECONDS = 5f;
+    private float rowSwapIntervalSeconds = 5.0f;
 
-    private boolean rolling;  // طبق سند این پروژه استفاده نمی‌شه؛ برای سازگاری با سازنده‌ی قبلی نگه داشته شده
-    private double rollSpeed;         // 0.4 — استفاده نمی‌شه
-    private double normalSpeed;       // 0.12 — استفاده نمی‌شه
-    private double rollingEatDps;     // 4000 — استفاده نمی‌شه
-    private int streetWidth;          // 3 — استفاده نمی‌شه
-    private int streetHeight;         // 2 — استفاده نمی‌شه
-    private Set<String> breakPlants;  // استفاده نمی‌شه (طبق سند این پروژه مکانیزم شکستن پیانو وجود ندارد)
+    private boolean rolling = true;
+    private double rollSpeed;
+    private double normalSpeed;
+    private double rollingEatDps;
+    private int streetWidth;
+    private int streetHeight;
+    private Set<String> breakPlants;
 
     private long lastSwapTick = -1;
     private final Random random = new Random();
@@ -38,13 +38,15 @@ public class PianoCharge implements Behaviors {
     @Override
     public void onTick(Zombie zombie, GameContext ctx) {
         destroyOwnCellPlant(zombie, ctx);
-        shuffleZombieRows(ctx);
+
+        shuffleZombieRows(zombie, ctx);
     }
 
     private void destroyOwnCellPlant(Zombie zombie, GameContext ctx) {
         int row = zombie.getRow();
         int col = (int) zombie.getX();
         int totalCols = ctx.getPlantGrid()[0].length;
+
         if (col < 0 || col >= totalCols) return;
 
         Plant target = ctx.getPlantGrid()[row][col];
@@ -53,25 +55,32 @@ public class PianoCharge implements Behaviors {
         }
     }
 
-    private void shuffleZombieRows(GameContext ctx) {
+    private void shuffleZombieRows(Zombie selfZombie, GameContext ctx) {
         long now = ctx.getTimeManager().getTotalTicks();
-        if (lastSwapTick >= 0 && (now - lastSwapTick) < (long) (ROW_SWAP_INTERVAL_SECONDS * TICKS_PER_SECOND)) {
+        if (lastSwapTick >= 0 && (now - lastSwapTick) < (long) (rowSwapIntervalSeconds * TICKS_PER_SECOND)) {
             return;
         }
 
         int totalRows = ctx.getPlantGrid().length;
+
         for (Zombie z : ctx.getAliveZombies()) {
-            z.setRow(pickNeighborRow(z.getRow(), totalRows));
+            if (z == selfZombie) continue;
+            int newRow = pickNeighborRow(z.getRow(), totalRows);
+            z.setRow(newRow);
+            z.setY(newRow);
         }
+
         lastSwapTick = now;
     }
 
     private int pickNeighborRow(int row, int totalRows) {
         boolean canGoUp = row > 0;
         boolean canGoDown = row < totalRows - 1;
+
         if (canGoUp && canGoDown) return random.nextBoolean() ? row - 1 : row + 1;
         if (canGoUp) return row - 1;
         if (canGoDown) return row + 1;
+
         return row;
     }
 
@@ -81,17 +90,4 @@ public class PianoCharge implements Behaviors {
     @Override
     public boolean isDestroyed() { return false; }
 
-    public void breakPiano(Zombie zombie) {
-        rolling = false;
-    }
-
-    public boolean willBreakOn(String plantId) {
-        return breakPlants.contains(plantId);
-    }
-
-    public boolean isRolling() { return rolling; }
-    public double getCurrentSpeed() { return rolling ? rollSpeed : normalSpeed; }
-    public double getRollingEatDps() { return rollingEatDps; }
-    public int getStreetWidth() { return streetWidth; }
-    public int getStreetHeight() { return streetHeight; }
 }

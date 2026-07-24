@@ -21,6 +21,9 @@ public class Projectile {
     private final double dirX;
     private final double dirY;
 
+    private int killCount = 0;
+
+
     private Damageable homingTarget;                 // فقط برای HOMING
     private final Set<Damageable> alreadyHit = new HashSet<>(); // فقط برای PIERCING
 
@@ -144,4 +147,6 @@ public class Projectile {
     public boolean isOutOfBounds() {
         return this.getRow() < 0 || this.getRow() >= Level.ROWS || this.getX() < -1 || this.getX() > Level.COLS;
     }
+    public void incrementKillCount() { killCount++; }
+    public int getKillCount() { return killCount; }
 }
