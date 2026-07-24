@@ -44,8 +44,16 @@ public class ShowTileStatus implements Command {
                     .append(" | HP: ").append(plant.getHp())
                     .append(" | Family: ").append(plant.getFamily())
                     .append(" | Level: ").append(plant.getLevel())
-                    .append(" | Tags: ").append(plant.getTags())
-                    .append("\n");
+                    .append(" | Tags: ").append(plant.getTags());
+
+            if (plant.isOctopused()) {
+                sb.append(" | Status: OCTOPUSED (Octopus HP: ").append(plant.getOctopusHp()).append(")");
+            }
+            else if (plant.isIced()) {
+                sb.append(" | Status: ICED (Ice HP: ").append(plant.getIceHp()).append(")");
+            }
+
+            sb.append("\n");
         } else {
             sb.append("Plant: none\n");
         }

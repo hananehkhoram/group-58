@@ -11,7 +11,7 @@ public class DataManager {
     public PlantRepository plants = new PlantRepository();
     public ZombieRepository zombies = new ZombieRepository();
     public SeasonRepository seasons = new SeasonRepository();
-    public QuestRepository quests = new QuestRepository();   // ← این خط اضافه شد
+    public QuestRepository quests = new QuestRepository();
     public UserRepository users = new UserRepository();
 
     private final String userPath = "Files/users.dat";

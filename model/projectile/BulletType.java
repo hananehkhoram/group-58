@@ -21,5 +21,5 @@ public enum BulletType {
     /** Instantly destroys the target (Electric Blueberry). */
     ELECTRIC,
     /** Disables the target and blocks other projectiles from passing (Octopus zombie's throw). */
-    IMMOBILIZE
+    OCTOPUS
 }

@@ -68,6 +68,7 @@ public class ShowMap implements Command {
                 // ---------------------------------
 
                 Plant plant = (tile != null) ? tile.getPlant() : null;
+
                 String plantSymbol = (plant != null)
                         ? plant.getName().substring(0, Math.min(2, plant.getName().length()))
                         : "..";
@@ -88,12 +89,16 @@ public class ShowMap implements Command {
                         } else {
                             zombieSymbol.append("z");
                         }
+
                     }
                 }
 
                 String contentSymbol = !vaseSymbol.isEmpty() ? vaseSymbol : plantSymbol;sb.append("[").append(terrainSymbol).append(contentSymbol)
                         .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]")
                         .append(projectileSymbol.isEmpty() ? " " : projectileSymbol);
+                sb.append("[").append(terrainSymbol).append(plantSymbol)
+                        .append(projectileSymbol.isEmpty() ? " " : projectileSymbol)
+                        .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]");
             }
             sb.append("\n");
         }

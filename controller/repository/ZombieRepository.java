@@ -48,7 +48,7 @@ public class ZombieRepository implements AssetRepository<Zombie>{
     public Map<String, Zombie> getZombieDataMap() {
         return zombieDataMap;
     }
-    // ZombieRepository.java
+
     private static final Map<String, Set<String>> CHAPTER_EXCLUSIVE_ZOMBIES = Map.ofEntries(
             Map.entry("Ra Zombie", Set.of("Ancient Egypt")),
             Map.entry("Explorer Zombie", Set.of("Ancient Egypt")),
@@ -72,7 +72,7 @@ public class ZombieRepository implements AssetRepository<Zombie>{
         Set<String> exclusiveTo = CHAPTER_EXCLUSIVE_ZOMBIES.get(zombieName);
 
         if (exclusiveTo == null) {
-            return true;   // زامبی‌های عادی (مشترک بین همه چپترها) همه‌جا مجازن
+            return true;
         }
 
         if (chapterName == null) {

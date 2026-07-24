@@ -8,6 +8,7 @@ import controller.repository.factory.PlantFactory;
 import controller.repository.factory.ZombieFactory;
 import model.level.Level;
 import model.mechanisms.GameEngine;
+import model.mechanisms.LootItem;
 import model.mechanisms.SunManager;
 import model.plants.Plant;
 import model.plants.PlantFamily;
@@ -42,6 +43,7 @@ public class GameContext {
     private List<Projectile> projectiles = new ArrayList<>();
     private TimeManager timeManager;
     private Map<String, Integer> producedSuns = new HashMap<>();
+    private final List<LootItem> activeLoots = new ArrayList<>();
     private SunManager sunManager;
     private int totalSunProducedInLevel = 0;
     private int totalLostPlants = 0;
@@ -519,5 +521,17 @@ public class GameContext {
 
     public void setZombieFactory(ZombieFactory zombieFactory) {
         this.zombieFactory = zombieFactory;
+    }
+
+    public List<LootItem> getActiveLoots() {
+        return activeLoots;
+    }
+    public void addLoot(LootItem loot) {
+        if (loot != null) {
+            activeLoots.add(loot);
+        }
+    }
+    public void clearLoots() {
+        activeLoots.clear();
     }
 }

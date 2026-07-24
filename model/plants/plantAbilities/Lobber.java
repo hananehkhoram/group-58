@@ -2,7 +2,6 @@ package model.plants.plantAbilities;
 
 import model.GameContext;
 import model.plants.Plant;
-import model.plants.plantFoodEffect.PlantFoodMode;
 import model.projectile.Projectile;
 import model.projectile.BulletType;
 import model.projectile.TrajectoryType;
@@ -43,7 +42,7 @@ public class Lobber implements BaseAbility {
                 case KERNEL_OR_BUTTER:
                     boolean isButter = Math.random() < 0.25;
                     if (isButter) {
-                        shootProjectile(ctx, plant, 40, BulletType.IMMOBILIZE);
+                        shootProjectile(ctx, plant, 40, BulletType.OCTOPUS);
                     } else {
                         shootProjectile(ctx, plant, 20, BulletType.NORMAL);
                     }

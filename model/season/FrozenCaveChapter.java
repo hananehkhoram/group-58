@@ -5,6 +5,7 @@ import controller.repository.factory.ZombieFactory;
 import model.GameContext;
 import model.level.Level;
 import model.plants.Plant;
+import model.plants.Tag;
 import model.zombie.Zombie;
 import view.ConsoleView;
 
@@ -79,10 +80,9 @@ public class FrozenCaveChapter extends Season {
             int minCol = Math.max(5, cols / 2);
             int randomCol = minCol + random.nextInt(cols - minCol);
 
-            Zombie frozenZombie = zombieFactory.create("normal");
+            Zombie frozenZombie = zombieFactory.create("Default");
             frozenZombie.setX(randomCol);
             frozenZombie.setY(randomRow);
-            //spawn zombie
 
             frozenZombie.setAsInitialFrozenBlock();
 
@@ -95,7 +95,7 @@ public class FrozenCaveChapter extends Season {
         Plant[][] grid = ctx.getPlantGrid();
         for (int col = 0; col < ctx.getLevel().getColumns(); col++) {
             Plant p = grid[row][col];
-            if (p != null && !p.hasFireTag()) {
+            if (p != null && !p.hasTheTag(Tag.FIRE)) {
                 p.increaseFreezeLevel();
             }
         }
@@ -109,7 +109,7 @@ public class FrozenCaveChapter extends Season {
                 int c = col + j;
                 if (r >= 0 && r < maxRow && c >= 0 && c < maxCol) {
                     Plant neighbor = grid[r][c];
-                    if (neighbor != null && neighbor.hasFireTag()) {
+                    if (neighbor != null && neighbor.hasTheTag(Tag.FIRE)) {
                         return true;
                     }
                 }

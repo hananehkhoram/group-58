@@ -85,15 +85,14 @@ public class ZombieActivator {
             // EXPLORER
 
             case "ZombieExplorer":
-                behaviors.put("area", new Area(37,
-                        List.of("frostbonnet", "blazingknight")));
+                behaviors.put("area", new Area());
                 behaviors.put("jumper", new Jumper());
                 break;
 
             // TOMB RAISER
 
             case "ZombieTombRaiser":
-                behaviors.put("shooting", new Shooting(Shooting.ShootingType.TOMBRAISER, 0, 0));
+                behaviors.put("shooting", new Shooting(Shooting.ShootingType.TOMBRAISER, 2, 0));
                 break;
 
             // ICE AGE
@@ -120,8 +119,7 @@ public class ZombieActivator {
                 break;
 
             case "ZombieBeachOctopus":
-                behaviors.put("action", new ActionBehavior(
-                        ActionBehavior.ActionType.OCTOPUS_PROJECTILE, new ActionBehavior.ActionParams()));
+                behaviors.put("shooting", new Shooting(Shooting.ShootingType.OCTOPUS, 0, 0));
                 break;
 
             case "ZombieBeachSnorkel":
@@ -207,7 +205,6 @@ public class ZombieActivator {
                 break;
 
             case "ZombieProspector":
-                // Flips backward over the lane on a lit stick of dynamite
                 behaviors.put("jumper", new Jumper(0, 0, 0, true));
                 behaviors.put("laser", new LaserShooting(
                         LaserShooting.GunType.DYNAMITE, 0, 0, 0));

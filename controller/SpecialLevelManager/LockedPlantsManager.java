@@ -22,6 +22,7 @@ public class LockedPlantsManager implements LevelManager{
 
     @Override
     public boolean canPlant(String plantName, GameContext context) {
+        if (bannedPlants == null) return true;
         for (Plant bannedPlant : bannedPlants) {
             if (bannedPlant.getName().equalsIgnoreCase(plantName)) {
                 // اگر بازیکن خواست این گیاه را بکارد، سیستم بهش اجازه نمی‌دهد
