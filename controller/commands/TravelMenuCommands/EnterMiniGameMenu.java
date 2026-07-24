@@ -2,8 +2,7 @@ package controller.commands.TravelMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;
-import controller.repository.factory.LevelFactory;
-import model.MiniGame.Beghouled.Beghouled;
+//import model.MiniGame.Beghouled.BeghouledManager;
 import model.MiniGame.Izambi.Izambi;
 import model.MiniGame.VaseGame.Vasecheccker;
 import model.MiniGame.WallnutsGame.WallnutBowlingGame;
@@ -48,8 +47,8 @@ public class EnterMiniGameMenu implements Command {
                         izambiModel.startMiniGame();
 
                     case 4:
-                        Beghouled beghouled = new Beghouled();
-                        beghouled.startMiniGame();
+                        /*BeghouledManager beghouled = new BeghouledManager();
+                        beghouled.initBoard();*/
 
                 }
             }
