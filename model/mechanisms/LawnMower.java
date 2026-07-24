@@ -79,4 +79,12 @@ public class LawnMower {
     public void setDidKilled(boolean didKilled) {
         this.didKilled = didKilled;
     }
+
+    public static LawnMower[] buildLawnMowers() {
+        LawnMower[] mowers = new LawnMower[Level.ROWS];
+        for (int r = 0; r < Level.ROWS; r++) {
+            mowers[r] = new LawnMower(r);
+        }
+        return mowers;
+    }
 }

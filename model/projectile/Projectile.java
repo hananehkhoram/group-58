@@ -1,5 +1,6 @@
 package model.projectile;
 
+import model.level.Level;
 import model.plants.Plant;
 import view.ConsoleView;
 
@@ -45,8 +46,6 @@ public class Projectile {
         this.dirX = dirX;
         this.dirY = dirY;
         this.ownerPlant = ownerPlant;
-        ConsoleView.showMessage("Projectile created at " + x + ", " + y + " from "
-                + (ownerPlant != null ? ownerPlant.getName() : "zombie"));
     }
 
 
@@ -94,6 +93,8 @@ public class Projectile {
                 break;
             case ICE:
                 target.takeDamage(damage);
+                if (target.name().equals("Dodo") || target.name().equals("Hunter") ||
+                target.name().equals("Troglobite")){break;}
                 target.applySlowOrFreeze();
                 break;
             case ELECTRIC:
@@ -139,4 +140,7 @@ public class Projectile {
     public TrajectoryType getTrajectory() { return trajectory; }
     public boolean isFromZombie() { return isFromZombie; }
     public Plant getOwnerPlant() {return ownerPlant;}
+    public boolean isOutOfBounds() {
+        return this.getRow() < 0 || this.getRow() >= Level.ROWS || this.getX() < -1 || this.getX() > Level.COLS;
+    }
 }

@@ -33,14 +33,4 @@ public class Eating implements Behaviors {
             zombie.setEating(false);
         }
     }
-
-    @Override
-    public void onHit(Zombie zombie, int damage) {
-
-    }
-
-    @Override
-    public boolean isDestroyed() {
-        return false;
-    }
 }

@@ -44,16 +44,14 @@ public class Plant implements Damageable {
     private int hp;
     private int row, col;
     private boolean plantFoodActive = false;
-    private double attackCooldown;
 
     private int freezeLevel = 0;
     private double iceHp = 0;
+    private double octHp = 0;
     private boolean isIced = false;
+    private boolean isOctopused =false;
 
     public Plant() {
-    }
-
-    public void update(GameContext ctx) {
     }
 
     @Override
@@ -95,16 +93,13 @@ public class Plant implements Damageable {
     @Override
     public void meltIce() {
         if (isIced) {
-            damageIce(iceHp); // ذوب کامل؛ iceHp را صفر و isIced را false می‌کند
+            damageIce(iceHp);
         }
-        // توجه: مکانیزم "ذوب تدریجی ۶۰ سلامتی در ثانیه در مجاورت گیاه آتشین"
-        // (سند بخش ۴) یک اثر ناحیه‌ای/پیوسته است، نه برخورد یک‌باره‌ی تیر؛
-        // آن باید جدا در GameEngine روی گیاهان مجاور یک Torchwood/Fire tick بخورد.
     }
 
     @Override
     public void applySlowOrFreeze() {
-        increaseFreezeLevel(); // بعد از سه بار فراخوانی خودش isIced=true, iceHp=600 می‌کند
+        increaseFreezeLevel();
     }
 
     // --- Getters / setters used by PlantLoader ---
@@ -279,13 +274,6 @@ public class Plant implements Damageable {
     public int getFreezeLevel() {
         return freezeLevel;
     }
-    public void damageIce(double amount){
-        iceHp -= amount;
-        if (iceHp <= 0){
-            iceHp = 0;
-            isIced = false;
-        }
-    }
 
     public boolean isHasLilyPadUnderneath() {
         return hasLilyPadUnderneath;
@@ -307,6 +295,37 @@ public class Plant implements Damageable {
     public void addBehavior(BehaviorKey key) {
     this.activeBehaviors.add(key);
     }
+    public void damageIce(double amount) {
+        iceHp -= amount;
+        if (iceHp <= 0) {
+            iceHp = 0;
+            isIced = false;
+            freezeLevel = 0;
+        }
+    }
 
+    public void damageOctopuse(double amount) {
+        octHp -= amount;
+        if (octHp <= 0) {
+            octHp = 0;
+            isOctopused = false;
+        }
+    }
 
+    public boolean isIced() {
+        return isIced;
+    }
+
+    public boolean isOctopused() {
+        return isOctopused;
+    }
+
+    public void setOctopused(boolean octopused) {
+        this.isOctopused = octopused;
+        if (octopused) {
+            this.octHp = 600; // مقدار HP اولیه‌ برای اختاپوس
+        } else {
+            this.octHp = 0;
+        }
+    }
 }

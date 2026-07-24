@@ -133,24 +133,46 @@ public class Shooting implements Behaviors {
 
     private void shootIceShard(Zombie zombie, GameContext ctx) {
         int currentSecond = ctx.getTimeManager().getTotalSeconds();
-        int cooldown = 2;
+        int cooldown = 5;
 
         if (currentSecond - lastShotSecond < cooldown) return;
 
-        Plant target = ctx.findNearestPlantInRow(zombie);
+        Plant target = findTargetForHunter(zombie, ctx);
         if (target == null) return;
+        double speed = 0.8;
 
         Projectile shard = new Projectile(
                 10,
-                zombie.getX(), zombie.getRow(), zombie.getRow(),
-                0.15,
+                zombie.getX(),
+                zombie.getRow(),
+                zombie.getRow(),
+                speed,
                 BulletType.ICE,
                 TrajectoryType.STRAIGHT,
                 true,
                 null
         );
+
         ctx.getProjectiles().add(shard);
         lastShotSecond = currentSecond;
+    }
+
+    private Plant findTargetForHunter(Zombie zombie, GameContext ctx) {
+        int row = zombie.getRow();
+        Plant nearestPlant = null;
+        double minDistance = Double.MAX_VALUE;
+
+        for (int c = 0; c < Level.COLS; c++) {
+            Plant p = ctx.getPlantGrid()[row][c];
+            if (p != null && !p.isDead() && c <= zombie.getX() && !p.isIced()) {
+                double dist = zombie.getX() - c;
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    nearestPlant = p;
+                }
+            }
+        }
+        return nearestPlant;
     }
 
     @Override

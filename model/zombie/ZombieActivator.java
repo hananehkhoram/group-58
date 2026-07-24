@@ -206,7 +206,6 @@ public class ZombieActivator {
                 break;
 
             case "ZombieProspector":
-                // Flips backward over the lane on a lit stick of dynamite
                 behaviors.put("jumper", new Jumper(0, 0, 0, true));
                 behaviors.put("laser", new LaserShooting(
                         LaserShooting.GunType.DYNAMITE, 0, 0, 0));

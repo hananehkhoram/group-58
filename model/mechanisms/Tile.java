@@ -2,6 +2,7 @@ package model.mechanisms;
 
 import model.GameContext;
 import model.MiniGame.VaseGame.Vase;
+import model.level.Level;
 import model.plants.*;
 import model.zombie.Zombie;
 
@@ -84,5 +85,15 @@ public class Tile {
 
     public boolean blocksProjectile() {
         return getTerrainType() == TerrainType.GRAVE;
+    }
+
+    public static Tile[][] buildTiles(GameContext ctx) {
+        Tile[][] grid = new Tile[Level.ROWS][Level.COLS];
+        for (int r = 0; r < Level.ROWS; r++) {
+            for (int c = 0; c < Level.COLS; c++) {
+                grid[r][c] = new Tile(c,r, ctx);
+            }
+        }
+        return grid;
     }
 }
