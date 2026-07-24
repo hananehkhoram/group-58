@@ -1,7 +1,5 @@
 package model.GreenHouseData;
 
-import model.user.User;
-
 public class GreenHouse{
     private Pot[][] pots;
 

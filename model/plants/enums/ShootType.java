@@ -1,10 +1,5 @@
 package model.plants.enums;
 
-/**
- * Describes the geometric/targeting pattern of a shot, derived from the
- * "Base Ability" descriptions of every Shooter / Strike-through / Homing
- * plant in plants.csv.
- */
 public enum ShootType {
     /** Single straight shot down the plant's own lane (Peashooter). */
     STRAIGHT,

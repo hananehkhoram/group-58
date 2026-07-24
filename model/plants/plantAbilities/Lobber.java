@@ -6,18 +6,19 @@ import model.projectile.Projectile;
 import model.projectile.BulletType;
 import model.projectile.TrajectoryType;
 import model.zombie.Zombie;
+import model.plants.plantFoodEffect.PlantFoodMode;
 
 public class Lobber implements BaseAbility {
 
     @Override
     public void activate(Plant self, GameContext ctx) {
-
     }
 
-    public void lob(LobType lobType, String interval, Plant plant, GameContext ctx) {
-
+    public void lob(LobType lobType, Plant plant, GameContext ctx) {
         int currentSecond = ctx.getTimeManager().getTotalSeconds();
-        int intervalOfPlant = Integer.parseInt(interval);
+
+        double intervalVal = plant.getActionInterval() != null ? plant.getActionInterval() : 3.0;
+        int intervalOfPlant = (int) intervalVal;
 
         if (currentSecond - plant.getLastActionSecond() >= intervalOfPlant) {
 
@@ -25,11 +26,12 @@ public class Lobber implements BaseAbility {
                 return;
             }
 
-            int damage = 0;
+            int damage = 20;
             try {
-                damage = Integer.parseInt(plant.getDamage());
+                if (plant.getDamage() != null && !plant.getDamage().isEmpty()) {
+                    damage = Integer.parseInt(plant.getDamage());
+                }
             } catch (NumberFormatException e) {
-
             }
 
             boolean hasShot = true;
@@ -59,6 +61,10 @@ public class Lobber implements BaseAbility {
                 case AOE_FIRE:
                     shootProjectile(ctx, plant, damage, BulletType.FIRE);
                     break;
+
+                default:
+                    hasShot = false;
+                    break;
             }
 
             if (hasShot) {
@@ -66,7 +72,6 @@ public class Lobber implements BaseAbility {
             }
         }
     }
-
 
     private void shootProjectile(GameContext ctx, Plant plant, int damage, BulletType type) {
         Projectile p = new Projectile(
@@ -90,5 +95,7 @@ public class Lobber implements BaseAbility {
         return false;
     }
 
+    @Override
+    public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
+    }
 }
-

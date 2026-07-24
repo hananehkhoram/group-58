@@ -39,7 +39,7 @@ public class ScoringManager {
 
 
     public static void onProjectileKill(GameContext ctx, int killCountForThisProjectile) {
-        if (killCountForThisProjectile == 2) {
+        if (killCountForThisProjectile >= 2) {
             ctx.incrementMultiKillPattern();
         }
     }

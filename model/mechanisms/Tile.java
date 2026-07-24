@@ -4,7 +4,6 @@ import model.GameContext;
 import model.MiniGame.VaseGame.Vase;
 import model.level.Level;
 import model.plants.*;
-import model.zombie.Zombie;
 
 public class Tile {
     private int x;
@@ -66,23 +65,10 @@ public class Tile {
         return true;
     }
 
-    public Plant removePlant() {
-        Plant p = ctx.getPlantGrid()[y][x];
-        ctx.getPlantGrid()[y][x] = null;
-        return p;
-    }
-
-    public void addZombie(Zombie zombie) {
-    }
-
-    public Zombie removeZombie() {
-        return null;
-    }
 
     public boolean isPlantable() {
         TerrainType t = getTerrainType();
         return t != TerrainType.WATER && t != TerrainType.GRAVE;
-        //بعضی گیاها روی این توع زمینم میتونن کاشته بشن.برای اونا باید جدای این متد چک بشه
     }
 
     public void setDroppedSeed(String seedName, int lifespanTicks) {
@@ -112,10 +98,6 @@ public class Tile {
         }
     }
 
-    public boolean blocksProjectile() {
-        return getTerrainType() == TerrainType.GRAVE;
-    }
-
     public static Tile[][] buildTiles(GameContext ctx) {
         Tile[][] grid = new Tile[Level.ROWS][Level.COLS];
         for (int r = 0; r < Level.ROWS; r++) {
@@ -125,4 +107,12 @@ public class Tile {
         }
         return grid;
     }
+
+    public void meltIce() {
+        Plant p = getPlant();
+        if (p != null) {
+            p.meltIce();
+        }
+    }
+
 }

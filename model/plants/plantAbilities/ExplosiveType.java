@@ -1,9 +1,5 @@
 package model.plants.plantAbilities;
 
-/**
- * The trigger/effect variant of an Explosive-family plant, derived from the
- * "Base Ability" descriptions in plants.csv.
- */
 public enum ExplosiveType {
     /** Arms after a delay, explodes on zombie contact (Potato Mine). */
     TIMED_MINE,

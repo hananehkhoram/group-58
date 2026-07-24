@@ -7,6 +7,7 @@ import model.plants.upgradeEffect.BehaviorEffect;
 import model.plants.upgradeEffect.BehaviorKey;
 import model.plants.upgradeEffect.StatEffect;
 import model.projectile.Damageable;
+import model.zombie.Zombie;
 
 import java.util.*;
 
@@ -45,6 +46,10 @@ public class Plant implements Damageable {
     private boolean isIced = false;
     private boolean isOctopused = false;
 
+    // طلسمِ جادوگر: گیاه تا زمان مرگِ همون جادوگری که طلسمش کرده به گربه تبدیل می‌مونه
+    private boolean isCatified = false;
+    private Zombie catifiedBy;
+
     public Plant() {
     }
 
@@ -65,6 +70,8 @@ public class Plant implements Damageable {
             freezeLevel = 0;
             isOctopused = false;
             octHp = 0;
+            isCatified = false;
+            catifiedBy = null;
         }
     }
 
@@ -73,7 +80,7 @@ public class Plant implements Damageable {
     }
 
     public void activatePlantFood(GameContext ctx) {
-        if (isOctopused || isIced) return;
+        if (isOctopused || isIced || isCatified) return;
 
         if (baseAbility != null) {
             baseAbility.activatePlantFood(this, ctx, plantFoodMode);
@@ -219,5 +226,16 @@ public class Plant implements Damageable {
         } else {
             this.octHp = 0;
         }
+    }
+
+    public boolean isCatified() { return isCatified; }
+
+    public void setCatified(boolean catified, Zombie caster) {
+        this.isCatified = catified;
+        this.catifiedBy = catified ? caster : null;
+    }
+
+    public Zombie getCatifiedBy() {
+        return catifiedBy;
     }
 }

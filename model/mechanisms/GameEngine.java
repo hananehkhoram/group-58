@@ -30,8 +30,6 @@ public class GameEngine {
     private LawnMower[] lawnMowers;
     private final Random random = new Random();
     private MenuManager menuManager;
-    private int waveTimer = 0;
-    private boolean isFirstWaveTimerSet = false;
 
     public GameEngine(GameContext ctx, MenuManager menuManager) {
         this.ctx = ctx;
@@ -265,7 +263,14 @@ public class GameEngine {
                     continue;
                 }
 
+                long deadBefore = ctx.getAliveZombies().stream().filter(Zombie::isDead).count();
                 p.onHit(z);
+                long deadAfter = ctx.getAliveZombies().stream().filter(Zombie::isDead).count();
+                long newlyKilled = deadAfter - deadBefore;
+                for (int i = 0; i < newlyKilled; i++) {
+                    p.incrementKillCount();
+                }
+
 
                 LaserShooting laser = (LaserShooting) z.getBehaviors().get("laser");
                 if (laser != null) {
@@ -273,6 +278,9 @@ public class GameEngine {
                 }
 
                 if (!p.isActive()) {
+                    if (p.getKillCount() >= 2) {
+                        controller.ScoringManager.onProjectileKill(ctx, p.getKillCount());
+                    }
                     it.remove();
                 }
 
@@ -391,10 +399,6 @@ public class GameEngine {
             tile.setDroppedSeed(vase.getHiddenEntityName(), 100);
             view.ConsoleView.simplePrint("A seed packet for " + vase.getHiddenEntityName() + "dropped at (" + row + ", " + col + ")!\n");
         }
-    }
-
-    public Zombie[] getRowsZombies(int row) {
-        return null;
     }
 
     public LawnMower[] getLawnMowers() {return lawnMowers;}
