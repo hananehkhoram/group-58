@@ -24,6 +24,8 @@ public class Level {
 
     private List<Plant> conveyorPlantPool = new ArrayList<>();
 
+    private int maxWaterColumn = 5;
+
     private List<PrePlacedPlant> saveOurSeedsPlants = new ArrayList<>();
 
     private double timedWarDuration; // مدت زمان مرحله به ثانیه)
@@ -56,7 +58,8 @@ public class Level {
     }
 
     public Level(String name, int rows, int columns, Wave[] waves, LevelType levelType, Season season) {
-        this(name, rows, columns, waves, levelType, season, null, null, null,null);
+        this(name, rows, columns, waves, levelType, season, null, null, null,
+                null);
     }
 
     public String getName() {
@@ -153,6 +156,8 @@ public class Level {
 
     public void findCurrentLevelNumber(Level level) {}
 
-
+    public int getMaxWaterColumn() {
+        return maxWaterColumn;
+    }
 }
 

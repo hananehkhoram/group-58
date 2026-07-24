@@ -7,6 +7,7 @@ import model.GameContext;
 import model.mechanisms.GameEngine;
 import model.mechanisms.Tile;
 import model.plants.Plant;
+import model.plants.Tag;
 import model.user.User;
 import model.user.UserManager;
 import model.projectile.BowlingWallnut;
@@ -56,6 +57,10 @@ public class Planting implements Command {
                 ConsoleView.showMessage("You haven't selected this plant for this level.");
                 return;
             }
+        }
+        if (ctx.getSeason().isWaterCell(y,x,ctx) && !template.hasTheTag(Tag.WATER) && !template.isHasLilyPadUnderneath()){
+            ConsoleView.showMessage("You can't plant this on a water cell!");
+            return;
         }
 
         if (levelManager != null && !levelManager.canPlant(type, ctx)) {
