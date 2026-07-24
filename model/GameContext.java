@@ -95,6 +95,11 @@ public class GameContext {
         this.plantFactory = new PlantFactory(dm);
         this.plantGrid = new Plant[level.getRows()][level.getColumns()];
         this.graveGrid = new Grave[level.getRows()][level.getColumns()];
+        if (level.getWaves() != null) {
+            for (model.mechanisms.Wave w : level.getWaves()) {
+                w.reset();
+            }
+        }
         if (this.levelManager != null) this.levelManager.onLevelStart(this);
         this.timeManager = new TimeManager();
         this.sunManager = new SunManager(this.timeManager, level.getRows(), level.getColumns());
