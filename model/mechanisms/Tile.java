@@ -4,7 +4,6 @@ import model.GameContext;
 import model.MiniGame.VaseGame.Vase;
 import model.level.Level;
 import model.plants.*;
-import model.zombie.Zombie;
 
 public class Tile {
     private int x;
@@ -66,18 +65,6 @@ public class Tile {
         return true;
     }
 
-    public Plant removePlant() {
-        Plant p = ctx.getPlantGrid()[y][x];
-        ctx.getPlantGrid()[y][x] = null;
-        return p;
-    }
-
-    public void addZombie(Zombie zombie) {
-    }
-
-    public Zombie removeZombie() {
-        return null;
-    }
 
     public boolean isPlantable() {
         TerrainType t = getTerrainType();

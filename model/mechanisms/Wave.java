@@ -163,11 +163,4 @@ public class Wave {
 
         return ((double) currentTotalHp / initialTotalHp) <= THRESHOLD_HP_RATIO;
     }
-
-    public int getWaveNumber() { return waveNumber; }
-    public boolean isLastWave() { return isLastWave; }
-    public int getWaveCost() { return waveCost; }
-    public int getWaveDelay() { return waveDelay; }
-    public boolean isStarted() { return started; }
-    public List<Zombie> getSpawnedZombies() { return spawnedZombies; }
 }

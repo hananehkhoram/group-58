@@ -153,9 +153,6 @@ public class Level {
     public void setTimedWarTargetZombies(int n) { this.timedWarTargetZombies = n; }
     public void setTimedWarTargetSun(int n) { this.timedWarTargetSun = n; }
     public void setSunProductionMode(boolean b) { this.isSunProductionMode = b; }
-
-    public void findCurrentLevelNumber(Level level) {}
-
     public int getMaxWaterColumn() {
         return maxWaterColumn;
     }

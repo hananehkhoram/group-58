@@ -30,8 +30,6 @@ public class GameEngine {
     private LawnMower[] lawnMowers;
     private final Random random = new Random();
     private MenuManager menuManager;
-    private int waveTimer = 0;
-    private boolean isFirstWaveTimerSet = false;
 
     public GameEngine(GameContext ctx, MenuManager menuManager) {
         this.ctx = ctx;
@@ -392,10 +390,6 @@ public class GameEngine {
             tile.setDroppedSeed(vase.getHiddenEntityName(), 100);
             view.ConsoleView.simplePrint("A seed packet for " + vase.getHiddenEntityName() + "dropped at (" + row + ", " + col + ")!\n");
         }
-    }
-
-    public Zombie[] getRowsZombies(int row) {
-        return null;
     }
 
     public LawnMower[] getLawnMowers() {return lawnMowers;}
