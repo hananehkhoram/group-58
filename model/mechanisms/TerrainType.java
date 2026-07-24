@@ -8,5 +8,5 @@ public enum TerrainType{
     SLIPPERY_DOWN,
     WATER,
     LOW_TIDE,
-    NECROMANCY//زمینهایی مشابه ساحلهای پست که زامبی میتواند از زیر آن ظاهر شود
+    NECROMANCY
 }

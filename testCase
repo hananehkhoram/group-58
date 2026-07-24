@@ -35,4 +35,4 @@ plant plant -t Peashooter -l (4, 0)
  show map
 
  zombies info
- cheat spawn-zombie -t Default -l (8, 0)
+ cheat spawn-zombie -t Octopus -l (8, 0)

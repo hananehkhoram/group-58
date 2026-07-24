@@ -119,8 +119,7 @@ public class ZombieActivator {
                 break;
 
             case "ZombieBeachOctopus":
-                behaviors.put("action", new ActionBehavior(
-                        ActionBehavior.ActionType.OCTOPUS_PROJECTILE, new ActionBehavior.ActionParams()));
+                behaviors.put("shooting", new Shooting(Shooting.ShootingType.OCTOPUS, 0, 0));
                 break;
 
             case "ZombieBeachSnorkel":

@@ -55,6 +55,7 @@ public class ShowMap implements Command {
                 String plantSymbol = (plant != null)
                         ? plant.getName().substring(0, Math.min(2, plant.getName().length()))
                         : "..";
+
                 StringBuilder projectileSymbol = new StringBuilder();
                 for (Projectile p : ctx.getProjectiles()) {
                     if ((int) Math.round(p.getY()) == r && (int) Math.floor(p.getX()) == c){
