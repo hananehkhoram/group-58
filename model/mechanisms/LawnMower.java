@@ -19,15 +19,9 @@ public class LawnMower {
     public LawnMower(int row) {
         this.row = row;
     }
-
     public boolean checkTrigger(Zombie z) {
         return z.getY() == row && Math.abs(z.getX() - x) < TRIGGER_X;
     }
-
-    public ArrayList<Zombie> getKilledZombies() {
-        return killedZombies;
-    }
-
 
     public void advance(double deltaTicks) {
         if (!isActivated || !isAvailable) return;
