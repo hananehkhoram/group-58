@@ -2,6 +2,7 @@ package model.mechanisms;
 
 import controller.repository.factory.ZombieFactory;
 import model.GameContext;
+import model.level.LevelType;
 import model.user.UserManager;
 import model.zombie.Zombie;
 import view.ConsoleView;
@@ -93,7 +94,9 @@ public class Wave {
             return;
         }
 
-        Random random = new Random();
+        Random random = (ctx.getLevel().getLevelType() == LevelType.BONUS)
+                ? new Random(waveNumber)
+                : new Random();
         ZombieFactory factory = new ZombieFactory(ctx.getDataManager());
         int remainingBudget = budget;
 
@@ -162,5 +165,11 @@ public class Wave {
                 .sum();
 
         return ((double) currentTotalHp / initialTotalHp) <= THRESHOLD_HP_RATIO;
+    }
+
+    public void reset() {
+        started = false;
+        spawnedZombies.clear();
+        initialTotalHp = 0;
     }
 }
