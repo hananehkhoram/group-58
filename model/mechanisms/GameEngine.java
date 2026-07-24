@@ -43,6 +43,20 @@ public class GameEngine {
     }
 
     public void update(double deltaTime) {
+
+        int passedTicks = (int)(deltaTime * 10);
+        int rows = this.ctx.getLevel().getRows();
+        int columns = this.ctx.getLevel().getColumns();
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                Tile tile = this.getTiles(i, j);
+                if (tile != null && tile.hasDroppedSeed()) {
+                    tile.updateSeedTimer(passedTicks);
+                }
+            }
+        }
+
         if (!ctx.isBattleStarted() || ctx.isGameEnded()) return;
 
         if (ctx.getLevelManager() != null) {
@@ -324,12 +338,35 @@ public class GameEngine {
         vase.setBroken(true);
         view.ConsoleView.simplePrint("Crash! you smashed the vase at (" +  row + ", " + col + ")!\n");
 
-        if (vase.getContent() == VaseContent.ZOMBIE){
-            //spawn zombie
-            view.ConsoleView.simplePrint("Zombie popped out!\n");
+        if (vase.getContent() == VaseContent.ZOMBIE) {
+            String zombieName = vase.getHiddenEntityName();
+
+            if (zombieName == null || zombieName.isEmpty() || zombieName.equalsIgnoreCase("Zombie")) {
+                zombieName = "Gargantuar";
+            }
+
+            try {
+                model.zombie.Zombie newZombie = ctx.getZombieFactory().create(zombieName);
+
+                newZombie.setX(col);
+                newZombie.setRow(row);
+
+                ctx.getAliveZombies().add(newZombie);
+                view.ConsoleView.simplePrint("total zombie: " + ctx.getActiveZombies().size() + " | zombie X = : " + newZombie.getX() + " | zombie Y = : " + newZombie.getRow());
+
+                if (zombieName.equalsIgnoreCase("Gargantuar")) {
+                    view.ConsoleView.simplePrint("ROAR! A Gargantuar emerged from the vase at (" + col + ", " + row + ")!\n");
+                } else {
+                    view.ConsoleView.simplePrint("A " + zombieName + " popped out of the vase at (" + col + ", " + row + ")!\n");
+                }
+
+            } catch (IllegalArgumentException e) {
+                view.ConsoleView.simplePrint("Failed to spawn zombie: " + e.getMessage());
+            }
+
         } else if (vase.getContent() == VaseContent.PLANT) {
-            view.ConsoleView.simplePrint("Plant seed popped!\n");
-            // plant plant
+            tile.setDroppedSeed(vase.getHiddenEntityName(), 100);
+            view.ConsoleView.simplePrint("A seed packet for " + vase.getHiddenEntityName() + "dropped at (" + row + ", " + col + ")!\n");
         }
     }
 

@@ -5,6 +5,7 @@ import controller.QuestManager;
 import controller.SpecialLevelManager.*;
 import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
+import controller.repository.factory.ZombieFactory;
 import model.level.Level;
 import model.mechanisms.GameEngine;
 import model.mechanisms.SunManager;
@@ -70,6 +71,7 @@ public class GameContext {
     private int lawnMowerKillsThisLevel = 0;
 
     private int zombiesKilledByLawnMowerThisLevel = 0;
+    private controller.repository.factory.ZombieFactory zombieFactory;
 
     private GameEngine gameEngine;
 
@@ -511,5 +513,11 @@ public class GameContext {
 
     public void setLevelManager(LevelManager levelManager) {
         this.levelManager = levelManager;
+    }
+
+    public controller.repository.factory.ZombieFactory getZombieFactory() { return zombieFactory; }
+
+    public void setZombieFactory(ZombieFactory zombieFactory) {
+        this.zombieFactory = zombieFactory;
     }
 }

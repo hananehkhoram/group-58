@@ -1,6 +1,7 @@
 package model.MiniGame.VaseGame;
 
 import controller.MenuManager;
+import controller.repository.DataManager;
 import controller.repository.factory.LevelFactory;
 import model.GameContext;
 import model.level.Level;
@@ -25,6 +26,8 @@ public class Vasecheccker {
         Season vaseSeason = new vaseSeason(bowlingLevels);
 
         this.ctx = new GameContext(this.currentLevel, vaseSeason);
+        ctx.setZombieFactory(new controller.repository.factory.ZombieFactory(DataManager.getInstance()));
+        this.ctx.setLevelManager(new controller.SpecialLevelManager.ConveyorBeltManager());
         this.gameEngine = new GameEngine(this.ctx, menuManager);
         this.ctx.setGameEngine(this.gameEngine);
 
