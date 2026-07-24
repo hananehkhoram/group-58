@@ -145,10 +145,6 @@ public class GameEngine {
         Iterator<Plant> it = ctx.getAlivePlants().iterator();
         while (it.hasNext()) {
             Plant p = it.next();
-            if (p.isIced() || p.isOctopused()) {
-                continue;
-            }
-
             PlantActivator.activate(p, ctx, this);
             if (p.getHp() <= 0) {
                 ctx.getPlantGrid()[p.getRow()][p.getCol()] = null;

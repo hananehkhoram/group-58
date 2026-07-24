@@ -76,8 +76,8 @@ public class ShowMap implements Command {
                 }
 
                 sb.append("[").append(terrainSymbol).append(plantSymbol)
-                        .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]")
-                        .append(projectileSymbol.isEmpty() ? " " : projectileSymbol);
+                        .append(projectileSymbol.isEmpty() ? " " : projectileSymbol)
+                        .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]");
             }
             sb.append("\n");
         }

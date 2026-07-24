@@ -19,6 +19,9 @@ public final class PlantActivator {
     public static void activate(Plant plant, GameContext ctx, GameEngine engine) {
         BaseAbility ability = plant.getBaseAbility();
         Map<String, String> p = plant.getAbilityParams();
+        if (plant.isIced() || plant.isOctopused()) {
+            return;
+        }
 
         if (ability instanceof Shooters shooters) {
             int amount = Integer.parseInt(p.get("amount"));

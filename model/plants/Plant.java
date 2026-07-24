@@ -56,8 +56,18 @@ public class Plant implements Damageable {
 
     @Override
     public void takeDamage(int amount) {
+        if (isOctopused) {
+            damageOctopuse(amount);
+            return;
+        }
+
         hp -= amount;
-        if (hp < 0) hp = 0;
+        if (hp <= 0) {
+            hp = 0;
+            isIced = false;
+            iceHp = 0;
+            freezeLevel = 0;
+        }
     }
 
     public void heal(int amount) {
@@ -279,9 +289,6 @@ public class Plant implements Damageable {
         return hasLilyPadUnderneath;
     }
 
-    public void setHasLilyPadUnderneath(boolean hasLilyPadUnderneath) {
-        this.hasLilyPadUnderneath = hasLilyPadUnderneath;
-    }
     public int getHp() {
         return hp;
     }

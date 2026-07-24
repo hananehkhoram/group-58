@@ -28,8 +28,11 @@ cheat remove-cooldown
 plant plant -t Peashooter -l (1, 4)
 plant plant -t Sunflower -l (0, 4)
 cheat remove-cooldown
+plant plant -t Peashooter -l (4, 0)
 
  show sun amount
- advance time -t 40 ticks
+ advance time -t 10 ticks
+ show map
+
  zombies info
- cheat spawn-zombie -t Turquoise -l (6, 0)
+ cheat spawn-zombie -t Hunter -l (8, 0)
