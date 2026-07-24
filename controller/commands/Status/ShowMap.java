@@ -62,7 +62,7 @@ public class ShowMap implements Command {
                     } else if (hiddenEntity != null && hiddenEntity.toLowerCase().contains("gargantuar")) {
                         vaseSymbol = "VG"; // کوزه غول (Gargantuar)
                     } else {
-                        vaseSymbol = "V.";  // کوزه معمولی
+                        vaseSymbol = "V ";  // کوزه معمولی (نقطه پاک شد و یک فاصله جایگزین شد)
                     }
                 }
                 // ---------------------------------
@@ -89,16 +89,13 @@ public class ShowMap implements Command {
                         } else {
                             zombieSymbol.append("z");
                         }
-
                     }
                 }
+                String contentSymbol = !vaseSymbol.isEmpty() ? vaseSymbol : plantSymbol;
 
-                String contentSymbol = !vaseSymbol.isEmpty() ? vaseSymbol : plantSymbol;sb.append("[").append(terrainSymbol).append(contentSymbol)
+                sb.append("[").append(terrainSymbol).append(contentSymbol)
                         .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]")
                         .append(projectileSymbol.isEmpty() ? " " : projectileSymbol);
-                sb.append("[").append(terrainSymbol).append(plantSymbol)
-                        .append(projectileSymbol.isEmpty() ? " " : projectileSymbol)
-                        .append(zombieSymbol.isEmpty() ? " " : zombieSymbol).append("]");
             }
             sb.append("\n");
         }

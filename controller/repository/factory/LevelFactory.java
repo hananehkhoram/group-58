@@ -201,25 +201,38 @@ public class LevelFactory {
     public static void setUpVases(GameContext ctx){
         List<Vase> vasePool = new ArrayList<>();
 
-        for (int i = 0; i < 18; i++) {
+        int levelNumber = 1;
+
+        int zombieCount = 8 + (levelNumber * 2);
+        int gargantuarCount = 1 + (levelNumber / 2);
+
+        if (zombieCount + gargantuarCount > 20) {
+            zombieCount = 17;
+            gargantuarCount = 3;
+        }
+
+        int remainingForPlants = 25 - (zombieCount + gargantuarCount);
+
+        int squashCount = Math.max(1, remainingForPlants / 5); // حداقل ۱ کدو به بازیکن بده
+        int melonCount = Math.max(1, remainingForPlants / 3);  // حدود یک سوم هندوانه
+        int peashooterCount = remainingForPlants - squashCount - melonCount; // بقیه نخودسبز
+
+        for (int i = 0; i < zombieCount; i++) {
             vasePool.add(new Vase(VaseContent.ZOMBIE, "Zombie"));
         }
-
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < gargantuarCount; i++) {
             vasePool.add(new Vase(VaseContent.ZOMBIE, "Gargantuar"));
         }
-
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < peashooterCount; i++) {
             vasePool.add(new Vase(VaseContent.PLANT, "peashooter"));
         }
-
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < squashCount; i++) {
             vasePool.add(new Vase(VaseContent.PLANT, "squash"));
         }
-
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < melonCount; i++) {
             vasePool.add(new Vase(VaseContent.PLANT, "Winter Melon"));
         }
+
 
         Collections.shuffle(vasePool);
 
