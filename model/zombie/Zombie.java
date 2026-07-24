@@ -26,6 +26,9 @@ public class Zombie implements Damageable {
     private double x, y;
     private boolean isBoss = false;
 
+    private long spawnTick;
+
+
     private boolean isIced = false;
     private double iceHp = 0;
 
@@ -241,7 +244,9 @@ public class Zombie implements Damageable {
     public boolean isIced() { return isIced; }
     public double getIceHp() { return iceHp; }
     public boolean isEating() { return isEating; }
+    public long getSpawnTick() {return spawnTick;}
 
+    public void setSpawnTick(long spawnTick) {this.spawnTick = spawnTick;}
     public void setId(String id) { this.id = id; }
     public void setName(String name) { this.name = name; }
     public void setHp(int hp) { this.hp = hp; }

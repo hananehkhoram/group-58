@@ -21,6 +21,9 @@ public class Projectile {
     private final double dirX;
     private final double dirY;
 
+    private int killCount = 0;
+
+
     private Damageable homingTarget;                 // فقط برای HOMING
     private final Set<Damageable> alreadyHit = new HashSet<>(); // فقط برای PIERCING
 
@@ -139,4 +142,6 @@ public class Projectile {
     public TrajectoryType getTrajectory() { return trajectory; }
     public boolean isFromZombie() { return isFromZombie; }
     public Plant getOwnerPlant() {return ownerPlant;}
+    public void incrementKillCount() { killCount++; }
+    public int getKillCount() { return killCount; }
 }

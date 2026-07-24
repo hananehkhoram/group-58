@@ -2,6 +2,7 @@ package model;
 
 import controller.NewsManager;
 import controller.QuestManager;
+import controller.ScoringManager;
 import controller.SpecialLevelManager.*;
 import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
@@ -46,6 +47,7 @@ public class GameContext {
     private int totalLostPlants = 0;
     private int totalZombiesKilledInLevel = 0;
 
+
     private DataManager dm;
     private PlantFactory plantFactory;
     private boolean isSetupPhase = false;
@@ -53,6 +55,13 @@ public class GameContext {
     private boolean activeWaveInProgress = false;
     private boolean manualStartCommandReceived = false;
     private boolean battleStarted = false;
+
+    private int multiKillPatternCount = 0;
+    private int simultaneousKillPatternCount = 0;
+    private int quickKillPatternCount = 0;
+    private int killStreakPatternCount = 0;
+    private int precisionFinishPatternCount = 0;
+    private int currentKillStreak = 0;
 
     private final Set<PlantFamily> plantFamiliesUsedToKillThisLevel = new HashSet<>();
     private final Set<PlantFamily> plantFamiliesPlantedThisLevel = new HashSet<>();
@@ -166,6 +175,7 @@ public class GameContext {
             List<Level> levelsInSeason = this.season.getLevels();
             int levelIndex = levelsInSeason.indexOf(this.level);
 
+
             currentUser.setLastLevel(levelIndex + 1);
 
             currentUser.setLastSeason(DataManager.getInstance().seasons.getChapterNumber(this.season));
@@ -190,6 +200,7 @@ public class GameContext {
                 }
             }
             QuestManager.evaluateLevelEndQuests(this, currentUser);
+            ScoringManager.evaluateLevelEndScoring(this, currentUser);
         }
         DataManager.getInstance().saveUser();
         ConsoleView.showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
@@ -222,10 +233,12 @@ public class GameContext {
 
     public void incrementPlantsLost(Plant p) {
         this.totalLostPlants++;
+        resetKillStreak();
         ConsoleView.showMessage("Plant "+p.getName()+" at "+p.getCol()+", "+p.getRow()+" is destroyed.");
     }
 
     public void addZombie(Zombie z) {
+        z.setSpawnTick(timeManager.getTotalTicks());
         aliveZombies.add(z);
         if (!UserManager.getInstance().getCurrentUser().getSeenZombies().contains(z)) {
             NewsManager.addNews("New Zombie", "You unlocked: " + z.getName());
@@ -512,4 +525,24 @@ public class GameContext {
     public void setLevelManager(LevelManager levelManager) {
         this.levelManager = levelManager;
     }
+
+    public void incrementMultiKillPattern() { multiKillPatternCount++; }
+    public void incrementSimultaneousKillPattern() { simultaneousKillPatternCount++; }
+    public void incrementQuickKillPattern() { quickKillPatternCount++; }
+    public void incrementPrecisionFinishPattern() { precisionFinishPatternCount++; }
+
+    public void bumpKillStreak() {
+        currentKillStreak++;
+        if (currentKillStreak % 5 == 0) {
+            killStreakPatternCount++;
+        }
+    }
+
+    public void resetKillStreak() { currentKillStreak = 0; }
+
+    public int getMultiKillPatternCount() { return multiKillPatternCount; }
+    public int getSimultaneousKillPatternCount() { return simultaneousKillPatternCount; }
+    public int getQuickKillPatternCount() { return quickKillPatternCount; }
+    public int getKillStreakPatternCount() { return killStreakPatternCount; }
+    public int getPrecisionFinishPatternCount() { return precisionFinishPatternCount; }
 }
