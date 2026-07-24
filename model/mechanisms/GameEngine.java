@@ -258,24 +258,28 @@ public class GameEngine {
                 if (deflector != null && deflector.canDeflect(p)) {
                     deflector.deflect(p, ctx, z);
                     it.remove();
-                } else if (submerge != null && !submerge.isVulnerableTo(p.getOwnerPlant().getName(), p.getOwnerPlant().isPlantFoodActive())) {
-                } else {
-                    p.onHit(z);
-
-                    LaserShooting laser = (LaserShooting) z.getBehaviors().get("laser");
-                    if (laser != null) {
-                        laser.onProjectileHit(p.getBulletType());
-                    }
-
-                    if (!p.isActive()) {
-                        it.remove();
-                    }
+                    break;
                 }
+
+                if (submerge != null && !submerge.isVulnerableTo(p)) {
+                    continue;
+                }
+
+                p.onHit(z);
+
+                LaserShooting laser = (LaserShooting) z.getBehaviors().get("laser");
+                if (laser != null) {
+                    laser.onProjectileHit(p.getBulletType());
+                }
+
+                if (!p.isActive()) {
+                    it.remove();
+                }
+
                 break;
             }
         }
     }
-
 
 
     private void checkGameEnd() {

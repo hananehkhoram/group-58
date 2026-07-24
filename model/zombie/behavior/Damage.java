@@ -2,10 +2,11 @@ package model.zombie.behavior;
 
 import model.GameContext;
 import model.plants.Plant;
+import model.zombie.Effects;
 import model.zombie.Zombie;
 
 import java.util.List;
- //
+
 public class Damage implements Behaviors {
 
     private final List<TargetType> targetTypes;
@@ -42,8 +43,15 @@ public class Damage implements Behaviors {
         }
 
         if (targetTypes.contains(TargetType.HYPNOTIZED_ZOMBIE)) {
-            // TODO: مکانیزم «زامبی هیپنوتیزم‌شده که برای بازیکن می‌جنگه» هنوز جای دیگه‌ای پیاده نشده.
-            // وقتی پیاده شد، اینجا باید چک کنه آیا تو همون خونه یه زامبیِ هیپنوتیزم‌شده هست، و اگه بود درجا نابودش کنه.
+            for (Zombie otherZombie : ctx.getAliveZombies()) {
+                if (otherZombie == zombie || otherZombie.getRow() != row) continue;
+
+                if (otherZombie.searchEffect(Effects.HYPNOTIZED) && Math.abs(otherZombie.getX() - zombie.getX()) < 0.8) {
+                    otherZombie.takeDamage(Integer.MAX_VALUE);
+                    onKill(zombie);
+                    return;
+                }
+            }
         }
     }
 
@@ -63,10 +71,14 @@ public class Damage implements Behaviors {
     public boolean isDestroyed() {
         return false;
     }
-    public boolean isRecovered(){ return false;}
-    public void destroy(){} //destroy the target
+
+    public boolean isRecovered() {
+        return false;
+    }
+
+    public void destroy() {}
 
     public enum TargetType {
-        PLANT, HYPNOTIZED_ZOMBIE, EXPLORER;
+        PLANT, HYPNOTIZED_ZOMBIE, EXPLORER
     }
 }
