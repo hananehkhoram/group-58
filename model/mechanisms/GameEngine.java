@@ -271,7 +271,6 @@ public class GameEngine {
                     p.incrementKillCount();
                 }
 
-                p.onHit(z);
 
                 LaserShooting laser = (LaserShooting) z.getBehaviors().get("laser");
                 if (laser != null) {
