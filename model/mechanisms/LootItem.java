@@ -29,7 +29,7 @@ public class LootItem {
     public int getY() { return y; }
 
     public static void tryDropLoot(GameContext ctx, int x, int y) {
-        if (random.nextInt(100) >= 99) {
+        if (random.nextInt(100) > 10) {
             return;
         }
 
@@ -41,12 +41,12 @@ public class LootItem {
             if (currentUser != null) {
                 ConsoleView.showMessage("A zombie dropeed a coin; you have should collect it.");
             }
-        } else if (lootRoll == 1) { // ۱ الماس
+        } else if (lootRoll == 1) {
             ctx.addLoot(new LootItem(LootType.DIAMOND, x, y));
             if (currentUser != null) {
                 ConsoleView.showMessage("A zombie dropeed a diamond; yyou have should collect it.");
             }
-        } else { // ۱ گلدان (Pot)
+        } else {
             ctx.addLoot(new LootItem(LootType.POT, x, y));
             if (currentUser != null) {
                 ConsoleView.showMessage("A zombie dropeed a pot; you have should collect it.");
