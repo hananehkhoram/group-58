@@ -384,7 +384,6 @@ public class GameEngine {
                 newZombie.setRow(row);
 
                 ctx.getAliveZombies().add(newZombie);
-                view.ConsoleView.simplePrint("total zombie: " + ctx.getActiveZombies().size() + " | zombie X = : " + newZombie.getX() + " | zombie Y = : " + newZombie.getRow());
 
                 if (zombieName.equalsIgnoreCase("Gargantuar")) {
                     view.ConsoleView.simplePrint("ROAR! A Gargantuar emerged from the vase at (" + col + ", " + row + ")!\n");
@@ -393,7 +392,7 @@ public class GameEngine {
                 }
 
             } catch (IllegalArgumentException e) {
-                view.ConsoleView.simplePrint("Failed to spawn zombie: " + e.getMessage());
+                view.ConsoleView.simplePrint("Failed to spawn zombie: " + e.getMessage() + "\n");
             }
 
         } else if (vase.getContent() == VaseContent.PLANT) {

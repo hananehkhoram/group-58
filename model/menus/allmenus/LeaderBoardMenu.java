@@ -29,14 +29,36 @@ public class LeaderBoardMenu extends BaseMenu {
 
         List<User> allUsers = new ArrayList<>(DataManager.getInstance().users.getUserMap().values());
 
-        allUsers.sort((u1, u2) -> Integer.compare(u2.getMaxMewPoint(), u1.getMaxMewPoint()));
+        allUsers.sort((u1, u2) -> {
+            int scoreCompare = Integer.compare(u2.getMaxMewPoint(), u1.getMaxMewPoint());
+            if (scoreCompare != 0) return scoreCompare;
+
+            int seasonCompare = Integer.compare(u2.getLastSeason(), u1.getLastSeason());
+            if (seasonCompare != 0) return seasonCompare;
+
+            int levelCompare = Integer.compare(u2.getLastLevel(), u1.getLastLevel());
+            if (levelCompare != 0) return levelCompare;
+
+            int quests1 = (u1.getCompletedQuestIds() != null) ? u1.getCompletedQuestIds().size() : 0;
+            int quests2 = (u2.getCompletedQuestIds() != null) ? u2.getCompletedQuestIds().size() : 0;
+            int questCompare = Integer.compare(quests2, quests1);
+            if (questCompare != 0) return questCompare;
+
+            return Integer.compare(u2.getMinigamesCompleted(), u1.getMinigamesCompleted());
+        });
 
         int rank = 1;
         for (User user : allUsers) {
+
+            int completedQuestsCount = (user.getCompletedQuestIds() != null) ? user.getCompletedQuestIds().size() : 0;
+            int minigamesCount = user.getMinigamesCompleted();
+
             view.ConsoleView.simplePrint(rank + "- " + user.getUsername() +
-                                            " | Score: " + user.getMaxMewPoint() +
-                                            " | Season: " + user.getLastSeason() +
-                                            " | Level: " + user.getLastLevel() + "\n");
+                    " | Score: " + user.getMaxMewPoint() +
+                    " | Season: " + user.getLastSeason() +
+                    " | Level: " + user.getLastLevel() +
+                    " | Quests: " + completedQuestsCount +
+                    " | Minigames: " + minigamesCount + "\n");
             rank++;
         }
 
