@@ -179,10 +179,12 @@ public class GameContext {
             List<Level> levelsInSeason = this.season.getLevels();
             int levelIndex = levelsInSeason.indexOf(this.level);
 
+            int chapterNumber = DataManager.getInstance().seasons.getChapterNumber(this.season);
 
-            currentUser.setLastLevel(levelIndex + 1);
-
-            currentUser.setLastSeason(DataManager.getInstance().seasons.getChapterNumber(this.season));
+            if(chapterNumber > 0) {
+                currentUser.setLastLevel(levelIndex + 1);
+                currentUser.setLastSeason(DataManager.getInstance().seasons.getChapterNumber(this.season));
+            }
 
             if (levelIndex + 1 < levelsInSeason.size()) {
                 currentUser.unlockLevel(levelsInSeason.get(levelIndex + 1).getName());
