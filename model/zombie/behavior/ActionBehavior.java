@@ -2,32 +2,24 @@ package model.zombie.behavior;
 
 import model.GameContext;
 import model.plants.Plant;
-import model.projectile.BulletType;
-import model.projectile.Projectile;
-import model.projectile.TrajectoryType;
 import model.zombie.Zombie;
-import java.util.List;
 
-/**
- * Zombies:
- *   ZombieIceAgeTroglobite → PUSH_GRID_ITEM
- *   ZombieWizard           → DARK_WIZARD_ZAP
- *   ZombieArcade           → ARCADE_PUSH
- *   ZombieDarkKing         → KNIGHT_KNIGHTING
- */
+import java.util.HashSet;
+import java.util.Set;
 
 public class ActionBehavior implements Behaviors {
 
     public enum ActionType {
-        PUSH_GRID_ITEM,
-        OCTOPUS_PROJECTILE,
         DARK_WIZARD_ZAP,
-        ARCADE_PUSH,
         KNIGHT_KNIGHTING
     }
 
-    private ActionType actionType;
-    private ActionParams params;
+    private final ActionType actionType;
+    private final ActionParams params;
+
+    private long lastActionTick = 0;
+
+    private final Set<Plant> catifiedPlants = new HashSet<>();
 
     public ActionBehavior(ActionType actionType, ActionParams params) {
         this.actionType = actionType;
@@ -37,62 +29,89 @@ public class ActionBehavior implements Behaviors {
     @Override
     public void onTick(Zombie zombie, GameContext ctx) {
         switch (actionType) {
-            case PUSH_GRID_ITEM:     pushIceBlock(zombie);       break;
-            case OCTOPUS_PROJECTILE: fireInkProjectile(zombie, ctx);  break;
-            case DARK_WIZARD_ZAP:    zapPlant(zombie);           break;
-            case ARCADE_PUSH:        pushWithCabinet(zombie);    break;
-            case KNIGHT_KNIGHTING:   knightNearbyZombies(zombie);break;
+            case DARK_WIZARD_ZAP:
+                catifiedPlants.removeIf(Plant::isDead);
+                zapPlant(zombie, ctx);
+                break;
+            case KNIGHT_KNIGHTING:
+                knightNearbyZombies(zombie, ctx);
+                break;
         }
     }
 
-    @Override
-    public void onHit(Zombie zombie, int damage) {}
+    private void knightNearbyZombies(Zombie king, GameContext ctx) {
+        king.setSpeed(0);
+
+        long currentTick = ctx.getTimeManager().getTotalTicks();
+        float delayInSeconds = (params != null && params.delayBetweenKnightings > 0)
+                ? params.delayBetweenKnightings : 2.5f;
+        long delayInTicks = (long) (delayInSeconds * 10);
+
+        if (currentTick - lastActionTick < delayInTicks) {
+            return;
+        }
+
+        int areaX = (params != null && params.knightingAreaX > 0) ? params.knightingAreaX : 4;
+        int areaY = (params != null && params.knightingAreaY > 0) ? params.knightingAreaY : 3;
+
+        for (Zombie z : ctx.getAliveZombies()) {
+            if (z == king || z.isDead()) continue;
+
+            boolean inXRange = Math.abs(z.getX() - king.getX()) <= areaX;
+            boolean inYRange = Math.abs(z.getRow() - king.getRow()) <= areaY;
+
+            if (inXRange && inYRange) {
+                if (z.getArmor() == null && z.getSecondaryArmor() == null) {
+                    Armor crown = new Armor(ArmorType.SHOULDER_CROWN, ArmorType.SHOULDER_CROWN.baseHealth, true, z.getX(), z.getY());
+                    z.getBehaviors().put("armor", crown);
+
+                    Armor shoulder = new Armor(ArmorType.SHOULDER_ARMOR, ArmorType.SHOULDER_ARMOR.baseHealth, true, z.getX(), z.getY());
+                    z.getBehaviors().put("armor2", shoulder);
+
+                    lastActionTick = currentTick;
+                    break;
+                }
+            }
+        }
+    }
+
+
+    private void zapPlant(Zombie wizard, GameContext ctx) {
+        long currentTick = ctx.getTimeManager().getTotalTicks();
+        float delayInSeconds = (params != null && params.zapDelay > 0) ? params.zapDelay : 3.0f;
+        long delayInTicks = (long) (delayInSeconds * 10);
+
+        if (currentTick - lastActionTick < delayInTicks) {
+            return;
+        }
+
+        Plant target = ctx.findNearestPlantInRow(wizard);
+        if (target != null && !target.isDead() && !target.isCatified()) {
+            target.setCatified(true, wizard);
+            catifiedPlants.add(target);
+            lastActionTick = currentTick;
+        }
+    }
+
 
     @Override
-    public boolean isDestroyed() { return false; }
-
-    private void pushIceBlock(Zombie zombie) {
-        // Troglobite: pushes ice blocks (numberOfIceblocks=3), chillInsteadOfFreeze=true
+    public void onDeath(Zombie zombie, GameContext ctx) {
+        if (actionType == ActionType.DARK_WIZARD_ZAP) {
+            for (Plant p : catifiedPlants) {
+                if (!p.isDead()) {
+                    p.setCatified(false, null);
+                }
+            }
+            catifiedPlants.clear();
+        }
     }
-    private void fireInkProjectile(Zombie zombie, GameContext ctx) {
-        Plant target = ctx.findNearestPlantInRow(zombie);
-        if (target == null) return;
-
-        Projectile ink = new Projectile(
-                0,
-                zombie.getX(), zombie.getRow(), zombie.getRow(),
-                0.12,
-                BulletType.OCTOPUS,
-                TrajectoryType.STRAIGHT,
-                true, null
-        );
-        ctx.getProjectiles().add(ink);
-    }
-    private void zapPlant(Zombie zombie) {
-        // Wizard: transforms plant into sheep
-    }
-    private void pushWithCabinet(Zombie zombie) {
-        // Arcade: pushes forward with cabinet; jamStyle=jam_8bit (audio/visual only)
-    }
-    private void knightNearbyZombies(Zombie zombie) {
-        // King: knights dark zombies in range (areaX=4, areaY=3); delayBetweenKnightings=2.5s
-    }
-
-    public ActionType getActionType() { return actionType; }
-    public ActionParams getParams() { return params; }
 
     public static class ActionParams {
-        // Troglobite
-        public int numberOfIceblocks;
-        public boolean chillInsteadOfFreeze;
-        // King
-        public float delayBetweenKnightings;
-        public int knightingAreaX;
-        public int knightingAreaY;
-        public List<String> validKnightTargets;
-        public List<String> plantablePlants;
-        // Arcade
-        public String jamStyle;
+        public float delayBetweenKnightings = 2.5f;
+        public int knightingAreaX = 4;
+        public int knightingAreaY = 3;
+
+        public float zapDelay = 3.0f;
 
         public ActionParams() {}
     }

@@ -3,7 +3,7 @@ package model.zombie.behavior;
 import model.GameContext;
 import model.plants.Plant;
 import model.zombie.Zombie;
-//
+
 public class Eating implements Behaviors {
 
     @Override
@@ -19,7 +19,7 @@ public class Eating implements Behaviors {
         }
 
         Plant target = ctx.getPlantGrid()[row][col];
-        if (target != null && target.getHp() > 0) {
+        if (target != null && target.getHp() > 0 && !target.isCatified()) {
             boolean wasEating = zombie.isEating();
             zombie.setEating(true);
             if (!wasEating) {

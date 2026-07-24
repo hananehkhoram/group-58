@@ -33,10 +33,10 @@ cheat remove-cooldown
 plant plant -t SunFlower -l (5, 0)
 
  show sun amount
- advance time -t 100 ticks
+ advance time -t 10 ticks
  show map
 
  zombies info
- cheat spawn-zombie -t Troglobite -l (8, 0)
+ cheat spawn-zombie -t Wizard -l (8, 0)
 
 

@@ -19,7 +19,8 @@ public final class PlantActivator {
     public static void activate(Plant plant, GameContext ctx, GameEngine engine) {
         BaseAbility ability = plant.getBaseAbility();
         Map<String, String> p = plant.getAbilityParams();
-        if (plant.isIced() || plant.isOctopused()) {
+
+        if (plant.isIced() || plant.isOctopused() || plant.isCatified()) {
             return;
         }
 
@@ -58,7 +59,7 @@ public final class PlantActivator {
             wallNut.wall(wallNutType, plant, ctx);
 
         } else if (ability instanceof SunProducers sunProducers) {
-            String rate = p.get("sunRate"); // "24", "0", or "everyRound" — passed through as-is
+            String rate = p.get("sunRate");
             int amount = Integer.parseInt(p.get("sunAmount"));
             SunType sunType = SunType.valueOf(p.get("sunType"));
             sunProducers.produceSun(rate, amount, sunType, ctx, plant);
@@ -104,9 +105,6 @@ public final class PlantActivator {
     }
 
     public static void activatePlantFood(Plant plant, GameContext ctx) {
-        // activatePlantFood() is a default no-op on BaseAbility unless overridden;
-        // each class reads plant.getPlantFoodMode() itself to decide how to
-        // amplify its own behavior (see e.g. Shooters.activatePlantFood).
         plant.activatePlantFood(ctx);
     }
 }

@@ -3,7 +3,6 @@ package model.zombie;
 import model.zombie.behavior.*;
 import model.zombie.behavior.ArmorType;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,10 +44,10 @@ public class ZombieActivator {
                 break;
 
             case "ZombieDarkArmor3":
-                behaviors.put("armor", new Armor(          // کلاهخود — magnetshroom می‌تونه اینو بقاپه
+                behaviors.put("armor", new Armor(
                         ArmorType.SHOULDER_CROWN, ArmorType.SHOULDER_CROWN.baseHealth,
                         true, zombie.getX(), zombie.getY()));
-                behaviors.put("armor2", new Armor(         // شانه‌بند — magnetshroom نمی‌تونه اینو بقاپه
+                behaviors.put("armor2", new Armor(
                         ArmorType.SHOULDER_ARMOR, ArmorType.SHOULDER_ARMOR.baseHealth,
                         true, zombie.getX(), zombie.getY()));
                 break;
@@ -138,8 +137,10 @@ public class ZombieActivator {
                 break;
 
             case "ZombieWizard":
+                ActionBehavior.ActionParams wizardParams = new ActionBehavior.ActionParams();
+                wizardParams.zapDelay = 3.0f;
                 behaviors.put("action", new ActionBehavior(
-                        ActionBehavior.ActionType.DARK_WIZARD_ZAP, new ActionBehavior.ActionParams()));
+                        ActionBehavior.ActionType.DARK_WIZARD_ZAP, wizardParams));
                 break;
 
             case "ZombieDarkKing":
@@ -147,10 +148,8 @@ public class ZombieActivator {
                 kingParams.delayBetweenKnightings = 2.5f;
                 kingParams.knightingAreaX = 4;
                 kingParams.knightingAreaY = 3;
-                kingParams.validKnightTargets = List.of("dark","dark_armor1","dark_armor2","dark_armor3");
-                kingParams.plantablePlants = List.of("cherry_bomb","jalapeno","powerlily",
-                        "iceburg","empea","powerplant","goldleaf","grapeshot");
-                behaviors.put("action", new ActionBehavior(ActionBehavior.ActionType.KNIGHT_KNIGHTING, kingParams));
+                behaviors.put("action", new ActionBehavior(
+                        ActionBehavior.ActionType.KNIGHT_KNIGHTING, kingParams));
                 break;
 
             // MODERN DAY / LOST CITY / NEON MIXTAPE
