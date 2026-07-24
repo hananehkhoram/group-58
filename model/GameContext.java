@@ -8,6 +8,7 @@ import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
 import controller.repository.factory.ZombieFactory;
 import model.level.Level;
+import model.level.LevelType;
 import model.mechanisms.GameEngine;
 import model.mechanisms.LootItem;
 import model.mechanisms.SunManager;
@@ -206,7 +207,9 @@ public class GameContext {
                 }
             }
             QuestManager.evaluateLevelEndQuests(this, currentUser);
-            ScoringManager.evaluateLevelEndScoring(this, currentUser);
+            if (this.level.getLevelType() == LevelType.BONUS) {
+                ScoringManager.evaluateLevelEndScoring(this, currentUser);
+            }
         }
         DataManager.getInstance().saveUser();
         ConsoleView.showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
@@ -338,6 +341,8 @@ public class GameContext {
             case Wallnuts_MG:
                 return new ConveyorBeltManager();
             case NORMAL:
+                return null;
+            case BONUS:
                 return null;
             default:
                 return null;

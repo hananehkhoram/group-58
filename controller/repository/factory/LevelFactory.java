@@ -58,10 +58,7 @@ public class LevelFactory {
                 generateWaves(8, 180, 200), LevelType.BOSS_FIGHT, null));
 
         Level bonusLevel = new Level("Ancient Egypt - Bonus", 5, 9,
-                generateWaves(3, 60, 300), LevelType.TIMED_WAR, null);
-        bonusLevel.setTimedWarDuration(60);
-        bonusLevel.setSunProductionMode(true);
-        bonusLevel.setTimedWarTargetSun(500);
+                generateWaves(3, 60, 300), LevelType.BONUS, null);
         levels.add(bonusLevel);
 
         return levels;

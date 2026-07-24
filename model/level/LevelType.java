@@ -14,5 +14,6 @@ public enum LevelType {
     Wallnuts_MG,
     Vase_MG,
     Izambie_MG,
-    Beghouled_MG
+    Beghouled_MG,
+    BONUS
 }
