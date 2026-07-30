@@ -1,5 +1,7 @@
 package controller.repository;
 
+import controller.SpecialLevelManager.*;
+import model.level.Level;
 import model.user.User;
 import model.user.UserManager;
 
@@ -15,6 +17,43 @@ public class DataManager {
     public UserRepository users = new UserRepository();
 
     private final String userPath = "Files/users.dat";
+
+    public String getRelatedMinigame(String seasonName) {
+        return switch (seasonName) {
+            case "Ancient Egypt" -> "Vasebreaker";
+            case "Frozen Caves" -> "Wallnut Bowling";
+            case "Big Wave Beach" -> "I, Zombie";
+            case "Dark Ages" -> "Beghouled";
+            default -> null;
+        };
+    }
+
+    public LevelManager createManagerForLevel(Level level) {
+        switch (level.getLevelType()) {
+            case CONVEYOR_BELT:
+                return new ConveyorBeltManager();
+            case SAVE_QUR_SEEDS:
+                return new SaveOurSeedsManager();
+            case TIMED_WAR:
+                return new TimedWarManager();
+            case NIGHT_OPS:
+                return new NightOpsManager();
+            case DEADLINE:
+                return new DeadLineManager();
+            case PLANT_WHAT_YOU_GET:
+                return new PlantWhatYouGetManager();
+            case LOCKED_PLANTS:
+                return new LockedPlantsManager(level.getBannedPlants(), level.getForcedPlants());
+            case Wallnuts_MG:
+                return new ConveyorBeltManager();
+            case NORMAL:
+                return null;
+            case BONUS:
+                return null;
+            default:
+                return null;
+        }
+    }
 
     private DataManager() {
         instance = this;
@@ -46,6 +85,6 @@ public class DataManager {
         plants.load("Files/plants.csv");
         zombies.load("Files/zombies.csv");
         seasons.load(null);
-        quests.load(null);   // ← این خط اضافه شد؛ حتماً بعد از seasons.load باشه چون داخلش از seasons.getAll() استفاده می‌کنه
+        quests.load(null);
     }
 }

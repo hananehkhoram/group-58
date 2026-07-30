@@ -5,7 +5,7 @@ import model.season.Season;
 
 import java.util.List;
 
-public class beghouledSeason extends Season {
-    public beghouledSeason(List<Level> levels) {}
+public class BeghouledSeason extends Season {
+    public BeghouledSeason(List<Level> levels) {}
 
 }

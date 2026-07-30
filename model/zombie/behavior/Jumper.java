@@ -73,7 +73,8 @@ public class Jumper implements Behaviors {
         this.landed = false;
     }
 
-    public void startJump(GameContext ctx, Zombie zombie, int targetCol, float flightSeconds, int apexValue) {
+    public void startJump(GameContext ctx, Zombie zombie, int targetCol, float flightSeconds,
+                          int apexValue) {
         this.startColumn = zombie.getX();
         this.targetColumn = targetCol;
         this.timeToTravel = flightSeconds;

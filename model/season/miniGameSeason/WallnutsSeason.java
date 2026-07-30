@@ -5,8 +5,8 @@ import model.season.Season;
 
 import java.util.List;
 
-public class wallnutsSeason extends Season {
-    public wallnutsSeason(List<Level> levels) {
+public class WallnutsSeason extends Season {
+    public WallnutsSeason(List<Level> levels) {
         super("Wallnutbowling", levels, 0);
     }
 

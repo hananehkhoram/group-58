@@ -18,4 +18,13 @@ public class MainMenu extends BaseMenu {
         return totalNewsCount > currentUser.getLastReadNewsId();
     }
 
+    @Override
+    public String showMenu() {
+        User currentUser = model.user.UserManager.getInstance().getCurrentUser();
+        if (currentUser != null && shouldShowRedDot(currentUser)) {
+            return name + " (🔴New News!)";
+        }
+        return name;
+    }
+
 }

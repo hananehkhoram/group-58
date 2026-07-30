@@ -1,6 +1,7 @@
 package controller.commands.MechanismsCommands;
 
 import controller.MenuManager;
+import controller.SpecialLevelManager.TimedWarManager;
 import controller.commandHandler.Command;
 import exceptions.CommandNotFound;
 import view.ConsoleView;
@@ -25,6 +26,10 @@ public class AdvancedTime implements Command {
             menuManager.getCtx().getTimeManager().advanceTime(1);
             menuManager.getGameEngine().update(0.1);
         }        ConsoleView.showMessage("Advanced time %d ticks.",ticks);
+        if (menuManager.getCtx().getLevelManager() instanceof TimedWarManager){
+            double timeRemaining = ((TimedWarManager) menuManager.getCtx().getLevelManager()).getTimeRemaining();
+            ConsoleView.showMessage("Time remaining: %.1fs", timeRemaining);
+        }
 
     }
 

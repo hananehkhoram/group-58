@@ -27,7 +27,8 @@ public class SunProducers implements BaseAbility {
                 if (!ctx.isSunPresent(x , y)){
                     ctx.produceSun(x , y, amount);
                     plant.setLastActionSecond(currentSecond);
-                    view.ConsoleView.showMessage("plant " + plant.getName() + "produced a sun at (" + x + ", " + y + ")");
+                    view.ConsoleView.showMessage("plant " + plant.getName() +
+                            "produced a sun at (" + x + ", " + y + ")");
                 }
             }
 

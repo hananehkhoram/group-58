@@ -17,8 +17,8 @@ public class RegisterMenu extends BaseMenu {
     }
 
 
-    public String register(String username, String password, String passwordConfirm, String nickName,
-                         String email,String gender){
+    public String register(String username, String password, String passwordConfirm,
+                           String nickName, String email,String gender){
         if (!um.isUsernameValid(username)) return "Invalid username format.";
         if (um.doesUserExist(username)) return "Username already exists.";
         if (!um.isPasswordValid(password)) return "Invalid password format.";

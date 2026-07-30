@@ -47,7 +47,8 @@ public class ProfileMenu extends BaseMenu {
 
     public String changePassword(String oldPassword, String newPassword) {
         String hashedPassword = Security.hashPassword(newPassword);
-        if (hashedPassword.equals(Security.hashPassword(oldPassword))) return "Password is equal to the current password";
+        if (hashedPassword.equals(Security.hashPassword(oldPassword)))
+            return "Password is equal to the current password";
         if (!um.doesPasswordsMatch(currentUser.getPassword(),Security.hashPassword(oldPassword))) {
             return "Password is incorrect.";
         }

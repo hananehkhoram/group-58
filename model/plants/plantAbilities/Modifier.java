@@ -88,7 +88,7 @@ public class Modifier implements BaseAbility {
             case WATER_PLATFORM:
                 int maxCols = ctx.getLevel().getColumns();
                 for (int c = 0; c < maxCols; c++) {
-                    if (c != pCol && ctx.getSeason().isWaterCell(pRow, c, ctx) && ctx.getPlantGrid()[pRow][c] == null) {
+                    if (c != pCol && ctx.getSeason().isWaterCell(pRow, c, ctx) && ctx.getPlantGrid()[pRow][c] == null){
                         Plant copy = ctx.getPlantFactory().create(self.getName());
                         if (copy != null) {
                             copy.setRow(pRow);

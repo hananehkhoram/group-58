@@ -386,9 +386,11 @@ public class GameEngine {
                 ctx.getAliveZombies().add(newZombie);
 
                 if (zombieName.equalsIgnoreCase("Gargantuar")) {
-                    view.ConsoleView.simplePrint("ROAR! A Gargantuar emerged from the vase at (" + col + ", " + row + ")!\n");
+                    view.ConsoleView.simplePrint("ROAR! A Gargantuar emerged from the vase at " +
+                            "(" + col + ", " + row + ")!\n");
                 } else {
-                    view.ConsoleView.simplePrint("A " + zombieName + " popped out of the vase at (" + col + ", " + row + ")!\n");
+                    view.ConsoleView.simplePrint("A " + zombieName + " popped out of the vase at " +
+                            "(" + col + ", " + row + ")!\n");
                 }
 
             } catch (IllegalArgumentException e) {
@@ -397,7 +399,8 @@ public class GameEngine {
 
         } else if (vase.getContent() == VaseContent.PLANT) {
             tile.setDroppedSeed(vase.getHiddenEntityName(), 100);
-            view.ConsoleView.simplePrint("A seed packet for " + vase.getHiddenEntityName() + "dropped at (" + row + ", " + col + ")!\n");
+            view.ConsoleView.simplePrint("A seed packet for " + vase.getHiddenEntityName() + "dropped at" +
+                    " (" + row + ", " + col + ")!\n");
         }
     }
 

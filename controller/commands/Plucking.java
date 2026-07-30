@@ -16,8 +16,8 @@ public class Plucking implements Command {
 
     @Override
     public void execute(String[] args) {
-        int x = Integer.parseInt(args[0]);
-        int y = Integer.parseInt(args[1]);
+        int x = Integer.parseInt(args[0]); // ستون
+        int y = Integer.parseInt(args[1]); // سطر
 
         GameContext ctx = menuManager.getCtx();
         GameEngine engine = menuManager.getGameEngine();
@@ -27,13 +27,18 @@ public class Plucking implements Command {
             return;
         }
 
-        Plant template = ctx.getPlantGrid()[x][y];
+        if (y < 0 || y >= model.level.Level.ROWS || x < 0 || x >= model.level.Level.COLS) {
+            ConsoleView.showMessage("Invalid location.");
+            return;
+        }
+
+        Plant template = ctx.getPlantGrid()[y][x];
         if (template == null) {
             ConsoleView.showMessage("This plant is not currently on the ground!");
             return;
         }
         ctx.getAlivePlants().remove(template);
-        ctx.getPlantGrid()[x][y] = null;
+        ctx.getPlantGrid()[y][x] = null;
         ConsoleView.showMessage("Plucked %s at (%d, %d).", template.getName(), x, y);
     }
 

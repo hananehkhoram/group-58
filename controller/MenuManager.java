@@ -28,11 +28,12 @@ public class MenuManager {
 
     static {
         ALLOWED_ENTRIES.put(MenuType.REGISTER, EnumSet.of(MenuType.LOGIN));
-        ALLOWED_ENTRIES.put(MenuType.MAIN, EnumSet.of(MenuType.GAME, MenuType.SETTINGS, MenuType.NEWS, MenuType.PROFILE));
+        ALLOWED_ENTRIES.put(MenuType.MAIN, EnumSet.of(MenuType.GAME, MenuType.SETTINGS, MenuType.NEWS,
+                MenuType.PROFILE));
         ALLOWED_ENTRIES.put(MenuType.GAME, EnumSet.of(MenuType.COLLECTION,MenuType.SELECT_PLANTS,MenuType.GREENHOUSE,
                 MenuType.TRAVEL,MenuType.LEADERBOARD));
         ALLOWED_ENTRIES.put(MenuType.GREENHOUSE, EnumSet.of(MenuType.SHOP));
-        // LOGIN -> MAIN عمداً اینجا نیست؛ اون انتقال خودکار توسط دستور login موفق انجام می‌شه، نه menu enter دستی
+
 
         EXIT_TARGET.put(MenuType.LOGIN, MenuType.REGISTER);
         EXIT_TARGET.put(MenuType.GAME, MenuType.MAIN);

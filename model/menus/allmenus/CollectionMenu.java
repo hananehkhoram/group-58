@@ -165,8 +165,10 @@ public class CollectionMenu extends BaseMenu {
         List<StatEffect>[] statUpgrades = plant.getStatUpgrades();
         List<BehaviorEffect>[] behaviorUpgrades = plant.getBehaviorUpgrades();
 
-        List<StatEffect> stats = (statUpgrades != null && levelIndex < statUpgrades.length) ? statUpgrades[levelIndex] : null;
-        List<BehaviorEffect> behaviors = (behaviorUpgrades != null && levelIndex < behaviorUpgrades.length) ? behaviorUpgrades[levelIndex] : null;
+        List<StatEffect> stats = (statUpgrades != null && levelIndex < statUpgrades.length) ?
+                statUpgrades[levelIndex] : null;
+        List<BehaviorEffect> behaviors = (behaviorUpgrades != null && levelIndex < behaviorUpgrades.length) ?
+                behaviorUpgrades[levelIndex] : null;
 
         UpgradeManager.applyUpgrades(plant, stats, behaviors);
         plant.setLevel(nextLevel);

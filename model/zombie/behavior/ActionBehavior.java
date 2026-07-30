@@ -62,10 +62,12 @@ public class ActionBehavior implements Behaviors {
 
             if (inXRange && inYRange) {
                 if (z.getArmor() == null && z.getSecondaryArmor() == null) {
-                    Armor crown = new Armor(ArmorType.SHOULDER_CROWN, ArmorType.SHOULDER_CROWN.baseHealth, true, z.getX(), z.getY());
+                    Armor crown = new Armor(ArmorType.SHOULDER_CROWN, ArmorType.SHOULDER_CROWN.baseHealth,
+                            true, z.getX(), z.getY());
                     z.getBehaviors().put("armor", crown);
 
-                    Armor shoulder = new Armor(ArmorType.SHOULDER_ARMOR, ArmorType.SHOULDER_ARMOR.baseHealth, true, z.getX(), z.getY());
+                    Armor shoulder = new Armor(ArmorType.SHOULDER_ARMOR, ArmorType.SHOULDER_ARMOR.baseHealth,
+                            true, z.getX(), z.getY());
                     z.getBehaviors().put("armor2", shoulder);
 
                     lastActionTick = currentTick;

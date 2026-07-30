@@ -35,7 +35,7 @@ public class FeedPlant implements Command {
             return;
         }
 
-        ctx.usePlantFood(1);
+        UserManager.getInstance().usePlantFood(1);
         plant.activatePlantFood(ctx);
 
         ConsoleView.showMessage("Fed %s at (%d, %d)! Its plant food ability is now active.",

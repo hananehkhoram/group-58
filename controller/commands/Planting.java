@@ -42,7 +42,8 @@ public class Planting implements Command {
         Plant plantToRemoveFromBelt = null; // برای جلوگیری از باگ غیب شدن کارت
 
         if (isConveyorLevel) {
-            controller.SpecialLevelManager.ConveyorBeltManager cbm = (controller.SpecialLevelManager.ConveyorBeltManager) levelManager;
+            controller.SpecialLevelManager.ConveyorBeltManager cbm =
+                    (controller.SpecialLevelManager.ConveyorBeltManager) levelManager;
             for (model.plants.Plant p : cbm.getConveyorBelt()) {
                 if (p.getName().equalsIgnoreCase(type)) {
                     hasCard = true;
@@ -60,13 +61,14 @@ public class Planting implements Command {
                 hasCard = false;
             }
         }
-        if (ctx.getSeason().isWaterCell(y,x,ctx) && !template.hasTheTag(Tag.WATER) && !template.isHasLilyPadUnderneath()){
+        if (ctx.getSeason().isWaterCell(y,x,ctx) && !template.hasTheTag(Tag.WATER)
+                && !template.isHasLilyPadUnderneath()){
             ConsoleView.showMessage("You can't plant this on a water cell!");
             return;
         }
 
         if (!hasCard || template == null) {
-            ConsoleView.simplePrint("You haven't selected this plant for this level.");
+            ConsoleView.simplePrint("You haven't selected this plant for this level.\n");
             return;
         }
 
@@ -98,15 +100,25 @@ public class Planting implements Command {
         }
 
         // بخش مربوط به مینی‌گیم بولینگ
-        if (isBowlingLevel && (type.equalsIgnoreCase("Wall-nut") || type.equalsIgnoreCase("Explode-o-nut") || type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut") || type.equalsIgnoreCase("Cherry Bomb"))) {
+        if (isBowlingLevel && (type.equalsIgnoreCase("Wall-nut") ||
+                type.equalsIgnoreCase("Explode-o-nut") ||
+                type.equalsIgnoreCase("Giant Wall-nut") ||
+                type.equalsIgnoreCase("Tall-nut") ||
+                type.equalsIgnoreCase("Cherry Bomb"))) {
 
-            if (type.equalsIgnoreCase("Explode-o-nut") || type.equalsIgnoreCase("Cherry Bomb")) {
-                model.projectile.ExplodeONut explodeNut = new model.projectile.ExplodeONut(500, x, y, x, 2.0, template, ctx);ctx.getProjectiles().add(explodeNut);
-            } else if (type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut")) {
-                model.projectile.GiantWallnut giantNut = new model.projectile.GiantWallnut(500, x, y, x, 2.0, template);
+            if (type.equalsIgnoreCase("Explode-o-nut") ||
+                    type.equalsIgnoreCase("Cherry Bomb")) {
+                model.projectile.ExplodeONut explodeNut =
+                        new model.projectile.ExplodeONut(500, x, y, x, 2.0, template, ctx);
+                ctx.getProjectiles().add(explodeNut);
+            } else if (type.equalsIgnoreCase("Giant Wall-nut") ||
+                    type.equalsIgnoreCase("Tall-nut")) {
+                model.projectile.GiantWallnut giantNut =
+                        new model.projectile.GiantWallnut(500, x, y, x, 2.0, template);
                 ctx.getProjectiles().add(giantNut);
             } else {
-                model.projectile.BowlingWallnut rollingNut = new model.projectile.BowlingWallnut(500, x, y, x, 2.0, template);
+                model.projectile.BowlingWallnut rollingNut =
+                        new model.projectile.BowlingWallnut(500, x, y, x, 2.0, template);
                 ctx.getProjectiles().add(rollingNut);
             }
 
@@ -116,7 +128,8 @@ public class Planting implements Command {
 
             // حذف گیاه از نوار نقاله در صورت پرتاب موفق
             if (plantToRemoveFromBelt != null) {
-                ((controller.SpecialLevelManager.ConveyorBeltManager) levelManager).getConveyorBelt().remove(plantToRemoveFromBelt);
+                ((controller.SpecialLevelManager.ConveyorBeltManager) levelManager).
+                        getConveyorBelt().remove(plantToRemoveFromBelt);
             }
 
             ConsoleView.showMessage("BOWL! " + type + " is rolling!");
@@ -150,7 +163,8 @@ public class Planting implements Command {
 
         // حذف گیاه از نوار نقاله پس از کاشت موفقیت‌آمیز
         if (plantToRemoveFromBelt != null) {
-            ((controller.SpecialLevelManager.ConveyorBeltManager) levelManager).getConveyorBelt().remove(plantToRemoveFromBelt);
+            ((controller.SpecialLevelManager.ConveyorBeltManager) levelManager).
+                    getConveyorBelt().remove(plantToRemoveFromBelt);
         }
 
         ctx.setCooldown(type, template.getRechargeTime());

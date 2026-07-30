@@ -7,7 +7,7 @@ import model.GameContext;
 import model.level.Level;
 import model.mechanisms.GameEngine;
 import model.season.Season;
-import model.season.miniGameSeason.wallnutsSeason;
+import model.season.miniGameSeason.WallnutsSeason;
 import view.ConsoleView;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public class WallnutBowlingGame {
         List<Level> bowlingLevels = LevelFactory.buildWallnutsLevels();
         this.currentLevel = bowlingLevels.get(0);
 
-        Season bowlingSeason = new wallnutsSeason(bowlingLevels);
+        Season bowlingSeason = new WallnutsSeason(bowlingLevels);
 
         this.ctx = new GameContext(this.currentLevel, bowlingSeason);
         this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));

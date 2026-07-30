@@ -42,7 +42,8 @@ public class Shooting implements Behaviors {
         }
     }
 
-    private void handleShooter(Zombie zombie, GameContext ctx, BulletType bulletType, int cooldownSeconds) {
+    private void handleShooter(Zombie zombie, GameContext ctx, BulletType bulletType,
+                               int cooldownSeconds) {
         int currentSecond = ctx.getTimeManager().getTotalSeconds();
         if (currentSecond - lastShotSecond < cooldownSeconds) return;
 

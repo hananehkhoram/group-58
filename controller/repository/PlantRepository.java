@@ -119,7 +119,8 @@ public class PlantRepository implements AssetRepository<Plant> {
         return PlantFoodMode.valueOf(raw.trim());
     }
 
-    private void parseUpgradeCell(String cell, List<StatEffect> stats, List<BehaviorEffect> behaviors) {
+    private void parseUpgradeCell(String cell, List<StatEffect> stats,
+                                  List<BehaviorEffect> behaviors) {
         if (cell == null || cell.isBlank()) return;
         String[] parts = cell.split(":", 3);
         if (parts.length < 2) return;

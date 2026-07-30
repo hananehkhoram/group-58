@@ -97,7 +97,8 @@ public class ZombieActivator {
             // ICE AGE
 
             case "ZombieIceAgeDodo":
-                behaviors.put("jumper", new Jumper(0.05f, 0.04f, 1, 3));
+                behaviors.put("jumper", new Jumper(0.05f, 0.04f,
+                        1, 3));
                 break;
 
             case "ZombieIceAgeHunter":

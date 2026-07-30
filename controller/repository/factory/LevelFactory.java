@@ -2,7 +2,6 @@ package controller.repository.factory;
 
 import controller.repository.DataManager;
 import model.GameContext;
-import model.MiniGame.VaseGame.Vasecheccker;
 import model.MiniGame.VaseGame.VaseContent;
 import model.MiniGame.VaseGame.Vase;
 import model.level.Level;
@@ -12,12 +11,11 @@ import model.mechanisms.Wave;
 import model.plants.Plant;
 import model.season.*;
 import model.season.miniGameSeason.IzombieSeason;
-import model.season.miniGameSeason.beghouledSeason;
-import model.season.miniGameSeason.vaseSeason;
-import model.season.miniGameSeason.wallnutsSeason;
+import model.season.miniGameSeason.BeghouledSeason;
+import model.season.miniGameSeason.VaseSeason;
+import model.season.miniGameSeason.WallnutsSeason;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -271,15 +269,15 @@ public class LevelFactory {
     Season frozenCaves = new FrozenCaveChapter(frozenCavesLevels);
 
     List<Level> wallnutsLevels = LevelFactory.buildWallnutsLevels();
-    Season wallnutsSeason = new wallnutsSeason(wallnutsLevels);
+    Season wallnutsSeason = new WallnutsSeason(wallnutsLevels);
 
     List<Level> vaseLevels = LevelFactory.buildVaseLevels();
-    Season vaseSeason = new vaseSeason(vaseLevels);
+    Season vaseSeason = new VaseSeason(vaseLevels);
 
     List<Level> IzombieLevels = LevelFactory.buildIzombieLevels();
     Season IzombieSeason = new IzombieSeason(IzombieLevels);
 
     List<Level> BeghouledLevels = LevelFactory.buldBeghouledLevels();
-    Season Befghouled = new beghouledSeason(BeghouledLevels);
+    Season Befghouled = new BeghouledSeason(BeghouledLevels);
 
 }

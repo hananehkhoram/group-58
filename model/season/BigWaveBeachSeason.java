@@ -92,7 +92,8 @@ public class BigWaveBeachSeason extends Season{
                                         Plant plant = grid[r][c];
                                         if (plant != null) {
                                                 if (!plant.hasTheTag(Tag.WATER) && !plant.isHasLilyPadUnderneath()) {
-                                                        ConsoleView.simplePrint(plant.getName() + " drowned at [" + r + "," + c + "]!\n");
+                                                        ConsoleView.simplePrint(plant.getName() +
+                                                                " drowned at [" + r + "," + c + "]!\n");
                                                         grid[r][c] = null;
                                                         ctx.getAlivePlants().remove(plant);
                                                 }

@@ -94,7 +94,8 @@ public class Zombie implements Damageable {
         return (b instanceof Submerge) ? (Submerge) b : null;
     }
 
-    public void setMovingBackward(boolean movingBackward) { this.movingBackward = movingBackward; }
+    public void setMovingBackward(boolean movingBackward)
+    { this.movingBackward = movingBackward; }
     public boolean isMovingBackward() { return movingBackward; }
 
     public void takeDamage(double damage) {
@@ -123,7 +124,8 @@ public class Zombie implements Damageable {
 
         hp -= remaining;
         if (hp <= 0){
-            ConsoleView.showMessage("Zombie of type "+this.getName() +" is dead at " + this.getX() + ", " + this.getY());
+            ConsoleView.showMessage("Zombie of type "+this.getName() +
+                    " is dead at " + this.getX() + ", " + this.getY());
         }
     }
 
@@ -242,7 +244,6 @@ public class Zombie implements Damageable {
     public double getX() { return x; }
     public double getY() { return y; }
     public boolean isIced() { return isIced; }
-    public double getIceHp() { return iceHp; }
     public boolean isEating() { return isEating; }
     public long getSpawnTick() {return spawnTick;}
 
@@ -257,8 +258,6 @@ public class Zombie implements Damageable {
     public void setExtraParams(Map<String, Object> p) { this.extraParams = p; }
     public void setX(double x) { this.x = x; }
     public void setY(double y) { this.y = y; }
-    public void setIced(boolean iced) { this.isIced = iced; }
-    public void setIceHp(double iceHp) { this.iceHp = iceHp; }
     public void setEating(boolean eating) { this.isEating = eating; }
     public void setBehaviors (Map <String, Behaviors> behaviors){this.behaviors = behaviors;}
 

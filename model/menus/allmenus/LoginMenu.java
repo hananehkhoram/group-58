@@ -72,7 +72,8 @@ public class LoginMenu extends BaseMenu {
         this.targetUser = user;
         this.currentState = ResetState.AWAITING_SECURITY_ANSWER;
 
-        return "Security Question: " + user.getSecurityQuestion().getQuestionText() + "\nPlease enter your answer using: answer -a <answer>";
+        return "Security Question: " + user.getSecurityQuestion().getQuestionText() +
+                "\nPlease enter your answer using: answer -a <answer>";
     }
 
     private void resetRecovery() {

@@ -46,7 +46,8 @@ public class Damage implements Behaviors {
             for (Zombie otherZombie : ctx.getAliveZombies()) {
                 if (otherZombie == zombie || otherZombie.getRow() != row) continue;
 
-                if (otherZombie.searchEffect(Effects.HYPNOTIZED) && Math.abs(otherZombie.getX() - zombie.getX()) < 0.8) {
+                if (otherZombie.searchEffect(Effects.HYPNOTIZED) && Math.abs(otherZombie.getX() -
+                        zombie.getX()) < 0.8) {
                     otherZombie.takeDamage(Integer.MAX_VALUE);
                     onKill(zombie);
                     return;

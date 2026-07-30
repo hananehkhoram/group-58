@@ -146,22 +146,28 @@ public class Plant implements Damageable {
     public void setBaseAbility(BaseAbility baseAbility) { this.baseAbility = baseAbility; }
 
     public Map<String, String> getAbilityParams() { return abilityParams; }
-    public void setAbilityParams(Map<String, String> abilityParams) { this.abilityParams = abilityParams; }
+    public void setAbilityParams(Map<String, String> abilityParams)
+    { this.abilityParams = abilityParams; }
 
     public PlantFoodMode getPlantFoodMode() { return plantFoodMode; }
-    public void setPlantFoodMode(PlantFoodMode plantFoodMode) { this.plantFoodMode = plantFoodMode; }
+    public void setPlantFoodMode(PlantFoodMode plantFoodMode)
+    { this.plantFoodMode = plantFoodMode; }
 
     public List<StatEffect>[] getStatUpgrades() { return statUpgrades; }
-    public void setStatUpgrades(List<StatEffect>[] statUpgrades) { this.statUpgrades = statUpgrades; }
+    public void setStatUpgrades(List<StatEffect>[] statUpgrades)
+    { this.statUpgrades = statUpgrades; }
 
     public List<BehaviorEffect>[] getBehaviorUpgrades() { return behaviorUpgrades; }
-    public void setBehaviorUpgrades(List<BehaviorEffect>[] behaviorUpgrades) { this.behaviorUpgrades = behaviorUpgrades; }
+    public void setBehaviorUpgrades(List<BehaviorEffect>[] behaviorUpgrades)
+    { this.behaviorUpgrades = behaviorUpgrades; }
 
     public Double getActionInterval() { return actionInterval; }
-    public void setActionInterval(Double actionInterval) { this.actionInterval = actionInterval; }
+    public void setActionInterval(Double actionInterval)
+    { this.actionInterval = actionInterval; }
 
     public double getRechargeTime() { return rechargeTime; }
-    public void setRechargeTime(double rechargeTime) { this.rechargeTime = rechargeTime; }
+    public void setRechargeTime(double rechargeTime)
+    { this.rechargeTime = rechargeTime; }
 
     public int getLevel() { return level; }
     public void setLevel(int level) { this.level = level; }
@@ -173,7 +179,8 @@ public class Plant implements Damageable {
     public void setCol(int col) { this.col = col; }
 
     public int getLastActionSecond() { return lastActionSecond; }
-    public void setLastActionSecond(int lastActionSecond) { this.lastActionSecond = lastActionSecond; }
+    public void setLastActionSecond(int lastActionSecond)
+    { this.lastActionSecond = lastActionSecond; }
 
     public boolean hasTheTag(Tag tag) {
         return tags != null && tags.contains(tag);
@@ -192,7 +199,8 @@ public class Plant implements Damageable {
     public int getHp() { return hp; }
 
     public boolean isPlantFoodActive() { return plantFoodActive; }
-    public void setPlantFoodActive(boolean plantFoodActive) { this.plantFoodActive = plantFoodActive; }
+    public void setPlantFoodActive(boolean plantFoodActive)
+    { this.plantFoodActive = plantFoodActive; }
 
     private Set<BehaviorKey> activeBehaviors = new HashSet<>();
     public void addBehavior(BehaviorKey key) { this.activeBehaviors.add(key); }
@@ -235,7 +243,4 @@ public class Plant implements Damageable {
         this.catifiedBy = catified ? caster : null;
     }
 
-    public Zombie getCatifiedBy() {
-        return catifiedBy;
-    }
 }

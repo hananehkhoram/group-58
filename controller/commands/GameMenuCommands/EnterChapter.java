@@ -27,25 +27,35 @@ public class EnterChapter implements Command {
 
     @Override
     public void execute(String[] args) {
-        if (args == null || args.length == 0 || args[0] == null) {
-            ConsoleView.showMessage("Please enter a chapter name.");
-            return;
+        Menu currentMenu = menuManager.getCurrentMenu();
+
+        String chapterName = (args != null && args.length > 0 && args[0] != null) ? args[0].trim() : null;
+
+        Season chapter;
+        if (chapterName != null) {
+            chapter = DataManager.getInstance().seasons.get(chapterName);
+            if (chapter == null) {
+                ConsoleView.showMessage("Chapter not found: " + chapterName);
+                return;
+            }
+        } else {
+            if (!(currentMenu instanceof GameMenu)) {
+                ConsoleView.showMessage("Please enter a chapter name.");
+                return;
+            }
+            chapter = ((GameMenu) currentMenu).getCurrentWorld();
+            if (chapter == null) {
+                ConsoleView.showMessage("No chapter specified. Use 'choose world -w <worldName>' first, or" +
+                        " 'menu enter chapter -c <chaptername>'.");
+                return;
+            }
         }
 
-        String chapterName = args[0].trim();
-
-        Season chapter = DataManager.getInstance().seasons.get(chapterName);
-
-        if (chapter == null) {
-            ConsoleView.showMessage("Chapter not found: " + chapterName);
-            return;
-        }
         if (!isChapterUnlocked(chapter, UserManager.getInstance().getCurrentUser())) {
             ConsoleView.showMessage("This chapter is locked.");
             return;
         }
 
-        Menu currentMenu = menuManager.getCurrentMenu();
         Level levelToPlay;
 
         if (args.length > 1 && args[1] != null) {
@@ -75,7 +85,8 @@ public class EnterChapter implements Command {
                     menuManager.getCtx().placeGrave(g, g.getRow(), g.getCol());
                 }
 
-                ConsoleView.showMessage("Let's begin this level: %s\n" , menuManager.getCtx().getLevel().getName());
+                ConsoleView.showMessage("Let's begin this level: %s\n" ,
+                        menuManager.getCtx().getLevel().getName());
                 menuManager.forceChangeMenu("gamemenu");
                 menuManager.getCtx().setBattleStarted(true);
             }else {
@@ -106,5 +117,5 @@ public class EnterChapter implements Command {
             }
         }
         return currentLevel;
-    }//menu enter chapter -c <chapter> -l <levelNumber>
+    }//enter chapter -c <chapter> -l <levelNumber>
 }

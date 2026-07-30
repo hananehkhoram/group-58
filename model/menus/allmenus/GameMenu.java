@@ -26,11 +26,13 @@ public class GameMenu extends BaseMenu {
     }
     public String addCheat(String type, int amount) {
         if (type.equalsIgnoreCase("coin")) {
-            UserManager.getInstance().getCurrentUser().setCoins(UserManager.getInstance().getCurrentUser().getCoins() + amount);
+            UserManager.getInstance().getCurrentUser().setCoins(UserManager.getInstance().getCurrentUser().
+                    getCoins() + amount);
             return "added "+amount+"to your coins.";
         }
         else if (type.equalsIgnoreCase("diamond") || type.equalsIgnoreCase("gem")){
-            UserManager.getInstance().getCurrentUser().setGems(UserManager.getInstance().getCurrentUser().getGems() + amount);
+            UserManager.getInstance().getCurrentUser().setGems(UserManager.getInstance().getCurrentUser().
+                    getGems() + amount);
             return "added "+amount+"to your gems.";
         }
         return "Invalid currency type!";

@@ -16,7 +16,8 @@ public class TimedWarManager implements LevelManager{
             timeRemaining -= deltaTime;
         }
 
-        int currentProgress = isSunMode ? context.getTotalSunProducedInLevel() : context.getTotalZombiesKilledInLevel();
+        int currentProgress = isSunMode ? context.getTotalSunProducedInLevel() :
+                context.getTotalZombiesKilledInLevel();
 
         if (currentProgress >= targetAmount) {
             context.triggerPlayerWin();

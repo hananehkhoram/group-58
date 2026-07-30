@@ -68,101 +68,113 @@ public class ShopMenu extends BaseMenu {
     }
     public String buyItem(int id, int count, String plantType){
         if (count <= 0) {
-            return  "Invalid count.";
+            return "Invalid count.";
         }
+
         ItemType item = shop.getItemById(id);
-        if (item == null){
-            if (id == 0) return buyDailyOffer(count);
-            else return  "Invalid id.";
+        if (item == null) {
+            return id == 0 ? buyDailyOffer(count) : "Invalid id.";
         }
-        else {
-            if (item == ItemType.POT_UNLOCK) {
-                if (currentUser.getOwnedPotsCount() + count > 20) {
-                    return "Purchase failed! You cannot own more than 20 pots.";
-                }
-            }
-            else if (item == ItemType.PLANT_FOOD) {
-                if (currentUser.getPlantFoodCount() + count > 3) {
-                    return "Purchase failed! You cannot hold more than 3 plant foods.";
-                }
-            }
 
-            int totalCost = item.getPrice() * count;
-            if (item.getCurrency() == Currency.COIN) {
-                if (currentUser.getCoins() < totalCost) return "Not enough coins!";
-                currentUser.setCoins(currentUser.getCoins() - totalCost);
-            } else if (item.getCurrency() == Currency.GEM) {
-                if (currentUser.getGems() < totalCost) return "Not enough gems!";
-                currentUser.setGems(currentUser.getGems() - totalCost);
-            }
+        String stockError = checkStockLimit(item, count);
+        if (stockError != null) return stockError;
 
-            if (item == ItemType.POT_UNLOCK) {
-                currentUser.setOwnedPotsCount(currentUser.getOwnedPotsCount() + count);
-                boolean result = greenHouse.unlockFirstLockedPot();
-                if (result) {
-//                    um.saveToFile();
-                    DataManager.getInstance().saveUser();
-                    return "Successfully unlocked " + count + " new pot(s) in your greenhouse!";
-                }
-                else return "Purchase failed! All pots in your greenhouse are already unlocked.";
-            }
-            else if (item == ItemType.PLANT_FOOD) {
-                currentUser.setPlantFoodCount(currentUser.getPlantFoodCount() + count);
-                DataManager.getInstance().saveUser();
-                return "Successfully purchased " + count + " Plant Food(s)! Total: " + currentUser.getPlantFoodCount();
-            }
-            else if (item == ItemType.CURRENCY_CONVERSION) {
-                int coinsGained = item.getAmount() * count;
-                currentUser.setCoins(currentUser.getCoins() + coinsGained);
-//                um.saveToFile();
-                DataManager.getInstance().saveUser();
-                return "Successfully converted gems to " +coinsGained+ "cons.";
-            }
-            else if (item == ItemType.RANDOM_SEED_PACK) {
-                Plant plant = currentUser.getRandomUnlockedPlant();
-                if (plant == null) return "Purchase failed! You don't have any unlocked plants to receive seeds for.";
-                 currentUser.addSeedsToInventory(plant.getName(),item.getAmount() * count);
+        String chargeError = chargeCurrency(item, count);
+        if (chargeError != null) return chargeError;
 
-//                um.saveToFile();
-                DataManager.getInstance().saveUser();
+        return switch (item) {
+            case POT_UNLOCK -> completePotUnlockPurchase(count);
+            case PLANT_FOOD -> completePlantFoodPurchase(count);
+            case CURRENCY_CONVERSION -> completeCurrencyConversion(item, count);
+            case RANDOM_SEED_PACK -> completeRandomSeedPackPurchase(item, count);
+            case SELECTED_SEED_PACK -> completeSelectedSeedPackPurchase(item, count, plantType);
+        };
+    }
 
-                return "Successfully purchased " + count + "x " + item.getDisplayName() +
-                        "! You received " + item.getAmount() * count + " seeds for: " + plant.getName();
-            }
-            else if (item == ItemType.SELECTED_SEED_PACK) {
-                if (plantType == null || plantType.isEmpty()) {
-                    return "You must specify which plant seed you want to buy!";
-                }
+    /** محدودیت‌های موجودی (مثل حداکثر تعداد گلدان یا پلانت‌فود) را چک می‌کند. */
+    private String checkStockLimit(ItemType item, int count) {
+        if (item == ItemType.POT_UNLOCK && currentUser.getOwnedPotsCount() + count > 20) {
+            return "Purchase failed! You cannot own more than 20 pots.";
+        }
+        if (item == ItemType.PLANT_FOOD && currentUser.getPlantFoodCount() + count > 3) {
+            return "Purchase failed! You cannot hold more than 3 plant foods.";
+        }
+        return null;
+    }
 
-                boolean isUnlocked = false;
-                String officialPlantName = "";
+    /** بر اساس نوع ارز، مبلغ رو از کاربر کم می‌کند؛ اگر پول کافی نبود پیام خطا برمی‌گرداند. */
+    private String chargeCurrency(ItemType item, int count) {
+        int totalCost = item.getPrice() * count;
+        if (item.getCurrency() == Currency.COIN) {
+            if (currentUser.getCoins() < totalCost) return "Not enough coins!";
+            currentUser.setCoins(currentUser.getCoins() - totalCost);
+        } else if (item.getCurrency() == Currency.GEM) {
+            if (currentUser.getGems() < totalCost) return "Not enough gems!";
+            currentUser.setGems(currentUser.getGems() - totalCost);
+        }
+        return null;
+    }
 
-                for (Plant p : currentUser.getUnlockedPlantTypes()) {
-                    if (p.getName().equalsIgnoreCase(plantType)) {
-                        isUnlocked = true;
-                        officialPlantName = p.getName();
-                        break;
-                    }
-                }
+    private String completePotUnlockPurchase(int count) {
+        currentUser.setOwnedPotsCount(currentUser.getOwnedPotsCount() + count);
+        if (!greenHouse.unlockFirstLockedPot()) {
+            return "Purchase failed! All pots in your greenhouse are already unlocked.";
+        }
+        DataManager.getInstance().saveUser();
+        return "Successfully unlocked " + count + " new pot(s) in your greenhouse!";
+    }
 
-                if (!isUnlocked) {
-                    return "Purchase failed! You haven't unlocked " + plantType + " yet.";
-                }
+    private String completePlantFoodPurchase(int count) {
+        currentUser.setPlantFoodCount(currentUser.getPlantFoodCount() + count);
+        DataManager.getInstance().saveUser();
+        return "Successfully purchased " + count + " Plant Food(s)! Total: " + currentUser.getPlantFoodCount();
+    }
 
+    private String completeCurrencyConversion(ItemType item, int count) {
+        int coinsGained = item.getAmount() * count;
+        currentUser.setCoins(currentUser.getCoins() + coinsGained);
+        DataManager.getInstance().saveUser();
+        return "Successfully converted gems to " + coinsGained + "cons.";
+    }
 
+    private String completeRandomSeedPackPurchase(ItemType item, int count) {
+        Plant plant = currentUser.getRandomUnlockedPlant();
+        if (plant == null) {
+            return "Purchase failed! You don't have any unlocked plants to receive seeds for.";
+        }
+        int seedsGained = item.getAmount() * count;
+        currentUser.addSeedsToInventory(plant.getName(), seedsGained);
+        DataManager.getInstance().saveUser();
+        return "Successfully purchased " + count + "x " + item.getDisplayName() +
+                "! You received " + seedsGained + " seeds for: " + plant.getName();
+    }
 
-                int totalSeedsGained = item.getAmount() * count;
-                currentUser.addSeedsToInventory(officialPlantName, totalSeedsGained);
+    private String completeSelectedSeedPackPurchase(ItemType item, int count, String plantType) {
+        if (plantType == null || plantType.isEmpty()) {
+            return "You must specify which plant seed you want to buy!";
+        }
 
-//                um.saveToFile();
-                DataManager.getInstance().saveUser();
+        String officialPlantName = findUnlockedPlantName(plantType);
+        if (officialPlantName == null) {
+            return "Purchase failed! You haven't unlocked " + plantType + " yet.";
+        }
 
-                return "Successfully purchased " + count + "x " + item.getDisplayName() +
-                        " for " + officialPlantName + "! Gained " + totalSeedsGained + " seeds.";
+        int totalSeedsGained = item.getAmount() * count;
+        currentUser.addSeedsToInventory(officialPlantName, totalSeedsGained);
+        DataManager.getInstance().saveUser();
+        return "Successfully purchased " + count + "x " + item.getDisplayName() +
+                " for " + officialPlantName + "! Gained " + totalSeedsGained + " seeds.";
+    }
+
+    private String findUnlockedPlantName(String plantType) {
+        for (Plant p : currentUser.getUnlockedPlantTypes()) {
+            if (p.getName().equalsIgnoreCase(plantType)) {
+                return p.getName();
             }
         }
         return null;
     }
+
     public String buyDailyOffer(int count){
         DailyOffer offer = currentUser.getLastDailyOffer();
         if (offer == null) {

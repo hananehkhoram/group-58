@@ -24,7 +24,8 @@ public class Shooters implements BaseAbility {
         //check for striker here
     }
 
-    public void shoot(int damage, int amount, String interval, ShootType shootType, BulletType bulletType, Plant self, GameEngine engine) {
+    public void shoot(int damage, int amount, String interval, ShootType shootType,
+                      BulletType bulletType, Plant self, GameEngine engine) {
         GameContext ctx = engine.getCtx();
         int currentSecond = ctx.getTimeManager().getTotalSeconds();
 
@@ -50,7 +51,8 @@ public class Shooters implements BaseAbility {
         }
     }
 
-    private boolean shootDirectional(int damage, int amount, ShootType shootType, BulletType bulletType, Plant self, GameContext ctx) {
+    private boolean shootDirectional(int damage, int amount, ShootType shootType,
+                                     BulletType bulletType, Plant self, GameContext ctx) {
 
         List<Integer> lanes = resolveLanes(shootType, self, ctx);
         if (lanes.isEmpty()) return false;
@@ -121,7 +123,8 @@ public class Shooters implements BaseAbility {
         return lanes;
     }
 
-    private boolean shootHoming(int damage, BulletType bulletType, ShootType shootType, Plant self, GameContext ctx, GameEngine engine) {
+    private boolean shootHoming(int damage, BulletType bulletType, ShootType shootType,
+                                Plant self, GameContext ctx, GameEngine engine) {
 
         if ("Magnet-shroom".equalsIgnoreCase(self.getName())) {
             return handleMagnetShroomAction(self, ctx);

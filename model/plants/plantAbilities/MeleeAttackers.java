@@ -107,7 +107,8 @@ public class MeleeAttackers implements BaseAbility {
     }
 
     @Override
-    public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {String meleeKind = self.getAbilityParams().get("meleeKind");
+    public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {String meleeKind =
+            self.getAbilityParams().get("meleeKind");
         int pRow = self.getRow();
         int pCol = self.getCol();
 

@@ -63,7 +63,8 @@ public class DarkAgesSeason extends Season{
 
                                 ctx.placeGrave(newGrave, r, c);
 
-                                ConsoleView.simplePrint("A new grave of type [" + type + "] has appeared at row " + r + ", col " + c + "!\n");
+                                ConsoleView.simplePrint("A new grave of type [" + type +
+                                        "] has appeared at row " + r + ", col " + c + "!\n");
                         }
                 }
         }
@@ -91,7 +92,8 @@ public class DarkAgesSeason extends Season{
                 for (int r = 0; r < rows; r++) {
                         for (int c = 0; c < cols; c++) {
                                 if (necromancyCells[r][c] && ctx.getGraveGrid()[r][c] != null) {
-                                        ConsoleView.simplePrint("Necromancy! A zombie rises from the grave at [" + r + "," + c + "].\n");
+                                        ConsoleView.simplePrint("Necromancy! A zombie rises from the grave at" +
+                                                " [" + r + "," + c + "].\n");
 
                                         Zombie summonedZombie = zombieFactory.create("normal");
                                         summonedZombie.setX(c);

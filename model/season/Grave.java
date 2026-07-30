@@ -1,6 +1,7 @@
 package model.season;
 
 import model.GameContext;
+import model.user.UserManager;
 
 public class Grave {
     public enum GraveType { NORMAL, HAS_SUN, HAS_PLANT_FOOD }
@@ -19,7 +20,7 @@ public class Grave {
         if (type.equals(GraveType.HAS_SUN))
             ctx.addSun(50);
         else if (type.equals(GraveType.HAS_PLANT_FOOD))
-            ctx.addPlantFood(1);
+            UserManager.getInstance().addPlantFood(1);
 
         ctx.removeGrave(this.row,this.col);
     }

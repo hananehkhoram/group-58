@@ -131,7 +131,8 @@ public class Wave {
     private Map<String, Zombie> getAvailableZombiePool(GameContext ctx) {
         String seasonName = ctx.getSeason().getName();
         return ctx.getDataManager().zombies.getZombieDataMap().entrySet().stream()
-                .filter(e -> ctx.getDataManager().zombies.isAvailableInChapter(e.getKey(), seasonName))
+                .filter(e -> ctx.getDataManager().zombies.isAvailableInChapter(e.getKey(),
+                        seasonName))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

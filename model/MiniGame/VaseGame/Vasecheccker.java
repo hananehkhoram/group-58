@@ -7,7 +7,7 @@ import model.GameContext;
 import model.level.Level;
 import model.mechanisms.GameEngine;
 import model.season.Season;
-import model.season.miniGameSeason.vaseSeason;
+import model.season.miniGameSeason.VaseSeason;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class Vasecheccker {
         List<Level> bowlingLevels = LevelFactory.buildVaseLevels();
         this.currentLevel = bowlingLevels.get(0);
 
-        Season vaseSeason = new vaseSeason(bowlingLevels);
+        Season vaseSeason = new VaseSeason(bowlingLevels);
 
         this.ctx = new GameContext(this.currentLevel, vaseSeason);
         ctx.setZombieFactory(new controller.repository.factory.ZombieFactory(DataManager.getInstance()));

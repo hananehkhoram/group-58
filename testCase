@@ -4,7 +4,7 @@ pick question -q 1 -a baba -c baba
 menu enter loginmenu
 login -u hana -p #hH12345678
 menu enter gamemenu
-menu enter chapter -c Ancient Egypt
+enter chapter -c Ancient Egypt
 
 add plant -t PeaShooter
 add plant -t Sunflower

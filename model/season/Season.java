@@ -45,7 +45,4 @@ public abstract class Season {
     public String getName() { return name; }
     public List<Level> getLevels() { return levels; }
 
-    public int getChapterNumber() {
-        return chapterNumber;
-    }
 }

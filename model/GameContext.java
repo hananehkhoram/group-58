@@ -25,7 +25,6 @@ import view.ConsoleView;
 import java.util.*;
 
 public class GameContext {
-
     private final Level level;
     private final Season season;
     private final Plant[][] plantGrid;
@@ -50,7 +49,6 @@ public class GameContext {
     private int totalSunProducedInLevel = 0;
     private int totalLostPlants = 0;
     private int totalZombiesKilledInLevel = 0;
-
 
     private DataManager dm;
     private PlantFactory plantFactory;
@@ -89,7 +87,7 @@ public class GameContext {
 
     public GameContext(Level level, Season season) {
         this.level = level;
-        this.levelManager = createManagerForLevel(level);
+        this.levelManager = DataManager.getInstance().createManagerForLevel(level);
         this.season = season;
         this.dm = DataManager.getInstance();
         this.plantFactory = new PlantFactory(dm);
@@ -202,7 +200,7 @@ public class GameContext {
                     currentUser.unlockLevel(nextSeason.getLevels().get(0).getName());
                     NewsManager.addNews("New Season","You unlocked season: "+nextSeason.getName());
                 }
-                String minigameName = getRelatedMinigame(this.season.getName());
+                String minigameName = DataManager.getInstance().getRelatedMinigame(this.season.getName());
                 if (minigameName != null) {
                     Season minigame = DataManager.getInstance().seasons.get(minigameName);
                     if (minigame != null && !minigame.getLevels().isEmpty()) {
@@ -217,16 +215,8 @@ public class GameContext {
             }
         }
         DataManager.getInstance().saveUser();
-        ConsoleView.showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
-    }
-    private String getRelatedMinigame(String seasonName) {
-        return switch (seasonName) {
-            case "Ancient Egypt" -> "Vasebreaker";
-            case "Frozen Caves" -> "Wallnut Bowling";
-            case "Big Wave Beach" -> "I, Zombie";
-            case "Dark Ages" -> "Beghouled";
-            default -> null;
-        };
+        ConsoleView.
+                showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
     }
 
     public void triggerPlayerLoss() {
@@ -254,22 +244,12 @@ public class GameContext {
     public void addZombie(Zombie z) {
         z.setSpawnTick(timeManager.getTotalTicks());
         aliveZombies.add(z);
-        if (!UserManager.getInstance().getCurrentUser().getSeenZombies().contains(z)) {
+        List<Zombie> seenZombies = UserManager.getInstance().getCurrentUser().getSeenZombies();
+        boolean alreadySeen = seenZombies.stream().anyMatch(sz -> sz.getName().equals(z.getName()));
+        if (!alreadySeen) {
             NewsManager.addNews("New Zombie", "You unlocked: " + z.getName());
-            UserManager.getInstance().getCurrentUser().getSeenZombies().add(z);
+            seenZombies.add(z);
         }
-    }
-
-    // WAVE STATE
-
-    public void addPlantFood(int amount) {
-        UserManager.getInstance().getCurrentUser().setPlantFoodCount(UserManager.getInstance().getCurrentUser().getPlantFoodCount() + amount);
-    }
-
-    public boolean usePlantFood(int amount) {
-        if (UserManager.getInstance().getCurrentUser().getPlantFoodCount() - amount < 0) return false;
-        UserManager.getInstance().getCurrentUser().setPlantFoodCount(UserManager.getInstance().getCurrentUser().getPlantFoodCount() - amount);
-        return true;
     }
 
     public void placeGrave(Grave g, int row, int col) {
@@ -317,42 +297,6 @@ public class GameContext {
     }
 
     // GETTERS
-
-    public boolean isNecromancyCell(int row, int col) {
-        return false;
-    }
-
-    public boolean DoesSunFall() {
-        if (levelManager != null && levelManager.disableSkySun()) return false;
-        return season != null && season.sunFallsFromSky();
-    }
-
-    private LevelManager createManagerForLevel(Level level) {
-        switch (level.getLevelType()) {
-            case CONVEYOR_BELT:
-                return new ConveyorBeltManager();
-            case SAVE_QUR_SEEDS:
-                return new SaveOurSeedsManager();
-            case TIMED_WAR:
-                return new TimedWarManager();
-            case NIGHT_OPS:
-                return new NightOpsManager();
-            case DEADLINE:
-                return new DeadLineManager();
-            case PLANT_WHAT_YOU_GET:
-                return new PlantWhatYouGetManager();
-            case LOCKED_PLANTS:
-                return new LockedPlantsManager(level.getBannedPlants(), level.getForcedPlants());
-            case Wallnuts_MG:
-                return new ConveyorBeltManager();
-            case NORMAL:
-                return null;
-            case BONUS:
-                return null;
-            default:
-                return null;
-        }
-    }
 
     public List<Projectile> getProjectiles() {
         return projectiles;
@@ -509,16 +453,26 @@ public class GameContext {
         plant.setCol(col);
     }
 
-    public Set<String> getPlantNamesThatKilledThisLevel() { return plantNamesThatKilledThisLevel; }
-    public Set<PlantFamily> getPlantFamiliesUsedToKillThisLevel() { return plantFamiliesUsedToKillThisLevel; }
-    public Set<PlantFamily> getPlantFamiliesPlantedThisLevel() { return plantFamiliesPlantedThisLevel; }
-    public int getTotalKillsThisLevel() { return totalKillsThisLevel; }
-    public Set<Integer> getPlantedColumns() { return plantedColumns; }
-    public Set<Integer> getPlantedRows() { return plantedRows; }
-    public int getExplosivePlantsPlacedThisLevel() { return explosivePlantsPlacedThisLevel; }
-    public int getSunProducerPlantsPlacedThisLevel() { return sunProducerPlantsPlacedThisLevel; }
-    public int getTotalPlantsPlacedThisLevel() { return totalPlantsPlacedThisLevel; }
-    public int getZombiesKilledByLawnMowerThisLevel() { return zombiesKilledByLawnMowerThisLevel; }
+    public Set<String> getPlantNamesThatKilledThisLevel()
+    { return plantNamesThatKilledThisLevel; }
+    public Set<PlantFamily> getPlantFamiliesUsedToKillThisLevel()
+    { return plantFamiliesUsedToKillThisLevel; }
+    public Set<PlantFamily> getPlantFamiliesPlantedThisLevel()
+    { return plantFamiliesPlantedThisLevel; }
+    public int getTotalKillsThisLevel()
+    { return totalKillsThisLevel; }
+    public Set<Integer> getPlantedColumns()
+    { return plantedColumns; }
+    public Set<Integer> getPlantedRows()
+    { return plantedRows; }
+    public int getExplosivePlantsPlacedThisLevel()
+    { return explosivePlantsPlacedThisLevel; }
+    public int getSunProducerPlantsPlacedThisLevel()
+    { return sunProducerPlantsPlacedThisLevel; }
+    public int getTotalPlantsPlacedThisLevel()
+    { return totalPlantsPlacedThisLevel; }
+    public int getZombiesKilledByLawnMowerThisLevel()
+    { return zombiesKilledByLawnMowerThisLevel; }
 
 
     public void recordFirstWaveStart() {
@@ -579,4 +533,5 @@ public class GameContext {
     public int getQuickKillPatternCount() { return quickKillPatternCount; }
     public int getKillStreakPatternCount() { return killStreakPatternCount; }
     public int getPrecisionFinishPatternCount() { return precisionFinishPatternCount; }
+
 }

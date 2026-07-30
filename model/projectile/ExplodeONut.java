@@ -9,7 +9,8 @@ public class ExplodeONut extends BowlingWallnut {
     private boolean exploded = false;
     private GameContext context;
 
-    public ExplodeONut(int damage, double x, double y, int row, double speed, Plant ownerPlant, GameContext context) {
+    public ExplodeONut(int damage, double x, double y, int row, double speed,
+                       Plant ownerPlant, GameContext context) {
         super(damage, x, y, row, speed, ownerPlant);
         this.context = context;
     }

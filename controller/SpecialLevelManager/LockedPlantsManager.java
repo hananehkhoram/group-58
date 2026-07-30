@@ -47,11 +47,4 @@ public class LockedPlantsManager implements LevelManager{
         }
     }
 
-    public List<Plant> getBannedPlants() {
-        return bannedPlants;
-    }
-
-    public List<Plant> getForcedPlants() {
-        return forcedPlants;
-    }
 }

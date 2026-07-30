@@ -13,8 +13,6 @@ public enum MenuType {
     LEADERBOARD("leaderboardmenu"),
     GREENHOUSE("greenhousemenu"),
     TRAVEL("travelmenu"),
-    COIN_WALLET("coinwalletmenu"),
-    GEM_WALLET("gemwalletmenu"),
     SHOP("shopmenu");
 
     private final String menuName;

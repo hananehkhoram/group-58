@@ -39,7 +39,9 @@ public class CollectSun implements Command {
         if (!collected) {
             ConsoleView.showMessage("There is no sun to collect here.");
         }
-        ConsoleView.showMessage("Sun collected.You currently have %d suns.", menuManager.getCtx().getSunAmount());
+        else {
+            ConsoleView.showMessage("Sun collected.You currently have %d suns.", menuManager.getCtx().getSunAmount());
+        }
     }
 
     //collect sun -l (<x>, <y>)

@@ -41,7 +41,8 @@ public class GreenHouseMenu extends BaseMenu {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 5; j++) {
                 Pot pot = greenHouse.getPot(i, j);
-                sb.append("---------\n").append(" (").append(i).append(", ").append(j).append(") ").append(pot.isLocked() ? "Locked " : "Open ");
+                sb.append("---------\n").append(" (").append(i).append(", ").append(j).append(") ").
+                        append(pot.isLocked() ? "Locked " : "Open ");
                 if (pot.isEmpty()) {
                     sb.append("Pot is empty.\n");
                 } else {
@@ -95,7 +96,8 @@ public class GreenHouseMenu extends BaseMenu {
             String plantName = pot.getPlantType().getName();
 
             if (currentUser.hasStoredBoost(plantName)) {
-                result =  ("Harvested " + plantName + ". You already have a stored boost for this plant, so no extra boost was added.");
+                result =  ("Harvested " + plantName + ". You already have a stored boost for this plant," +
+                        " so no extra boost was added.");
             } else {
                 currentUser.addStoredBoost(plantName);
                 result = ("Harvested " + plantName + "! A stored boost has been activated for your next match.");
