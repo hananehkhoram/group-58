@@ -31,6 +31,8 @@ public class Izambi {
 
         this.ctx = new GameContext(this.currentLevel, izombieSeason);
         this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));
+        this.ctx.setGameEngine(this.gameEngine);
+
 
         this.sunAmount = 150;
         ctx.setSunAmount(this.sunAmount);

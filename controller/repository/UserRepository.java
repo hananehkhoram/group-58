@@ -91,7 +91,8 @@ public class UserRepository implements AssetRepository<User> {
                         .append(pot.isEmpty()).append(PLANT_SEP)
                         .append(pot.getPlantType() == null ? "" : pot.getPlantType().getName()).append(PLANT_SEP)
                         .append(pot.getRemainingPlantedTime()).append(PLANT_SEP)
-                        .append(pot.isPlantReady());
+                        .append(pot.isPlantReady()).append(PLANT_SEP)
+                        .append(pot.isMarigold());
                 greenhouseSb.append(LIST_SEP);
             }
         }
@@ -221,6 +222,9 @@ public class UserRepository implements AssetRepository<User> {
                     }
                     pot.setRemainingPlantedTime(Double.parseDouble(parts[3]));
                     pot.setPlantReady(Boolean.parseBoolean(parts[4]));
+                    if (parts.length > 5 && !parts[5].isBlank()) {
+                        pot.setMarigold(Boolean.parseBoolean(parts[5]));
+                    }
                 }
             }
         }

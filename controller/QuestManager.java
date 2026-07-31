@@ -13,7 +13,13 @@ import view.ConsoleView;
 public class QuestManager {
 
     public static void evaluateLevelEndQuests(GameContext ctx, User user) {
+        evaluateResourceQuests(ctx, user);
+        evaluatePlacementQuests(ctx, user);
+        evaluateCombatQuests(ctx, user);
+        evaluateTimingAndMiscQuests(ctx, user);
+    }
 
+    private static void evaluateResourceQuests(GameContext ctx, User user) {
         if (ctx.getTotalLostPlants() <= 5) {
             complete(user, "economic-herbivore-" + ctx.getTotalLostPlants());
         }
@@ -22,19 +28,17 @@ public class QuestManager {
             complete(user, "defense-master");
         }
 
+        if (ctx.getSunProducerPlantsPlacedThisLevel() == 3 && ctx.getTotalPlantsPlacedThisLevel() == 3) {
+            complete(user, "cloudy-day");
+        }
+    }
+
+    private static void evaluatePlacementQuests(GameContext ctx, User user) {
         if (isGardenSymmetric(ctx, false)) {
             complete(user, "symmetry");
         }
         if (!isGardenSymmetric(ctx, true)) {
             complete(user, "ocd");
-        }
-
-        if (ctx.getExplosivePlantsPlacedThisLevel() >= 3) {
-            complete(user, "pro-destroyer");
-        }
-
-        if (ctx.getSunProducerPlantsPlacedThisLevel() == 3 && ctx.getTotalPlantsPlacedThisLevel() == 3) {
-            complete(user, "cloudy-day");
         }
 
         for (int col = 0; col < ctx.getLevel().getColumns(); col++) {
@@ -58,6 +62,12 @@ public class QuestManager {
         if (hasEmptyRow && hasEmptyColumn) {
             complete(user, "undefended-cross");
         }
+    }
+
+    private static void evaluateCombatQuests(GameContext ctx, User user) {
+        if (ctx.getExplosivePlantsPlacedThisLevel() >= 3) {
+            complete(user, "pro-destroyer");
+        }
 
         if (ctx.getTotalKillsThisLevel() >= 10 && ctx.getPlantNamesThatKilledThisLevel().size() == 1) {
             String onlyKiller = ctx.getPlantNamesThatKilledThisLevel().iterator().next();
@@ -79,12 +89,15 @@ public class QuestManager {
                 break;
             }
         }
+
         for (int n : new int[]{10, 20, 30, 40, 50}) {
             if (ctx.getLawnMowerKillsThisLevel() >= n) {
                 complete(user, "lawnmower-time-" + n);
             }
         }
+    }
 
+    private static void evaluateTimingAndMiscQuests(GameContext ctx, User user) {
         if (ctx.getFirstWaveStartTick() != -1) {
             long deadline = ctx.getFirstWaveStartTick() + 300;
             long earlyKills = ctx.getEarlyKillTicks().stream().filter(t -> t <= deadline).count();
@@ -105,7 +118,6 @@ public class QuestManager {
         if (user.getWinStreakAtMaxDifficulty() >= 5) {
             complete(user, "win-streak-5");
         }
-
     }
     private static boolean onlyShroomPlantsUsed(GameContext ctx) {
         for (Plant p : ctx.getAlivePlants()) {

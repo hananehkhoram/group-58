@@ -30,7 +30,10 @@ public class CheatAddCurrency implements Command {
 
         if (currentMenu instanceof GameMenu){
             String result = ((GameMenu) currentMenu).addCheat(currency,amount);
-            ConsoleView.showMessage("%s\n",result);
+            ConsoleView.showMessage(result);
+        }
+        else {
+            ConsoleView.showMessage("You have to be in game menu for this action!\n");
         }
     }
 }

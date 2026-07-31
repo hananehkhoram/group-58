@@ -25,7 +25,11 @@ public class MeleeAttackers implements BaseAbility {
             case "FRONT_BACK":
                 Zombie targetFB = findTargetFrontOrBack(pRow, pCol, engine);
                 if (targetFB != null) {
+                    boolean aliveBeforeFB = !targetFB.isDead();
                     targetFB.takeDamage(damage);
+                    if (aliveBeforeFB && targetFB.isDead()) {
+                        engine.getCtx().recordPlantKill(plant);
+                    }
                     plant.setLastActionSecond(currentSecond);
                 }
                 break;
@@ -33,15 +37,19 @@ public class MeleeAttackers implements BaseAbility {
             case "FRONT_BACK_FIRE":
                 Zombie targetFBF = findTargetFrontOrBack(pRow, pCol, engine);
                 if (targetFBF != null) {
+                    boolean aliveBeforeFBF = !targetFBF.isDead();
                     targetFBF.takeDamage(damage);
                     targetFBF.meltIce();
+                    if (aliveBeforeFBF && targetFBF.isDead()) {
+                        engine.getCtx().recordPlantKill(plant);
+                    }
                     plant.setLastActionSecond(currentSecond);
                 }
                 break;
 
             case "AOE_3X3":
             case "GROWING_AOE":
-                boolean hitAnyone = applyAoEDamage(pRow, pCol, damage, engine);
+                boolean hitAnyone = applyAoEDamage(pRow, pCol, damage, plant, engine);
                 if (hitAnyone) {
                     plant.setLastActionSecond(currentSecond);
                 }
@@ -66,7 +74,11 @@ public class MeleeAttackers implements BaseAbility {
 
         if (targets != null && !targets.isEmpty()) {
             Zombie target = targets.get(0);
+            boolean aliveBefore = !target.isDead();
             target.takeDamage(Integer.MAX_VALUE);
+            if (aliveBefore && target.isDead()) {
+                engine.getCtx().recordPlantKill(plant);
+            }
             plant.setLastActionSecond(currentSecond);
         }
     }
@@ -84,7 +96,7 @@ public class MeleeAttackers implements BaseAbility {
         return null;
     }
 
-    private boolean applyAoEDamage(int pRow, int pCol, int damage, GameEngine engine) {
+    private boolean applyAoEDamage(int pRow, int pCol, int damage, Plant plant, GameEngine engine) {
         boolean hit = false;
         int maxRows = engine.getCtx().getLevel().getRows();
         int maxCols = engine.getCtx().getLevel().getColumns();
@@ -95,8 +107,11 @@ public class MeleeAttackers implements BaseAbility {
                     List<Zombie> targets = engine.findTargets(r, c, TargetingMode.NONE);
                     if (targets != null && !targets.isEmpty()) {
                         for (Zombie z : targets) {
+                            boolean aliveBefore = !z.isDead();
                             z.takeDamage(damage);
-                            //if (z.getHp() <= 0) ctx.recordPlantKill(self);
+                            if (aliveBefore && z.isDead()) {
+                                engine.getCtx().recordPlantKill(plant);
+                            }
                             hit = true;
                         }
                     }

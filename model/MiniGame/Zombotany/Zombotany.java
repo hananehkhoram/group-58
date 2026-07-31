@@ -30,6 +30,7 @@ public class Zombotany {
 
         //this.ctx = new GameContext(this.currentLevel, zombotanySeason);
         this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));
+        this.ctx.setGameEngine(this.gameEngine);
 
         spawnZombotanyZombies();
 

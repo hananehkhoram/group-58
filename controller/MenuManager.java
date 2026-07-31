@@ -103,6 +103,7 @@ public class MenuManager {
     public void startBattle(Level level, Season season) {
         this.ctx = new GameContext(level, season);
         this.gameEngine = new GameEngine(this.ctx, this);
+        this.ctx.setGameEngine(this.gameEngine);
     }
 
     public GameEngine getGameEngine() { return gameEngine; }

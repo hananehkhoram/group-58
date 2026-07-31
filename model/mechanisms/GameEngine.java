@@ -86,6 +86,7 @@ public class GameEngine {
         }
 
         if (ctx.getCurrentWaveIndex() == 0) {
+            ctx.recordFirstWaveStart();
             spawnWave(waves[0]);
             return;
         }
@@ -131,6 +132,11 @@ public class GameEngine {
                 it.remove();
                 ctx.incrementZombieKills();
                 deathsThisTick.add(z);
+                ctx.recordZombieKillTick();
+                boolean noMowerLeftInRow = !lawnMowers[(int) z.getY()].isAvailable();
+                if (noMowerLeftInRow && Math.floor(z.getX()) == 0) {
+                    ctx.recordAlmostLostKill();
+                }
             }
         }
         controller.ScoringManager.onZombiesDied(ctx, deathsThisTick);
@@ -141,7 +147,13 @@ public class GameEngine {
             if (!l.isActivated() || !l.isAvailable()) continue;
 
             for (Zombie z : getRowZombies(l.getRow())) {
+                boolean aliveBefore = !z.isDead();
                 l.trigger(z);
+                if (aliveBefore && z.isDead()) {
+                    ctx.getAliveZombies().remove(z);
+                    ctx.incrementZombieKills();
+                    ctx.recordLawnMowerKill();
+                }
             }
             l.advance(deltaTime);
 
@@ -263,12 +275,16 @@ public class GameEngine {
                     continue;
                 }
 
+                boolean aliveBeforeHit = !z.isDead();
                 long deadBefore = ctx.getAliveZombies().stream().filter(Zombie::isDead).count();
                 p.onHit(z);
                 long deadAfter = ctx.getAliveZombies().stream().filter(Zombie::isDead).count();
                 long newlyKilled = deadAfter - deadBefore;
                 for (int i = 0; i < newlyKilled; i++) {
                     p.incrementKillCount();
+                }
+                if (aliveBeforeHit && z.isDead()) {
+                    ctx.recordPlantKill(p.getOwnerPlant());
                 }
 
 

@@ -40,9 +40,9 @@ public class ShopMenu extends BaseMenu {
 
         for (ItemType item : shop.getPermanentItems()){
             sb.append("-----------\n");
-            sb.append("Id: ").append(item.getId());
-            sb.append(item.getDisplayName()).append("Price: ").append(item.getPrice());
-            sb.append(item.getCurrency().equals(Currency.COIN) ? "coins.\n" : "gems.\n");
+            sb.append("Id: ").append(item.getId()).append("\n");
+            sb.append(item.getDisplayName()).append(" Price: ").append(item.getPrice());
+            sb.append(item.getCurrency().equals(Currency.COIN) ? " coins.\n" : " gems.\n");
             sb.append("Description: ").append(item.getDescription()).append("\n");
             sb.append("-----------\n");
         }

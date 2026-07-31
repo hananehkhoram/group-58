@@ -46,7 +46,8 @@ public class GreenHouseMenu extends BaseMenu {
                 if (pot.isEmpty()) {
                     sb.append("Pot is empty.\n");
                 } else {
-                    String plantName = pot.isMarigold() ? "Marigold" : pot.getPlantType().getName();
+                    String plantName = (pot.isMarigold() || pot.getPlantType() == null)
+                            ? "Marigold" : pot.getPlantType().getName();
                     sb.append(plantName).append(" Remaining time: ");
                     sb.append(pot.getRemainingPlantedTime()).append("\n");
                     if (pot.isPlantReady()) sb.append("Plant is ready!\n");
@@ -87,7 +88,7 @@ public class GreenHouseMenu extends BaseMenu {
 
 
 
-        if (pot.isMarigold()){
+        if (pot.isMarigold() || pot.getPlantType() == null){
             currentUser.setCoins(currentUser.getCoins() + 500);
             ConsoleView.showMessage("Successfully collected marigold");
             pot.collectPlant();
@@ -127,7 +128,9 @@ public class GreenHouseMenu extends BaseMenu {
 //        um.saveToFile();
         DataManager.getInstance().saveUser();
 
-        return "Successfully accelerated growth! Gained a fully grown " + pot.getPlantType().getName() + " for " +
+        String name = (pot.isMarigold() || pot.getPlantType() == null) ? "Marigold" : pot.getPlantType().getName();
+
+        return "Successfully accelerated growth! Gained a fully grown " + name + " for " +
                 gemsNeeded + " gems.";
     }
     public Plant determineRandomPlantToPlant() {

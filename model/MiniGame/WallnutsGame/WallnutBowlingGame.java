@@ -28,6 +28,7 @@ public class WallnutBowlingGame {
 
         this.ctx = new GameContext(this.currentLevel, bowlingSeason);
         this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));
+        this.ctx.setGameEngine(this.gameEngine);
 
         this.ctx.setLevelManager(new ConveyorBeltManager());
 

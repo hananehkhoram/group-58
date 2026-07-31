@@ -28,7 +28,7 @@ public class GameMenu extends BaseMenu {
         if (type.equalsIgnoreCase("coin")) {
             UserManager.getInstance().getCurrentUser().setCoins(UserManager.getInstance().getCurrentUser().
                     getCoins() + amount);
-            return "added "+amount+"to your coins.";
+            return "added "+amount+" to your coins.";
         }
         else if (type.equalsIgnoreCase("diamond") || type.equalsIgnoreCase("gem")){
             UserManager.getInstance().getCurrentUser().setGems(UserManager.getInstance().getCurrentUser().
