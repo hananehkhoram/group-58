@@ -77,8 +77,59 @@ public class WallNut implements BaseAbility {
 
     @Override
     public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
-        if (mode == PlantFoodMode.GRANT_ARMOR) {
-            self.heal(self.getHp() + 8000);
+        if (mode != PlantFoodMode.GRANT_ARMOR) return;
+
+        String wallNutType = self.getAbilityParams().get("wallNutType");
+        int pRow = self.getRow();
+        int pCol = self.getCol();
+
+        switch (wallNutType) {
+            case "BLOCKER":              // Wall-nut
+                self.heal(4000);
+                break;
+
+            case "TALL_BLOCKER":         // Tall-nut
+                self.heal(8000);
+                break;
+
+            case "REFLECTIVE":           // Endurian: زره فلزی + بازتاب دمیج
+                self.heal(4000);
+                break;
+
+            case "STACKABLE_COVER":      // Pumpkin: زره فلزی قدرتمند
+            case "SUN_GENERATING":       // Sun Bean: زره فلزی قدرتمند
+                self.heal(6000);
+                break;
+
+            case "LANE_REDIRECT":        // Garlic: انتقال اجباری تمام زامبی‌های لاین
+                int maxRows = ctx.getLevel().getRows();
+                for (Zombie z : ctx.getAliveZombies()) {
+                    if (!z.isDead() && z.getRow() == pRow) {
+                        int newRow;
+                        if (pRow == 0) {
+                            newRow = 1;
+                        } else if (pRow == maxRows - 1) {
+                            newRow = pRow - 1;
+                        } else {
+                            newRow = (Math.random() < 0.5) ? pRow - 1 : pRow + 1;
+                        }
+                        z.setY(newRow);
+                    }
+                }
+                break;
+
+            case "LANE_ATTRACT":         // Sweet Potato: جذب اطراف + بازیابی کامل جان
+                for (Zombie z : ctx.getAliveZombies()) {
+                    if (!z.isDead() && Math.abs(z.getRow() - pRow) <= 1) {
+                        z.setY(pRow);
+                    }
+                }
+                int missingHp = self.getBaseHp() - self.getHp();
+                if (missingHp > 0) self.heal(missingHp);
+                break;
+
+            default:
+                break;
         }
     }
 }

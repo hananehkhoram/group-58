@@ -38,6 +38,19 @@ public class SunProducers implements BaseAbility {
 
     @Override
     public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
-        // INSTANT_CONSUME: one large immediate sun drop
+        if (mode != PlantFoodMode.INSTANT_CONSUME) return;
+
+        int bonusSun = switch (self.getName()) {
+            case "Sunflower" -> 150;
+            case "Twin Sunflower" -> 250;
+            case "Sun-shroom" -> 225;
+            case "Primal Sunflower" -> 225;
+            default -> 0;
+        };
+
+        if (bonusSun > 0) {
+            ctx.produceSun(self.getCol(), self.getRow(), bonusSun);
+            view.ConsoleView.showMessage("Plant Food: " + self.getName() + " instantly produced " + bonusSun + " sun!");
+        }
     }
 }

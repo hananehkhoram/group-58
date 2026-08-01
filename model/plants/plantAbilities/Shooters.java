@@ -159,7 +159,53 @@ public class Shooters implements BaseAbility {
 
     @Override
     public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
-        // BARRAGE for most, MULTI_TARGET_BURST for Caulipower/Electric Blueberry, SELF_RESET for Sea/Puff-shroom
+        java.util.Map<String, String> p = self.getAbilityParams();
+        int amount = Integer.parseInt(p.get("amount"));
+        ShootType shootType = ShootType.valueOf(p.get("shootType"));
+        BulletType bulletType = BulletType.valueOf(p.get("bulletType"));
+        GameEngine engine = ctx.getGameEngine();
+
+        int damage = 20;
+        try {
+            if (self.getDamage() != null && !self.getDamage().isEmpty()) {
+                damage = Integer.parseInt(self.getDamage());
+            }
+        } catch (NumberFormatException ignored) {
+        }
+
+        switch (mode) {
+            case BARRAGE -> {
+                int burstShots = 8;
+                int empoweredDamage = damage * 2;
+                for (int i = 0; i < burstShots; i++) {
+                    if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET) {
+                        shootHoming(empoweredDamage, bulletType, shootType, self, ctx, engine);
+                    } else {
+                        shootDirectional(empoweredDamage, amount, shootType, bulletType, self, ctx);
+                    }
+                }
+            }
+            case MULTI_TARGET_BURST -> { // Caulipower, Electric Blueberry, Magnet-shroom
+                if ("Magnet-shroom".equalsIgnoreCase(self.getName())) {
+                    for (int i = 0; i < 3; i++) handleMagnetShroomAction(self, ctx);
+                } else {
+                    for (int i = 0; i < 3; i++) {
+                        shootHoming(damage * 2, bulletType, ShootType.RANDOM_HOMING, self, ctx, engine);
+                    }
+                }
+            }
+            case SELF_RESET -> { // Sea-shroom, Puff-shroom: رفرش همه‌ی نمونه‌های خودشون
+                for (Plant other : ctx.getAlivePlants()) {
+                    if (other.getName().equals(self.getName())) {
+                        other.setLastActionSecond(0);
+                    }
+                }
+            }
+            default -> {
+            }
+        }
+
+        view.ConsoleView.showMessage("Plant Food: " + self.getName() + " unleashed a barrage!");
     }
 
 }

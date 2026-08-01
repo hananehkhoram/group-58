@@ -205,4 +205,85 @@ public class Explosive implements BaseAbility {
     @Override
     public void activate(Plant self, GameContext ctx) {}
 
+    @Override
+    public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
+        String type = self.getAbilityParams().get("explosiveType");
+
+        switch (mode) {
+            case INSTANT_CONSUME:
+                self.setLastActionSecond(ctx.getTimeManager().getTotalSeconds() - 999);
+                spawnClones(self, ctx, 2);
+                break;
+
+            case MULTI_TARGET_BURST:
+                if ("CRUSH".equals(type)) { // Squash: له کردن ۲ زامبی تصادفی
+                    crushRandomZombies(ctx, 2);
+                } else if ("WATER_TRAP".equals(type)) { // Tangle Kelp: کشیدن چند زامبی تصادفی زیر آب
+                    drownRandomWaterZombies(ctx, 3);
+                } else if ("FREEZE_TRAP".equals(type)) { // Iceberg Lettuce: یخ زدن تمام زامبی‌های موجود
+                    for (Zombie z : ctx.getAliveZombies()) {
+                        if (!z.isDead()) z.applySlowOrFreeze();
+                    }
+                }
+                break;
+
+            case GRANT_ARMOR:
+                self.heal(4000);
+                break;
+
+            default:
+                break;
+        }
+        view.ConsoleView.showMessage("Plant Food: " + self.getName() + " activated!");
+    }
+
+    private void crushRandomZombies(GameContext ctx, int count) {
+        List<Zombie> alive = new ArrayList<>();
+        for (Zombie z : ctx.getAliveZombies()) if (!z.isDead()) alive.add(z);
+        java.util.Collections.shuffle(alive);
+        for (int i = 0; i < Math.min(count, alive.size()); i++) {
+            alive.get(i).takeDamage(Integer.MAX_VALUE);
+        }
+    }
+
+    private void drownRandomWaterZombies(GameContext ctx, int count) {
+        List<Zombie> inWater = new ArrayList<>();
+        for (Zombie z : ctx.getAliveZombies()) {
+            if (!z.isDead() && ctx.getSeason().isWaterCell(z.getRow(), (int) z.getX(), ctx)) {
+                inWater.add(z);
+            }
+        }
+        java.util.Collections.shuffle(inWater);
+        for (int i = 0; i < Math.min(count, inWater.size()); i++) {
+            inWater.get(i).takeDamage(9999);
+        }
+    }
+
+    private void spawnClones(Plant self, GameContext ctx, int count) {
+        int pRow = self.getRow();
+        int pCol = self.getCol();
+        int maxRows = ctx.getLevel().getRows();
+        int maxCols = ctx.getLevel().getColumns();
+        int placed = 0;
+
+        for (int dr = -1; dr <= 1 && placed < count; dr++) {
+            for (int dc = -1; dc <= 1 && placed < count; dc++) {
+                if (dr == 0 && dc == 0) continue;
+                int r = pRow + dr, c = pCol + dc;
+                if (r < 0 || r >= maxRows || c < 0 || c >= maxCols) continue;
+                if (ctx.getPlantGrid()[r][c] != null) continue;
+
+                Plant clone = ctx.getPlantFactory().create(self.getName());
+                if (clone == null) continue;
+                clone.setRow(r);
+                clone.setCol(c);
+                clone.setLastActionSecond(ctx.getTimeManager().getTotalSeconds() - 999);
+                ctx.getPlantGrid()[r][c] = clone;
+                ctx.getAlivePlants().add(clone);
+                ctx.recordPlantPlaced(clone, r, c);
+                placed++;
+            }
+        }
+    }
+
 }
