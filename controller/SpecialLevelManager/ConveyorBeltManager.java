@@ -5,7 +5,6 @@ import controller.repository.factory.PlantFactory;
 import model.GameContext;
 import model.plants.Plant;
 import view.ConsoleView;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +13,6 @@ public class ConveyorBeltManager implements LevelManager{
     private double conveyorTimer = 0.0;
     private static final double CONVEYOR_INTERVAL = 12.0;
     private static final int MAX_CAPACITY = 5;
-
-    private DataManager dm;
     private PlantFactory plantFactory;
 
     public ConveyorBeltManager() {

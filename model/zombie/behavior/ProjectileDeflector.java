@@ -1,7 +1,6 @@
 package model.zombie.behavior;
 
 import model.GameContext;
-import model.projectile.BulletType;
 import model.projectile.Projectile;
 import model.projectile.TrajectoryType;
 import model.zombie.Zombie;
@@ -43,12 +42,6 @@ public class ProjectileDeflector implements Behaviors {
             }
         }
     }
-
-    @Override
-    public void onHit(Zombie zombie, int damage) {}
-
-    @Override
-    public boolean isDestroyed() { return false; }
 
     public boolean canDeflect(Projectile p) {
         return switch (mode) {

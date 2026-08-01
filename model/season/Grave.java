@@ -25,9 +25,6 @@ public class Grave {
         ctx.removeGrave(this.row,this.col);
     }
 
-    public void onWaveStart(GameContext ctx) {
-    }
-
     public void takeDamage(int amount,GameContext ctx){
         this.hp -= amount;
         if (this.hp <= 0) {

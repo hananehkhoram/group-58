@@ -84,8 +84,6 @@ public class PianoCharge implements Behaviors {
         return row;
     }
 
-    @Override
-    public void onHit(Zombie zombie, int damage) {}
 
     @Override
     public boolean isDestroyed() { return false; }

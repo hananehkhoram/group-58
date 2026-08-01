@@ -31,7 +31,6 @@ public class Plant implements Damageable {
 
     private Double actionInterval;
     private double rechargeTime;
-    private TargetingMode targetingMode;
     private int lastActionSecond = 0;   // timeManaging
 
     private int level;
@@ -85,9 +84,6 @@ public class Plant implements Damageable {
         if (baseAbility != null) {
             baseAbility.activatePlantFood(this, ctx, plantFoodMode);
         }
-    }
-
-    public void upgrade() {
     }
 
     // --- Damageable ---
