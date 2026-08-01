@@ -10,7 +10,6 @@ import model.plants.Plant;
 import model.plants.Tag;
 import model.user.User;
 import model.user.UserManager;
-import model.projectile.BowlingWallnut;
 import view.ConsoleView;
 
 public class Planting implements Command {
@@ -41,6 +40,9 @@ public class Planting implements Command {
         boolean hasCard = false;
         Plant plantToRemoveFromBelt = null; // برای جلوگیری از باگ غیب شدن کارت
 
+        String heldSeed = ctx.getHeldSeed();
+        boolean isHeldSeed = (heldSeed != null && heldSeed.equalsIgnoreCase(type));
+
         if (isConveyorLevel) {
             controller.SpecialLevelManager.ConveyorBeltManager cbm =
                     (controller.SpecialLevelManager.ConveyorBeltManager) levelManager;
@@ -52,7 +54,18 @@ public class Planting implements Command {
                     break;
                 }
             }
-        } else {
+        }
+
+        if (!hasCard && isHeldSeed) {
+            try {
+                template = ctx.getPlantFactory().create(heldSeed);
+                hasCard = true;
+            }catch (Exception e) {
+                hasCard = false;
+            }
+        }
+
+        if (!hasCard && !isConveyorLevel){
             // در مراحل عادی، گیاه را از فکتوری می‌گیریم تا اطلاعاتش (مثل آفتاب و کول‌داون) خوانده شود
             try {
                 template = ctx.getPlantFactory().create(type);
@@ -72,7 +85,7 @@ public class Planting implements Command {
             return;
         }
 
-        if (levelManager != null && !levelManager.canPlant(type, ctx)) {
+        if (levelManager != null && !isHeldSeed && !levelManager.canPlant(type, ctx)) {
             ConsoleView.showMessage("You can't plant this here.");
             return;
         }
@@ -83,12 +96,12 @@ public class Planting implements Command {
             return;
         }
 
-        if (ctx.isOnCooldown(type) && !isConveyorLevel) {
+        if (ctx.isOnCooldown(type) && !isConveyorLevel && !isHeldSeed) {
             ConsoleView.showMessage("This plant is still recharging.");
             return;
         }
 
-        boolean needsSun = !isConveyorLevel;
+        boolean needsSun = !isConveyorLevel && isHeldSeed;
         if (needsSun && ctx.getSunAmount() < template.getSunCost()) {
             ConsoleView.showMessage("Not enough sun.");
             return;
@@ -137,7 +150,7 @@ public class Planting implements Command {
         }
 
         // بخش کاشت عادی گیاهان
-        if (!isConveyorLevel) ctx.setCooldown(type, template.getRechargeTime());
+        if (!isConveyorLevel && !isHeldSeed) ctx.setCooldown(type, template.getRechargeTime());
 
         Plant newPlant = ctx.getPlantFactory().create(template.getName());
         tile.setPlant(newPlant);
@@ -167,7 +180,13 @@ public class Planting implements Command {
                     getConveyorBelt().remove(plantToRemoveFromBelt);
         }
 
-        ctx.setCooldown(type, template.getRechargeTime());
+        if (isHeldSeed){
+            ctx.setHeldSeed(null);
+        } //DebugF
+
+        if (!isConveyorLevel && !isHeldSeed){
+            ctx.setCooldown(type, template.getRechargeTime());
+        }
         ConsoleView.showMessage("Planted %s at (%d, %d).", type, x, y);
         ctx.recordPlantPlaced(newPlant, y, x);
     }

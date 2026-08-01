@@ -79,6 +79,7 @@ public class GameContext {
     private final List<Long> earlyKillTicks = new ArrayList<>();   // برای «سرعت عمل»
     private int almostLostKillsThisLevel = 0;                       // برای «تقریبا پیروز»
     private int lawnMowerKillsThisLevel = 0;
+    private String heldSeed = null;
 
     private int zombiesKilledByLawnMowerThisLevel = 0;
     private controller.repository.factory.ZombieFactory zombieFactory;
@@ -181,6 +182,9 @@ public class GameContext {
             }
             currentUser.setNumberOfPassedLevels(currentUser.getNumberOfPassedLevels() + 1);
             List<Level> levelsInSeason = this.season.getLevels();
+            if (levelsInSeason == null) {
+                levelsInSeason = new java.util.ArrayList<>();
+            } // DebugF
             int levelIndex = levelsInSeason.indexOf(this.level);
 
             int chapterNumber = DataManager.getInstance().seasons.getChapterNumber(this.season);
@@ -473,6 +477,10 @@ public class GameContext {
     { return totalPlantsPlacedThisLevel; }
     public int getZombiesKilledByLawnMowerThisLevel()
     { return zombiesKilledByLawnMowerThisLevel; }
+
+    public String getHeldSeed()
+    { return heldSeed; }
+    public void setHeldSeed(String heldSeed) { this.heldSeed = heldSeed; }
 
 
     public void recordFirstWaveStart() {

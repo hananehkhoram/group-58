@@ -202,17 +202,13 @@ public class LevelFactory {
 
     public static void setUpVases(GameContext ctx){
         List<Vase> vasePool = new ArrayList<>();
-
         int levelNumber = 1;
-
         int zombieCount = 8 + (levelNumber * 2);
         int gargantuarCount = 1 + (levelNumber / 2);
-
         if (zombieCount + gargantuarCount > 20) {
             zombieCount = 17;
             gargantuarCount = 3;
         }
-
         int remainingForPlants = 25 - (zombieCount + gargantuarCount);
 
         int squashCount = Math.max(1, remainingForPlants / 5); // حداقل ۱ کدو به بازیکن بده

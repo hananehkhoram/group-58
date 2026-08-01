@@ -32,6 +32,5 @@ public class AdvancedTime implements Command {
         }
 
     }
-
     //advance time -t <count> ticks
 }
