@@ -4,11 +4,11 @@ import model.GameContext;
 import model.mechanisms.GameEngine;
 import model.plants.Plant;
 import model.plants.TargetingMode;
+import model.plants.enums.ShootType;
+import model.plants.plantFoodEffect.PlantFoodMode;
 import model.projectile.BulletType;
 import model.projectile.Projectile;
 import model.projectile.TrajectoryType;
-import model.plants.enums.ShootType;
-import model.plants.plantFoodEffect.PlantFoodMode;
 import model.zombie.Zombie;
 import model.zombie.behavior.Armor;
 
@@ -40,7 +40,8 @@ public class Shooters implements BaseAbility {
         if (!canFireNow) return;
 
         boolean hasShot;
-        if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET) {
+        if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET
+                || shootType == ShootType.RANDOM_INSTANT) {
             hasShot = shootHoming(damage, bulletType, shootType, self, ctx, engine);
         } else {
             hasShot = shootDirectional(damage, amount, shootType, bulletType, self, ctx);
@@ -87,7 +88,7 @@ public class Shooters implements BaseAbility {
         List<double[]> dirs = new ArrayList<>();
         switch (shootType) {
             case QUAD_DIAGONAL -> {
-                double d = 1.0 / Math.sqrt(2); // Rotobaga: چهار جهت مورب هم‌زمان
+                double d = 1.0 / Math.sqrt(2);
                 dirs.add(new double[]{d, d});
                 dirs.add(new double[]{d, -d});
                 dirs.add(new double[]{-d, d});

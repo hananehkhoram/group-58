@@ -241,6 +241,15 @@ public class GameEngine {
         Plant plantInCell = ctx.getPlantGrid()[pRow][pCol];
         if (plantInCell == null || plantInCell.isDead()) return false;
 
+        if (p.getTrajectory() == TrajectoryType.BOWLING) {
+            int maxRows = ctx.getLevel().getRows();
+            int newRow = (pRow == 0) ? pRow + 1
+                    : (pRow == maxRows - 1) ? pRow - 1
+                    : (Math.random() < 0.5 ? pRow - 1 : pRow + 1);
+            p.bounceLane(newRow);
+            return false;
+        }
+
         boolean isBlocked = plantInCell.isIced() || plantInCell.isOctopused();
         if (isBlocked && p.getTrajectory() != TrajectoryType.LOBBED) {
             double effectiveDamage = (p.getBulletType() == BulletType.FIRE) ? p.getDamage() * 2 : p.getDamage();
@@ -287,6 +296,8 @@ public class GameEngine {
                     ctx.recordPlantKill(p.getOwnerPlant());
                 }
 
+                applyLobberSplash(p, z);
+
 
                 LaserShooting laser = (LaserShooting) z.getBehaviors().get("laser");
                 if (laser != null) {
@@ -305,6 +316,24 @@ public class GameEngine {
         }
     }
 
+
+    private void applyLobberSplash(Projectile p, Zombie primaryTarget) {
+        model.plants.Plant owner = p.getOwnerPlant();
+        if (owner == null || owner.getAbilityParams() == null) return;
+        String lobType = owner.getAbilityParams().get("lobType");
+        if (!"AOE".equals(lobType) && !"AOE_ICE".equals(lobType) && !"AOE_FIRE".equals(lobType)) return;
+
+        for (Zombie other : ctx.getAliveZombies()) {
+            if (other == primaryTarget || other.isDead()) continue;
+            if (Math.abs(other.getRow() - primaryTarget.getRow()) <= 1
+                    && Math.abs(other.getX() - primaryTarget.getX()) <= 1.0) {
+                other.takeDamage(p.getDamage());
+                if ("AOE_ICE".equals(lobType)) {
+                    other.applySlowOrFreeze();
+                }
+            }
+        }
+    }
 
     private void checkGameEnd() {
         if (ctx.isGameEnded()) {

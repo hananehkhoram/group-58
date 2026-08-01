@@ -211,8 +211,6 @@ public class Zombie implements Damageable {
         return null;
     }
 
-    // --- Getters / Setters ---
-
     public String getId() { return id; }
     public String getName() { return name; }
     public int getHp() { return hp; }
@@ -289,9 +287,9 @@ public class Zombie implements Damageable {
         return isBoss;
     }
     public void setRow (int r){this.y = r;}
-
     public boolean searchEffect(Effects effect) {
         if (effect == null || this.effects == null) return false;
         return this.effects.contains(effect);
     }
+    public List<Effects> getEffect() {return effects;}
 }

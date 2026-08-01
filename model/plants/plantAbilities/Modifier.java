@@ -7,6 +7,7 @@ import model.plants.TargetingMode;
 import model.plants.plantFoodEffect.PlantFoodMode;
 import model.projectile.BulletType;
 import model.projectile.Projectile;
+import model.zombie.Effects;
 import model.zombie.Zombie;
 
 import java.util.List;
@@ -44,9 +45,10 @@ public class Modifier implements BaseAbility {
                 List<Zombie> targets = engine.findTargets(pRow, pCol, TargetingMode.NONE);
                 if (targets != null && !targets.isEmpty()) {
                     Zombie eater = targets.get(0);
-                    //eater.hypnotize();
+                    eater.getEffect().add(Effects.HYPNOTIZED);
                     if ("GARGANTUAR_MODE".equals(plant.getDamage())) {
-                        //eater.transformToGargantuar();
+                        eater.setName("Gargantuar");
+                        eater.setId("ZombieGargantuar");
                     }
                     engine.removePlant(pRow, pCol);
                 }

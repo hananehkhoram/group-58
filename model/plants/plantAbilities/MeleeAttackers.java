@@ -22,11 +22,14 @@ public class MeleeAttackers implements BaseAbility {
         int currentSecond = engine.getCtx().getTimeManager().getTotalSeconds();
 
         switch (meleeKind) {
-            case "FRONT_BACK":
+            case "FRONT_AND_BACK":
                 Zombie targetFB = findTargetFrontOrBack(pRow, pCol, engine);
                 if (targetFB != null) {
                     boolean aliveBeforeFB = !targetFB.isDead();
                     targetFB.takeDamage(damage);
+                    if ("Wasabi Whip".equalsIgnoreCase(plant.getName())) {
+                        targetFB.meltIce();
+                    }
                     if (aliveBeforeFB && targetFB.isDead()) {
                         engine.getCtx().recordPlantKill(plant);
                     }
@@ -34,21 +37,8 @@ public class MeleeAttackers implements BaseAbility {
                 }
                 break;
 
-            case "FRONT_BACK_FIRE":
-                Zombie targetFBF = findTargetFrontOrBack(pRow, pCol, engine);
-                if (targetFBF != null) {
-                    boolean aliveBeforeFBF = !targetFBF.isDead();
-                    targetFBF.takeDamage(damage);
-                    targetFBF.meltIce();
-                    if (aliveBeforeFBF && targetFBF.isDead()) {
-                        engine.getCtx().recordPlantKill(plant);
-                    }
-                    plant.setLastActionSecond(currentSecond);
-                }
-                break;
-
-            case "AOE_3X3":
-            case "GROWING_AOE":
+            case "AOE":
+            case "AOE_RAMP_UP":
                 boolean hitAnyone = applyAoEDamage(pRow, pCol, damage, plant, engine);
                 if (hitAnyone) {
                     plant.setLastActionSecond(currentSecond);

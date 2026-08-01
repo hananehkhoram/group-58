@@ -79,7 +79,7 @@ public class Planting implements Command {
         return null;
     }
 
-    private boolean isValidPlacement(Plant template, String type, int x, int y, GameContext ctx, GameEngine engine, LevelManager levelManager, boolean isConveyorLevel, boolean isHeldSeed) {
+    public boolean isValidPlacement(Plant template, String type, int x, int y, GameContext ctx, GameEngine engine, LevelManager levelManager, boolean isConveyorLevel, boolean isHeldSeed) {
         if (ctx.getSeason().isWaterCell(y, x, ctx) && !template.hasTheTag(Tag.WATER) && !template.isHasLilyPadUnderneath()) {
             ConsoleView.showMessage("You can't plant this on a water cell!");
             return false;

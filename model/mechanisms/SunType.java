@@ -3,5 +3,8 @@ package model.mechanisms;
 public enum SunType{
     NORMAL,
     RADIOACTIVE,
-    SPECIAL
+    SPECIAL,
+    RAMP_UP,
+    LARGE,
+    BURST_CONSUME
 }

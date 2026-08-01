@@ -45,8 +45,6 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
 
     @Override
     public void registerCommands (controller.commandHandler.CommandRegistry registry){
-        // registry.register("regex", (args) -> model.executeCommand(args[0]));
-        // other commands
         registry.register("menu enter (?<menuName>\\w*)" , new MenuEnter(this.menuManager));
         registry.register("menu show current" , new MenuShowCurrent(menuManager));
         registry.register("menu exit" , new MenuExit(menuManager));
@@ -142,6 +140,8 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("show current plant food",new ShowCurrentPlantFood(menuManager));
         registry.register("^pick up \\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)$",
                 new PickUpSeed(menuManager));
+        registry.register("cheat add plant -t (?<plantType>.+) -l \\((?<x>\\d+), (?<y>\\d+)\\)" ,
+                new CheatAddPlant(menuManager));
 
     }
 }

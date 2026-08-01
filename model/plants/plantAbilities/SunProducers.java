@@ -15,6 +15,16 @@ public class SunProducers implements BaseAbility {
     public void produceSun(String rate, int amount, SunType sunType, GameContext ctx, Plant plant) {
 
 
+        if (sunType == model.mechanisms.SunType.BURST_CONSUME) {
+            if (!collected) {
+                collected = true;
+                ctx.produceSun(plant.getRow(), plant.getCol(), amount);
+                view.ConsoleView.showMessage("plant " + plant.getName() +
+                        " produced a one-time burst of sun at (" + plant.getRow() + ", " + plant.getCol() + ")");
+            }
+            return;
+        }
+
         if (!rate.equals("everyRound")){
 
             int rateOfPlant = Integer.parseInt(rate);
@@ -25,16 +35,27 @@ public class SunProducers implements BaseAbility {
 
             if (currentSecond - plant.getLastActionSecond() >= rateOfPlant ){
                 if (!ctx.isSunPresent(x , y)){
-                    ctx.produceSun(x , y, amount);
+                    int finalAmount = amount;
+                    if (plant.getName().equalsIgnoreCase("Sun-shroom")) {
+                        if (plant.isPlantFoodActive() || plant.getLastActionSecond() >= rateOfPlant * 2) {
+                            finalAmount = 75;
+                        } else if (plant.getLastActionSecond() >= rateOfPlant) {
+                            finalAmount = 50;
+                        } else {
+                            finalAmount = 25;
+                        }
+                    }
+
+                    ctx.produceSun(x , y, finalAmount);
                     plant.setLastActionSecond(currentSecond);
                     view.ConsoleView.showMessage("plant " + plant.getName() +
-                            "produced a sun at (" + x + ", " + y + ")");
+                            " produced a sun at (" + x + ", " + y + ")");
                 }
             }
 
         }
 
-    } //rate can be : a number or everyRound
+    }
 
     @Override
     public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
@@ -49,7 +70,11 @@ public class SunProducers implements BaseAbility {
         };
 
         if (bonusSun > 0) {
-            ctx.produceSun(self.getCol(), self.getRow(), bonusSun);
+            if (self.getName().equalsIgnoreCase("Sun-shroom")) {
+                self.setPlantFoodActive(true);
+            }
+
+            ctx.produceSun(self.getRow(), self.getCol(), bonusSun);
             view.ConsoleView.showMessage("Plant Food: " + self.getName() + " instantly produced " + bonusSun + " sun!");
         }
     }
