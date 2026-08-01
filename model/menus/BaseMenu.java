@@ -11,8 +11,6 @@ public abstract class BaseMenu implements Menu{
         this.ctx = ctx;
         this.menuType = menuType;
     }
-    @Override
-    public void update() {}
 
     @Override
     public String showMenu(){

@@ -30,14 +30,6 @@ public class BigWaveBeachSeason extends Season{
                 super("Big Wave Beach", levels,3);
         }
 
-        public void addLowTideCell(int row, int col) {
-                lowTideCells.add(new GridCell(row, col));
-        }
-
-        public boolean isLowTideCell(int row, int col) {
-                return lowTideCells.contains(new GridCell(row, col));
-        }
-
         @Override
         public Set<GridCell> getWaterCells(GameContext ctx) {
                 Set<GridCell> cells = new HashSet<>();
@@ -56,7 +48,6 @@ public class BigWaveBeachSeason extends Season{
                 int totalColumns = ctx.getLevel().getColumns();
                 int maxColumns = ctx.getLevel().getMaxWaterColumn();
                 int prospectiveWaterColumns = 3 + random.nextInt(Math.max(1, maxColumns - 2));
-
                 int newWaterColumn = totalColumns - prospectiveWaterColumns;
                 this.currentWaterColumn = newWaterColumn;
                 ConsoleView.simplePrint("The tide changes! Water now covers columns from " +
@@ -71,9 +62,6 @@ public class BigWaveBeachSeason extends Season{
                 this.currentWaterColumn = ctx.getLevel().getColumns() - 3;
                 ConsoleView.simplePrint("Big Wave Beach started. Water starts at column: " +
                         currentWaterColumn + "\n");
-        }
-
-        private void updateWaterLevel(GameContext ctx, int newLevel) {
         }
 
         @Override

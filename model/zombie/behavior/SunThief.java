@@ -81,12 +81,6 @@ public class SunThief implements Behaviors {
     }
 
     @Override
-    public void onHit(Zombie zombie, int damage) {}
-
-    @Override
-    public boolean isDestroyed() { return false; }
-
-    @Override
     public void onDeath(Zombie zombie, GameContext ctx) {
         if (bankMode) return;
         if (stolenSuns > 0) {

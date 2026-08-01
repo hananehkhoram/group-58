@@ -33,6 +33,8 @@ public class Vasecheccker {
 
         LevelFactory.setUpVases(this.ctx);
 
+        ctx.setBattleStarted(true); //DebugF
+
         System.out.print("start\n");
 
     }

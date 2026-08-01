@@ -363,8 +363,8 @@ public class GameEngine {
         if (y < 0 || y >= tiles.length || x < 0 || x >= tiles[0].length) return null;
         return tiles[y][x];
     }
-    public void smashVase(int row, int col, GameContext ctx) {
-        Tile tile = this.getTiles(row, col);
+    public void smashVase(int col, int row, GameContext ctx) {
+        Tile tile = this.getTiles(col, row);
 
         if (tile == null){
             view.ConsoleView.simplePrint("Invalid coordinates!\n");
@@ -384,7 +384,8 @@ public class GameEngine {
         }
 
         vase.setBroken(true);
-        view.ConsoleView.simplePrint("Crash! you smashed the vase at (" +  row + ", " + col + ")!\n");
+        tile.setVase(null); //DebugF
+        view.ConsoleView.simplePrint("Crash! you smashed the vase at (" +  col + ", " + row + ")!\n");
 
         if (vase.getContent() == VaseContent.ZOMBIE) {
             String zombieName = vase.getHiddenEntityName();
@@ -398,6 +399,7 @@ public class GameEngine {
 
                 newZombie.setX(col);
                 newZombie.setRow(row);
+                newZombie.setY(row); //DebugF
 
                 ctx.getAliveZombies().add(newZombie);
 
@@ -416,7 +418,7 @@ public class GameEngine {
         } else if (vase.getContent() == VaseContent.PLANT) {
             tile.setDroppedSeed(vase.getHiddenEntityName(), 100);
             view.ConsoleView.simplePrint("A seed packet for " + vase.getHiddenEntityName() + "dropped at" +
-                    " (" + row + ", " + col + ")!\n");
+                    " (" + col + ", " + row + ")!\n");
         }
     }
 

@@ -1,13 +1,11 @@
 package model.season;
 
 import model.GameContext;
-import model.GridCell;
 import model.level.Level;
 import view.ConsoleView;
 
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 public class AncientEgypt extends Season{
     private final Random random = new Random();
@@ -37,12 +35,6 @@ public class AncientEgypt extends Season{
         ConsoleView.simplePrint("Ancient Egypt: Initial graves have been spawned on the battlefield!\n");
     }
 
-    public void onTick(GameContext ctx, double deltaTime) {
-    }
-
-    public Set<GridCell> getWaterCells(GameContext ctx) {
-        return Set.of();
-    }
     public boolean isWaterCell(int row, int col, GameContext ctx) { return false; }
 
     public List<Grave> getInitialGraves(Level level) {

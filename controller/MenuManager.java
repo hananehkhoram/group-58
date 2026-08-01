@@ -1,6 +1,5 @@
 package controller;
 
-import controller.commandHandler.CommandRegistry;
 import exceptions.CommandNotFound;
 import model.GameContext;
 import model.level.Level;
@@ -9,8 +8,6 @@ import model.menus.Menu;
 import model.menus.MenuType;
 import model.menus.allmenus.*;
 import model.season.Season;
-import view.ConsoleView;
-
 import java.util.*;
 
 public class MenuManager {
@@ -95,8 +92,6 @@ public class MenuManager {
     public void forceChangeMenu(String targetMenu) {
         currentMenu = buildMenu(targetMenu);
     }
-    public void update(){}
-    public void handleInput(){}
     public Menu getCurrentMenu(){
         return currentMenu;
     }
