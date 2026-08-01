@@ -164,7 +164,6 @@ public class Shooters implements BaseAbility {
         ShootType shootType = ShootType.valueOf(p.get("shootType"));
         BulletType bulletType = BulletType.valueOf(p.get("bulletType"));
         GameEngine engine = ctx.getGameEngine();
-
         int damage = 20;
         try {
             if (self.getDamage() != null && !self.getDamage().isEmpty()) {
@@ -204,7 +203,6 @@ public class Shooters implements BaseAbility {
             default -> {
             }
         }
-
         view.ConsoleView.showMessage("Plant Food: " + self.getName() + " unleashed a barrage!");
     }
 

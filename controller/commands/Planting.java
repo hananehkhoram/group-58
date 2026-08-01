@@ -1,6 +1,7 @@
 package controller.commands;
 
 import controller.MenuManager;
+import controller.SpecialLevelManager.ConveyorBeltManager;
 import controller.SpecialLevelManager.LevelManager;
 import controller.commandHandler.Command;
 import model.GameContext;
@@ -34,138 +35,122 @@ public class Planting implements Command {
         }
 
         LevelManager levelManager = ctx.getLevelManager();
-        boolean isConveyorLevel = levelManager instanceof controller.SpecialLevelManager.ConveyorBeltManager;
-
-        Plant template = null;
-        boolean hasCard = false;
-        Plant plantToRemoveFromBelt = null; // برای جلوگیری از باگ غیب شدن کارت
-
+        boolean isConveyorLevel = levelManager instanceof ConveyorBeltManager;
         String heldSeed = ctx.getHeldSeed();
         boolean isHeldSeed = (heldSeed != null && heldSeed.equalsIgnoreCase(type));
 
-        if (isConveyorLevel) {
-            controller.SpecialLevelManager.ConveyorBeltManager cbm =
-                    (controller.SpecialLevelManager.ConveyorBeltManager) levelManager;
-            for (model.plants.Plant p : cbm.getConveyorBelt()) {
-                if (p.getName().equalsIgnoreCase(type)) {
-                    hasCard = true;
-                    template = p;
-                    plantToRemoveFromBelt = p; // فقط پیداش می‌کنیم، الان حذفش نمی‌کنیم
-                    break;
-                }
-            }
-        }
-
-        if (!hasCard && isHeldSeed) {
-            try {
-                template = ctx.getPlantFactory().create(heldSeed);
-                hasCard = true;
-            }catch (Exception e) {
-                hasCard = false;
-            }
-        }
-
-        if (!hasCard && !isConveyorLevel){
-            // در مراحل عادی، گیاه را از فکتوری می‌گیریم تا اطلاعاتش (مثل آفتاب و کول‌داون) خوانده شود
-            try {
-                template = ctx.getPlantFactory().create(type);
-                hasCard = true; // اگر متدی برای چک کردن کارت‌های اول بازی داری، اینجا اضافه‌اش کن
-            } catch (Exception e) {
-                hasCard = false;
-            }
-        }
-        if (ctx.getSeason().isWaterCell(y,x,ctx) && !template.hasTheTag(Tag.WATER)
-                && !template.isHasLilyPadUnderneath()){
-            ConsoleView.showMessage("You can't plant this on a water cell!");
-            return;
-        }
-
-        if (!hasCard || template == null) {
+        Plant template = resolvePlantTemplate(type, ctx, levelManager, isConveyorLevel, isHeldSeed);
+        if (template == null) {
             ConsoleView.simplePrint("You haven't selected this plant for this level.\n");
             return;
         }
 
+        if (!isValidPlacement(template, type, x, y, ctx, engine, levelManager, isConveyorLevel, isHeldSeed)) {
+            return;
+        }
+
+        Plant plantToRemoveFromBelt = isConveyorLevel ? findPlantOnBelt(type, (ConveyorBeltManager) levelManager) : null;
+
+        if (isBowlingLevel(ctx)) {
+            if (handleBowlingMinigame(template, type, x, y, ctx, levelManager, plantToRemoveFromBelt)) {
+                return;
+            }
+        }
+
+        performNormalPlanting(template, type, x, y, ctx, engine, levelManager, plantToRemoveFromBelt, isConveyorLevel, isHeldSeed);
+    }
+
+    private Plant resolvePlantTemplate(String type, GameContext ctx, LevelManager levelManager, boolean isConveyorLevel, boolean isHeldSeed) {
+        if (isConveyorLevel) {
+            return findPlantOnBelt(type, (ConveyorBeltManager) levelManager);
+        }
+        if (isHeldSeed) {
+            try { return ctx.getPlantFactory().create(ctx.getHeldSeed()); } catch (Exception e) { return null; }
+        }
+        try { return ctx.getPlantFactory().create(type); } catch (Exception e) { return null; }
+    }
+
+    private Plant findPlantOnBelt(String type, ConveyorBeltManager cbm) {
+        for (Plant p : cbm.getConveyorBelt()) {
+            if (p.getName().equalsIgnoreCase(type)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    private boolean isValidPlacement(Plant template, String type, int x, int y, GameContext ctx, GameEngine engine, LevelManager levelManager, boolean isConveyorLevel, boolean isHeldSeed) {
+        if (ctx.getSeason().isWaterCell(y, x, ctx) && !template.hasTheTag(Tag.WATER) && !template.isHasLilyPadUnderneath()) {
+            ConsoleView.showMessage("You can't plant this on a water cell!");
+            return false;
+        }
+
         if (levelManager != null && !isHeldSeed && !levelManager.canPlant(type, ctx)) {
             ConsoleView.showMessage("You can't plant this here.");
-            return;
+            return false;
         }
 
         Tile tile = engine.getTiles(x, y);
         if (tile == null || !tile.isPlantable() || tile.getPlant() != null) {
             ConsoleView.showMessage("You can't plant here.");
-            return;
+            return false;
         }
 
         if (ctx.isOnCooldown(type) && !isConveyorLevel && !isHeldSeed) {
             ConsoleView.showMessage("This plant is still recharging.");
-            return;
+            return false;
         }
 
         boolean needsSun = !isConveyorLevel && isHeldSeed;
         if (needsSun && ctx.getSunAmount() < template.getSunCost()) {
             ConsoleView.showMessage("Not enough sun.");
-            return;
+            return false;
         }
 
-        boolean isBowlingLevel = false;
-        if (ctx.getLevel() != null && ctx.getLevel().getName() != null) {
-            isBowlingLevel = ctx.getLevel().getName().toLowerCase().contains("wallnuts");
+        return true;
+    }
+
+    private boolean isBowlingLevel(GameContext ctx) {
+        return ctx.getLevel() != null && ctx.getLevel().getName() != null &&
+                ctx.getLevel().getName().toLowerCase().contains("wallnuts");
+    }
+
+    private boolean handleBowlingMinigame(Plant template, String type, int x, int y, GameContext ctx, LevelManager levelManager, Plant plantToRemoveFromBelt) {
+        boolean isValidNut = type.equalsIgnoreCase("Wall-nut") || type.equalsIgnoreCase("Explode-o-nut") ||
+                type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut") ||
+                type.equalsIgnoreCase("Cherry Bomb");
+
+        if (!isValidNut) return false;
+
+        if (type.equalsIgnoreCase("Explode-o-nut") || type.equalsIgnoreCase("Cherry Bomb")) {
+            ctx.getProjectiles().add(new model.projectile.ExplodeONut(500, x, y, x, 2.0, template, ctx));
+        } else if (type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut")) {
+            ctx.getProjectiles().add(new model.projectile.GiantWallnut(500, x, y, x, 2.0, template));
+        } else {
+            ctx.getProjectiles().add(new model.projectile.BowlingWallnut(500, x, y, x, 2.0, template));
         }
 
-        // بخش مربوط به مینی‌گیم بولینگ
-        if (isBowlingLevel && (type.equalsIgnoreCase("Wall-nut") ||
-                type.equalsIgnoreCase("Explode-o-nut") ||
-                type.equalsIgnoreCase("Giant Wall-nut") ||
-                type.equalsIgnoreCase("Tall-nut") ||
-                type.equalsIgnoreCase("Cherry Bomb"))) {
-
-            if (type.equalsIgnoreCase("Explode-o-nut") ||
-                    type.equalsIgnoreCase("Cherry Bomb")) {
-                model.projectile.ExplodeONut explodeNut =
-                        new model.projectile.ExplodeONut(500, x, y, x, 2.0, template, ctx);
-                ctx.getProjectiles().add(explodeNut);
-            } else if (type.equalsIgnoreCase("Giant Wall-nut") ||
-                    type.equalsIgnoreCase("Tall-nut")) {
-                model.projectile.GiantWallnut giantNut =
-                        new model.projectile.GiantWallnut(500, x, y, x, 2.0, template);
-                ctx.getProjectiles().add(giantNut);
-            } else {
-                model.projectile.BowlingWallnut rollingNut =
-                        new model.projectile.BowlingWallnut(500, x, y, x, 2.0, template);
-                ctx.getProjectiles().add(rollingNut);
-            }
-
-            if (levelManager != null) {
-                levelManager.onPlantSuccess(template, ctx);
-            }
-
-            // حذف گیاه از نوار نقاله در صورت پرتاب موفق
-            if (plantToRemoveFromBelt != null) {
-                ((controller.SpecialLevelManager.ConveyorBeltManager) levelManager).
-                        getConveyorBelt().remove(plantToRemoveFromBelt);
-            }
-
-            ConsoleView.showMessage("BOWL! " + type + " is rolling!");
-            return;
+        if (levelManager != null) {
+            levelManager.onPlantSuccess(template, ctx);
         }
 
-        // بخش کاشت عادی گیاهان
-        if (!isConveyorLevel && !isHeldSeed) ctx.setCooldown(type, template.getRechargeTime());
+        if (plantToRemoveFromBelt != null) {
+            ((ConveyorBeltManager) levelManager).getConveyorBelt().remove(plantToRemoveFromBelt);
+        }
 
+        ConsoleView.showMessage("BOWL! " + type + " is rolling!");
+        return true;
+    }
+
+    private void performNormalPlanting(Plant template, String type, int x, int y, GameContext ctx, GameEngine engine, LevelManager levelManager, Plant plantToRemoveFromBelt, boolean isConveyorLevel, boolean isHeldSeed) {
         Plant newPlant = ctx.getPlantFactory().create(template.getName());
-        tile.setPlant(newPlant);
+        engine.getTiles(x, y).setPlant(newPlant);
         ctx.getPlantGrid()[y][x] = newPlant;
         ctx.getAlivePlants().add(newPlant);
 
-        User currentUser = UserManager.getInstance().getCurrentUser();
-        if (template.isPlantFoodActive() || currentUser.hasStoredBoost(type)) {
-            newPlant.activatePlantFood(ctx);
-            if (currentUser.hasStoredBoost(type)) {
-                currentUser.consumeStoredBoost(type);
-            }
-            ConsoleView.showMessage("Boosted plant food effect activated on planting!");
-        }
+        applyPlantFoodBoost(template, newPlant, type, ctx);
 
+        boolean needsSun = !isConveyorLevel && isHeldSeed;
         if (needsSun) {
             ctx.setSunAmount(ctx.getSunAmount() - template.getSunCost());
         }
@@ -174,20 +159,30 @@ public class Planting implements Command {
             levelManager.onPlantSuccess(newPlant, ctx);
         }
 
-        // حذف گیاه از نوار نقاله پس از کاشت موفقیت‌آمیز
         if (plantToRemoveFromBelt != null) {
-            ((controller.SpecialLevelManager.ConveyorBeltManager) levelManager).
-                    getConveyorBelt().remove(plantToRemoveFromBelt);
+            ((ConveyorBeltManager) levelManager).getConveyorBelt().remove(plantToRemoveFromBelt);
         }
 
-        if (isHeldSeed){
-            ctx.setHeldSeed(null);
-        } //DebugF
+        if (isHeldSeed) {
+            ctx.setHeldSeed(null); // DebugF
+        }
 
-        if (!isConveyorLevel && !isHeldSeed){
+        if (!isConveyorLevel && !isHeldSeed) {
             ctx.setCooldown(type, template.getRechargeTime());
         }
+
         ConsoleView.showMessage("Planted %s at (%d, %d).", type, x, y);
         ctx.recordPlantPlaced(newPlant, y, x);
+    }
+
+    private void applyPlantFoodBoost(Plant template, Plant newPlant, String type, GameContext ctx) {
+        User currentUser = UserManager.getInstance().getCurrentUser();
+        if (template.isPlantFoodActive() || currentUser.hasStoredBoost(type)) {
+            newPlant.activatePlantFood(ctx);
+            if (currentUser.hasStoredBoost(type)) {
+                currentUser.consumeStoredBoost(type);
+            }
+            ConsoleView.showMessage("Boosted plant food effect activated on planting!");
+        }
     }
 }

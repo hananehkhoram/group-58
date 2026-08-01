@@ -42,7 +42,6 @@ public class Lobber implements BaseAbility {
                 case NORMAL:
                     shootProjectile(ctx, plant, damage, BulletType.NORMAL);
                     break;
-
                 case KERNEL_OR_BUTTER:
                     boolean isButter = Math.random() < 0.25;
                     if (isButter) {
@@ -55,23 +54,17 @@ public class Lobber implements BaseAbility {
                 case AOE:
                     shootProjectile(ctx, plant, damage, BulletType.NORMAL);
                     break;
-
                 case AOE_ICE:
                     shootProjectile(ctx, plant, damage, BulletType.ICE);
                     break;
-
                 case AOE_FIRE:
                     shootProjectile(ctx, plant, damage, BulletType.FIRE);
                     break;
-
                 default:
                     hasShot = false;
                     break;
             }
-
-            if (hasShot) {
-                plant.setLastActionSecond(currentSecond);
-            }
+            if (hasShot) plant.setLastActionSecond(currentSecond);
         }
     }
 
