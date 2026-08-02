@@ -93,7 +93,6 @@ public class GameEngine {
 
         if (ctx.getCurrentWaveIndex() >= waves.length) {
             if (ctx.getLevel().getLevelType() == model.level.LevelType.Beghouled_MG) {
-                // زامبی‌ها توی بیجولد هیچ‌وقت تمام نمی‌شن؛ موج‌ها رو حلقه‌ای دوباره اجرا می‌کنیم
                 Wave loopedWave = waves[ctx.getCurrentWaveIndex() % waves.length];
                 loopedWave.reset();
                 spawnWave(loopedWave);

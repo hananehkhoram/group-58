@@ -9,7 +9,7 @@ import java.util.Random;
 
 public class LootItem {
     public enum LootType {
-        COIN, DIAMOND, POT
+        COIN, DIAMOND, POT, SEED
     }
 
     private static final Random random = new Random();
