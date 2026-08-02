@@ -78,20 +78,13 @@ public class Modifier implements BaseAbility {
                 if (!candidates.isEmpty()) {
                     Plant target = candidates.get(new Random().nextInt(candidates.size()));
                     Plant newPlant = ctx.getPlantFactory().create(target.getName());
-
                     if (newPlant != null) {
                         newPlant.setRow(pRow);
                         newPlant.setCol(pCol);
-                        newPlant.setCol(pCol);
-                        newPlant.setRow(pRow);
-
                         Tile tile = engine.getTiles(pCol, pRow);
                         if (tile != null) tile.setPlant(newPlant);
                         ctx.getPlantGrid()[pRow][pCol] = newPlant;
-
-                        int idx = ctx.getAlivePlants().indexOf(plant);
-                        if (idx != -1) ctx.getAlivePlants().set(idx, newPlant);
-                        else ctx.getAlivePlants().add(newPlant);
+                        ctx.getAlivePlants().add(newPlant);
                         ctx.recordPlantPlaced(newPlant, pRow, pCol);
                         ConsoleView.showMessage("Imitater successfully transformed into " + newPlant.getName() + " at (" + pCol + ", " + pRow + ")");
                     }
