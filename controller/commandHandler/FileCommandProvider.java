@@ -12,7 +12,7 @@ import controller.commands.LoginMenuCommands.SetNewPassword;
 import controller.commands.PlantFoodCommands.CheatAddPlantFood;
 import controller.commands.PlantFoodCommands.ShowCurrentPlantFood;
 import controller.commands.PlantsList.StartGame;
-import controller.commands.TravelMenuCommands.EnterMiniGameMenu;
+import controller.commands.TravelMenuCommands.*;
 import controller.commands.MechanismsCommands.CheatAddSun;
 import controller.commands.NewsMenuCommands.ShowAllNews;
 import controller.commands.NewsMenuCommands.ShowUnreadNews;
@@ -24,12 +24,9 @@ import controller.commands.ShopCommands.BuyCommand;
 import controller.commands.GreenHouseCommands.EnterShop;
 import controller.commands.ShopCommands.ShowProductsCommands;
 import controller.commands.SpecialLevelsCommands.PlantWhatYouGet;
-import controller.commands.TravelMenuCommands.ShowTravelMenu;
 import controller.commands.Status.ShowMap;
 import controller.commands.Status.ShowPlantsStatus;
 import controller.commands.Status.ShowTileStatus;
-import controller.commands.TravelMenuCommands.SmashVase;
-import controller.commands.TravelMenuCommands.Swap;
 import model.GameContext;
 
 
@@ -144,7 +141,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
         registry.register("cheat add plant -t (?<plantType>.+) -l \\((?<x>\\d+), (?<y>\\d+)\\)" ,
                 new CheatAddPlant(menuManager));
         registry.register("swap \\(\\s*(?<x1>\\d+)\\s*,\\s*(?<y1>\\d+)\\s*\\) to \\(\\s*(?<x2>\\d+)\\s*,\\s*(?<y2>\\d+)\\s*\\)", new Swap(menuManager));
-
+        registry.register("place zombie \\(\\s*(?<x1>\\d+)\\s*,\\s*(?<y1>\\d+)\\s*\\)", new Place(menuManager));
     }
 }
 

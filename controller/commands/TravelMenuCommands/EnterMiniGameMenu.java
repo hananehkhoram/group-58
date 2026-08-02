@@ -55,7 +55,10 @@ public class EnterMiniGameMenu implements Command {
                     case 3:
                         Izambi izambiModel = new Izambi(menuManager);
                         izambiModel.startMiniGame();
+                        menuManager.setCtx(izambiModel.getCtx());
+                        menuManager.setGameEngine(izambiModel.getGameEngine());
                         break;
+
 
                     case 4:
                         List<Level> beghouledLevels = LevelFactory.buldBeghouledLevels();

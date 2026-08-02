@@ -179,11 +179,11 @@ public class LevelFactory {
     public static List<Level> buildIzombieLevels() {
         List<Level> levels = new ArrayList<>();
 
-        levels.add(new Level("Izombie - Day 1", 5, 9, generateWaves(5, 200, 220), LevelType.Izambie_MG, null));
+        levels.add(new Level("Izombie - Day 1", 5, 9, generateWaves(5, 200, 0), LevelType.Izambie_MG, null));
 
-        levels.add(new Level("Izombie - Day 2", 5, 9, generateWaves(6, 220, 210), LevelType.Izambie_MG, null));
+        levels.add(new Level("Izombie - Day 2", 5, 9, generateWaves(6, 220, 0), LevelType.Izambie_MG, null));
 
-        levels.add(new Level("Izombie - Day 3", 5, 9, generateWaves(7, 240, 200), LevelType.Izambie_MG, null));
+        levels.add(new Level("Izombie - Day 3", 5, 9, generateWaves(7, 240, 0), LevelType.Izambie_MG, null));
 
         return  levels;
     }

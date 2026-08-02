@@ -24,9 +24,16 @@ public class Izambi {
     private GameContext ctx;
     private int sunAmount;
     private MenuManager menuManager;
+    private static Izambi activeInstance;
+
+    public static Izambi getActiveInstance() {
+        return activeInstance;
+    }
 
     public Izambi(MenuManager menuManager) {
         this.menuManager = menuManager;
+        activeInstance = this;
+
     }
 
     public void startMiniGame() {
@@ -72,8 +79,9 @@ public class Izambi {
             Zombie newZombie = factory.create(zombieType);
             if (newZombie != null) {
                 newZombie.setY(row);
-                newZombie.setX(col); // بازیکن زامبی را در سمت راست می‌گذارد
+                newZombie.setX(col);
                 ctx.getAliveZombies().add(newZombie);
+                ConsoleView.showMessage("Zombie " + zombieType + " placed at row " + row + ", col " + col);
                 return true;
             } else {
                 ConsoleView.showMessage("Failed to create zombie of type: " + zombieType);
