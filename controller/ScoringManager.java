@@ -52,8 +52,29 @@ public class ScoringManager {
                 + ctx.getKillStreakPatternCount() * ScoringPattern.KILL_STREAK.getPoints()
                 + ctx.getPrecisionFinishPatternCount() * ScoringPattern.PRECISION_FINISH.getPoints();
 
-        if (total > user.getMaxMewPoint()) {
+        StringBuilder sb = new StringBuilder("=== MewPoint Scoring ===\n");
+        appendLine(sb, ScoringPattern.MULTI_KILL, ctx.getMultiKillPatternCount());
+        appendLine(sb, ScoringPattern.SIMULTANEOUS_KILL, ctx.getSimultaneousKillPatternCount());
+        appendLine(sb, ScoringPattern.QUICK_KILL, ctx.getQuickKillPatternCount());
+        appendLine(sb, ScoringPattern.KILL_STREAK, ctx.getKillStreakPatternCount());
+        appendLine(sb, ScoringPattern.PRECISION_FINISH, ctx.getPrecisionFinishPatternCount());
+        sb.append("Total MewPoint earned: ").append(total).append("\n");
+
+        boolean isNewRecord = total > user.getMaxMewPoint();
+        if (isNewRecord) {
             user.setMaxMewPoint(total);
+            sb.append("New personal best! Max MewPoint: ").append(total);
+        } else {
+            sb.append("Personal best remains: ").append(user.getMaxMewPoint());
         }
+
+        view.ConsoleView.showMessage(sb.toString());
+    }
+
+    private static void appendLine(StringBuilder sb, ScoringPattern pattern, int count) {
+        if (count <= 0) return;
+        sb.append(pattern.getTitle()).append(" x").append(count)
+                .append(" = ").append(count * pattern.getPoints()).append(" pts (")
+                .append(pattern.getDescription()).append(")\n");
     }
 }

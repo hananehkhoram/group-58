@@ -63,6 +63,7 @@ public class ShowTravelMenu implements Command {
             boolean done = user.isQuestCompleted(q.getId());
             int progress = user.getQuestProgress(q.getId());
             sb.append(done ? "[DONE] " : "[ ] ")
+                    .append("[").append(q.getPriority()).append("] ")
                     .append(q.getName()).append(" - ").append(q.getDescription());
             if (!done) {
                 sb.append(q.getTargetProgress() > 1
