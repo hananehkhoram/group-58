@@ -11,10 +11,6 @@ import java.util.List;
 
 public class WallNut implements BaseAbility {
 
-    @Override
-    public void activate(Plant self, GameContext ctx) {
-    }
-
     public void triggerAbility(WallNutType wallNutType, int damage, Plant self, GameEngine engine) {
         switch (wallNutType) {
             case BLOCKER:

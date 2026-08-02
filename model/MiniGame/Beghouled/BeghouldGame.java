@@ -39,7 +39,6 @@ public class BeghouldGame {
         System.out.print("Beghouled Game Started\n");
     }
 
-    // پیش بردن زمان و به‌روزرسانی موتور بازی برای حرکت زامبی‌ها
     public void advancedTimeCommand(double sec) {
         if (this.gameEngine != null && this.ctx != null) {
             int ticks = (int) (sec * 10);

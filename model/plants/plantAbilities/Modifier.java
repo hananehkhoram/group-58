@@ -18,10 +18,6 @@ import java.util.Random;
 
 public class Modifier implements BaseAbility {
 
-    @Override
-    public void activate(Plant self, GameContext ctx) {
-    }
-
     public void modify(ModifierType modifierType, Plant plant, GameEngine engine) {
         int pRow = plant.getRow();
         int pCol = plant.getCol();

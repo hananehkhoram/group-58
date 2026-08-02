@@ -17,7 +17,6 @@ public class Area implements Behaviors {
     }
 
     private AreaType areaType = AreaType.TORCH;
-    private String season;
     private boolean torchLit = true;
 
     private int fishermanCooldown = 5;
