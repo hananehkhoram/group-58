@@ -1,17 +1,15 @@
 package model.MiniGame.Beghouled;
 
-/*import model.GameContext;
+import model.GameContext;
 import model.mechanisms.GameEngine;
 import model.mechanisms.Tile;
 import model.plants.Plant;
-import model.plants.PlantFactory;
 import java.util.*;
 
 public class BeghouledManager {
     private GameContext ctx;
     private GameEngine engine;
 
-    // ۵ گیاه اولیه‌ای که از بالا می‌افتند
     private List<String> activePlantTypes;
 
     private int targetMatches;
@@ -23,13 +21,11 @@ public class BeghouledManager {
         this.targetMatches = targetMatches;
         this.currentMatches = 0;
 
-        // گیاهان پیش‌فرض این مرحله
         this.activePlantTypes = new ArrayList<>(Arrays.asList(
                 "peashooter", "wall-nut", "puff-shroom", "cabbage-pult", "snow pea"
         ));
     }
 
-    // ۱. پر کردن اولیه زمین با گیاهان تصادفی
     public void initBoard() {
         int rows = ctx.getLevel().getRows();
         int cols = ctx.getLevel().getColumns();
@@ -40,7 +36,7 @@ public class BeghouledManager {
                 Tile tile = engine.getTiles(c, r);
                 if (tile != null && !isCrater(tile)) {
                     String randomPlant = activePlantTypes.get(rand.nextInt(activePlantTypes.size()));
-                    tile.setPlant(PlantFactory.createPlant(randomPlant)); // فرض بر وجود PlantFactory
+                    tile.setPlant(ctx.getPlantFactory().create(randomPlant));
                 }
             }
         }
@@ -59,7 +55,7 @@ public class BeghouledManager {
         Tile t1 = engine.getTiles(x1, y1);
         Tile t2 = engine.getTiles(x2, y2);
 
-        if (t1 == null  t2 == null  isCrater(t1) || isCrater(t2)) return false;
+        if (t1 == null || t2 == null || isCrater(t1) || isCrater(t2)) return false;
         if (t1.getPlant() == null || t2.getPlant() == null) return false;
 
         // جابه‌جایی موقت
@@ -99,10 +95,10 @@ public class BeghouledManager {
         // بررسی افقی
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols - 2; c++) {
-                if (isMatch(c, r, c+1, r, c+2, r)) {
+                if (isMatch(c, r, c + 1, r, c + 2, r)) {
                     matchedTiles.add(engine.getTiles(c, r));
-                    matchedTiles.add(engine.getTiles(c+1, r));
-                    matchedTiles.add(engine.getTiles(c+2, r));
+                    matchedTiles.add(engine.getTiles(c + 1, r));
+                    matchedTiles.add(engine.getTiles(c + 2, r));
                 }
             }
         }
@@ -110,10 +106,60 @@ public class BeghouledManager {
         // بررسی عمودی
         for (int c = 0; c < cols; c++) {
             for (int r = 0; r < rows - 2; r++) {
-                if (isMatch(c, r, c, r+1, c, r+2)) {
+                if (isMatch(c, r, c, r + 1, c, r + 2)) {
                     matchedTiles.add(engine.getTiles(c, r));
-                    matchedTiles.add(engine.getTiles(c, r+1));
-                    matchedTiles.add(engine.getTiles(c, r+2));
+                    matchedTiles.add(engine.getTiles(c, r + 1));
+                    matchedTiles.add(engine.getTiles(c, r + 2));
                 }
             }
-        }*/
+        }
+        sunReward = matchedTiles.size() * 10;
+        return sunReward;
+    }
+
+    private boolean isCrater(Tile tile) {
+        // منطق واقعی خودت را اینجا بنویس
+        return false;
+    }
+
+    // اعمال جاذبه و پر کردن خانه‌های خالی
+    private void applyGravityAndRefill() {
+        // منطق افتادن گیاهان از بالا
+    }
+
+    // بررسی اینکه آیا اصلاً ترکیب ۳تایی وجود دارد یا خیر
+    private boolean hasAnyMatch() {
+        // منطق بررسی کل زمین
+        return false;
+    }
+
+    // هندل کردن ترکیب‌های پشت سر هم
+    private void handleCascades() {
+        // منطق آبشاری
+    }
+
+    // بررسی شرط پیروزی بازی
+    private void checkWinCondition() {
+        if (currentMatches >= targetMatches) {
+            // منطق برد
+        }
+    }
+
+    // بررسی اینکه آیا سه خانه با هم مچ هستند یا خیر
+    private boolean isMatch(int c1, int r1, int c2, int r2, int c3, int r3) {
+        Tile t1 = engine.getTiles(c1, r1);
+        Tile t2 = engine.getTiles(c2, r2);
+        Tile t3 = engine.getTiles(c3, r3);
+
+        if (t1 == null || t2 == null || t3 == null) return false;
+        Plant p1 = t1.getPlant();
+        Plant p2 = t2.getPlant();
+        Plant p3 = t3.getPlant();
+
+        if (p1 == null || p2 == null || p3 == null) return false;
+
+        // مقایسه نام یا نوع گیاهان
+        return p1.getName().equals(p2.getName()) && p2.getName().equals(p3.getName());
+    }
+
+}
