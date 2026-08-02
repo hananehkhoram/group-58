@@ -70,6 +70,7 @@ public class EnterMiniGameMenu implements Command {
                         beghouled.initBoard();
 
                         newCtx.setBeghouldManager(beghouled);
+                        newCtx.setBattleStarted(true);
 
                         menuManager.setCtx(newCtx);
                         menuManager.setGameEngine(newEngine);

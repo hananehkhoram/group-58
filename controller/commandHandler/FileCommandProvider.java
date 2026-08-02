@@ -143,6 +143,8 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
                 new PickUpSeed(menuManager));
         registry.register("cheat add plant -t (?<plantType>.+) -l \\((?<x>\\d+), (?<y>\\d+)\\)" ,
                 new CheatAddPlant(menuManager));
+        registry.register("upgrade beghouled -p (?<plantName>.+)",
+                new controller.commands.TravelMenuCommands.UpgradeBeghouled(menuManager));
         registry.register("swap \\(\\s*(?<x1>\\d+)\\s*,\\s*(?<y1>\\d+)\\s*\\) to \\(\\s*(?<x2>\\d+)\\s*,\\s*(?<y2>\\d+)\\s*\\)", new Swap(menuManager));
 
     }

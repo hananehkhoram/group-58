@@ -92,6 +92,13 @@ public class GameEngine {
         }
 
         if (ctx.getCurrentWaveIndex() >= waves.length) {
+            if (ctx.getLevel().getLevelType() == model.level.LevelType.Beghouled_MG) {
+                // زامبی‌ها توی بیجولد هیچ‌وقت تمام نمی‌شن؛ موج‌ها رو حلقه‌ای دوباره اجرا می‌کنیم
+                Wave loopedWave = waves[ctx.getCurrentWaveIndex() % waves.length];
+                loopedWave.reset();
+                spawnWave(loopedWave);
+                return;
+            }
             ctx.setWaveSpawningFinished(true);
             return;
         }
@@ -181,6 +188,10 @@ public class GameEngine {
             }
             if (p.getHp() <= 0) {
                 ctx.getPlantGrid()[p.getRow()][p.getCol()] = null;
+                if (ctx.getLevel().getLevelType() == model.level.LevelType.Beghouled_MG
+                        && ctx.getBeghouldManager() != null) {
+                    ctx.getBeghouldManager().markCrater(p.getRow(), p.getCol());
+                }
                 it.remove();
                 ctx.incrementPlantsLost(p);
             }
