@@ -44,12 +44,12 @@ public class LootItem {
         } else if (lootRoll == 1) {
             ctx.addLoot(new LootItem(LootType.DIAMOND, x, y));
             if (currentUser != null) {
-                ConsoleView.showMessage("A zombie dropeed a diamond; yyou have should collect it.");
+                ConsoleView.showMessage("A zombie dropeed a diamond; you should collect it.");
             }
         } else {
             ctx.addLoot(new LootItem(LootType.POT, x, y));
             if (currentUser != null) {
-                ConsoleView.showMessage("A zombie dropeed a pot; you have should collect it.");
+                ConsoleView.showMessage("A zombie dropeed a pot; you should collect it.");
             }
         }
     }

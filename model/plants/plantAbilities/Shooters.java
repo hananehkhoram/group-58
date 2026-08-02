@@ -4,11 +4,11 @@ import model.GameContext;
 import model.mechanisms.GameEngine;
 import model.plants.Plant;
 import model.plants.TargetingMode;
+import model.plants.enums.ShootType;
+import model.plants.plantFoodEffect.PlantFoodMode;
 import model.projectile.BulletType;
 import model.projectile.Projectile;
 import model.projectile.TrajectoryType;
-import model.plants.enums.ShootType;
-import model.plants.plantFoodEffect.PlantFoodMode;
 import model.zombie.Zombie;
 import model.zombie.behavior.Armor;
 
@@ -40,7 +40,8 @@ public class Shooters implements BaseAbility {
         if (!canFireNow) return;
 
         boolean hasShot;
-        if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET) {
+        if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET
+                || shootType == ShootType.RANDOM_INSTANT) {
             hasShot = shootHoming(damage, bulletType, shootType, self, ctx, engine);
         } else {
             hasShot = shootDirectional(damage, amount, shootType, bulletType, self, ctx);
@@ -87,7 +88,7 @@ public class Shooters implements BaseAbility {
         List<double[]> dirs = new ArrayList<>();
         switch (shootType) {
             case QUAD_DIAGONAL -> {
-                double d = 1.0 / Math.sqrt(2); // Rotobaga: چهار جهت مورب هم‌زمان
+                double d = 1.0 / Math.sqrt(2);
                 dirs.add(new double[]{d, d});
                 dirs.add(new double[]{d, -d});
                 dirs.add(new double[]{-d, d});
@@ -159,7 +160,51 @@ public class Shooters implements BaseAbility {
 
     @Override
     public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
-        // BARRAGE for most, MULTI_TARGET_BURST for Caulipower/Electric Blueberry, SELF_RESET for Sea/Puff-shroom
+        java.util.Map<String, String> p = self.getAbilityParams();
+        int amount = Integer.parseInt(p.get("amount"));
+        ShootType shootType = ShootType.valueOf(p.get("shootType"));
+        BulletType bulletType = BulletType.valueOf(p.get("bulletType"));
+        GameEngine engine = ctx.getGameEngine();
+        int damage = 20;
+        try {
+            if (self.getDamage() != null && !self.getDamage().isEmpty()) {
+                damage = Integer.parseInt(self.getDamage());
+            }
+        } catch (NumberFormatException ignored) {
+        }
+
+        switch (mode) {
+            case BARRAGE -> {
+                int burstShots = 8;
+                int empoweredDamage = damage * 2;
+                for (int i = 0; i < burstShots; i++) {
+                    if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET) {
+                        shootHoming(empoweredDamage, bulletType, shootType, self, ctx, engine);
+                    } else {
+                        shootDirectional(empoweredDamage, amount, shootType, bulletType, self, ctx);
+                    }
+                }
+            }
+            case MULTI_TARGET_BURST -> { // Caulipower, Electric Blueberry, Magnet-shroom
+                if ("Magnet-shroom".equalsIgnoreCase(self.getName())) {
+                    for (int i = 0; i < 3; i++) handleMagnetShroomAction(self, ctx);
+                } else {
+                    for (int i = 0; i < 3; i++) {
+                        shootHoming(damage * 2, bulletType, ShootType.RANDOM_HOMING, self, ctx, engine);
+                    }
+                }
+            }
+            case SELF_RESET -> { // Sea-shroom, Puff-shroom: رفرش همه‌ی نمونه‌های خودشون
+                for (Plant other : ctx.getAlivePlants()) {
+                    if (other.getName().equals(self.getName())) {
+                        other.setLastActionSecond(0);
+                    }
+                }
+            }
+            default -> {
+            }
+        }
+        view.ConsoleView.showMessage("Plant Food: " + self.getName() + " unleashed a barrage!");
     }
 
 }

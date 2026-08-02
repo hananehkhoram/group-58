@@ -105,8 +105,6 @@ public class GameContext {
 
     }
 
-    // SUN
-
     public boolean isOnCooldown(String plantName) {
         long availableAt = plantCooldowns.getOrDefault(plantName, 0L);
         return timeManager.getTotalTicks() < availableAt;
@@ -135,8 +133,6 @@ public class GameContext {
     public boolean isSunPresent(int x, int y) {
         return producedSuns.containsKey(x + ", " + y);
     }
-
-    // EVENTS
 
     public int collectSunAt(int x, int y) {
         String key = x + ", " + y;
@@ -226,7 +222,6 @@ public class GameContext {
     public void triggerPlayerLoss() {
         this.gameEnded = true;
         this.playerWon = false;
-//        UserManager.getInstance().saveToFile();
         User currentUser = UserManager.getInstance().getCurrentUser();
         if (currentUser != null) {
             currentUser.setWinStreakAtMaxDifficulty(0);
@@ -264,25 +259,10 @@ public class GameContext {
         graveGrid[row][col] = null;
     }
 
-    public int getWaveDurationRemaining() {
-        return waveDurationRemaining;
-    }
-
-    public void setWaveDurationRemaining(int ticks) {
-        this.waveDurationRemaining = ticks;
-    }
-
-    public void decrementWaveDelay() {
-        waveDurationRemaining--;
-    }
-
     public int getCurrentWaveIndex() {
         return currentWaveIndex;
     }
 
-    public  void setCurrentWaveIndex(int currentWaveIndex) {this.currentWaveIndex = currentWaveIndex;}
-
-    // MISC
 
     public void incrementWaveIndex() {
         currentWaveIndex++;
@@ -295,12 +275,6 @@ public class GameContext {
     public void setWaveSpawningFinished(boolean v) {
         this.waveSpawningFinished = v;
     }
-
-    public boolean canFreezeZombie() {
-        return season.sunFallsFromSky();
-    }
-
-    // GETTERS
 
     public List<Projectile> getProjectiles() {
         return projectiles;
@@ -362,14 +336,6 @@ public class GameContext {
         return gameEnded;
     }
 
-    public boolean isPlayerWon() {
-        return playerWon;
-    }
-
-    public boolean isSetupPhase() {
-        return isSetupPhase;
-    }
-
     public void setSetupPhase(boolean v) {
         this.isSetupPhase = v;
     }
@@ -404,10 +370,6 @@ public class GameContext {
 
     public void setBattleStarted(boolean battleStarted) {
         this.battleStarted = battleStarted;
-    }
-
-    public boolean isActiveWaveInProgress() {
-        return activeWaveInProgress;
     }
 
     public void setActiveWaveInProgress(boolean activeWaveInProgress) {
@@ -475,8 +437,7 @@ public class GameContext {
     { return sunProducerPlantsPlacedThisLevel; }
     public int getTotalPlantsPlacedThisLevel()
     { return totalPlantsPlacedThisLevel; }
-    public int getZombiesKilledByLawnMowerThisLevel()
-    { return zombiesKilledByLawnMowerThisLevel; }
+
 
     public String getHeldSeed()
     { return heldSeed; }
@@ -493,10 +454,8 @@ public class GameContext {
     }
     public long getFirstWaveStartTick() { return firstWaveStartTick; }
     public List<Long> getEarlyKillTicks() { return earlyKillTicks; }
-
     public void recordAlmostLostKill() { almostLostKillsThisLevel++; }
     public int getAlmostLostKillsThisLevel() { return almostLostKillsThisLevel; }
-
     public void recordLawnMowerKill() { lawnMowerKillsThisLevel++; }
     public int getLawnMowerKillsThisLevel() { return lawnMowerKillsThisLevel; }
 
@@ -521,25 +480,20 @@ public class GameContext {
     public void clearLoots() {
         activeLoots.clear();
     }
-
     public void incrementMultiKillPattern() { multiKillPatternCount++; }
     public void incrementSimultaneousKillPattern() { simultaneousKillPatternCount++; }
     public void incrementQuickKillPattern() { quickKillPatternCount++; }
     public void incrementPrecisionFinishPattern() { precisionFinishPatternCount++; }
-
     public void bumpKillStreak() {
         currentKillStreak++;
         if (currentKillStreak % 5 == 0) {
             killStreakPatternCount++;
         }
     }
-
     public void resetKillStreak() { currentKillStreak = 0; }
-
     public int getMultiKillPatternCount() { return multiKillPatternCount; }
     public int getSimultaneousKillPatternCount() { return simultaneousKillPatternCount; }
     public int getQuickKillPatternCount() { return quickKillPatternCount; }
     public int getKillStreakPatternCount() { return killStreakPatternCount; }
     public int getPrecisionFinishPatternCount() { return precisionFinishPatternCount; }
-
 }

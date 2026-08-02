@@ -134,6 +134,11 @@ public class Projectile {
 
     public void deactivate() { this.isActive = false; }
 
+    public void bounceLane(int newRow) {
+        this.row = newRow;
+        this.y = newRow;
+    }
+
     public double getX() { return x; }
     public int getRow() { return row; }
     public boolean isActive() { return isActive; }

@@ -8,6 +8,8 @@ import model.projectile.TrajectoryType;
 import model.zombie.Zombie;
 import model.plants.plantFoodEffect.PlantFoodMode;
 
+import java.util.List;
+
 public class Lobber implements BaseAbility {
 
     @Override
@@ -40,7 +42,6 @@ public class Lobber implements BaseAbility {
                 case NORMAL:
                     shootProjectile(ctx, plant, damage, BulletType.NORMAL);
                     break;
-
                 case KERNEL_OR_BUTTER:
                     boolean isButter = Math.random() < 0.25;
                     if (isButter) {
@@ -53,23 +54,17 @@ public class Lobber implements BaseAbility {
                 case AOE:
                     shootProjectile(ctx, plant, damage, BulletType.NORMAL);
                     break;
-
                 case AOE_ICE:
                     shootProjectile(ctx, plant, damage, BulletType.ICE);
                     break;
-
                 case AOE_FIRE:
                     shootProjectile(ctx, plant, damage, BulletType.FIRE);
                     break;
-
                 default:
                     hasShot = false;
                     break;
             }
-
-            if (hasShot) {
-                plant.setLastActionSecond(currentSecond);
-            }
+            if (hasShot) plant.setLastActionSecond(currentSecond);
         }
     }
 
@@ -97,5 +92,34 @@ public class Lobber implements BaseAbility {
 
     @Override
     public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
+        if (mode != PlantFoodMode.BARRAGE_LOB) return;
+
+        int baseDamage = 20;
+        try {
+            if (self.getDamage() != null && !self.getDamage().isEmpty()) {
+                baseDamage = Integer.parseInt(self.getDamage());
+            }
+        } catch (NumberFormatException ignored) {
+        }
+
+        List<Zombie> alive = new java.util.ArrayList<>();
+        for (Zombie z : ctx.getAliveZombies()) {
+            if (!z.isDead()) alive.add(z);
+        }
+        if (alive.isEmpty()) return;
+        java.util.Collections.shuffle(alive);
+
+        String lobType = self.getAbilityParams().get("lobType");
+        int targetCount = "KERNEL_OR_BUTTER".equals(lobType) ? alive.size() : Math.min(3, alive.size());
+
+        for (int i = 0; i < targetCount; i++) {
+            Zombie z = alive.get(i);
+            z.takeDamage(baseDamage * 3);
+            if ("KERNEL_OR_BUTTER".equals(lobType) || "AOE_ICE".equals(lobType)) {
+                z.applySlowOrFreeze();
+            }
+        }
+
+        view.ConsoleView.showMessage("Plant Food: " + self.getName() + " launched a barrage of lobs!");
     }
 }

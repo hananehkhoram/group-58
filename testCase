@@ -38,5 +38,9 @@ plant plant -t SunFlower -l (5, 0)
 
  zombies info
  cheat spawn-zombie -t Wizard -l (8, 0)
+cheat add plant -t Enlighten-mint -l (0, 1)
+
+
+
 
 

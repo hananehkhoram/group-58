@@ -40,8 +40,6 @@ public final class PlantActivator {
             ExplosiveType type = ExplosiveType.valueOf(p.get("explosiveType"));
             int damage = parseBaseDamage(plant);
             explosive.triggerAbility(type, damage, plant, engine);
-            // explosive.explosion(ctx.getCurrentTick(), plant.getRow(), plant.getCol());
-
 
         } else if (ability instanceof MeleeAttackers melee) {
             String meleeKind = p.get("meleeKind");
@@ -55,7 +53,8 @@ public final class PlantActivator {
 
         } else if (ability instanceof WallNut wallNut) {
             WallNutType wallNutType = WallNutType.valueOf(p.get("wallNutType"));
-            wallNut.wall(wallNutType, plant, ctx);
+            int damage = parseBaseDamage(plant);
+            wallNut.triggerAbility(wallNutType, damage, plant, engine);
 
         } else if (ability instanceof SunProducers sunProducers) {
             String rate = p.get("sunRate");
@@ -67,9 +66,8 @@ public final class PlantActivator {
             ModifierType modifierType = ModifierType.valueOf(p.get("modifierType"));
             modifier.modify(modifierType, plant, engine);
 
-        } else if (ability instanceof PlantFooder) {
-            // No extra params: PlantFooder's whole job IS the plant-food effect,
-            // triggered via activatePlantFood() below, not activate().
+        } else if (ability instanceof PlantFooder plantFooder) {
+            plantFooder.activate(plant, ctx);
         }
     }
 
