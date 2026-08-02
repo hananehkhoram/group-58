@@ -205,12 +205,17 @@ public class Explosive implements BaseAbility {
     }
 
     public void forIcedCave(Plant plant, GameContext ctx, GameEngine engine) {
-        int r = plant.getRow();
-        int c = plant.getCol();
-        if (ctx.getGameEngine().getTiles(r, c) != null) {
-            ctx.getGameEngine().getTiles(r, c).meltIce();
+        int pRow = plant.getRow();
+        int pCol = plant.getCol();
+
+        for (int[] pos : get3x3Tiles(pRow, pCol, ctx)) {
+            int r = pos[0];
+            int c = pos[1];
+            if (ctx.getGameEngine().getTiles(r, c) != null) {
+                ctx.getGameEngine().getTiles(r, c).meltIce();
+            }
         }
-        engine.removePlant(r, c);
+        engine.removePlant(pRow, pCol);
     }
 
 
