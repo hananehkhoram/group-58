@@ -71,7 +71,7 @@ public class Lobber implements BaseAbility {
     private void shootProjectile(GameContext ctx, Plant plant, int damage, BulletType type) {
         Projectile p = new Projectile(
                 damage,
-                plant.getCol(), 0, plant.getRow(),
+                plant.getCol(), plant.getRow(), plant.getRow(),
                 4.0,
                 type,
                 TrajectoryType.LOBBED,
