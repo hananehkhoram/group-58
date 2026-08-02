@@ -1,7 +1,6 @@
 package model.zombie.behavior;
 
 import model.GameContext;
-import model.mechanisms.Tile;
 import model.plants.Plant;
 import model.zombie.Zombie;
 

@@ -2,9 +2,6 @@ package controller.commands.GameMenuCommands;
 
 import controller.MenuManager;
 import controller.commandHandler.Command;
-import model.GameContext;
-import model.menus.MenuType;
-import model.menus.allmenus.GreenHouseMenu;
 import view.ConsoleView;
 
 public class EnterGreenHouse implements Command {

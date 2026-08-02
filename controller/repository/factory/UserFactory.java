@@ -2,7 +2,6 @@ package controller.repository.factory;
 
 import controller.repository.DataManager;
 import model.user.User;
-import model.zombie.Zombie;
 
 public class UserFactory extends BaseFactory<User> {
 

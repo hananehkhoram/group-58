@@ -3,11 +3,9 @@ package controller.commands;
 import controller.MenuManager;
 import controller.commandHandler.Command;
 import controller.repository.factory.PlantFactory;
-import controller.repository.factory.ZombieFactory;
 import model.GameContext;
 import model.level.Level;
 import model.plants.Plant;
-import model.zombie.Zombie;
 import view.ConsoleView;
 
 public class CheatAddPlant implements Command {

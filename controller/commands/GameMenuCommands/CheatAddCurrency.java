@@ -5,7 +5,6 @@ import controller.commandHandler.Command;
 import exceptions.CommandNotFound;
 import model.menus.Menu;
 import model.menus.allmenus.GameMenu;
-import model.menus.allmenus.LoginMenu;
 import view.ConsoleView;
 
 public class CheatAddCurrency implements Command {

@@ -3,7 +3,6 @@ package controller.commands;
 import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.menus.Menu;
-import model.menus.allmenus.LoginMenu;
 import model.menus.allmenus.SettingsMenu;
 import view.ConsoleView;
 

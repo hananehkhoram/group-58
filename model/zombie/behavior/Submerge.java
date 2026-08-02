@@ -4,7 +4,6 @@ import model.GameContext;
 import model.mechanisms.TerrainType;
 import model.mechanisms.Tile;
 import model.plants.Plant;
-import model.projectile.BulletType;
 import model.projectile.Projectile;
 import model.projectile.TrajectoryType;
 import model.zombie.Zombie;

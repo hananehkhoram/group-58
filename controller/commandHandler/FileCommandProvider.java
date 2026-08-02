@@ -31,7 +31,6 @@ import controller.commands.Status.ShowTileStatus;
 import controller.commands.TravelMenuCommands.SmashVase;
 import controller.commands.TravelMenuCommands.Swap;
 import model.GameContext;
-import model.MiniGame.Beghouled.BeghouledManager;
 
 
 public class FileCommandProvider implements controller.commandHandler.CommandProvider {

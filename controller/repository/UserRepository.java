@@ -6,7 +6,6 @@ import model.shopData.DailyOffer;
 import model.user.Gender;
 import model.user.SecurityQuestions;
 import model.user.User;
-import model.user.UserManager;
 import model.zombie.Zombie;
 
 import java.util.*;

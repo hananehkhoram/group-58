@@ -7,7 +7,6 @@ import controller.repository.factory.ZombieFactory;
 import model.GameContext;
 import model.level.Level;
 import model.mechanisms.GameEngine;
-import model.season.Season;
 //import model.season.miniGameSeason.ZombotanySeason;
 import model.zombie.Zombie;
 import view.ConsoleView;

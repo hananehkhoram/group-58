@@ -7,7 +7,6 @@ import model.plants.TargetingMode;
 import model.plants.plantFoodEffect.PlantFoodMode;
 import model.zombie.Zombie;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class WallNut implements BaseAbility {

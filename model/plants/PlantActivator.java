@@ -6,9 +6,7 @@ import model.mechanisms.SunType;
 import model.projectile.BulletType;
 import model.plants.enums.ShootType;
 import model.plants.plantAbilities.*;
-import model.zombie.behavior.Damage;
 
-import java.util.Date;
 import java.util.Map;
 
 public final class PlantActivator {

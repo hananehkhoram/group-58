@@ -4,7 +4,6 @@ import controller.MenuManager;
 import controller.commandHandler.Command;
 import exceptions.CommandNotFound;
 import model.GameContext;
-import model.user.UserManager;
 import view.ConsoleView;
 
 public class CollectSun implements Command {

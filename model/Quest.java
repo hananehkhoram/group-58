@@ -1,8 +1,5 @@
 package model;
 
-import java.util.ArrayList;
-import model.plants.PlantFamily;
-
 
 public class Quest {
     public enum QuestCategory { DAILY, MAIN, EPIC }

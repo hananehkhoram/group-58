@@ -4,7 +4,6 @@ package model.level;
 import model.mechanisms.Wave;
 import model.plants.Plant;
 import model.season.Season;
-import model.user.User;
 
 import java.util.ArrayList;
 import java.util.List;

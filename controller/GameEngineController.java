@@ -2,10 +2,7 @@ package controller;
 
 import controller.repository.DataManager;
 import model.GameContext;
-import model.TimeManager;
-import model.level.Level;
 import model.mechanisms.GameEngine;
-import model.season.Season;
 import model.user.User;
 import model.user.UserManager;
 import view.ConsoleView;

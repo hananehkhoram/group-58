@@ -1,6 +1,5 @@
 package model.plants.plantAbilities;
 
-import controller.MenuManager;
 import model.GameContext;
 import model.mechanisms.GameEngine;
 import model.plants.Plant;

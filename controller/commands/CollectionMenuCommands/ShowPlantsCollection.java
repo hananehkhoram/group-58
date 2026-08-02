@@ -4,7 +4,6 @@ import controller.MenuManager;
 import controller.commandHandler.Command;
 import model.menus.Menu;
 import model.menus.allmenus.CollectionMenu;
-import model.menus.allmenus.PlantSelectionMenu;
 import view.ConsoleView;
 
 public class ShowPlantsCollection implements Command {

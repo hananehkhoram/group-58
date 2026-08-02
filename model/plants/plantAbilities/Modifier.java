@@ -1,6 +1,5 @@
 package model.plants.plantAbilities;
 
-import controller.repository.factory.PlantFactory;
 import model.GameContext;
 import model.mechanisms.GameEngine;
 import model.mechanisms.Tile;

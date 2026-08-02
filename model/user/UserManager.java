@@ -1,9 +1,6 @@
 package model.user;
 
 import controller.repository.DataManager;
-import model.plants.Plant;
-import model.shopData.DailyOffer;
-import model.zombie.Zombie;
 
 import java.util.ArrayList;
 import java.util.List;

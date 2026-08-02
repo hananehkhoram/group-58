@@ -1,7 +1,6 @@
 package model.zombie;
 
 import model.zombie.behavior.*;
-import model.zombie.behavior.ArmorType;
 
 import java.util.HashMap;
 import java.util.List;
