@@ -53,12 +53,17 @@ public class ShowMap implements Command {
                 String vaseSymbol = "";
                 if (tile != null && tile.getVase() != null && !tile.getVase().isBroken()) {
                     Vase vase = tile.getVase();
-                    String contentName = vase.getContent().toString();
+
+                    // بررسی کامل null بودن محتوا و موجودیت پنهان
+                    Object content = vase.getContent();
+                    String contentName = (content != null) ? content.toString().trim().toUpperCase() : "";
+
                     String hiddenEntity = vase.getHiddenEntityName();
+                    String hiddenLower = (hiddenEntity != null) ? hiddenEntity.toLowerCase() : "";
 
                     if (contentName.equals("PLANT")) {
                         vaseSymbol = "VP";
-                    } else if (hiddenEntity != null && hiddenEntity.toLowerCase().contains("gargantuar")) {
+                    } else if (!hiddenLower.isEmpty() && hiddenLower.contains("gargantuar")) {
                         vaseSymbol = "VG";
                     } else {
                         vaseSymbol = "V.";
@@ -67,10 +72,13 @@ public class ShowMap implements Command {
 
                 Plant plant = (tile != null) ? tile.getPlant() : null;
 
-                String plantSymbol = (plant != null)
-                        ? plant.getName().substring(0, Math.min(2, plant.getName().length()))
-                        : "..";
-
+                String plantSymbol = "..";
+                if (plant != null) {
+                    String pName = plant.getName();
+                    if (pName != null && !pName.isEmpty()) {
+                        plantSymbol = pName.substring(0, Math.min(2, pName.length()));
+                    }
+                }
                 StringBuilder projectileSymbol = new StringBuilder();
                 for (Projectile p : ctx.getProjectiles()) {
                     if ((int) Math.round(p.getY()) == r && (int) Math.floor(p.getX()) == c){

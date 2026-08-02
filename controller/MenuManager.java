@@ -50,6 +50,7 @@ public class MenuManager {
         this.ctx = ctx;
         this.currentMenu = new RegisterMenu(this.ctx);
     }
+
     private Menu buildMenu(String targetMenu) {
         MenuType type = MenuType.fromMenuName(targetMenu);
         if (type == null) {

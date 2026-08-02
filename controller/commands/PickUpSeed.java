@@ -1,9 +1,11 @@
 package controller.commands;
 
 import controller.MenuManager;
+import controller.SpecialLevelManager.ConveyorBeltManager;
 import controller.commandHandler.Command;
 import model.GameContext;
 import model.mechanisms.Tile;
+import model.plants.Plant;
 import view.ConsoleView;
 
 public class PickUpSeed implements Command {
@@ -29,6 +31,10 @@ public class PickUpSeed implements Command {
 
             try {
                 ctx.setHeldSeed(seedName);
+                if (ctx.getLevelManager() instanceof ConveyorBeltManager){
+                    Plant plantToAdd = ctx.getPlantFactory().create(seedName);
+                    ((ConveyorBeltManager) ctx.getLevelManager()).getConveyorBelt().add(plantToAdd);
+                }
                 tile.clearDroppedSeed();
                 ConsoleView.simplePrint(seedName + " picked up and held in hand!\n");
             } catch (Exception e) {

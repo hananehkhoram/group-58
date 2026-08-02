@@ -53,7 +53,7 @@ public class EnterMiniGameMenu implements Command {
                         break;
 
                     case 3:
-                        Izambi izambiModel = new Izambi();
+                        Izambi izambiModel = new Izambi(menuManager);
                         izambiModel.startMiniGame();
                         break;
 
