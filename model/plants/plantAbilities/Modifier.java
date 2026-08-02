@@ -1,7 +1,9 @@
 package model.plants.plantAbilities;
 
+import controller.repository.factory.PlantFactory;
 import model.GameContext;
 import model.mechanisms.GameEngine;
+import model.mechanisms.Tile;
 import model.plants.Plant;
 import model.plants.TargetingMode;
 import model.plants.plantFoodEffect.PlantFoodMode;
@@ -9,8 +11,11 @@ import model.projectile.BulletType;
 import model.projectile.Projectile;
 import model.zombie.Effects;
 import model.zombie.Zombie;
+import view.ConsoleView;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Modifier implements BaseAbility {
 
@@ -67,8 +72,33 @@ public class Modifier implements BaseAbility {
                 break;
 
             case WATER_PLATFORM:
-            case COPY_PLANT:
                 break;
+            case COPY_PLANT:
+                List<Plant> candidates = new ArrayList<>(ctx.getActivePlants());
+                candidates.removeIf(c -> c.getName().equalsIgnoreCase(plant.getName()));
+                if (!candidates.isEmpty()) {
+                    Plant target = candidates.get(new Random().nextInt(candidates.size()));
+                    Plant newPlant = ctx.getPlantFactory().create(target.getName());
+
+                    if (newPlant != null) {
+                        newPlant.setRow(pRow);
+                        newPlant.setCol(pCol);
+                        newPlant.setCol(pCol);
+                        newPlant.setRow(pRow);
+
+                        Tile tile = engine.getTiles(pCol, pRow);
+                        if (tile != null) tile.setPlant(newPlant);
+                        ctx.getPlantGrid()[pRow][pCol] = newPlant;
+
+                        int idx = ctx.getAlivePlants().indexOf(plant);
+                        if (idx != -1) ctx.getAlivePlants().set(idx, newPlant);
+                        else ctx.getAlivePlants().add(newPlant);
+                        ctx.recordPlantPlaced(newPlant, pRow, pCol);
+                        ConsoleView.showMessage("Imitater successfully transformed into " + newPlant.getName() + " at (" + pCol + ", " + pRow + ")");
+                    }
+                }
+                break;
+
         }
     }
 

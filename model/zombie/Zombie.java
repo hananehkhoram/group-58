@@ -6,6 +6,7 @@ import model.season.Season;
 import model.zombie.behavior.*;
 import view.ConsoleView;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public class Zombie implements Damageable {
     private int wavePointCost;
     private int weight;
     private Map<String, Behaviors> behaviors;
-    private List<Effects> effects;
+    private List<Effects> effects = new ArrayList<>();
     private Map<String, Object> extraParams;
     private List<Season> seasonsAvailable;
     private double x, y;
@@ -35,7 +36,9 @@ public class Zombie implements Damageable {
     private boolean isEating = false;
     private boolean movingBackward = false;
 
-    public Zombie() {}
+        public Zombie() {
+            this.effects = new ArrayList<>();
+        }
 
     public Zombie(String id, String name, int hp, double eatDps,
                   double speed, int wavePointCost, int weight) {
@@ -47,10 +50,12 @@ public class Zombie implements Damageable {
         this.wavePointCost = wavePointCost;
         this.weight = weight;
         this.behaviors = ZombieActivator.buildBehaviors(this);
+        this.effects = new  ArrayList<>();
     }
 
     public void setAsInitialFrozenBlock() {
         this.isIced = true;
+        effects.add(Effects.FROZEN);
         this.iceHp = 600;
     }
 
@@ -103,6 +108,7 @@ public class Zombie implements Damageable {
             iceHp -= damage;
             if (iceHp <= 0) {
                 isIced = false;
+                if (effects != null) effects.remove(Effects.FROZEN);
                 ConsoleView.showMessage("Zombie broke free from ice!");
             }
         }
@@ -181,6 +187,7 @@ public class Zombie implements Damageable {
         if (isIced) {
             iceHp = 0;
             isIced = false;
+            if (effects != null) effects.remove(Effects.FROZEN);
         }
     }
 
@@ -188,6 +195,7 @@ public class Zombie implements Damageable {
     public void applySlowOrFreeze() {
         if (!isIced) {
             isIced = true;
+            effects.add(Effects.FROZEN);
             iceHp = 300;
         }
     }

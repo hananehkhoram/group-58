@@ -17,12 +17,15 @@ public final class PlantActivator {
     }
 
     public static void activate(Plant plant, GameContext ctx, GameEngine engine) {
+        if (plant.getBaseAbility() == null) {
+            return;}
         BaseAbility ability = plant.getBaseAbility();
         Map<String, String> p = plant.getAbilityParams();
 
         if (plant.isIced() || plant.isOctopused() || plant.isCatified()) {
             return;
         }
+
 
         if (ability instanceof Shooters shooters) {
             int amount = Integer.parseInt(p.get("amount"));

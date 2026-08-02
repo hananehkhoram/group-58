@@ -55,7 +55,7 @@ cheat add plant -t Threepeater -l (1, 2)
 cheat add plant -t Snow Pea -l (1, 3)
 cheat add plant -t Rotobaga -l (1, 4)
 show map
-advance time -t 30 ticks
+advance time -t 10 ticks
 show map
 
 cheat add plant -t Pea Pod -l (0, 0)
@@ -111,7 +111,7 @@ cheat add plant -t Iceberg Lettuce -l (0, 2)
 cheat add plant -t Bonk Choy -l (0, 3)
 cheat add plant -t Phat Beet -l (0, 4)
 show map
-advance time -t 30 ticks
+advance time -t 10 ticks
 show map
 
 cheat add plant -t Chomper -l (0, 0)
@@ -123,8 +123,9 @@ cheat add plant -t Endurian -l (6, 0)
 cheat add plant -t Garlic -l (6, 1)
 cheat add plant -t Sweet Potato -l (6, 2)
 show map
-advance time -t 30 ticks
+advance time -t 10 ticks
 show map
+cheat add plant -t Imitater -l (5, 2)
 
 
 

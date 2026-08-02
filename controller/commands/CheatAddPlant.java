@@ -38,8 +38,9 @@ public class CheatAddPlant implements Command {
         p.setRow(y);
         ctx.getActivePlants().add(p);
         ctx.getAlivePlants().add(p);
-        Planting planting = new Planting(menuManager);
         ctx.getPlantGrid()[y][x] = p;
+        ctx.recordPlantPlaced(p, y, x);
+        menuManager.getGameEngine().getTiles(x, y).setPlant(p);
         ConsoleView.showMessage("Plant " + p.getName() + " has been planted.");
 //        if (planting.isValidPlacement(p, p.getName(), x, y, ctx, menuManager.getGameEngine(), ctx.getLevelManager(), false, false)) {
 //            ctx.getPlantGrid()[y][x] = p;

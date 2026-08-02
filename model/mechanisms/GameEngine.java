@@ -176,6 +176,9 @@ public class GameEngine {
         while (it.hasNext()) {
             Plant p = it.next();
             PlantActivator.activate(p, ctx, this);
+            if (p.getName() != null && p.getName().equalsIgnoreCase("Imitater")) {
+                continue;
+            }
             if (p.getHp() <= 0) {
                 ctx.getPlantGrid()[p.getRow()][p.getCol()] = null;
                 it.remove();
