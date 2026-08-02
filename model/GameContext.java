@@ -7,6 +7,7 @@ import controller.SpecialLevelManager.*;
 import controller.repository.DataManager;
 import controller.repository.factory.PlantFactory;
 import controller.repository.factory.ZombieFactory;
+import model.MiniGame.Beghouled.BeghouledManager;
 import model.level.Level;
 import model.level.LevelType;
 import model.mechanisms.GameEngine;
@@ -80,6 +81,7 @@ public class GameContext {
     private int almostLostKillsThisLevel = 0;                       // برای «تقریبا پیروز»
     private int lawnMowerKillsThisLevel = 0;
     private String heldSeed = null;
+    private BeghouledManager beghouledManager;
 
     private int zombiesKilledByLawnMowerThisLevel = 0;
     private controller.repository.factory.ZombieFactory zombieFactory;
@@ -443,6 +445,12 @@ public class GameContext {
     { return heldSeed; }
     public void setHeldSeed(String heldSeed) { this.heldSeed = heldSeed; }
 
+    public BeghouledManager getBeghouldManager(){
+        return beghouledManager;
+    }
+    public  void setBeghouldManager(BeghouledManager beghouldManager){
+        this.beghouledManager = beghouldManager;
+    }
 
     public void recordFirstWaveStart() {
         if (firstWaveStartTick == -1) {

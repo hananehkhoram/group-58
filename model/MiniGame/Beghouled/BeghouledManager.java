@@ -22,7 +22,7 @@ public class BeghouledManager {
         this.currentMatches = 0;
 
         this.activePlantTypes = new ArrayList<>(Arrays.asList(
-                "peashooter", "wall-nut", "puff-shroom", "cabbage-pult", "snow pea"
+                "Peashooter", "Wall-nut", "Puff-shroom", "Cabbage-pult", "Snow Pea"
         ));
     }
 
@@ -41,13 +41,11 @@ public class BeghouledManager {
             }
         }
 
-        // اگر در ابتدا ترکیبی وجود داشت، بدون دادن خورشید پاکشان کن تا زمین آماده بازی شود
         while (checkAndRemoveMatches(false) > 0) {
             applyGravityAndRefill();
         }
     }
 
-    // ۲. جابه‌جایی دو گیاه (فقط در صورت ایجاد ترکیب)
     public boolean trySwap(int x1, int y1, int x2, int y2) {
         // بررسی مجاور بودن
         if (Math.abs(x1 - x2) + Math.abs(y1 - y2) != 1) return false;
@@ -65,15 +63,13 @@ public class BeghouledManager {
         if (hasAnyMatch()) {
             int score = checkAndRemoveMatches(false);
             ctx.setSunAmount(ctx.getSunAmount() + score);
+            currentMatches++;
             applyGravityAndRefill();
-
-            // بررسی ترکیب‌های زنجیره‌ای (Cascade)
             handleCascades();
 
             checkWinCondition();
             return true;
         } else {
-            // اگر ترکیبی نشد، برگردان به حالت اول
             swapPlants(t1, t2);
             return false;
         }
@@ -90,7 +86,6 @@ public class BeghouledManager {
         int rows = ctx.getLevel().getRows();
         int cols = ctx.getLevel().getColumns();
         Set<Tile> matchedTiles = new HashSet<>();
-        int sunReward = 0;
 
         // بررسی افقی
         for (int r = 0; r < rows; r++) {
@@ -113,35 +108,93 @@ public class BeghouledManager {
                 }
             }
         }
-        sunReward = matchedTiles.size() * 10;
-        return sunReward;
+
+        for (Tile tile : matchedTiles){
+            if (tile != null) {
+                tile.setPlant(null);
+            }
+        }
+        return matchedTiles.size();
     }
 
     private boolean isCrater(Tile tile) {
-        // منطق واقعی خودت را اینجا بنویس
         return false;
     }
 
-    // اعمال جاذبه و پر کردن خانه‌های خالی
     private void applyGravityAndRefill() {
-        // منطق افتادن گیاهان از بالا
+        int rows = ctx.getLevel().getRows();
+        int cols = ctx.getLevel().getColumns();
+        Random rand = new Random();
+
+        // بررسی ستون به ستون
+        for (int c = 0; c < cols; c++) {
+            // از پایین به بالا حرکت می‌کنیم تا خانه‌های خالی را پیدا کنیم
+            for (int r = rows - 1; r >= 0; r--) {
+                Tile tile = engine.getTiles(c, r);
+                if (tile != null && !isCrater(tile) && tile.getPlant() == null) {
+
+                    // بگردیم بالای این خانه را پیدا کنیم تا یک گیاه را به پایین بکشیم
+                    boolean foundPlant = false;
+                    for (int aboveR = r - 1; aboveR >= 0; aboveR--) {
+                        Tile aboveTile = engine.getTiles(c, aboveR);
+                        if (aboveTile != null && aboveTile.getPlant() != null) {
+                            // گیاه بالای سر را می‌آوریم پایین
+                            tile.setPlant(aboveTile.getPlant());
+                            aboveTile.setPlant(null);
+                            foundPlant = true;
+                            break;
+                        }
+                    }
+
+                    // اگر هیچ گیاهی بالای سرش نبود (بالای صفحه بود)، یک گیاه رندوم جدید از بالا بساز
+                    if (!foundPlant) {
+                        String randomPlant = activePlantTypes.get(rand.nextInt(activePlantTypes.size()));
+                        tile.setPlant(ctx.getPlantFactory().create(randomPlant));
+                    }
+                }
+            }
+        }
     }
 
     // بررسی اینکه آیا اصلاً ترکیب ۳تایی وجود دارد یا خیر
     private boolean hasAnyMatch() {
-        // منطق بررسی کل زمین
+        int rows = ctx.getLevel().getRows();
+        int cols = ctx.getLevel().getColumns();
+
+        // بررسی افقی
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols - 2; c++) {
+                if (isMatch(c, r, c + 1, r, c + 2, r)) {
+                    return true;
+                }
+            }
+        }
+
+        // بررسی عمودی
+        for (int c = 0; c < cols; c++) {
+            for (int r = 0; r < rows - 2; r++) {
+                if (isMatch(c, r, c, r + 1, c, r + 2)) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
     // هندل کردن ترکیب‌های پشت سر هم
     private void handleCascades() {
-        // منطق آبشاری
+        while (hasAnyMatch()) {
+            int score = checkAndRemoveMatches(true);
+            ctx.setSunAmount(ctx.getSunAmount() + score);
+            applyGravityAndRefill();
+        }
     }
 
     // بررسی شرط پیروزی بازی
     private void checkWinCondition() {
         if (currentMatches >= targetMatches) {
-            // منطق برد
+
         }
     }
 

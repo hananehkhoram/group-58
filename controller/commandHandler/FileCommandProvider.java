@@ -29,7 +29,9 @@ import controller.commands.Status.ShowMap;
 import controller.commands.Status.ShowPlantsStatus;
 import controller.commands.Status.ShowTileStatus;
 import controller.commands.TravelMenuCommands.SmashVase;
+import controller.commands.TravelMenuCommands.Swap;
 import model.GameContext;
+import model.MiniGame.Beghouled.BeghouledManager;
 
 
 public class FileCommandProvider implements controller.commandHandler.CommandProvider {
@@ -142,6 +144,7 @@ public class FileCommandProvider implements controller.commandHandler.CommandPro
                 new PickUpSeed(menuManager));
         registry.register("cheat add plant -t (?<plantType>.+) -l \\((?<x>\\d+), (?<y>\\d+)\\)" ,
                 new CheatAddPlant(menuManager));
+        registry.register("swap \\(\\s*(?<x1>\\d+)\\s*,\\s*(?<y1>\\d+)\\s*\\) to \\(\\s*(?<x2>\\d+)\\s*,\\s*(?<y2>\\d+)\\s*\\)", new Swap(menuManager));
 
     }
 }

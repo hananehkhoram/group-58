@@ -3,10 +3,20 @@ package controller.commands.TravelMenuCommands;
 import controller.MenuManager;
 import controller.commandHandler.Command;
 //import model.MiniGame.Beghouled.BeghouledManager;
+import controller.commands.Status.ShowMap;
+import controller.repository.factory.LevelFactory;
+import model.GameContext;
+import model.MiniGame.Beghouled.BeghouledManager;
 import model.MiniGame.Izambi.Izambi;
 import model.MiniGame.VaseGame.Vasecheccker;
 import model.MiniGame.WallnutsGame.WallnutBowlingGame;
+import model.level.Level;
+import model.mechanisms.GameEngine;
 import model.menus.allmenus.TravelMenu;
+import model.season.Season;
+import model.season.miniGameSeason.BeghouledSeason;
+
+import java.util.List;
 
 public class EnterMiniGameMenu implements Command {
     private MenuManager menuManager;
@@ -45,10 +55,28 @@ public class EnterMiniGameMenu implements Command {
                     case 3:
                         Izambi izambiModel = new Izambi();
                         izambiModel.startMiniGame();
+                        break;
 
                     case 4:
-                        /*BeghouledManager beghouled = new BeghouledManager();
-                        beghouled.initBoard();*/
+                        List<Level> beghouledLevels = LevelFactory.buldBeghouledLevels();
+                        Level currentLevel = beghouledLevels.get(0);
+                        Season beghouledSeason = new BeghouledSeason(beghouledLevels);
+
+                        GameContext newCtx = new GameContext(currentLevel, beghouledSeason);
+                        GameEngine newEngine = new GameEngine(newCtx, menuManager);
+                        newCtx.setGameEngine(newEngine);
+
+                        BeghouledManager beghouled = new BeghouledManager(newCtx, newEngine, 10);
+                        beghouled.initBoard();
+
+                        newCtx.setBeghouldManager(beghouled);
+
+                        menuManager.setCtx(newCtx);
+                        menuManager.setGameEngine(newEngine);
+
+                        ShowMap showMapCommand = new ShowMap(menuManager);
+                        showMapCommand.execute(new String[]{});
+                        break;
 
                 }
             }
