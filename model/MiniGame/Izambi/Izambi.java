@@ -3,6 +3,7 @@ package model.MiniGame.Izambi;
 import controller.MenuManager;
 import controller.repository.DataManager;
 import controller.repository.factory.LevelFactory;
+import controller.repository.factory.PlantFactory;
 import controller.repository.factory.ZombieFactory;
 import model.GameContext;
 import model.level.Level;
@@ -102,18 +103,14 @@ public class Izambi {
     }
 
     private void initSunProducerZombies() {
-        if (currentLevel == null || ctx == null) return;
+        if (currentLevel == null || ctx == null || ctx.getGameEngine() == null) return;
         int rows = currentLevel.getRows();
 
-        // استفاده از PlantFactory برای ساخت گیاهان ستون اول (مثل Sunflower)
-        controller.repository.factory.PlantFactory plantFactory = new controller.repository.factory.PlantFactory(DataManager.getInstance());
-
+        PlantFactory plantFactory = new PlantFactory(DataManager.getInstance());
         for (int r = 0; r < rows; r++) {
-            Plant sunPlant = plantFactory.create("Sunflower");
+            Plant sunPlant = plantFactory.create("Sunflower"); // یا نام گیاه تولیدکننده خورشید در بازی شما
             if (sunPlant != null) {
-                //sunPlant.setY(r);
-                //sunPlant.setX(0);
-
+                // گرفتن کاشی در ستون صفر و سطر r
                 Tile tile = ctx.getGameEngine().getTiles(0, r);
                 if (tile != null) {
                     tile.setPlant(sunPlant);
