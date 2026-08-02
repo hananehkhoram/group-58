@@ -11,10 +11,6 @@ import java.util.List;
 
 public class MeleeAttackers implements BaseAbility {
 
-    @Override
-    public void activate(Plant self, GameContext ctx) {
-    }
-
     public void melee(String meleeKind, int damage, Plant plant, GameEngine engine) {
         int pRow = plant.getRow();
         int pCol = plant.getCol();

@@ -52,10 +52,7 @@ public class Izambi {
         this.sunAmount = 150;
         ctx.setSunAmount(this.sunAmount);
 
-        // قرار دادن زامبی‌های تولیدکننده خورشید در ستون اول هر ردیف
         initSunProducerZombies();
-        // قرار دادن مغزها در انتهای ردیف‌ها
-        initBrains();
 
         System.out.print("start\n");
     }
@@ -107,19 +104,22 @@ public class Izambi {
         int rows = currentLevel.getRows();
 
         PlantFactory plantFactory = new PlantFactory(DataManager.getInstance());
+
+        String[] plantTypes = {"Sunflower", "Peashooter", "Wall-nut", "Sunflower", "Peashooter", "Sunflower"};
+
         for (int r = 0; r < rows; r++) {
-            Plant sunPlant = plantFactory.create("Sunflower"); // یا نام گیاه تولیدکننده خورشید در بازی شما
-            if (sunPlant != null) {
-                // گرفتن کاشی در ستون صفر و سطر r
-                Tile tile = ctx.getGameEngine().getTiles(0, r);
-                if (tile != null) {
-                    tile.setPlant(sunPlant);
+            for (int c = 0; c < 6; c++) {
+                String pType = plantTypes[c % plantTypes.length];
+
+                Plant plant = plantFactory.create(pType);
+                if (plant != null) {
+                    Tile tile = ctx.getGameEngine().getTiles(c, r);
+                    if (tile != null) {
+                        tile.setPlant(plant);
+                    }
                 }
             }
         }
-    }
-    private void initBrains() {
-        // پیاده‌سازی مغزها در انتهای ردیف‌ها مطابق با قوانین پروژه
     }
 
     public GameContext getCtx(){
@@ -132,13 +132,10 @@ public class Izambi {
     public void advancedTimeCommand(double sec){
         if (this.gameEngine != null) {
             this.gameEngine.update(sec);
-            checkWinLossConditions();
         } else {
             ConsoleView.showMessage("Game engine is null");
         }
     }
 
-    private void checkWinLossConditions() {
-        // بررسی شرایط برد (خورده شدن تمام مغزها) و باخت (تمام شدن زامبی‌ها و نداشتن خورشید کافی)
-    }
+
 }

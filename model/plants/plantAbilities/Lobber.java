@@ -12,10 +12,6 @@ import java.util.List;
 
 public class Lobber implements BaseAbility {
 
-    @Override
-    public void activate(Plant self, GameContext ctx) {
-    }
-
     public void lob(LobType lobType, Plant plant, GameContext ctx) {
         int currentSecond = ctx.getTimeManager().getTotalSeconds();
 

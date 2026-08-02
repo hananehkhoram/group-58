@@ -220,9 +220,6 @@ public class Explosive implements BaseAbility {
 
 
     @Override
-    public void activate(Plant self, GameContext ctx) {}
-
-    @Override
     public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
         String type = self.getAbilityParams().get("explosiveType");
 
