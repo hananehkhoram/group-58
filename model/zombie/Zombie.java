@@ -105,7 +105,6 @@ public class Zombie implements Damageable {
                 isIced = false;
                 ConsoleView.showMessage("Zombie broke free from ice!");
             }
-            return;
         }
 
         int remaining = (int) damage;

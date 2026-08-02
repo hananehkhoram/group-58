@@ -41,6 +41,91 @@ plant plant -t SunFlower -l (5, 0)
 cheat add plant -t Enlighten-mint -l (0, 1)
 
 
+menu enter gamemenu
+enter chapter -c Ancient Egypt
+
+cheat add plant -t Sunflower -l (0, 0)
+cheat add plant -t Twin Sunflower -l (0, 1)
+cheat add plant -t Sun-shroom -l (0, 2)
+cheat add plant -t Primal Sunflower -l (0, 3)
+cheat add plant -t Gold Bloom -l (0, 4)
+cheat add plant -t Peashooter -l (1, 0)
+cheat add plant -t Repeater -l (1, 1)
+cheat add plant -t Threepeater -l (1, 2)
+cheat add plant -t Snow Pea -l (1, 3)
+cheat add plant -t Rotobaga -l (1, 4)
+show map
+advance time -t 30 ticks
+show map
+
+cheat add plant -t Pea Pod -l (0, 0)
+cheat add plant -t Split Pea -l (0, 1)
+cheat add plant -t Citron -l (0, 2)
+cheat add plant -t Caulipower -l (0, 3)
+cheat add plant -t Electric Blueberry -l (0, 4)
+show map
+advance time -t 30 ticks
+show map
+
+
+cheat add plant -t Bowling Bulb -l (0, 0)
+cheat add plant -t Cactus -l (0, 1)
+cheat add plant -t Fire Peashooter -l (0, 2)
+cheat add plant -t Starfruit -l (0, 3)
+cheat add plant -t Goo Peashooter -l (0, 4)
+show map
+advance time -t 30 ticks
+show map
+
+cheat add plant -t Mega Gatling Pea -l (0, 0)
+cheat add plant -t Sea-shroom -l (0, 1)
+cheat add plant -t Puff-shroom -l (0, 2)
+cheat add plant -t Fume-shroom -l (0, 3)
+cheat add plant -t Cabbage-pult -l (0, 4)
+show map
+advance time -t 30 ticks
+show map
+
+cheat add plant -t Kernel-pult -l (0, 0)
+cheat add plant -t Melon-pult -l (0, 1)
+cheat add plant -t Winter Melon -l (0, 2)
+cheat add plant -t Pepper-pult -l (0, 3)
+cheat add plant -t Potato Mine -l (0, 4)
+show map
+advance time -t 30 ticks
+show map
+
+cheat add plant -t Primal Potato Mine -l (0, 0)
+cheat add plant -t Cherry Bomb -l (0, 1)
+cheat add plant -t Squash -l (0, 2)
+cheat add plant -t Grapeshot -l (0, 3)
+cheat add plant -t Jalapeno -l (0, 4)
+show map
+advance time -t 30 ticks
+show map
+
+
+cheat add plant -t Doom-shroom -l (0, 0)
+cheat add plant -t Tangle Kelp -l (0, 1)
+cheat add plant -t Iceberg Lettuce -l (0, 2)
+cheat add plant -t Bonk Choy -l (0, 3)
+cheat add plant -t Phat Beet -l (0, 4)
+show map
+advance time -t 30 ticks
+show map
+
+cheat add plant -t Chomper -l (0, 0)
+cheat add plant -t Wasabi Whip -l (0, 1)
+cheat add plant -t Kiwibeast -l (0, 2)
+cheat add plant -t Wall-nut -l (6, 3)
+cheat add plant -t Tall-nut -l (6, 4)
+cheat add plant -t Endurian -l (6, 0)
+cheat add plant -t Garlic -l (6, 1)
+cheat add plant -t Sweet Potato -l (6, 2)
+show map
+advance time -t 30 ticks
+show map
+
 
 
 
