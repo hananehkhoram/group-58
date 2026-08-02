@@ -11,8 +11,6 @@ import java.util.List;
 
 public class LeaderBoardMenu extends BaseMenu {
 
-    private GameContext gameContext;
-
     public LeaderBoardMenu(GameContext ctx) {
         super(ctx, MenuType.LEADERBOARD);
         this.name = "LeaderBoard menu";

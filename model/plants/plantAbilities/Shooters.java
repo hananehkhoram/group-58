@@ -19,10 +19,6 @@ public class Shooters implements BaseAbility {
 
     private static final double DEFAULT_PROJECTILE_SPEED = 1.0;
 
-    @Override
-    public void activate(Plant self, GameContext ctx) {
-        //check for striker here
-    }
 
     public void shoot(int damage, int amount, String interval, ShootType shootType,
                       BulletType bulletType, Plant self, GameEngine engine) {

@@ -25,9 +25,6 @@ public class Zombotany {
         List<Level> zombotanyLevels = LevelFactory.buildWallnutsLevels();
         this.currentLevel = zombotanyLevels.get(0);
 
-        //Season zombotanySeason = new ZombotanySeason(zombotanyLevels);
-
-        //this.ctx = new GameContext(this.currentLevel, zombotanySeason);
         this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));
         this.ctx.setGameEngine(this.gameEngine);
 

@@ -24,10 +24,6 @@ public class Armor implements Behaviors {
         this.isMagetized = isMagetized;
     }
 
-    public boolean isMagetized() {
-        return isMagetized;
-    }
-
     public Armor(ArmorType armorType, int armorHP, boolean metallic, double x, double y) {
         this.armorType = armorType;
         this.armorHP = armorHP;
@@ -62,10 +58,6 @@ public class Armor implements Behaviors {
         }
     }
 
-    @Override
-    public void onHit(Zombie zombie, int damage) {
-        absorb(damage);
-    }
 
     public int absorb(int damage) {
         armorHP -= damage;
@@ -143,7 +135,5 @@ public class Armor implements Behaviors {
     public int getArmorHP() { return armorHP; }
     public ArmorType getArmorType() { return armorType; }
     public boolean isMetallic() { return metallic; }
-    public boolean isEnraged() { return enraged; }
-    public double getX() { return x; }
-    public double getY() { return y; }
+
 }

@@ -62,10 +62,6 @@ public class LawnMower {
         }
     }
 
-    public double getX() {
-        return x;
-    }
-
     public boolean isDidKilled() {
         return didKilled;
     }
