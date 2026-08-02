@@ -105,13 +105,17 @@ public class Izambi {
 
         PlantFactory plantFactory = new PlantFactory(DataManager.getInstance());
 
+        String[] plantTypes = {"Sunflower", "Peashooter", "Wall-nut", "Sunflower", "Peashooter", "Sunflower"};
+
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < 6; c++) {
-                Plant sunPlant = plantFactory.create("Sunflower"); // یا گیاه دلخواه برای این ستون‌ها
-                if (sunPlant != null) {
+                String pType = plantTypes[c % plantTypes.length];
+
+                Plant plant = plantFactory.create(pType);
+                if (plant != null) {
                     Tile tile = ctx.getGameEngine().getTiles(c, r);
                     if (tile != null) {
-                        tile.setPlant(sunPlant);
+                        tile.setPlant(plant);
                     }
                 }
             }
