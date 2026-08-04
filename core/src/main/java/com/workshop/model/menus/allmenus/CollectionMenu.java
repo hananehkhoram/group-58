@@ -1,0 +1,214 @@
+package com.workshop.model.menus.allmenus;
+
+import com.workshop.controller.NewsManager;
+import com.workshop.controller.QuestManager;
+import com.workshop.controller.repository.DataManager;
+import com.workshop.controller.repository.PlantRepository;
+import com.workshop.controller.repository.ZombieRepository;
+import com.workshop.controller.repository.factory.PlantFactory;
+import com.workshop.model.GameContext;
+import com.workshop.model.menus.BaseMenu;
+import com.workshop.model.menus.MenuType;
+import com.workshop.model.plants.Plant;
+import com.workshop.model.plants.plantAbilities.*;
+import com.workshop.model.plants.upgradeEffect.BehaviorEffect;
+import com.workshop.model.plants.upgradeEffect.StatEffect;
+import com.workshop.model.plants.upgradeEffect.UpgradeManager;
+import com.workshop.model.user.User;
+import com.workshop.model.user.UserManager;
+import com.workshop.model.zombie.Zombie;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class CollectionMenu extends BaseMenu {
+    private UserManager um;
+    private DataManager dm;
+    private PlantFactory plantFactory;
+    protected User currentUser;
+    private List<Plant> unlockedPlants;
+    private List<Plant> allPlants;
+    private List<Zombie> allZombies;
+    private List<Zombie> seenZombies;
+    private PlantRepository plantRepository;
+    private ZombieRepository zombieRepository;
+
+    public CollectionMenu(GameContext ctx) {
+        super(ctx, MenuType.COLLECTION);
+        this.um = UserManager.getInstance();
+        currentUser = um.getCurrentUser();
+        this.dm = DataManager.getInstance();
+        this.plantRepository = dm.plants;
+        this.zombieRepository = dm.zombies;
+        this.seenZombies = currentUser.getSeenZombies();
+        this.allZombies = new ArrayList<>(zombieRepository.getZombieDataMap().values());
+        this.unlockedPlants = currentUser.getUnlockedPlantTypes();
+        this.plantFactory = new PlantFactory(dm);
+        this.name = "Collection menu";
+        this.allPlants = new ArrayList<>(plantRepository.getPlantDataMap().values());
+    }
+
+    public String showAllPlants() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Welcome to the Collection Menu ===\n");
+        sb.append("All Plants ->\n");
+
+        for (Plant plant : allPlants){
+            sb.append(plant.getName()).append("\n");
+        }
+        sb.append("\n-----\n");
+        return sb.toString();
+    }
+    public String showPlants(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Welcome to the Collection Menu ===\n");
+        sb.append("Plants ->\n");
+
+        for (Plant plant : unlockedPlants){
+            sb.append(plant.getName()).append("\n");
+        }
+        sb.append("\n-----\n");
+        return sb.toString();
+    }
+
+    public String showAllZombies() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Welcome to the Collection Menu ===\n");
+        sb.append("All Zombies ->\n");
+
+        for (Zombie z : allZombies){
+            sb.append(z.getName()).append("\n");
+        }
+        return sb.toString();
+    }
+    public String showZombies() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Welcome to the Collection Menu ===\n");
+        sb.append("Zombies ->\n");
+
+        for (Zombie z : seenZombies){
+            sb.append(z.getName()).append("\n");
+        }
+        return sb.toString();
+    }
+    public String showPlantDetails(String plantName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Welcome to the Collection Menu ===\n");
+        Plant plant = null;
+        for (Plant p : allPlants){
+            if (p.getName().equalsIgnoreCase(plantName)) plant = p;
+        }
+        if (plant == null) return "Invalid plant name.";
+
+        String baseAbility = "-";
+        if (plant.getBaseAbility() instanceof Shooters) baseAbility = "Shooter";
+        else if (plant.getBaseAbility() instanceof WallNut) baseAbility = "Wall Nut";
+        else if (plant.getBaseAbility() instanceof SunProducers) baseAbility = "Sun Producer";
+        else if (plant.getBaseAbility() instanceof Explosive) baseAbility = "Explosive";
+        else if (plant.getBaseAbility() instanceof Lobber) baseAbility = "Lobber";
+        else if (plant.getBaseAbility() instanceof MeleeAttackers) baseAbility = "MeleeAttackers";
+        else if (plant.getBaseAbility() instanceof Modifier) baseAbility = "Modifier";
+        else if (plant.getBaseAbility() instanceof PlantFooder) baseAbility = "Plant fooder";
+
+                sb.append(plantName).append("'s details ->\n");
+        sb.append("Id: ").append(plant.getId());
+        sb.append(" Base ability: ").append(baseAbility);
+        sb.append(" Base hp: ").append(plant.getBaseHp());
+        sb.append(" Family: ").append(plant.getFamily().name()).append("\n----------\n");
+
+        return sb.toString();
+    }
+    public String showZombieDetails(String zombieName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Welcome to the Collection Menu ===\n");
+        Zombie zombie = null;
+        for (Zombie z : allZombies){
+            if (z.getName().equalsIgnoreCase(zombieName)) zombie = z;
+        }
+        if (zombie == null) return "Invalid zombie name.";
+        sb.append(zombieName).append("'s details ->\n");
+        sb.append("Id: ").append(zombie.getId());
+        sb.append(" Speed: ").append(zombie.getSpeed());
+        sb.append(" Info: ").append(zombie.zombieInfo()).append("\n----------\n");
+
+        return sb.toString();
+    }
+    public String upgradePlant(String plantName) {
+        Plant plant = null;
+        for (Plant p : unlockedPlants) {
+            if (p.getName().equalsIgnoreCase(plantName)) { plant = p; break; }
+        }
+        if (plant == null) {
+            return "You haven't unlocked this plant.";
+        }
+
+        int currentLevel = plant.getLevel();
+        if (currentLevel >= 4) {
+            return plantName + " is already at max level.";
+        }
+
+        int nextLevel = currentLevel + 1;
+        int coinsNeeded = 500 * nextLevel;
+        int seedsNeeded = 5 * nextLevel;
+
+        if (currentUser.getCoins() < coinsNeeded) {
+            return "Not enough coins! Need " + coinsNeeded + " coins to upgrade " + plantName + ".";
+        }
+        if (currentUser.getSeedCount(plantName) < seedsNeeded) {
+            return "Not enough seed packets! Need " + seedsNeeded + " packets of " + plantName + ".";
+        }
+
+        currentUser.setCoins(currentUser.getCoins() - coinsNeeded);
+        currentUser.addSeedsToInventory(plantName, -seedsNeeded);
+
+        int levelIndex = nextLevel - 2;
+        List<StatEffect>[] statUpgrades = plant.getStatUpgrades();
+        List<BehaviorEffect>[] behaviorUpgrades = plant.getBehaviorUpgrades();
+
+        List<StatEffect> stats = (statUpgrades != null && levelIndex < statUpgrades.length) ?
+                statUpgrades[levelIndex] : null;
+        List<BehaviorEffect> behaviors = (behaviorUpgrades != null && levelIndex < behaviorUpgrades.length) ?
+                behaviorUpgrades[levelIndex] : null;
+
+        UpgradeManager.applyUpgrades(plant, stats, behaviors);
+        plant.setLevel(nextLevel);
+
+        DataManager.getInstance().saveUser();
+
+        return "Successfully upgraded " + plantName + " to level " + nextLevel;
+    }
+    public String purchasePlant(String plantName) {
+        Plant plant = null;
+        for (Plant p : allPlants){
+            if (p.getName().equalsIgnoreCase(plantName)) plant = p;
+        }
+        if (plant == null) return "Invalid plant name.";
+        for (Plant p : unlockedPlants) {
+            if (p.getName().equalsIgnoreCase(plantName)) {
+                return "You have already unlocked " + p.getName() + "!";
+            }
+        }
+        int cost = 2000;
+
+        if (currentUser.getCoins() < cost) {
+            return "Not enough coins! You need " + cost + " coins to buy a new plant, but you only have "
+                    + currentUser.getCoins() + ".";
+        }
+
+
+        currentUser.setCoins(currentUser.getCoins() - cost);
+
+        Plant newPlant = plantFactory.create(String.valueOf(plant.getName()));
+
+        unlockedPlants.add(newPlant);
+        NewsManager.addNews("New Plant Unlocked","You unlocked: "+newPlant.getName());
+
+
+//        um.saveToFile();
+        DataManager.getInstance().saveUser();
+        QuestManager.progress(currentUser, "first-plant", 1);
+
+        return "Successfully purchased " + newPlant.getName() + "! It is now added to your collection.";
+    }
+
+}
