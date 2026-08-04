@@ -1,6 +1,7 @@
 package model.zombie;
 
 import model.GameContext;
+import model.mechanisms.LootItem;
 import model.projectile.Damageable;
 import model.season.Season;
 import model.zombie.behavior.*;
@@ -9,8 +10,11 @@ import view.ConsoleView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+
 
 public class Zombie implements Damageable {
+    private static final Random random = new Random();
     private String id;
     private String name;
     private int hp;
@@ -60,7 +64,11 @@ public class Zombie implements Damageable {
     }
 
     public void update(GameContext ctx, double deltaTime) {
-        if (isDead()) return;
+        if (isDead()) {
+            if (random.nextInt(100) < 5) {
+            ctx.addLoot(new LootItem(LootItem.LootType.SEED, (int) getX(), getRow()));}
+            return;
+        }
 
         for (Behaviors b : behaviors.values()) {
             b.onTick(this, ctx);
