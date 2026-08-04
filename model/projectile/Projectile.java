@@ -118,7 +118,7 @@ public class Projectile {
             case SMOKE:
             case NORMAL:
             default:
-                target.takeDamage(5000);
+                target.takeDamage(10000);
                 break;
         }
 

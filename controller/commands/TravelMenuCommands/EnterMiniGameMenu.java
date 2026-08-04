@@ -53,8 +53,8 @@ public class EnterMiniGameMenu implements Command {
                         break;
 
                     case 3:
-                        Izambi izambiModel = new Izambi(menuManager);
-                        izambiModel.startMiniGame();
+                        Izambi izambiModel = new Izambi();
+                        izambiModel.startMiniGame(menuManager);
                         menuManager.setCtx(izambiModel.getCtx());
                         menuManager.setGameEngine(izambiModel.getGameEngine());
                         break;
