@@ -1,0 +1,81 @@
+package com.workshop.model.plants.plantAbilities;
+
+import com.workshop.model.GameContext;
+import com.workshop.model.mechanisms.SunType;
+import com.workshop.model.plants.Plant;
+import com.workshop.model.plants.plantFoodEffect.PlantFoodMode;
+
+public class SunProducers implements BaseAbility {
+
+    private boolean collected = false;
+
+    @Override
+    public void activate(Plant self, GameContext ctx) {
+    }
+    public void produceSun(String rate, int amount, SunType sunType, GameContext ctx, Plant plant) {
+
+
+        if (sunType == com.workshop.model.mechanisms.SunType.BURST_CONSUME) {
+            if (!collected) {
+                collected = true;
+                ctx.produceSun(plant.getRow(), plant.getCol(), amount);
+                com.workshop.view.Console.showMessage("plant " + plant.getName() +
+                        " produced a one-time burst of sun at (" + plant.getRow() + ", " + plant.getCol() + ")");
+            }
+            return;
+        }
+
+        if (!rate.equals("everyRound")){
+
+            int rateOfPlant = Integer.parseInt(rate);
+            int currentSecond = ctx.getTimeManager().getTotalSeconds();
+
+            int x = plant.getRow();
+            int y = plant.getCol();
+
+            if (currentSecond - plant.getLastActionSecond() >= rateOfPlant ){
+                if (!ctx.isSunPresent(x , y)){
+                    int finalAmount = amount;
+                    if (plant.getName().equalsIgnoreCase("Sun-shroom")) {
+                        if (plant.isPlantFoodActive() || plant.getLastActionSecond() >= rateOfPlant * 2) {
+                            finalAmount = 75;
+                        } else if (plant.getLastActionSecond() >= rateOfPlant) {
+                            finalAmount = 50;
+                        } else {
+                            finalAmount = 25;
+                        }
+                    }
+
+                    ctx.produceSun(x , y, finalAmount);
+                    plant.setLastActionSecond(currentSecond);
+                    com.workshop.view.Console.showMessage("plant " + plant.getName() +
+                            " produced a sun at (" + x + ", " + y + ")");
+                }
+            }
+
+        }
+
+    }
+
+    @Override
+    public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
+        if (mode != PlantFoodMode.INSTANT_CONSUME) return;
+
+        int bonusSun = switch (self.getName()) {
+            case "Sunflower" -> 150;
+            case "Twin Sunflower" -> 250;
+            case "Sun-shroom" -> 225;
+            case "Primal Sunflower" -> 225;
+            default -> 0;
+        };
+
+        if (bonusSun > 0) {
+            if (self.getName().equalsIgnoreCase("Sun-shroom")) {
+                self.setPlantFoodActive(true);
+            }
+
+            ctx.produceSun(self.getRow(), self.getCol(), bonusSun);
+            com.workshop.view.Console.showMessage("Plant Food: " + self.getName() + " instantly produced " + bonusSun + " sun!");
+        }
+    }
+}

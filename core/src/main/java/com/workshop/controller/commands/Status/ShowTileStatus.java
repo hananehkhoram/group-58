@@ -1,0 +1,78 @@
+package com.workshop.controller.commands.Status;
+
+import com.workshop.controller.MenuManager;
+import com.workshop.controller.commandHandler.Command;
+import com.workshop.view.Console;
+import com.workshop.model.GameContext;
+import com.workshop.model.mechanisms.GameEngine;
+import com.workshop.model.mechanisms.Tile;
+import com.workshop.model.plants.Plant;
+import com.workshop.model.zombie.Zombie;
+
+public class ShowTileStatus implements Command {
+    private final MenuManager menuManager;
+
+    public ShowTileStatus(MenuManager menuManager) {
+        this.menuManager = menuManager;
+    }
+
+    @Override
+    public void execute(String[] args) {
+        int x = Integer.parseInt(args[0]);
+        int y = Integer.parseInt(args[1]);
+
+        GameContext ctx = menuManager.getCtx();
+        GameEngine engine = menuManager.getGameEngine();
+        if (ctx == null || engine == null) {
+            Console.showMessage("No active battle.");
+            return;
+        }
+
+        Tile tile = engine.getTiles(x, y);
+        if (tile == null) {
+            Console.showMessage("Invalid tile coordinates.");
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Tile (").append(x).append(", ").append(y).append(") ===\n");
+        sb.append("Terrain: ").append(tile.getTerrainType()).append("\n");
+
+        Plant plant = tile.getPlant();
+        if (plant != null) {
+            sb.append("Plant: ").append(plant.getName())
+                    .append(" | HP: ").append(plant.getHp())
+                    .append(" | Family: ").append(plant.getFamily())
+                    .append(" | Level: ").append(plant.getLevel())
+                    .append(" | Tags: ").append(plant.getTags());
+
+            if (plant.isOctopused()) {
+                sb.append(" | Status: OCTOPUSED (Octopus HP: ").append(plant.getOctopusHp()).append(")");
+            }
+            else if (plant.isIced()) {
+                sb.append(" | Status: ICED (Ice HP: ").append(plant.getIceHp()).append(")");
+            }
+
+            sb.append("\n");
+        } else {
+            sb.append("Plant: none\n");
+        }
+
+        boolean anyZombie = false;
+        for (Zombie z : ctx.getAliveZombies()) {
+            if ((int) Math.round(z.getY()) == x && (int) Math.floor(z.getX()) == y) {
+                anyZombie = true;
+                sb.append("Zombie: ").append(z.getName())
+                        .append(" | HP: ").append(z.getHp())
+                        .append(" | Speed: ").append(z.getSpeed())
+                        .append(" | Position: (").append(z.getX()).append(", ").append(z.getY()).append(")")
+                        .append("\n");
+            }
+        }
+        if (!anyZombie) {
+            sb.append("Zombie: none\n");
+        }
+
+        Console.showMessage(sb.toString());
+    }
+}//show tile status -l (x, y)

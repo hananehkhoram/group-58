@@ -1,0 +1,108 @@
+package com.workshop.model.plants;
+
+import com.workshop.model.GameContext;
+import com.workshop.model.mechanisms.GameEngine;
+import com.workshop.model.mechanisms.SunType;
+import com.workshop.model.projectile.BulletType;
+import com.workshop.model.plants.enums.ShootType;
+import com.workshop.model.plants.plantAbilities.*;
+
+import java.util.Map;
+
+public final class PlantActivator {
+
+    private PlantActivator() {
+    }
+
+    public static void activate(Plant plant, GameContext ctx, GameEngine engine) {
+        if (plant.getBaseAbility() == null) {
+            return;}
+        BaseAbility ability = plant.getBaseAbility();
+        Map<String, String> p = plant.getAbilityParams();
+
+        if (plant.isIced() || plant.isOctopused() || plant.isCatified()) {
+            return;
+        }
+
+
+        if (ability instanceof Shooters shooters) {
+            int amount = Integer.parseInt(p.get("amount"));
+            ShootType shootType = ShootType.valueOf(p.get("shootType"));
+            BulletType bulletType = BulletType.valueOf(p.get("bulletType"));
+            String interval = actionIntervalAsWholeSeconds(plant);
+            int damage = parseBaseDamage(plant);
+            shooters.shoot(damage, amount, interval, shootType, bulletType, plant, engine);
+
+        } else if (ability instanceof Lobber lobber) {
+            LobType lobType = LobType.valueOf(p.get("lobType"));
+            lobber.lob(lobType, plant, ctx);
+
+        } else if (ability instanceof Explosive explosive) {
+            ExplosiveType type = ExplosiveType.valueOf(p.get("explosiveType"));
+            int damage = parseBaseDamage(plant);
+            explosive.triggerAbility(type, damage, plant, engine);
+
+        } else if (ability instanceof MeleeAttackers melee) {
+            String meleeKind = p.get("meleeKind");
+
+            if ("INSTANT_EAT".equals(meleeKind)) {
+                melee.instantEat(plant, engine);
+            } else {
+                int damage = parseBaseDamage(plant);
+                melee.melee(meleeKind, damage, plant, engine);
+            }
+
+        } else if (ability instanceof WallNut wallNut) {
+            WallNutType wallNutType = WallNutType.valueOf(p.get("wallNutType"));
+            int damage = parseBaseDamage(plant);
+            wallNut.triggerAbility(wallNutType, damage, plant, engine);
+
+        } else if (ability instanceof SunProducers sunProducers) {
+            String rate = p.get("sunRate");
+            int amount = Integer.parseInt(p.get("sunAmount"));
+            SunType sunType = SunType.valueOf(p.get("sunType"));
+            sunProducers.produceSun(rate, amount, sunType, ctx, plant);
+
+        } else if (ability instanceof Modifier modifier) {
+            ModifierType modifierType = ModifierType.valueOf(p.get("modifierType"));
+            modifier.modify(modifierType, plant, engine);
+
+        } else if (ability instanceof PlantFooder plantFooder) {
+            plantFooder.activate(plant, ctx);
+        }
+    }
+
+    private static String actionIntervalAsWholeSeconds(Plant plant) {
+        Double interval = plant.getActionInterval();
+        if (interval == null) {
+            throw new IllegalStateException(
+                    "Plant '" + plant.getName() + "' has no actionInterval but its ability needs one.");
+        }
+        return String.valueOf(Math.round(interval));
+    }
+
+    private static int parseBaseDamage(Plant plant) {
+        String raw = plant.getDamage();
+        if (raw == null || raw.isBlank()) {
+            throw new IllegalStateException("Plant '" + plant.getName() + "' has no damage value.");
+        }
+        raw = raw.trim();
+
+        if (raw.equalsIgnoreCase("Insta-kill")) {
+            return Integer.MAX_VALUE;
+        }
+        if (raw.contains("x")) {
+            raw = raw.substring(0, raw.indexOf('x'));
+        }
+        if (raw.contains("/")) {
+            String[] levels = raw.split("/");
+            int idx = Math.max(0, Math.min(plant.getLevel() - 1, levels.length - 1));
+            raw = levels[idx];
+        }
+        return Integer.parseInt(raw.trim());
+    }
+
+    public static void activatePlantFood(Plant plant, GameContext ctx) {
+        plant.activatePlantFood(ctx);
+    }
+}

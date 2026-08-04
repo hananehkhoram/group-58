@@ -1,0 +1,371 @@
+package com.workshop.model.user;
+
+
+import com.workshop.model.GreenHouseData.GreenHouse;
+import com.workshop.model.plants.Plant;
+import com.workshop.model.settings.Settings;
+import com.workshop.model.shopData.DailyOffer;
+import com.workshop.model.zombie.Zombie;
+
+import java.time.LocalDate;
+import java.util.*;
+
+public class User {
+    protected String username;
+    protected String password;//hash it
+    protected String nickName;
+    protected String email;
+    protected Gender gender;
+    protected SecurityQuestions securityQuestion;
+    protected String securityAnswer;
+    protected int gamesPlayed;
+    protected int numberOfPassedLevels;
+    protected int maxMewPoint;
+    private Settings settings;
+    private boolean stayedLogin;
+
+    private Set<String> completedQuestIds = new HashSet<>();
+    private int dailyQuestsCompletedCount = 0;
+    private int otherQuestsCompletedCount = 0;
+    private int minigamesCompleted = 0;
+    private int winStreakAtMaxDifficulty = 0;
+    private Map<String, Integer> questProgress = new HashMap<>();
+
+
+    private LocalDate lastDailyOfferDate;      // تاریخ آخرین باری که پیشنهاد نمایش داده شد
+    private boolean boughtDailyOfferToday;
+    private DailyOffer lastDailyOffer;
+
+    private int ownedPotsCount = 1;
+    private int plantFoodCount = 0;
+    private Map<String, Boolean> storedBoosts = new HashMap<>();
+
+    private Map<String, Integer> plantSeedsInventory = new HashMap<>();
+
+    private GreenHouse greenHouse;
+    private List<Plant> unlockedPlantTypes;// گیاهانی که کاربر آنلاک کرده
+    private List<Zombie> seenZombies;
+
+    protected int lastLevel;
+    protected ArrayList<String> unlockedLevels;
+    protected int lastSeason;
+
+    private int difficultyLevel = 3;
+    private int lastReadNewsId = 0;
+    private int coins;
+    private int gems;
+
+
+    public User(String username, String password, String nickName, String email, Gender gender) {
+        this.username = username;
+        this.password = password;
+        this.nickName = nickName;
+        this.email = email;
+        this.gender = gender;
+        this.coins = 2000;
+        this.gems = 5;
+        this.greenHouse = new GreenHouse();
+        this.unlockedLevels = new ArrayList<>();
+        this.unlockLevel("Ancient Egypt - Day 1");
+        this.unlockedPlantTypes = new ArrayList<>();
+        this.seenZombies = new ArrayList<>();
+        unlockStarterPlants();
+    }
+
+    public User() {
+        this.coins = 2000;
+        this.gems = 5;
+        this.greenHouse = new GreenHouse();
+        this.unlockedLevels = new ArrayList<>();
+        this.unlockLevel("Ancient Egypt - Day 1");
+        this.unlockedPlantTypes = new ArrayList<>();
+        this.seenZombies = new ArrayList<>();
+        unlockStarterPlants();
+    }
+
+    public boolean isBoughtDailyOfferToday() {
+        return boughtDailyOfferToday;
+    }
+
+    public void setBoughtDailyOfferToday(boolean boughtDailyOfferToday) {
+        this.boughtDailyOfferToday = boughtDailyOfferToday;
+    }
+
+    public LocalDate getLastDailyOfferDate() {
+        return lastDailyOfferDate;
+    }
+
+    public void setLastDailyOfferDate(LocalDate lastDailyOfferDate) {
+        this.lastDailyOfferDate = lastDailyOfferDate;
+    }
+
+    public int getPlantFoodCount() {
+        return plantFoodCount;
+    }
+
+    public void setPlantFoodCount(int plantFoodCount) {
+        this.plantFoodCount = plantFoodCount;
+    }
+    public Settings getSettings() { return settings; }
+
+    public int getLastLevel(){return lastLevel;}
+    public int getLastSeason(){return lastSeason;}
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getNickName() {
+        return nickName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public String getSecurityAnswer() {
+        return securityAnswer;
+    }
+
+    public SecurityQuestions getSecurityQuestion() {
+        return securityQuestion;
+    }
+
+    public int getDifficultyLevel() {
+        return difficultyLevel;
+    }
+
+    public void setDifficultyLevel(int difficultyLevel) {
+        this.difficultyLevel = difficultyLevel;
+    }
+
+    public int getLastReadNewsId() {
+        return lastReadNewsId;
+    }
+
+    public void setLastReadNewsId(int lastReadNewsId) {
+        this.lastReadNewsId = lastReadNewsId;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public int getGamesPlayed() {
+        return gamesPlayed;
+    }
+
+    public void setGamesPlayed(int gamesPlayed) {
+        this.gamesPlayed = gamesPlayed;
+    }
+
+    public int getCoins() {
+        return coins;
+    }
+
+    public int getGems() {
+        return gems;
+    }
+
+    public int getNumberOfPassedLevels (){return numberOfPassedLevels;}
+
+    public int getMaxMewPoint() {
+        return maxMewPoint;
+    }
+
+    public List<Plant> getUnlockedPlantTypes() {
+        return unlockedPlantTypes;
+    }
+
+    public List<Zombie> getSeenZombies() {
+        return seenZombies;
+    }
+
+    public void setNumberOfPassedLevels(int n) {this.numberOfPassedLevels = n;}
+
+    public DailyOffer getLastDailyOffer() {
+        return lastDailyOffer;
+    }
+
+    public void setLastDailyOffer(DailyOffer lastDailyOffer) {
+        this.lastDailyOffer = lastDailyOffer;
+    }
+
+    public int getOwnedPotsCount() {
+        return ownedPotsCount;
+    }
+
+    public void setOwnedPotsCount(int ownedPotsCount) {
+        this.ownedPotsCount = ownedPotsCount;
+    }
+
+    public void setCoins(int coins) {
+        this.coins = coins;
+    }
+
+    public void setGems(int gems) {
+        this.gems = gems;
+    }
+    public void addSeedsToInventory(String plantName, int amount) {
+        int currentAmount = plantSeedsInventory.getOrDefault(plantName, 0);
+
+        plantSeedsInventory.put(plantName, currentAmount + amount);
+
+    }
+
+    public GreenHouse getGreenHouse() {
+        return greenHouse;
+    }
+
+    public int getSeedCount(String plantName) {
+        return plantSeedsInventory.getOrDefault(plantName, 0);
+    }
+    public Plant getRandomUnlockedPlant(){
+        if (unlockedPlantTypes == null || unlockedPlantTypes.isEmpty()) {
+            return null;
+        }
+
+        Random random = new Random();
+        int randomIndex = random.nextInt(unlockedPlantTypes.size());
+
+        return unlockedPlantTypes.get(randomIndex);
+    }
+    public boolean hasStoredBoost(String plantName) {
+        String key = plantName.toLowerCase();
+        return storedBoosts.getOrDefault(key, false);
+    }
+    public void addStoredBoost(String plantName){
+        String key = plantName.toLowerCase();
+        storedBoosts.put(key, true);
+    }
+    public void consumeStoredBoost(String plantName) {
+        storedBoosts.remove(plantName.toLowerCase());
+    }
+
+    public boolean isLevelUnlocked(String levelName) {
+        return unlockedLevels.contains(levelName);
+    }
+
+    public void unlockLevel(String levelName) {
+        if (!unlockedLevels.contains(levelName)) {
+            unlockedLevels.add(levelName);
+        }
+    }
+
+    public void setMaxMewPoint(int maxMewPoint) {this.maxMewPoint = maxMewPoint;}
+
+    public void setUnlockedPlantTypes(List<Plant> unlockedPlantTypes) {
+        this.unlockedPlantTypes = unlockedPlantTypes;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
+    }
+
+    public void setSeenZombies(List<Zombie> seenZombies) {
+        this.seenZombies = seenZombies;
+    }
+
+    public ArrayList<String> getUnlockedLevels() {
+        return unlockedLevels;
+    }
+
+    public void setUnlockedLevels(ArrayList<String> unlockedLevels) {
+        this.unlockedLevels = unlockedLevels;
+    }
+
+    public void setSecurityQuestion(SecurityQuestions securityQuestion) {
+        this.securityQuestion = securityQuestion;
+    }
+
+    public void setSecurityAnswer(String securityAnswer) {
+        this.securityAnswer = securityAnswer;
+    }
+
+    public boolean isStayedLogin() {
+        return stayedLogin;
+    }
+
+    public void setStayedLogin(boolean stayedLogin) {
+        this.stayedLogin = stayedLogin;
+    }
+
+    public Map<String, Integer> getPlantSeedsInventory() {
+        return plantSeedsInventory;
+    }
+
+    public Map<String, Boolean> getStoredBoosts() {
+        return storedBoosts;
+    }
+
+    public void setLastLevel(int lastLevel) {
+        this.lastLevel = lastLevel;
+    }
+
+    public void setLastSeason(int lastSeason) {
+        this.lastSeason = lastSeason;
+    }
+    public Set<String> getCompletedQuestIds() { return completedQuestIds; }
+    public void setCompletedQuestIds(Set<String> completedQuestIds) { this.completedQuestIds = completedQuestIds; }
+
+    public boolean isQuestCompleted(String questId) { return completedQuestIds.contains(questId); }
+    public void completeQuest(String questId, boolean isDaily) {
+        if (completedQuestIds.add(questId)) {
+            if (isDaily) dailyQuestsCompletedCount++;
+            else otherQuestsCompletedCount++;
+        }
+    }
+
+    public int getDailyQuestsCompletedCount() { return dailyQuestsCompletedCount; }
+    public void setDailyQuestsCompletedCount(int n) { this.dailyQuestsCompletedCount = n; }
+
+    public int getOtherQuestsCompletedCount() { return otherQuestsCompletedCount; }
+    public void setOtherQuestsCompletedCount(int n) { this.otherQuestsCompletedCount = n; }
+
+    public int getMinigamesCompleted() { return minigamesCompleted; }
+    public void setMinigamesCompleted(int n) { this.minigamesCompleted = n; }
+    public void incrementMinigamesCompleted() { minigamesCompleted++; }
+
+    public int getWinStreakAtMaxDifficulty() { return winStreakAtMaxDifficulty; }
+    public void setWinStreakAtMaxDifficulty(int n) { this.winStreakAtMaxDifficulty = n; }
+
+    public int getQuestProgress(String questId) {
+        return questProgress.getOrDefault(questId, 0);
+    }
+    public void setQuestProgress(String questId, int progress) {
+        questProgress.put(questId, progress);
+    }
+    public Map<String, Integer> getAllQuestProgress() { return questProgress; }
+    public void setAllQuestProgress(Map<String, Integer> questProgress) { this.questProgress = questProgress; }
+
+    private void unlockStarterPlants() {
+        String[] starters = {"Peashooter", "Sunflower", "Wall-nut"};
+        for (String name : starters) {
+            Plant p = com.workshop.controller.repository.DataManager.getInstance().plants.get(name);
+            if (p != null) {
+                unlockedPlantTypes.add(p);
+            }
+        }
+    }
+}
+

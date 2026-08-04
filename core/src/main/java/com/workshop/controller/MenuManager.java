@@ -1,0 +1,119 @@
+package com.workshop.controller;
+
+import com.workshop.exceptions.CommandNotFound;
+import com.workshop.model.GameContext;
+import com.workshop.model.level.Level;
+import com.workshop.model.mechanisms.GameEngine;
+import com.workshop.model.menus.Menu;
+import com.workshop.model.menus.MenuType;
+import com.workshop.model.menus.allmenus.*;
+import com.workshop.model.season.Season;
+import java.util.*;
+
+public class MenuManager {
+    private GameContext ctx;
+    private Menu currentMenu;
+    private GameEngine gameEngine;
+
+    private static final Map<MenuType, Set<MenuType>> ALLOWED_ENTRIES = new EnumMap<>(MenuType.class);
+    private static final Map<MenuType, MenuType> EXIT_TARGET = new EnumMap<>(MenuType.class);
+
+    public static MenuType getExitTarget(MenuType type) {
+        return EXIT_TARGET.get(type);
+    }
+
+
+    static {
+        ALLOWED_ENTRIES.put(MenuType.REGISTER, EnumSet.of(MenuType.LOGIN));
+        ALLOWED_ENTRIES.put(MenuType.MAIN, EnumSet.of(MenuType.GAME, MenuType.SETTINGS, MenuType.NEWS,
+                MenuType.PROFILE));
+        ALLOWED_ENTRIES.put(MenuType.GAME, EnumSet.of(MenuType.COLLECTION,MenuType.SELECT_PLANTS,MenuType.GREENHOUSE,
+                MenuType.TRAVEL,MenuType.LEADERBOARD));
+        ALLOWED_ENTRIES.put(MenuType.GREENHOUSE, EnumSet.of(MenuType.SHOP));
+
+
+        EXIT_TARGET.put(MenuType.LOGIN, MenuType.REGISTER);
+        EXIT_TARGET.put(MenuType.GAME, MenuType.MAIN);
+        EXIT_TARGET.put(MenuType.SETTINGS, MenuType.MAIN);
+        EXIT_TARGET.put(MenuType.NEWS, MenuType.MAIN);
+        EXIT_TARGET.put(MenuType.PROFILE, MenuType.MAIN);
+        EXIT_TARGET.put(MenuType.COLLECTION, MenuType.GAME);
+        EXIT_TARGET.put(MenuType.TRAVEL, MenuType.GAME);
+        EXIT_TARGET.put(MenuType.GREENHOUSE, MenuType.GAME);
+        EXIT_TARGET.put(MenuType.SHOP, MenuType.GREENHOUSE);
+        EXIT_TARGET.put(MenuType.SELECT_PLANTS, MenuType.GAME);
+        EXIT_TARGET.put(MenuType.LEADERBOARD, MenuType.GAME);
+    }
+
+
+    public MenuManager(GameContext ctx) {
+        this.ctx = ctx;
+        this.currentMenu = new RegisterMenu(this.ctx);
+    }
+
+    private Menu buildMenu(String targetMenu) {
+        MenuType type = MenuType.fromMenuName(targetMenu);
+        if (type == null) {
+            throw new CommandNotFound("Invalid menu type!");
+        }
+        switch (type) {
+            case LOGIN: return new LoginMenu(ctx);
+            case MAIN: return new MainMenu(ctx);
+            case SHOP: return new ShopMenu(ctx);
+            case COLLECTION: return new CollectionMenu(ctx);
+            case GAME: return new GameMenu(ctx);
+            case GREENHOUSE: return new GreenHouseMenu(ctx);
+            case LEADERBOARD: return new LeaderBoardMenu(ctx);
+            case NEWS: return new NewsMenu(ctx);
+            case SELECT_PLANTS: return new PlantSelectionMenu(ctx);
+            case PROFILE: return new ProfileMenu(ctx);
+            case REGISTER: return new RegisterMenu(ctx);
+            case TRAVEL: return new TravelMenu(ctx);
+            case SETTINGS: return new SettingsMenu(ctx);
+            default: throw new CommandNotFound("Invalid menu type!");
+        }
+    }
+
+    public void changeMenu(String targetMenu){
+        Menu newMenu = buildMenu(targetMenu);
+
+        MenuType requested = newMenu.getMenu();
+        MenuType current = (currentMenu == null) ? null : currentMenu.getMenu();
+
+        if (current != null) {
+            Set<MenuType> allowed = ALLOWED_ENTRIES.getOrDefault(current, Collections.emptySet());
+            if (!allowed.contains(requested)) {
+                throw new CommandNotFound("You can't go to " + targetMenu + " from here.");
+            }
+        }
+
+        currentMenu = newMenu;
+    }
+
+    public void forceChangeMenu(String targetMenu) {
+        currentMenu = buildMenu(targetMenu);
+    }
+    public Menu getCurrentMenu(){
+        return currentMenu;
+    }
+    public void startBattle(Level level, Season season) {
+        this.ctx = new GameContext(level, season);
+        this.gameEngine = new GameEngine(this.ctx, this);
+        this.ctx.setGameEngine(this.gameEngine);
+    }
+
+    public GameEngine getGameEngine() { return gameEngine; }
+
+    public GameContext getCtx() {
+        return ctx;
+    }
+
+    public void setCtx(GameContext ctx) {
+        this.ctx = ctx;
+    }
+
+    public  void setGameEngine(GameEngine gameEngine) {
+        this.gameEngine = gameEngine;
+    }
+
+}
