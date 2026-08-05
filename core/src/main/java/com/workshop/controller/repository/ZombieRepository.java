@@ -2,7 +2,6 @@ package com.workshop.controller.repository;
 
 import com.workshop.model.zombie.Zombie;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,25 +11,43 @@ public class ZombieRepository implements AssetRepository<Zombie>{
     private Map<String, Zombie> zombieDataMap = new HashMap<>();
     @Override
     public void load(String filePath) {
-        try (var br = new java.io.BufferedReader(new FileReader(filePath))) {
-            String header = br.readLine(); // skip header
-            String line;
-            while ((line = br.readLine()) != null) {
-                if (line.isBlank()) continue;
-                String[] cols = line.split(",", -1);
-                String name     = cols[0].trim();
-                double eatDps   = Double.parseDouble(cols[1].trim());
-                int hp          = Integer.parseInt(cols[2].trim());
-                double speed    = Double.parseDouble(cols[3].trim());
-                int waveCost    = Integer.parseInt(cols[4].trim());
-                String armorStr = cols[5].trim();
-                String id       = cols[6].trim();
+        try (var br = ResourceFileReader.openUtf8(filePath)) {
+            String header = br.readLine(); // رد کردن عنوان ستون‌ها
 
-                Zombie z = new Zombie(id, name, hp, eatDps, speed, waveCost, 0);
-                zombieDataMap.put(name, z);
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                if (line.isBlank()) {
+                    continue;
+                }
+
+                String[] cols = line.split(",", -1);
+
+                String name = cols[0].trim();
+                double eatDps = Double.parseDouble(cols[1].trim());
+                int hp = Integer.parseInt(cols[2].trim());
+                double speed = Double.parseDouble(cols[3].trim());
+                int waveCost = Integer.parseInt(cols[4].trim());
+                String armorStr = cols[5].trim();
+                String id = cols[6].trim();
+
+                Zombie zombie = new Zombie(
+                    id,
+                    name,
+                    hp,
+                    eatDps,
+                    speed,
+                    waveCost,
+                    0
+                );
+
+                zombieDataMap.put(name, zombie);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error while reading file " + filePath, e);
+            throw new RuntimeException(
+                "Error while reading file " + filePath,
+                e
+            );
         }
     }
 

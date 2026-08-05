@@ -24,33 +24,72 @@ public class UserRepository implements AssetRepository<User> {
 
     @Override
     public void load(String filePath) {
-        java.io.File file = new java.io.File(filePath);
-        PATH = file.getPath();
-        if (!file.exists()) return;
+        java.nio.file.Path path = java.nio.file.Path.of(filePath);
+        PATH = path.toString();
 
-        userMap.clear();
-        try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.FileReader(file, java.nio.charset.StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.isBlank()) continue;
-                User u = deserializeUser(line);
-                userMap.put(u.getUsername(), u);
-            }
-        } catch (java.io.IOException e) {
-            throw new RuntimeException("Could not load users from file", e);
+        // اجرای اول هنوز users.dat وجود ندارد؛ این حالت خطا نیست.
+        if (!java.nio.file.Files.exists(path)) {
+            return;
         }
 
+        userMap.clear();
+
+        try (java.io.BufferedReader reader =
+                 java.nio.file.Files.newBufferedReader(
+                     path,
+                     java.nio.charset.StandardCharsets.UTF_8
+                 )) {
+
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                if (line.isBlank()) {
+                    continue;
+                }
+
+                User user = deserializeUser(line);
+                userMap.put(user.getUsername(), user);
+            }
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(
+                "Could not load users from file: "
+                    + path.toAbsolutePath(),
+                e
+            );
+        }
     }
 
     public void save() {
-        try (java.io.PrintWriter writer = new java.io.PrintWriter(
-                new java.io.FileWriter(PATH, java.nio.charset.StandardCharsets.UTF_8))) {
-            for (User u : userMap.values()) {
-                writer.println(serializeUser(u));
+        if (PATH == null || PATH.isBlank()) {
+            throw new IllegalStateException(
+                "User file path has not been initialized"
+            );
+        }
+
+        java.nio.file.Path filePath = java.nio.file.Path.of(PATH);
+        java.nio.file.Path parent = filePath.getParent();
+
+        try {
+            if (parent != null) {
+                java.nio.file.Files.createDirectories(parent);
+            }
+
+            try (java.io.PrintWriter writer = new java.io.PrintWriter(
+                java.nio.file.Files.newBufferedWriter(
+                    filePath,
+                    java.nio.charset.StandardCharsets.UTF_8
+                )
+            )) {
+                for (User user : userMap.values()) {
+                    writer.println(serializeUser(user));
+                }
             }
         } catch (java.io.IOException e) {
-            throw new RuntimeException("Could not save users to file", e);
+            throw new RuntimeException(
+                "Could not save users to file: "
+                    + filePath.toAbsolutePath(),
+                e
+            );
         }
     }
 
@@ -267,6 +306,6 @@ public class UserRepository implements AssetRepository<User> {
 
     @Override
     public User get(String id) {
-        return null;
+        return userMap.get(id);
     }
 }

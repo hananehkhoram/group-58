@@ -1,4 +1,4 @@
-package com.workshop.model.minigame.Beghouled;
+package com.workshop.model.MiniGame.Beghouled;
 
 import com.workshop.controller.MenuManager;
 import com.workshop.controller.commandHandler.Command;

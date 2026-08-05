@@ -141,7 +141,7 @@ public class FileCommandProvider implements com.workshop.controller.commandHandl
         registry.register("cheat add plant -t (?<plantType>.+) -l \\((?<x>\\d+), (?<y>\\d+)\\)" ,
                 new CheatAddPlant(menuManager));
         registry.register("upgrade beghouled -p (?<plantName>.+)",
-                new com.workshop.model.minigame.Beghouled.UpgradeBeghouled(menuManager));
+                new com.workshop.model.MiniGame.Beghouled.UpgradeBeghouled(menuManager));
         registry.register("swap \\(\\s*(?<x1>\\d+)\\s*,\\s*(?<y1>\\d+)\\s*\\) to \\(\\s*(?<x2>\\d+)\\s*,\\s*(?<y2>\\d+)\\s*\\)", new Swap(menuManager));
         registry.register("place zombie \\(\\s*(?<x1>\\d+)\\s*,\\s*(?<y1>\\d+)\\s*\\)", new Place(menuManager));
     }

@@ -11,9 +11,7 @@ import com.workshop.model.plants.upgradeEffect.StatEffect;
 import com.workshop.model.plants.upgradeEffect.StatKey;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -29,7 +27,7 @@ public class PlantRepository implements AssetRepository<Plant> {
 
     @Override
     public void load(String filePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath, StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = ResourceFileReader.openUtf8(filePath)) {
             reader.readLine();
             String line;
             while ((line = reader.readLine()) != null) {
