@@ -14,7 +14,6 @@ public class LawnMower {
     private double x = 0;
     private double velocityX = 40;
     private final ArrayList<Zombie> killedZombies = new ArrayList<>();
-    private boolean didKilled = false;
 
     public LawnMower(int row) {
         this.row = row;
@@ -58,16 +57,7 @@ public class LawnMower {
         if (checkTrigger(z) && !z.isBoss()) {
             z.setHp(0);
             killedZombies.add(z);
-            setDidKilled(true);
         }
-    }
-
-    public boolean isDidKilled() {
-        return didKilled;
-    }
-
-    public void setDidKilled(boolean didKilled) {
-        this.didKilled = didKilled;
     }
 
     public static LawnMower[] buildLawnMowers() {

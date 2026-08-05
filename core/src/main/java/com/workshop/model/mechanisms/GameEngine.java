@@ -50,14 +50,21 @@ public class GameEngine {
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                Tile tile = this.getTiles(i, j);
+                Tile tile = this.getTiles(j, i);
                 if (tile != null && tile.hasDroppedSeed()) {
                     tile.updateSeedTimer(passedTicks);
                 }
             }
         }
 
-        if (!ctx.isBattleStarted() || ctx.isGameEnded()) return;
+        if (!ctx.isBattleStarted()) {
+            return;
+        }
+
+        if (ctx.isGameEnded()) {
+            checkGameEnd();
+            return;
+        }
 
         if (ctx.getLevelManager() != null) {
             ctx.getLevelManager().onUpdate(deltaTime, ctx);
@@ -65,6 +72,10 @@ public class GameEngine {
         ctx.getSunManager().update(this);
         updateWave(deltaTime);
         updateZombies(deltaTime);
+        if (ctx.isGameEnded()) {
+            checkGameEnd();
+            return;
+        }
         updateLawnMowers(deltaTime);
         updatePlants(deltaTime);
         updateProjectiles(deltaTime);
@@ -163,10 +174,6 @@ public class GameEngine {
             }
             l.advance(deltaTime);
 
-            if (l.isDidKilled()) {
-                ctx.incrementZombieKills();
-                l.setDidKilled(false);
-            }
         }
     }
 
@@ -350,16 +357,54 @@ public class GameEngine {
 
     private void checkGameEnd() {
         if (ctx.isGameEnded()) {
+            ctx.setBattleStarted(false);
+
             Console.showMessage("You are now in Game Menu.\n");
             menuManager.forceChangeMenu("gamemenu");
             ctx.clearLoots();
             return;
         }
-        boolean allSpawned = ctx.isWaveSpawningFinished() ||
-                (ctx.getLevel().getWaves() != null && ctx.getCurrentWaveIndex() >= ctx.getLevel().getWaves().length);
+
+        if (ctx.getLevel().getLevelType()
+            == com.workshop.model.level.LevelType.Vase_MG) {
+
+            boolean noZombiesRemain = ctx.getAliveZombies().isEmpty();
+            boolean allVasesAreBroken = !hasUnbrokenVases();
+
+            if (noZombiesRemain && allVasesAreBroken) {
+                ctx.triggerPlayerWin();
+            }
+
+            return;
+        }
+
+        boolean allSpawned = ctx.isWaveSpawningFinished()
+            || (ctx.getLevel().getWaves() != null
+            && ctx.getCurrentWaveIndex()
+            >= ctx.getLevel().getWaves().length);
+
         if (allSpawned && ctx.getAliveZombies().isEmpty()) {
             ctx.triggerPlayerWin();
         }
+    }
+
+    private boolean hasUnbrokenVases() {
+        int rows = ctx.getLevel().getRows();
+        int columns = ctx.getLevel().getColumns();
+
+        for (int row = 0; row < rows; row++) {
+            for (int column = 0; column < columns; column++) {
+                Tile tile = getTiles(column, row);
+
+                if (tile != null
+                    && tile.getVase() != null
+                    && !tile.getVase().isBroken()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public List<Zombie> findTargets(int row, int col, TargetingMode mode) {

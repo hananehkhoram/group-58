@@ -22,10 +22,25 @@ public class AdvancedTime implements Command {
         } catch (NumberFormatException e) {
             throw new CommandNotFound("Invalid tick amount!");
         }
+        int advancedTicks = 0;
+
         for (int i = 0; i < ticks; i++) {
+            if (menuManager.getCtx().isGameEnded()) {
+                break;
+            }
+
             menuManager.getCtx().getTimeManager().advanceTime(1);
+            advancedTicks++;
+
             menuManager.getGameEngine().update(0.1);
-        }        Console.showMessage("Advanced time %d ticks.",ticks);
+
+            if (menuManager.getCtx().isGameEnded()) {
+                break;
+            }
+        }
+
+        Console.showMessage("Advanced time %d ticks.", advancedTicks);
+
         if (menuManager.getCtx().getLevelManager() instanceof TimedWarManager){
             double timeRemaining = ((TimedWarManager) menuManager.getCtx().getLevelManager()).getTimeRemaining();
             Console.showMessage("Time remaining: %.1fs", timeRemaining);
