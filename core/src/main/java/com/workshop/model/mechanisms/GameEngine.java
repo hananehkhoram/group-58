@@ -290,6 +290,9 @@ public class GameEngine {
 
     private void checkZombieHit(Projectile p, Iterator<Projectile> it) {
         for (Zombie z : ctx.getAliveZombies()) {
+            if (z.isDead()){
+                continue;
+            }
             if (z.getRow() == p.getRow() && p.getX() >= z.getX() - 0.2 && p.getX() <= z.getX() + 0.6) {
                 ProjectileDeflector deflector = z.getDeflector();
                 Submerge submerge = z.getSubmerge();

@@ -122,12 +122,16 @@ public class Planting implements Command {
 
         if (!isValidNut) return false;
 
-        if (type.equalsIgnoreCase("Explode-o-nut") || type.equalsIgnoreCase("Cherry Bomb")) {
-            ctx.getProjectiles().add(new com.workshop.model.projectile.ExplodeONut(500, x, y, x, 2.0, template, ctx));
+        if (type.equalsIgnoreCase("Explode-o-nut")) {
+            ctx.getProjectiles().add(
+                new com.workshop.model.projectile.ExplodeONut(
+                    1800, x, y, y, 2.0, template, ctx
+                )
+            );
         } else if (type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut")) {
-            ctx.getProjectiles().add(new com.workshop.model.projectile.GiantWallnut(500, x, y, x, 2.0, template));
+            ctx.getProjectiles().add(new com.workshop.model.projectile.GiantWallnut(500, x, y, y, 2.0, template));
         } else {
-            ctx.getProjectiles().add(new com.workshop.model.projectile.BowlingWallnut(500, x, y, x, 2.0, template));
+            ctx.getProjectiles().add(new com.workshop.model.projectile.BowlingWallnut(500, x, y, y, 2.0, template));
         }
 
         if (levelManager != null) {
