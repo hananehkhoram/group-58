@@ -1,10 +1,20 @@
+java.sourceCompatibility = JavaVersion.VERSION_17
+java.targetCompatibility = JavaVersion.VERSION_17
+
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 eclipse.project.name = appName + '-core'
+
+repositories {
+  mavenCentral()
+  maven { url 'https://jitpack.io' }
+}
 
 dependencies {
   api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
   api "com.github.raeleus.TenPatch:tenpatch:$tenPatchVersion"
+  implementation 'com.github.pizpizi:libPVZ:v0.1.4'
+  implementation 'com.github.pizpizi:pvz-skin:v0.1.1'
 
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
