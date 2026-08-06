@@ -143,7 +143,16 @@ public class FileCommandProvider implements com.workshop.controller.commandHandl
         registry.register("upgrade beghouled -p (?<plantName>.+)",
                 new com.workshop.model.MiniGame.Beghouled.UpgradeBeghouled(menuManager));
         registry.register("swap \\(\\s*(?<x1>\\d+)\\s*,\\s*(?<y1>\\d+)\\s*\\) to \\(\\s*(?<x2>\\d+)\\s*,\\s*(?<y2>\\d+)\\s*\\)", new Swap(menuManager));
-        registry.register("place zombie \\(\\s*(?<x1>\\d+)\\s*,\\s*(?<y1>\\d+)\\s*\\)", new Place(menuManager));
+        registry.register(
+            "place zombie -t (?<zombieType>.+?) "
+                + "-l \\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)",
+            new Place(menuManager)
+        );
+
+        registry.register(
+            "start izombie -l (?<level>\\d+)",
+            new StartIzombieLevel(menuManager)
+        );
     }
 }
 

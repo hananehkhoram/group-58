@@ -17,6 +17,7 @@ import com.workshop.model.zombie.behavior.LaserShooting;
 import com.workshop.model.zombie.behavior.ProjectileDeflector;
 import com.workshop.model.zombie.behavior.Submerge;
 import com.workshop.view.Console;
+import com.workshop.model.MiniGame.Izambi.IZombieManager;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -72,17 +73,27 @@ public class GameEngine {
         ctx.getSunManager().update(this);
         updateWave(deltaTime);
         updateZombies(deltaTime);
+
         if (ctx.isGameEnded()) {
             checkGameEnd();
             return;
         }
-        updateLawnMowers(deltaTime);
+
+        if (getIZombieManager() == null) {
+            updateLawnMowers(deltaTime);
+        }
+
         updatePlants(deltaTime);
         updateProjectiles(deltaTime);
         checkGameEnd();
     }
 
     private void updateWave(double deltaTime) {
+        if (getIZombieManager() != null) {
+            ctx.setWaveSpawningFinished(true);
+            return;
+        }
+
         if (ctx.getLevel().getLevelType() == com.workshop.model.level.LevelType.PLANT_WHAT_YOU_GET) {
             if (!ctx.isManualStartCommandReceived()) {
                 return;
@@ -126,37 +137,91 @@ public class GameEngine {
 
     private void updateZombies(double deltaTime) {
         List<Zombie> deathsThisTick = new ArrayList<>();
-        Iterator<Zombie> it = ctx.getAliveZombies().iterator();
-        while (it.hasNext()) {
-            Zombie z = it.next();
-            z.update(ctx, deltaTime);
 
-            if (!z.isMovingBackward() && z.getX() <= LOSS_X) {
-                LawnMower mower = lawnMowers[(int) z.getY()];
+        Iterator<Zombie> iterator =
+            ctx.getAliveZombies().iterator();
+
+        IZombieManager iZombieManager =
+            getIZombieManager();
+
+        while (iterator.hasNext()) {
+            Zombie zombie = iterator.next();
+
+
+            zombie.update(ctx, deltaTime);
+
+
+            if (iZombieManager != null
+                && !zombie.isDead()
+                && !zombie.isMovingBackward()
+                && zombie.getX() <= LOSS_X) {
+
+                iZombieManager.eatBrain(
+                    zombie.getRow()
+                );
+
+                iterator.remove();
+                continue;
+            }
+
+
+            if (iZombieManager == null
+                && !zombie.isMovingBackward()
+                && zombie.getX() <= LOSS_X) {
+
+                LawnMower mower =
+                    lawnMowers[(int) zombie.getY()];
+
                 if (!mower.isAvailable()) {
                     ctx.triggerPlayerLoss();
                     return;
                 }
+
                 if (!mower.isActivated()) {
                     mower.activate();
                 }
             }
-            if (z.isDead()) {
-                for (Behaviors b : z.getBehaviors().values()) {
-                    b.onDeath(z, ctx);
+
+            if (zombie.isDead()) {
+                for (
+                    Behaviors behavior
+                    : zombie.getBehaviors().values()
+                ) {
+                    behavior.onDeath(zombie, ctx);
                 }
-                LootItem.tryDropLoot(ctx, (int) Math.floor(z.getX()), z.getRow());
-                it.remove();
+
+                LootItem.tryDropLoot(
+                    ctx,
+                    (int) Math.floor(zombie.getX()),
+                    zombie.getRow()
+                );
+
+                iterator.remove();
+
                 ctx.incrementZombieKills();
-                deathsThisTick.add(z);
+
+                deathsThisTick.add(zombie);
+
                 ctx.recordZombieKillTick();
-                boolean noMowerLeftInRow = !lawnMowers[(int) z.getY()].isAvailable();
-                if (noMowerLeftInRow && Math.floor(z.getX()) == 0) {
-                    ctx.recordAlmostLostKill();
+
+
+                if (iZombieManager == null) {
+                    boolean noMowerLeftInRow =
+                        !lawnMowers[
+                            (int) zombie.getY()
+                            ].isAvailable();
+
+                    if (noMowerLeftInRow
+                        && Math.floor(zombie.getX()) == 0) {
+
+                        ctx.recordAlmostLostKill();
+                    }
                 }
             }
         }
-        com.workshop.controller.ScoringManager.onZombiesDied(ctx, deathsThisTick);
+
+        com.workshop.controller.ScoringManager
+            .onZombiesDied(ctx, deathsThisTick);
     }
 
     private void updateLawnMowers(double deltaTime) {
@@ -368,6 +433,19 @@ public class GameEngine {
             return;
         }
 
+        IZombieManager iZombieManager =
+            getIZombieManager();
+
+        if (iZombieManager != null) {
+            if (iZombieManager.areAllBrainsEaten()) {
+                ctx.triggerPlayerWin();
+            } else if (iZombieManager.shouldPlayerLose(ctx)) {
+                ctx.triggerPlayerLoss();
+            }
+
+            return;
+        }
+
         if (ctx.getLevel().getLevelType()
             == com.workshop.model.level.LevelType.Vase_MG) {
 
@@ -449,6 +527,18 @@ public class GameEngine {
             }
         }
     }
+
+    private IZombieManager getIZombieManager() {
+        if (
+            ctx.getLevelManager()
+                instanceof IZombieManager manager
+        ) {
+            return manager;
+        }
+
+        return null;
+    }
+
     public Tile getTiles(int x, int y) {
         if (y < 0 || y >= tiles.length || x < 0 || x >= tiles[0].length) return null;
         return tiles[y][x];

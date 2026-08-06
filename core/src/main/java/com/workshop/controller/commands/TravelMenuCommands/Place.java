@@ -14,26 +14,44 @@ public class Place implements Command {
 
     @Override
     public void execute(String[] args) {
-        if (args == null || args.length < 2) {
-            Console.showMessage("Usage: place zombie (row, col)");
+        if (args == null || args.length < 3) {
+            Console.showMessage(
+                "Usage: place zombie -t <type> -l (<x>, <y>)"
+            );
             return;
         }
 
         try {
-            int col = Integer.parseInt(args[0]);
-            int row = Integer.parseInt(args[1]);
+            String zombieType = args[0].trim();
 
-            Izambi currentIzambi = Izambi.getActiveInstance();
+            int column = Integer.parseInt(
+                args[args.length - 2].trim()
+            );
 
-            if (currentIzambi != null) {
-                String zombieType = "Ra";
-                currentIzambi.placeZombie(zombieType, row, col);
-            } else {
-                Console.showMessage("I-Zombie mini-game is not currently active!");
+            int row = Integer.parseInt(
+                args[args.length - 1].trim()
+            );
+
+            Izambi currentIzambi =
+                Izambi.getActiveInstance();
+
+            if (currentIzambi == null) {
+                Console.showMessage(
+                    "I-Zombie mini-game is not currently active!"
+                );
+                return;
             }
 
-        } catch (NumberFormatException e) {
-            Console.showMessage("Invalid row or column numbers.");
+            currentIzambi.placeZombie(
+                zombieType,
+                row,
+                column
+            );
+
+        } catch (NumberFormatException exception) {
+            Console.showMessage(
+                "Invalid row or column numbers."
+            );
         }
     }
 }

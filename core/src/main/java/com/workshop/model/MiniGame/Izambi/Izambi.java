@@ -8,22 +8,50 @@ import com.workshop.controller.repository.factory.ZombieFactory;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
 import com.workshop.model.mechanisms.GameEngine;
+import com.workshop.model.mechanisms.Tile;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.season.Season;
 import com.workshop.model.season.miniGameSeason.IzombieSeason;
-import com.workshop.model.mechanisms.Tile;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.view.Console;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class Izambi {
+    private static final int INITIAL_SUN = 150;
+
+
+    private static final int SUN_PRODUCER_COLUMN = 8;
+
+
+    private static final String[] ATTACKING_PLANT_POOL = {
+        "Peashooter",
+        "Repeater",
+        "Snow Pea",
+        "Cabbage-pult"
+    };
+
+
+    private static final String[] RANDOM_PLANT_POOL = {
+        "Peashooter",
+        "Repeater",
+        "Snow Pea",
+        "Cabbage-pult",
+        "Wall-nut"
+    };
+
+    private static Izambi activeInstance;
+
+    private final Random random = new Random();
 
     private Level currentLevel;
     private GameEngine gameEngine;
     private GameContext ctx;
-
-    private static Izambi activeInstance;
+    private IZombieManager iZombieManager;
 
     public Izambi() {
         activeInstance = this;
@@ -33,110 +61,351 @@ public class Izambi {
         return activeInstance;
     }
 
+
     public void startMiniGame(MenuManager menuManager) {
-        // استفاده از متد اصلاح‌شده که موج خودکار ندارد
-        List<Level> izombieLevels = LevelFactory.buildIzombieLevels();
-        if (izombieLevels == null || izombieLevels.isEmpty()) {
-            Console.showMessage("Error: No levels found for Izombie mini-game.");
+        startMiniGame(menuManager, 1);
+    }
+
+    public void startMiniGame(
+        MenuManager menuManager,
+        int levelNumber
+    ) {
+        List<Level> levels =
+            LevelFactory.buildIzombieLevels();
+
+        if (levels == null || levels.isEmpty()) {
+            Console.showMessage(
+                "Error: No levels found for I-Zombie mini-game."
+            );
             return;
         }
-        this.currentLevel = izombieLevels.get(0);
 
-        Season izombieSeason = new IzombieSeason(izombieLevels);
+        if (levelNumber < 1 || levelNumber > levels.size()) {
+            Console.showMessage(
+                "I-Zombie level must be between 1 and "
+                    + levels.size()
+                    + "."
+            );
+            return;
+        }
 
-        this.ctx = new GameContext(this.currentLevel, izombieSeason);
+        int levelIndex = levelNumber - 1;
 
-        ctx.setZombieFactory(new ZombieFactory(DataManager.getInstance()));
-        this.gameEngine = new GameEngine(this.ctx, menuManager);
-        this.ctx.setGameEngine(this.gameEngine);
+        currentLevel = levels.get(levelIndex);
 
-        // غیرفعال کردن کامل نوار نقاله
-        this.ctx.setLevelManager(null);
+        Season season = new IzombieSeason(levels);
 
-        // مقدار اولیه خورشید برای کاشت دستی زامبی
-        ctx.setSunAmount(150);
+        ctx = new GameContext(currentLevel, season);
 
-        // چیدن گیاهان اولیه در ستون‌های بازی
+        ctx.setZombieFactory(
+            new ZombieFactory(DataManager.getInstance())
+        );
+
+        iZombieManager = new IZombieManager(
+            levelIndex,
+            currentLevel.getRows()
+        );
+
+
+        ctx.setLevelManager(iZombieManager);
+        iZombieManager.onLevelStart(ctx);
+
+        gameEngine = new GameEngine(ctx, menuManager);
+        ctx.setGameEngine(gameEngine);
+
+        ctx.setSunAmount(INITIAL_SUN);
+
+        initRandomPlants();
         initSunProducerZombies();
 
-        // شروع نبرد و اجازه آپدیت به موتور بازی
         ctx.setBattleStarted(true);
 
-        System.out.print("start\n");
+        Console.showMessage(
+            "I-Zombie level " + levelNumber + " started."
+        );
+
+        showAvailableZombies();
     }
 
-    public boolean placeZombie(String zombieType, int row, int col) {
-        if (zombieType == null) return false;
+    public boolean placeZombie(
+        String requestedType,
+        int row,
+        int column
+    ) {
+        if (ctx == null
+            || iZombieManager == null
+            || ctx.isGameEnded()) {
 
-        int cost = getZombieCost(zombieType);
-
-        if (this.ctx.getSunAmount() >= cost) {
-            this.ctx.setSunAmount(this.ctx.getSunAmount() - cost);
-
-            ZombieFactory factory = new ZombieFactory(DataManager.getInstance());
-            Zombie newZombie = factory.create(zombieType);
-            if (newZombie != null) {
-                newZombie.setY(row);
-                newZombie.setX(col);
-
-                // اضافه کردن به لیست زامبی‌های زنده برای حرکت توسط موتور بازی
-                ctx.getAliveZombies().add(newZombie);
-
-                Console.showMessage("Zombie " + zombieType + " placed at row " + row + ", col " + col);
-                return true;
-            } else {
-                this.ctx.setSunAmount(this.ctx.getSunAmount() + cost);
-            }
-        } else {
-            Console.showMessage("Not enough sun!");
+            Console.showMessage(
+                "I-Zombie mini-game is not active."
+            );
+            return false;
         }
-        return false;
+
+        String zombieType =
+            iZombieManager.findCanonicalZombieName(
+                requestedType
+            );
+
+        if (zombieType == null) {
+            Console.showMessage(
+                "This zombie is not available "
+                    + "in the current I-Zombie level."
+            );
+
+            showAvailableZombies();
+            return false;
+        }
+
+        if (!iZombieManager.isValidPlacement(
+            row,
+            column,
+            ctx
+        )) {
+            Console.showMessage(
+                "Zombies must be placed on the right side "
+                    + "of the red line: columns "
+                    + IZombieManager.RED_LINE_COLUMN
+                    + " to "
+                    + (currentLevel.getColumns() - 1)
+                    + "."
+            );
+            return false;
+        }
+
+
+        if (iZombieManager.isBrainEaten(row)) {
+            Console.showMessage(
+                "The brain in row "
+                    + row
+                    + " has already been eaten."
+            );
+            return false;
+        }
+
+        int cost =
+            iZombieManager.getZombieCost(zombieType);
+
+        if (ctx.getSunAmount() < cost) {
+            Console.showMessage(
+                "Not enough sun. Required: " + cost + "."
+            );
+            return false;
+        }
+
+        try {
+            Zombie zombie =
+                ctx.getZombieFactory().create(zombieType);
+
+            zombie.setRow(row);
+            zombie.setX(column);
+
+            zombie.setSpawnTick(
+                ctx.getTimeManager().getTotalTicks()
+            );
+
+
+            ctx.getAliveZombies().add(zombie);
+
+            ctx.setSunAmount(
+                ctx.getSunAmount() - cost
+            );
+
+            Console.showMessage(
+                "Zombie "
+                    + zombieType
+                    + " placed at ("
+                    + column
+                    + ", "
+                    + row
+                    + ") for "
+                    + cost
+                    + " sun."
+            );
+
+            return true;
+        } catch (IllegalArgumentException exception) {
+            Console.showMessage(exception.getMessage());
+            return false;
+        }
     }
 
-    private int getZombieCost(String type) {
-        if (type == null) return 50;
-        return switch (type.toLowerCase().trim()) {
-            case "ra", "default" -> 50;
-            case "cone head" -> 100;
-            case "bucket head" -> 125;
-            default -> 50;
-        };
+    public void showAvailableZombies() {
+        if (iZombieManager == null) {
+            return;
+        }
+
+        StringBuilder output =
+            new StringBuilder("Available zombies: ");
+
+        boolean first = true;
+
+        for (Map.Entry<String, Integer> entry
+            : iZombieManager
+            .getAvailableZombieCosts()
+            .entrySet()) {
+
+            if (!first) {
+                output.append(", ");
+            }
+
+            output
+                .append(entry.getKey())
+                .append("=")
+                .append(entry.getValue());
+
+            first = false;
+        }
+
+        Console.showMessage(output.toString());
+    }
+
+
+    private void initRandomPlants() {
+        PlantFactory plantFactory =
+            new PlantFactory(DataManager.getInstance());
+
+        int rows = currentLevel.getRows();
+
+        for (int row = 0; row < rows; row++) {
+            List<Integer> columns = new ArrayList<>();
+
+
+            for (
+                int column = 0;
+                column < IZombieManager.RED_LINE_COLUMN;
+                column++
+            ) {
+                columns.add(column);
+            }
+
+            Collections.shuffle(columns, random);
+
+            int plantCount = 4 + random.nextInt(3);
+
+
+            String guaranteedAttacker =
+                ATTACKING_PLANT_POOL[
+                    random.nextInt(
+                        ATTACKING_PLANT_POOL.length
+                    )
+                    ];
+
+            placeInitialPlant(
+                plantFactory,
+                guaranteedAttacker,
+                row,
+                columns.get(0)
+            );
+
+
+            for (
+                int index = 1;
+                index < plantCount;
+                index++
+            ) {
+                String plantName =
+                    RANDOM_PLANT_POOL[
+                        random.nextInt(
+                            RANDOM_PLANT_POOL.length
+                        )
+                        ];
+
+                placeInitialPlant(
+                    plantFactory,
+                    plantName,
+                    row,
+                    columns.get(index)
+                );
+            }
+        }
+    }
+
+    private void placeInitialPlant(
+        PlantFactory plantFactory,
+        String plantName,
+        int row,
+        int column
+    ) {
+        Plant plant;
+
+        try {
+            plant = plantFactory.create(plantName);
+        } catch (IllegalArgumentException exception) {
+            Console.showMessage(exception.getMessage());
+            return;
+        }
+
+        Tile tile = gameEngine.getTiles(column, row);
+
+
+        if (tile == null || !tile.setPlant(plant)) {
+            return;
+        }
+
+        plant.setRow(row);
+        plant.setCol(column);
+
+
+        ctx.getAlivePlants().add(plant);
     }
 
     private void initSunProducerZombies() {
-        if (currentLevel == null || ctx == null || ctx.getGameEngine() == null) return;
-        int rows = currentLevel.getRows();
+        for (
+            int row = 0;
+            row < currentLevel.getRows();
+            row++
+        ) {
 
-        PlantFactory plantFactory = new PlantFactory(DataManager.getInstance());
-        String[] plantTypes = {"Sunflower", "Peashooter", "Wall-nut", "Sunflower", "Peashooter", "Sunflower"};
+            Zombie producer =
+                ctx.getZombieFactory().create("bucket head");
 
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < 6; c++) {
-                String pType = plantTypes[c % plantTypes.length];
-                Plant plant = plantFactory.create(pType);
-                if (plant != null) {
-                    Tile tile = ctx.getGameEngine().getTiles(c, r);
-                    if (tile != null) {
-                        tile.setPlant(plant);
-                    }
-                }
-            }
+            producer.setName("Sun Producer Zombie");
+            producer.setSpeed(0);
+
+            producer.setRow(row);
+            producer.setX(SUN_PRODUCER_COLUMN);
+
+            producer.setSpawnTick(
+                ctx.getTimeManager().getTotalTicks()
+            );
+
+            ctx.getAliveZombies().add(producer);
+
+            iZombieManager.registerSunProducer(
+                producer,
+                ctx
+            );
         }
     }
 
-    public GameContext getCtx(){
-        return this.ctx;
+    public GameContext getCtx() {
+        return ctx;
     }
 
-    public GameEngine getGameEngine(){
-        return this.gameEngine;
+    public GameEngine getGameEngine() {
+        return gameEngine;
     }
 
-    public void advancedTimeCommand(double sec){
-        if (this.gameEngine != null) {
-            this.gameEngine.update(sec);
-        } else {
-            System.out.println("Game engine is null\n");
+
+    public void advancedTimeCommand(double seconds) {
+        if (gameEngine == null || ctx == null) {
+            Console.showMessage("Game engine is null");
+            return;
+        }
+
+        int ticks = Math.max(
+            0,
+            (int) Math.round(seconds * 10)
+        );
+
+        for (
+            int i = 0;
+            i < ticks && !ctx.isGameEnded();
+            i++
+        ) {
+            ctx.getTimeManager().advanceTime(1);
+            gameEngine.update(0.1);
         }
     }
 }
