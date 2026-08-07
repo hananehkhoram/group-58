@@ -1,6 +1,5 @@
 package com.workshop.view.Screens;
 
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -15,16 +14,12 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.workshop.model.GameContext;
 import com.workshop.model.menus.allmenus.LoginMenu;
 
+import com.workshop.view.Toast;
 import pvz.skin.PvzSkin;
 
-/**
- * Visual (Scene2D) version of the console "login" / "forget password" / "answer" /
- * "new password" commands. Talks directly to {@link LoginMenu} — the same class the
- * console commands ({@code Login}, {@code ForgetPassword}, {@code Answer}) already use.
- */
+
 public class LoginScreen implements Screen {
 
-    /** Hook this up to whatever screen-switching mechanism your Game class uses. */
     public interface Listener {
         void onLoginSuccess();
         void onSwitchToRegister();
@@ -41,9 +36,11 @@ public class LoginScreen implements Screen {
     private Table loginTable, forgotEmailTable, forgotAnswerTable, forgotNewPasswordTable;
     private Label statusLabel;
 
+    // login step
     private TextField usernameField, passwordField;
     private CheckBox stayLoggedInBox;
 
+    // forgot-password steps
     private TextField forgotUsernameField, forgotEmailField;
     private Label securityQuestionLabel;
     private TextField answerField;
@@ -135,9 +132,9 @@ public class LoginScreen implements Screen {
             }
         });
 
-        loginTable.add(loginButton).center().colspan(2).padTop(12).width(200).row();
-        loginTable.add(forgotLink).center().colspan(2).row();
-        loginTable.add(registerLink).center().colspan(2).row();
+        loginTable.add(loginButton).colspan(2).padTop(12).width(200).row();
+        loginTable.add(forgotLink).colspan(2).row();
+        loginTable.add(registerLink).colspan(2).row();
 
         panel.add(loginTable).row();
     }
@@ -242,24 +239,23 @@ public class LoginScreen implements Screen {
         String result = loginMenu.login(usernameField.getText(), passwordField.getText(), stayLoggedIn);
 
         boolean success = result != null && result.startsWith("Logged in");
-        setStatus(result, !success);
-
-        if (success && listener != null) {
-            listener.onLoginSuccess();
+        if (success) {
+            if (listener != null) listener.onLoginSuccess();
+        } else {
+            Toast.showError(stage, skin, result);
         }
     }
 
     private void submitForgotEmail() {
-        // LoginMenu.startForgetPasswordProcess only takes username + email (no separate
-        // "forgot" username field state), so we just forward what was typed here.
         String result = loginMenu.startForgetPasswordProcess(
             forgotUsernameField.getText(), forgotEmailField.getText());
 
         boolean success = result != null && result.startsWith("Security Question:");
-        setStatus(success ? "" : result, !success);
+        if (!success) {
+            Toast.showError(stage, skin, result);
+        }
 
         if (success) {
-            // result looks like: "Security Question: <question>\nPlease enter..."
             String question = result.substring("Security Question: ".length()).split("\n")[0];
             securityQuestionLabel.setText(question);
             showStep(Step.FORGOT_ANSWER);
@@ -270,10 +266,10 @@ public class LoginScreen implements Screen {
         String result = loginMenu.answerSecurityQuestion(answerField.getText());
 
         boolean success = result != null && result.startsWith("Answer is correct!");
-        setStatus(success ? "" : result, !success);
-
         if (success) {
             showStep(Step.FORGOT_NEW_PASSWORD);
+        } else {
+            Toast.showError(stage, skin, result);
         }
     }
 
@@ -281,11 +277,12 @@ public class LoginScreen implements Screen {
         String result = loginMenu.updatePassword(newPasswordField.getText());
 
         boolean success = "Password changed successfully.".equals(result);
-        setStatus(result, !success);
-
         if (success) {
+            Toast.showSuccess(stage, skin, result);
             newPasswordField.setText("");
             showStep(Step.LOGIN);
+        } else {
+            Toast.showError(stage, skin, result);
         }
     }
 
