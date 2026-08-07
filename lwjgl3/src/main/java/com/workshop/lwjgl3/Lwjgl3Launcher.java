@@ -1,6 +1,9 @@
 package com.workshop.lwjgl3;
 
-import com.workshop.Main;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+
+import com.workshop.PvzGame;
 
 /**
  * نقطه‌ی شروع نسخه‌ی دسکتاپ برنامه
@@ -8,6 +11,21 @@ import com.workshop.Main;
 public class Lwjgl3Launcher {
 
     public static void main(String[] args) {
-        Main.main(args);
+        if (StartupHelper.startNewJvmIfRequired()) return; // required on macOS/some Linux setups
+        createApplication();
+    }
+
+    private static Lwjgl3Application createApplication() {
+        return new Lwjgl3Application(new PvzGame(), getDefaultConfiguration());
+    }
+
+    private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
+        Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
+        configuration.setTitle("PvZ");
+        configuration.useVsync(true);
+        configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate + 1);
+        configuration.setWindowedMode(1024, 640);
+        configuration.setWindowIcon("libgdx.png");
+        return configuration;
     }
 }
