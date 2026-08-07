@@ -39,6 +39,10 @@ public class Tile {
         if (ctx.getGraveGrid()[y][x] != null) {
             return TerrainType.GRAVE;
         }
+        if (ctx.getBeghouldManager() != null
+            && ctx.getBeghouldManager().isCrater(y, x)) {
+            return TerrainType.CRATER;
+        }
         if (ctx.getSeason().isNecromancyCell(y,x)) {
             return TerrainType.NECROMANCY;
         }
@@ -68,7 +72,10 @@ public class Tile {
 
     public boolean isPlantable() {
         TerrainType t = getTerrainType();
-        return t != TerrainType.WATER && t != TerrainType.GRAVE;
+
+        return t != TerrainType.WATER
+            && t != TerrainType.GRAVE
+            && t != TerrainType.CRATER;
     }
 
     public void setDroppedSeed(String seedName, int lifespanTicks) {

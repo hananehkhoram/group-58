@@ -1,8 +1,9 @@
 package com.workshop.model.mechanisms;
 
-public enum TerrainType{
+public enum TerrainType {
     NORMAL,
     GRAVE,
+    CRATER,
     FROZEN,
     SLIPPERY_UP,
     SLIPPERY_DOWN,

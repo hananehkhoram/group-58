@@ -7,60 +7,106 @@ import com.workshop.model.level.Level;
 import com.workshop.model.mechanisms.GameEngine;
 import com.workshop.model.season.Season;
 import com.workshop.model.season.miniGameSeason.BeghouledSeason;
+import com.workshop.view.Console;
 
 import java.util.List;
 
 public class BeghouldGame {
+    private static final int[] TARGET_MATCHES = {10, 15, 20};
+
     private Level currentLevel;
     private GameEngine gameEngine;
     private GameContext ctx;
     private BeghouledManager beghouledManager;
 
-    public void start() {
-        // ۱. ساخت لول‌ها و گرفتن لول اول
-        List<Level> beghouledLevels = LevelFactory.buldBeghouledLevels();
-        this.currentLevel = beghouledLevels.get(0);
-
-        // ۲. تنظیم سیزن مربوط به بیجولد
-        Season beghouledSeason = new BeghouledSeason(beghouledLevels);
-
-        // ۳. ساخت کانتکست و انجین بازی
-        this.ctx = new GameContext(this.currentLevel, beghouledSeason);
-        this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));
-        this.ctx.setGameEngine(this.gameEngine);
-
-        // ۴. راه‌اندازی منیجر بیجولد برای پازل (با هدف فرضاً ۱۰ مچ)
-        this.beghouledManager = new BeghouledManager(this.ctx, this.gameEngine, 10);
-        this.beghouledManager.initBoard();
-
-        // ۵. فعال کردن شروع نبرد تا موج‌های زامبی طبق لول اسپاون شوند
-        this.ctx.setBattleStarted(true);
-
-        System.out.print("Beghouled Game Started\n");
+    public void start(MenuManager menuManager) {
+        start(menuManager, 1);
     }
 
-    public void advancedTimeCommand(double sec) {
-        if (this.gameEngine != null && this.ctx != null) {
-            int ticks = (int) (sec * 10);
+    public void start(MenuManager menuManager, int levelNumber) {
+        List<Level> beghouledLevels =
+            LevelFactory.buldBeghouledLevels();
 
-            if (this.ctx.getTimeManager() != null) {
-                this.ctx.getTimeManager().advanceTime(ticks);
-            }
-            this.gameEngine.update(sec);
-        } else {
-            com.workshop.view.Console.showMessage("Game engine is null");
+        if (levelNumber < 1
+            || levelNumber > beghouledLevels.size()) {
+
+            Console.showMessage(
+                "Beghouled level must be between 1 and "
+                    + beghouledLevels.size()
+                    + "."
+            );
+            return;
         }
+
+        int levelIndex = levelNumber - 1;
+
+        currentLevel = beghouledLevels.get(levelIndex);
+
+        Season beghouledSeason =
+            new BeghouledSeason(beghouledLevels);
+
+        ctx = new GameContext(
+            currentLevel,
+            beghouledSeason
+        );
+
+        gameEngine = new GameEngine(
+            ctx,
+            menuManager
+        );
+
+        ctx.setGameEngine(gameEngine);
+
+        int targetMatches =
+            TARGET_MATCHES[levelIndex];
+
+        beghouledManager = new BeghouledManager(
+            ctx,
+            gameEngine,
+            targetMatches
+        );
+
+        ctx.setBeghouldManager(beghouledManager);
+
+        beghouledManager.initBoard();
+
+        ctx.setBattleStarted(true);
+
+        Console.showMessage(
+            "Beghouled level "
+                + levelNumber
+                + " started. Target matches: "
+                + targetMatches
+                + "."
+        );
     }
 
-    public GameContext getCtx(){
-        return this.ctx;
+    public void advancedTimeCommand(double seconds) {
+        if (gameEngine == null || ctx == null) {
+            Console.showMessage(
+                "Game engine is null"
+            );
+            return;
+        }
+
+        int ticks = (int) (seconds * 10);
+
+        if (ctx.getTimeManager() != null) {
+            ctx.getTimeManager().advanceTime(ticks);
+        }
+
+        gameEngine.update(seconds);
     }
 
-    public GameEngine getGameEngine(){
-        return this.gameEngine;
+    public GameContext getCtx() {
+        return ctx;
+    }
+
+    public GameEngine getGameEngine() {
+        return gameEngine;
     }
 
     public BeghouledManager getBeghouledManager() {
-        return this.beghouledManager;
+        return beghouledManager;
     }
 }

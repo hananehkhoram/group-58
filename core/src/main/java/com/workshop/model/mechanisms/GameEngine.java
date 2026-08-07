@@ -114,12 +114,26 @@ public class GameEngine {
         }
 
         if (ctx.getCurrentWaveIndex() >= waves.length) {
-            if (ctx.getLevel().getLevelType() == com.workshop.model.level.LevelType.Beghouled_MG) {
-                Wave loopedWave = waves[ctx.getCurrentWaveIndex() % waves.length];
-                loopedWave.reset();
-                spawnWave(loopedWave);
+            if (ctx.getLevel().getLevelType()
+                == com.workshop.model.level.LevelType.Beghouled_MG) {
+
+                int previousIndex =
+                    (ctx.getCurrentWaveIndex() - 1) % waves.length;
+
+                Wave previousWave = waves[previousIndex];
+
+                if (previousWave.isThresholdReached()) {
+                    int nextIndex =
+                        ctx.getCurrentWaveIndex() % waves.length;
+
+                    Wave nextWave = waves[nextIndex];
+                    nextWave.reset();
+                    spawnWave(nextWave);
+                }
+
                 return;
             }
+
             ctx.setWaveSpawningFinished(true);
             return;
         }
@@ -456,6 +470,11 @@ public class GameEngine {
                 ctx.triggerPlayerWin();
             }
 
+            return;
+        }
+
+        if (ctx.getLevel().getLevelType()
+            == com.workshop.model.level.LevelType.Beghouled_MG) {
             return;
         }
 

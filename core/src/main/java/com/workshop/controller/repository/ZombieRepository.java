@@ -66,24 +66,25 @@ public class ZombieRepository implements AssetRepository<Zombie>{
         return zombieDataMap;
     }
 
-    private static final Map<String, Set<String>> CHAPTER_EXCLUSIVE_ZOMBIES = Map.ofEntries(
-            Map.entry("Ra Zombie", Set.of("Ancient Egypt")),
-            Map.entry("Explorer Zombie", Set.of("Ancient Egypt")),
-            Map.entry("Tombraiser", Set.of("Ancient Egypt")),
+    private static final Map<String, Set<String>> CHAPTER_EXCLUSIVE_ZOMBIES =
+        Map.ofEntries(
+            Map.entry("Ra", Set.of("Ancient Egypt")),
+            Map.entry("Explorer", Set.of("Ancient Egypt")),
+            Map.entry("Tomb raiser", Set.of("Ancient Egypt")),
 
-            Map.entry("Dodo Rider Zombie", Set.of("Frozen Caves")),
-            Map.entry("Hunter Zombie", Set.of("Frozen Caves")),
+            Map.entry("Dodo", Set.of("Frozen Caves")),
+            Map.entry("Hunter", Set.of("Frozen Caves")),
             Map.entry("Troglobite", Set.of("Frozen Caves")),
 
-            Map.entry("Fisherman Zombie", Set.of("Big Wave Beach")),
-            Map.entry("Snorkel Zombie", Set.of("Big Wave Beach")),
-            Map.entry("Octopus Zombie", Set.of("Big Wave Beach")),
+            Map.entry("Fisherman", Set.of("Big Wave Beach")),
+            Map.entry("Snorkel", Set.of("Big Wave Beach")),
+            Map.entry("Octopus", Set.of("Big Wave Beach")),
 
-            Map.entry("Jester Zombie", Set.of("Dark Ages")),
-            Map.entry("Wizard Zombie", Set.of("Dark Ages")),
+            Map.entry("Juggler", Set.of("Dark Ages")),
+            Map.entry("Wizard", Set.of("Dark Ages")),
             Map.entry("King", Set.of("Dark Ages")),
             Map.entry("Imp Dragon", Set.of("Dark Ages"))
-    );
+        );
 
     public boolean isAvailableInChapter(String zombieName, String chapterName) {
         Set<String> exclusiveTo = CHAPTER_EXCLUSIVE_ZOMBIES.get(zombieName);
