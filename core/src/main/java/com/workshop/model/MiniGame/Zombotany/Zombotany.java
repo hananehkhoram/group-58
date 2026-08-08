@@ -2,86 +2,169 @@ package com.workshop.model.MiniGame.Zombotany;
 
 import com.workshop.controller.MenuManager;
 import com.workshop.controller.repository.DataManager;
-import com.workshop.controller.repository.factory.LevelFactory;
-import com.workshop.controller.repository.factory.ZombieFactory;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
 import com.workshop.model.mechanisms.GameEngine;
-//import model.season.miniGameSeason.ZombotanySeason;
-import com.workshop.model.zombie.Zombie;
+import com.workshop.model.season.Season;
+import com.workshop.model.user.User;
+import com.workshop.model.user.UserManager;
 import com.workshop.view.Console;
 
 import java.util.List;
 
 public class Zombotany {
 
-    private Level currentLevel;
     private GameEngine gameEngine;
     private GameContext ctx;
 
-    public Zombotany() {}
+    public void startMiniGame(MenuManager menuManager) {
+        User currentUser =
+            UserManager.getInstance().getCurrentUser();
 
-    public void startMiniGame() {
-        List<Level> zombotanyLevels = LevelFactory.buildWallnutsLevels();
-        this.currentLevel = zombotanyLevels.get(0);
+        if (currentUser == null) {
+            Console.showMessage(
+                "You must login before starting Zombotany."
+            );
+            return;
+        }
 
-        this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));
-        this.ctx.setGameEngine(this.gameEngine);
+        Season season =
+            DataManager.getInstance()
+                .seasons
+                .get("Zombotany");
 
-        spawnZombotanyZombies();
+        if (season == null) {
+            Console.showMessage(
+                "Zombotany season was not found."
+            );
+            return;
+        }
 
-        System.out.print("zombotany start\n");
+        List<Level> levels = season.getLevels();
+
+        if (levels == null || levels.isEmpty()) {
+            Console.showMessage(
+                "No Zombotany levels were found."
+            );
+            return;
+        }
+
+        unlockFirstLevel(
+            currentUser,
+            levels
+        );
+
+        int levelIndex =
+            findLatestUnlockedLevel(
+                currentUser,
+                levels
+            );
+
+        if (levelIndex < 0) {
+            Console.showMessage(
+                "Zombotany is locked."
+            );
+            return;
+        }
+
+        startLevel(
+            menuManager,
+            levelIndex
+        );
     }
 
-    private void spawnZombotanyZombies() {
-        ZombieFactory factory = new ZombieFactory(DataManager.getInstance());
+    public void startLevel(
+        MenuManager menuManager,
+        int levelIndex) {
 
-        Zombie peashooterZombie = factory.create("peashooter_zombie");
-        if (peashooterZombie != null) {
-            peashooterZombie.setY(0);
-            peashooterZombie.setX(8);
-            ctx.getAliveZombies().add(peashooterZombie);
+        Season season =
+            DataManager.getInstance()
+                .seasons
+                .get("Zombotany");
+
+        if (season == null) {
+            Console.showMessage(
+                "Zombotany season was not found."
+            );
+            return;
         }
 
-        Zombie wallnutZombie = factory.create("wallnut_zombie");
-        if (wallnutZombie != null) {
-            wallnutZombie.setY(1);
-            wallnutZombie.setX(8);
-            ctx.getAliveZombies().add(wallnutZombie);
+        List<Level> levels = season.getLevels();
+
+        if (levelIndex < 0
+            || levelIndex >= levels.size()) {
+            Console.showMessage(
+                "Invalid Zombotany level."
+            );
+            return;
         }
 
-        Zombie jalapenoZombie = factory.create("jalapeno_zombie");
-        if (jalapenoZombie != null) {
-            jalapenoZombie.setY(2);
-            jalapenoZombie.setX(8);
-            ctx.getAliveZombies().add(jalapenoZombie);
+        Level level = levels.get(levelIndex);
+
+        ctx = new GameContext(
+            level,
+            season
+        );
+
+        gameEngine =
+            new GameEngine(
+                ctx,
+                menuManager
+            );
+
+        ctx.setGameEngine(gameEngine);
+
+        menuManager.setCtx(ctx);
+        menuManager.setGameEngine(gameEngine);
+
+        menuManager.forceChangeMenu(
+            "plantselectionmenu"
+        );
+
+        Console.showMessage(
+            "Entering Zombotany level "
+                + (levelIndex + 1)
+                + ". Choose your plants."
+        );
+    }
+
+    private void unlockFirstLevel(
+        User user,
+        List<Level> levels
+    ) {
+        String firstLevelName =
+            levels.get(0).getName();
+
+        if (!user.isLevelUnlocked(firstLevelName)) {
+            user.unlockLevel(firstLevelName);
+            DataManager.getInstance().saveUser();
+        }
+    }
+
+    private int findLatestUnlockedLevel(
+        User user,
+        List<Level> levels
+    ) {
+        for (int index = levels.size() - 1;
+             index >= 0;
+             index--) {
+
+            String levelName =
+                levels.get(index).getName();
+
+            if (user.isLevelUnlocked(levelName)) {
+                return index;
+            }
         }
 
-        Zombie squashZombie = factory.create("squash_zombie");
-        if (squashZombie != null) {
-            squashZombie.setY(3);
-            squashZombie.setX(8);
-            ctx.getAliveZombies().add(squashZombie);
-        }
+        return -1;
     }
 
     public GameContext getCtx() {
-        return this.ctx;
+        return ctx;
     }
 
     public GameEngine getGameEngine() {
-        return this.gameEngine;
-    }
-
-    public void advancedTimeCommand(double sec) {
-        if (this.gameEngine != null) {
-            this.gameEngine.update(sec);
-            checkWinLossConditions();
-        } else {
-            Console.showMessage("Game engine is null");
-        }
-    }
-
-    private void checkWinLossConditions() {
+        return gameEngine;
     }
 }

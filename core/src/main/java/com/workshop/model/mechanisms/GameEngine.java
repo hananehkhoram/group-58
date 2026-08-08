@@ -18,6 +18,7 @@ import com.workshop.model.zombie.behavior.ProjectileDeflector;
 import com.workshop.model.zombie.behavior.Submerge;
 import com.workshop.view.Console;
 import com.workshop.model.MiniGame.Izambi.IZombieManager;
+import com.workshop.model.MiniGame.Zombotany.Zombotany;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -485,6 +486,12 @@ public class GameEngine {
 
         if (allSpawned && ctx.getAliveZombies().isEmpty()) {
             ctx.triggerPlayerWin();
+
+            if (ctx.getLevel().getLevelType()
+                == com.workshop.model.level.LevelType.Zombotany_MG) {
+
+                startNextZombotanyLevel();
+            }
         }
     }
 
@@ -622,5 +629,40 @@ public class GameEngine {
     }
 
     public LawnMower[] getLawnMowers() {return lawnMowers;}
+
+    private void startNextZombotanyLevel() {
+
+        List<Level> levels =
+            ctx.getSeason().getLevels();
+
+        int currentIndex =
+            levels.indexOf(ctx.getLevel());
+
+        if (currentIndex < 0) {
+            return;
+        }
+
+        int nextIndex = currentIndex + 1;
+
+        if (nextIndex >= levels.size()) {
+            Console.showMessage(
+                "All Zombotany levels completed!"
+            );
+
+            menuManager.forceChangeMenu(
+                "travelmenu"
+            );
+
+            return;
+        }
+
+        Zombotany nextGame =
+            new Zombotany();
+
+        nextGame.startLevel(
+            menuManager,
+            nextIndex
+        );
+    }
 
 }

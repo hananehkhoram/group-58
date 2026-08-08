@@ -6,6 +6,7 @@ import com.workshop.model.level.LevelType;
 import com.workshop.model.user.UserManager;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.view.Console;
+import java.util.Set;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,10 +131,44 @@ public class Wave {
 
     private Map<String, Zombie> getAvailableZombiePool(GameContext ctx) {
         String seasonName = ctx.getSeason().getName();
-        return ctx.getDataManager().zombies.getZombieDataMap().entrySet().stream()
-                .filter(e -> ctx.getDataManager().zombies.isAvailableInChapter(e.getKey(),
-                        seasonName))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        if ("Zombotany".equalsIgnoreCase(seasonName)) {
+            Set<String> zombotanyZombies = Set.of(
+                "Peashooter Zombie",
+                "Wall-nut Zombie",
+                "Jalapeno Zombie",
+                "Squash Zombie"
+            );
+
+            return ctx.getDataManager()
+                .zombies
+                .getZombieDataMap()
+                .entrySet()
+                .stream()
+                .filter(entry ->
+                    zombotanyZombies.contains(entry.getKey()))
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    Map.Entry::getValue
+                ));
+        }
+
+        return ctx.getDataManager()
+            .zombies
+            .getZombieDataMap()
+            .entrySet()
+            .stream()
+            .filter(entry ->
+                ctx.getDataManager()
+                    .zombies
+                    .isAvailableInChapter(
+                        entry.getKey(),
+                        seasonName
+                    ))
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue
+            ));
     }
 
     private void placeZombie(GameContext ctx, Zombie zombie, Random random) {

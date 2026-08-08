@@ -21,6 +21,7 @@ public class ZombieActivator {
         applyWaterAndPirateBehaviors(id, behaviors);
         applyDarkAgesBehaviors(id, behaviors);
         applyModernAndMiscBehaviors(id, behaviors);
+        applyZombotanyBehaviors(id, behaviors);
 
         return behaviors;
     }
@@ -150,6 +151,41 @@ public class ZombieActivator {
                 break;
             case "ZombiePiano":
                 behaviors.put("pianoCharge", new PianoCharge(0.4, 0.12, 4000, 3, 2, List.of("spikeweed", "spikerock", "cactus", "iceweed")));
+                break;
+        }
+    }
+
+    private static void applyZombotanyBehaviors(
+        String id,
+        Map<String, Behaviors> behaviors) {
+
+        switch (id) {
+            case "ZombieZombotanyPeashooter":
+                behaviors.put(
+                    "shooting",
+                    new Shooting(
+                        Shooting.ShootingType.PEASHOOTER,
+                        0,
+                        0
+                    )
+                );
+                break;
+
+            case "ZombieZombotanyJalapeno":
+                behaviors.put(
+                    "jalapenoExplosion",
+                    new JalapenoExplosion()
+                );
+                break;
+
+            case "ZombieZombotanySquash":
+                behaviors.put(
+                    "squashAttack",
+                    new SquashAttack()
+                );
+                break;
+
+            default:
                 break;
         }
     }

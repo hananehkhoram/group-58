@@ -34,12 +34,77 @@ public class Shooting implements Behaviors {
     @Override
     public void onTick(Zombie zombie, GameContext ctx) {
         switch (shootingType) {
-            case HUNTER -> handleShooter(zombie, ctx, BulletType.ICE, 5);
-            case OCTOPUS -> handleShooter(zombie, ctx, BulletType.OCTOPUS, 6);
-            case GARGANTUAR -> shootImp(zombie, ctx);
-            case TOMBRAISER -> raiseTomb(zombie, ctx);
-            default -> {}
+            case HUNTER ->
+                handleShooter(
+                    zombie,
+                    ctx,
+                    BulletType.ICE,
+                    5
+                );
+
+            case OCTOPUS ->
+                handleShooter(
+                    zombie,
+                    ctx,
+                    BulletType.OCTOPUS,
+                    6
+                );
+
+            case PEASHOOTER ->
+                handlePeashooterZombie(
+                    zombie,
+                    ctx
+                );
+
+            case GARGANTUAR ->
+                shootImp(zombie, ctx);
+
+            case TOMBRAISER ->
+                raiseTomb(zombie, ctx);
+
+            default -> {
+            }
         }
+    }
+
+    private void handlePeashooterZombie(
+        Zombie zombie,
+        GameContext ctx) {
+
+        int currentSecond =
+            ctx.getTimeManager().getTotalSeconds();
+
+        if (currentSecond - lastShotSecond < 2) {
+            return;
+        }
+
+        Plant target =
+            findTargetPlant(
+                zombie,
+                ctx,
+                BulletType.NORMAL
+            );
+
+        if (target == null) {
+            return;
+        }
+
+        Projectile projectile =
+            new Projectile(
+                20,
+                zombie.getX(),
+                zombie.getRow(),
+                zombie.getRow(),
+                1.0,
+                BulletType.NORMAL,
+                TrajectoryType.STRAIGHT,
+                true,
+                null
+            );
+
+        ctx.getProjectiles().add(projectile);
+
+        lastShotSecond = currentSecond;
     }
 
     private void handleShooter(Zombie zombie, GameContext ctx, BulletType bulletType,
@@ -186,6 +251,10 @@ public class Shooting implements Behaviors {
     }
 
     public enum ShootingType {
-        GARGANTUAR, TOMBRAISER, HUNTER, OCTOPUS
+        GARGANTUAR,
+        TOMBRAISER,
+        HUNTER,
+        OCTOPUS,
+        PEASHOOTER
     }
 }

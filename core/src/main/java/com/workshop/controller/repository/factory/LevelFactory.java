@@ -200,6 +200,39 @@ public class LevelFactory {
         return levels;
     }
 
+    public static List<Level> buildZombotanyLevels() {
+        List<Level> levels = new ArrayList<>();
+
+        levels.add(new Level(
+            "Zombotany - Day 1",
+            5,
+            9,
+            generateWaves(5, 200, 220),
+            LevelType.Zombotany_MG,
+            null
+        ));
+
+        levels.add(new Level(
+            "Zombotany - Day 2",
+            5,
+            9,
+            generateWaves(6, 240, 200),
+            LevelType.Zombotany_MG,
+            null
+        ));
+
+        levels.add(new Level(
+            "Zombotany - Day 3",
+            5,
+            9,
+            generateWaves(7, 280, 180),
+            LevelType.Zombotany_MG,
+            null
+        ));
+
+        return levels;
+    }
+
     public static void setUpVases(GameContext ctx){
         List<Vase> vasePool = new ArrayList<>();
         int levelNumber = 1;

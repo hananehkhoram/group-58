@@ -179,6 +179,11 @@ public class GameContext {
                 currentUser.setWinStreakAtMaxDifficulty(0);
             }
             currentUser.setNumberOfPassedLevels(currentUser.getNumberOfPassedLevels() + 1);
+
+            if (isMiniGameLevel()) {
+                currentUser.incrementMinigamesCompleted();
+            }
+
             List<Level> levelsInSeason = this.season.getLevels();
             if (levelsInSeason == null) {
                 levelsInSeason = new java.util.ArrayList<>();
@@ -504,4 +509,14 @@ public class GameContext {
     public int getQuickKillPatternCount() { return quickKillPatternCount; }
     public int getKillStreakPatternCount() { return killStreakPatternCount; }
     public int getPrecisionFinishPatternCount() { return precisionFinishPatternCount; }
+
+    private boolean isMiniGameLevel() {
+        LevelType type = level.getLevelType();
+
+        return type == LevelType.Wallnuts_MG
+            || type == LevelType.Vase_MG
+            || type == LevelType.Izambie_MG
+            || type == LevelType.Beghouled_MG
+            || type == LevelType.Zombotany_MG;
+    }
 }

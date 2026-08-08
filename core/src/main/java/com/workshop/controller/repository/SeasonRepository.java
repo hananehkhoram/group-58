@@ -6,6 +6,7 @@ import com.workshop.model.season.miniGameSeason.IzombieSeason;
 import com.workshop.model.season.miniGameSeason.BeghouledSeason;
 import com.workshop.model.season.miniGameSeason.VaseSeason;
 import com.workshop.model.season.miniGameSeason.WallnutsSeason;
+import com.workshop.model.season.miniGameSeason.ZombotanySeason;
 
 import java.util.*;
 
@@ -25,6 +26,9 @@ public class SeasonRepository implements AssetRepository<Season> {
         Season vase = new VaseSeason(LevelFactory.buildVaseLevels());
         Season izombie = new IzombieSeason(LevelFactory.buildIzombieLevels());
         Season beghouled = new BeghouledSeason(LevelFactory.buldBeghouledLevels());
+        Season zombotany = new ZombotanySeason(
+            LevelFactory.buildZombotanyLevels()
+        );
 
         orderedSeasons.add(egypt);
         orderedSeasons.add(frozen);
@@ -35,6 +39,7 @@ public class SeasonRepository implements AssetRepository<Season> {
         allSeasons.add(vase);
         allSeasons.add(izombie);
         allSeasons.add(beghouled);
+        allSeasons.add(zombotany);
 
         for (Season s : orderedSeasons) {
             seasonMap.put(s.getName(), s);

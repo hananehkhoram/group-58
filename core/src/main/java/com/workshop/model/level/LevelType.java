@@ -15,5 +15,6 @@ public enum LevelType {
     Vase_MG,
     Izambie_MG,
     Beghouled_MG,
+    Zombotany_MG,
     BONUS
 }

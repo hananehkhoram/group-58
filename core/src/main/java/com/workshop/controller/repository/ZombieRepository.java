@@ -83,7 +83,24 @@ public class ZombieRepository implements AssetRepository<Zombie>{
             Map.entry("Juggler", Set.of("Dark Ages")),
             Map.entry("Wizard", Set.of("Dark Ages")),
             Map.entry("King", Set.of("Dark Ages")),
-            Map.entry("Imp Dragon", Set.of("Dark Ages"))
+            Map.entry("Imp Dragon", Set.of("Dark Ages")),
+
+            Map.entry(
+                "Peashooter Zombie",
+                Set.of("Zombotany")
+            ),
+            Map.entry(
+                "Wall-nut Zombie",
+                Set.of("Zombotany")
+            ),
+            Map.entry(
+                "Jalapeno Zombie",
+                Set.of("Zombotany")
+            ),
+            Map.entry(
+                "Squash Zombie",
+                Set.of("Zombotany")
+            )
         );
 
     public boolean isAvailableInChapter(String zombieName, String chapterName) {

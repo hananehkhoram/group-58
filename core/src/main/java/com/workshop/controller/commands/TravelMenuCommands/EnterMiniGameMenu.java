@@ -18,6 +18,7 @@ import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Console;
 import com.workshop.controller.repository.DataManager;
+import com.workshop.model.MiniGame.Zombotany.Zombotany;
 
 import java.util.List;
 
@@ -41,7 +42,14 @@ public class EnterMiniGameMenu implements Command {
 
         if (menuManager.getCurrentMenu() instanceof TravelMenu){
             if (whichCommand.equals("enter")){
-                com.workshop.view.Console.simplePrint("Choose your miniGame :\n1: Vasebreaker\n2: Wallnut Bowling\n3: (i, zombie\n4:Beghouled\n");
+                com.workshop.view.Console.simplePrint(
+                    "Choose your miniGame :\n"
+                        + "1: Vasebreaker\n"
+                        + "2: Wallnut Bowling\n"
+                        + "3: I, Zombie\n"
+                        + "4: Beghouled\n"
+                        + "5: Zombotany\n"
+                );
 
             }else {
                 int number = Integer.parseInt(whichCommand);
@@ -71,6 +79,23 @@ public class EnterMiniGameMenu implements Command {
 
                     case 4:
                         startBeghouled();
+                        break;
+
+                    case 5:
+                        Zombotany zombotany = new Zombotany();
+                        zombotany.startMiniGame(menuManager);
+
+                        if (zombotany.getCtx() != null
+                            && zombotany.getGameEngine() != null) {
+
+                            menuManager.setCtx(
+                                zombotany.getCtx()
+                            );
+
+                            menuManager.setGameEngine(
+                                zombotany.getGameEngine()
+                            );
+                        }
                         break;
 
                 }
