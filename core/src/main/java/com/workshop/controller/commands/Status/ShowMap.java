@@ -78,6 +78,21 @@ public class ShowMap implements Command {
                 .append("\n");
         }
 
+        if (ctx.getBeghouldManager() != null) {
+            output
+                .append("Beghouled Matches: ")
+                .append(
+                    ctx.getBeghouldManager()
+                        .getCurrentMatches()
+                )
+                .append("/")
+                .append(
+                    ctx.getBeghouldManager()
+                        .getTargetMatches()
+                )
+                .append("\n");
+        }
+
         LawnMower[] mowers =
             engine.getLawnMowers();
 
@@ -298,4 +313,5 @@ public class ShowMap implements Command {
             default -> ".";
         };
     }
+
 }
