@@ -153,6 +153,10 @@ public class FileCommandProvider implements com.workshop.controller.commandHandl
             "start izombie -l (?<level>\\d+)",
             new StartIzombieLevel(menuManager)
         );
+        registry.register(
+            "start beghouled -l (?<level>\\d+)",
+            new StartBeghouledLevel(menuManager)
+        );
     }
 }
 

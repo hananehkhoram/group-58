@@ -1,10 +1,13 @@
 package com.workshop.model.projectile;
 
 import com.workshop.model.plants.Plant;
+import java.util.HashSet;
+import java.util.Set;
 
 public class BowlingWallnut extends Projectile {
 
     private double bounceDirY = 0.0;
+    private final Set<Damageable> hitTargets = new HashSet<>();
 
     public BowlingWallnut(int damage, double x, double y, int row, double speed, Plant ownerPlant) {
         super(damage, x, y, row, speed, BulletType.NORMAL, TrajectoryType.BOWLING, false, ownerPlant);
@@ -12,6 +15,11 @@ public class BowlingWallnut extends Projectile {
 
     @Override
     public void onHit(Damageable target) {
+        if (hitTargets.contains(target)) {
+            return;
+        }
+
+        hitTargets.add(target);
         target.takeDamage(this.damage);
 
         if (bounceDirY == 0.0) {

@@ -7,7 +7,7 @@ import java.util.List;
 
 public class WallnutsSeason extends Season {
     public WallnutsSeason(List<Level> levels) {
-        super("Wallnutbowling", levels, 0);
+        super("Wallnut Bowling", levels, 0);
     }
 
     @Override

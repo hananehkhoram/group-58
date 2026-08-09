@@ -8,6 +8,8 @@ import com.workshop.model.mechanisms.GameEngine;
 import com.workshop.model.season.Season;
 import com.workshop.model.season.miniGameSeason.BeghouledSeason;
 import com.workshop.view.Console;
+import com.workshop.model.user.User;
+import com.workshop.model.user.UserManager;
 
 import java.util.List;
 
@@ -39,6 +41,19 @@ public class BeghouldGame {
         }
 
         int levelIndex = levelNumber - 1;
+
+        User currentUser =
+            UserManager.getInstance().getCurrentUser();
+
+        if (currentUser == null
+            || !currentUser.isLevelUnlocked(
+            beghouledLevels.get(levelNumber - 1).getName()
+        )) {
+            Console.showMessage(
+                "This Beghouled level is locked."
+            );
+            return;
+        }
 
         currentLevel = beghouledLevels.get(levelIndex);
 

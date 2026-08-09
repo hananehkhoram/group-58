@@ -16,9 +16,8 @@ import com.workshop.model.zombie.behavior.Behaviors;
 import com.workshop.model.zombie.behavior.LaserShooting;
 import com.workshop.model.zombie.behavior.ProjectileDeflector;
 import com.workshop.model.zombie.behavior.Submerge;
-import com.workshop.view.Console;
 import com.workshop.model.MiniGame.Izambi.IZombieManager;
-import com.workshop.model.MiniGame.Zombotany.Zombotany;
+import com.workshop.model.level.LevelType;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -442,8 +441,19 @@ public class GameEngine {
         if (ctx.isGameEnded()) {
             ctx.setBattleStarted(false);
 
-            Console.showMessage("You are now in Game Menu.\n");
-            menuManager.forceChangeMenu("gamemenu");
+            LevelType type = ctx.getLevel().getLevelType();
+
+            if (type == LevelType.Wallnuts_MG
+                || type == LevelType.Vase_MG
+                || type == LevelType.Izambie_MG
+                || type == LevelType.Beghouled_MG
+                || type == LevelType.Zombotany_MG) {
+
+                menuManager.forceChangeMenu("travelmenu");
+            } else {
+                menuManager.forceChangeMenu("gamemenu");
+            }
+
             ctx.clearLoots();
             return;
         }
@@ -486,12 +496,6 @@ public class GameEngine {
 
         if (allSpawned && ctx.getAliveZombies().isEmpty()) {
             ctx.triggerPlayerWin();
-
-            if (ctx.getLevel().getLevelType()
-                == com.workshop.model.level.LevelType.Zombotany_MG) {
-
-                startNextZombotanyLevel();
-            }
         }
     }
 
@@ -596,8 +600,10 @@ public class GameEngine {
         if (vase.getContent() == VaseContent.ZOMBIE) {
             String zombieName = vase.getHiddenEntityName();
 
-            if (zombieName == null || zombieName.isEmpty() || zombieName.equalsIgnoreCase("Zombie")) {
-                zombieName = "Gargantuar";
+            if (zombieName == null || zombieName.isEmpty()) {
+                zombieName = "Default";
+            } else if (zombieName.equalsIgnoreCase("Zombie")) {
+                zombieName = "Default";
             }
 
             try {
@@ -630,39 +636,5 @@ public class GameEngine {
 
     public LawnMower[] getLawnMowers() {return lawnMowers;}
 
-    private void startNextZombotanyLevel() {
-
-        List<Level> levels =
-            ctx.getSeason().getLevels();
-
-        int currentIndex =
-            levels.indexOf(ctx.getLevel());
-
-        if (currentIndex < 0) {
-            return;
-        }
-
-        int nextIndex = currentIndex + 1;
-
-        if (nextIndex >= levels.size()) {
-            Console.showMessage(
-                "All Zombotany levels completed!"
-            );
-
-            menuManager.forceChangeMenu(
-                "travelmenu"
-            );
-
-            return;
-        }
-
-        Zombotany nextGame =
-            new Zombotany();
-
-        nextGame.startLevel(
-            menuManager,
-            nextIndex
-        );
-    }
 
 }

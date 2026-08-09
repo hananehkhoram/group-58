@@ -235,14 +235,22 @@ public class LevelFactory {
 
     public static void setUpVases(GameContext ctx){
         List<Vase> vasePool = new ArrayList<>();
-        int levelNumber = 1;
+        int levelNumber = ctx.getSeason().getLevels().indexOf(ctx.getLevel()) + 1;
+
+        if (levelNumber < 1) {
+            levelNumber = 1;
+        }
         int zombieCount = 8 + (levelNumber * 2);
         int gargantuarCount = 1 + (levelNumber / 2);
+        int emptyCount = 3;
+
         if (zombieCount + gargantuarCount > 20) {
             zombieCount = 17;
             gargantuarCount = 3;
         }
-        int remainingForPlants = 25 - (zombieCount + gargantuarCount);
+
+        int remainingForPlants =
+            25 - (zombieCount + gargantuarCount + emptyCount);
 
         int squashCount = Math.max(1, remainingForPlants / 5); // حداقل ۱ کدو به بازیکن بده
         int melonCount = Math.max(1, remainingForPlants / 3);  // حدود یک سوم هندوانه
@@ -253,6 +261,9 @@ public class LevelFactory {
         }
         for (int i = 0; i < gargantuarCount; i++) {
             vasePool.add(new Vase(VaseContent.ZOMBIE, "Gargantuar"));
+        }
+        for (int i = 0; i < emptyCount; i++) {
+            vasePool.add(new Vase(VaseContent.EMPTY, null));
         }
         for (int i = 0; i < peashooterCount; i++) {
             vasePool.add(new Vase(VaseContent.PLANT, "peashooter"));

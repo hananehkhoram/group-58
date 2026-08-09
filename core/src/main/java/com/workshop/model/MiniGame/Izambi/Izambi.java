@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import com.workshop.model.user.User;
+import com.workshop.model.user.UserManager;
 
 public class Izambi {
     private static final int INITIAL_SUN = 150;
@@ -90,6 +92,19 @@ public class Izambi {
         }
 
         int levelIndex = levelNumber - 1;
+
+        User currentUser =
+            UserManager.getInstance().getCurrentUser();
+
+        if (currentUser == null
+            || !currentUser.isLevelUnlocked(
+            levels.get(levelNumber - 1).getName()
+        )) {
+            Console.showMessage(
+                "This I-Zombie level is locked."
+            );
+            return;
+        }
 
         currentLevel = levels.get(levelIndex);
 

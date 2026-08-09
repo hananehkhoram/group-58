@@ -12,9 +12,11 @@ import com.workshop.model.plants.Tag;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Console;
+import com.workshop.model.level.LevelType;
 
 public class Planting implements Command {
     private MenuManager menuManager;
+    private static final int BOWLING_RED_LINE_COLUMN = 3;
 
     public Planting(MenuManager menuManager) {
         this.menuManager = menuManager;
@@ -80,6 +82,12 @@ public class Planting implements Command {
     }
 
     public boolean isValidPlacement(Plant template, String type, int x, int y, GameContext ctx, GameEngine engine, LevelManager levelManager, boolean isConveyorLevel, boolean isHeldSeed) {
+        if (ctx.getLevel().getLevelType() == LevelType.Wallnuts_MG
+            && x >= BOWLING_RED_LINE_COLUMN) {
+            Console.showMessage("You can only place bowling nuts before the red line.");
+            return false;
+        }
+
         if (ctx.getSeason().isWaterCell(y, x, ctx) && !template.hasTheTag(Tag.WATER) && !template.isHasLilyPadUnderneath()) {
             Console.showMessage("You can't plant this on a water cell!");
             return false;
@@ -101,7 +109,7 @@ public class Planting implements Command {
             return false;
         }
 
-        boolean needsSun = !isConveyorLevel && isHeldSeed;
+        boolean needsSun = !isConveyorLevel && !isVaseLevel(ctx) && isHeldSeed;
         if (needsSun && ctx.getSunAmount() < template.getSunCost()) {
             Console.showMessage("Not enough sun.");
             return false;
@@ -111,8 +119,8 @@ public class Planting implements Command {
     }
 
     private boolean isBowlingLevel(GameContext ctx) {
-        return ctx.getLevel() != null && ctx.getLevel().getName() != null &&
-                ctx.getLevel().getName().toLowerCase().contains("wallnuts");
+        return ctx.getLevel() != null
+            && ctx.getLevel().getLevelType() == LevelType.Wallnuts_MG;
     }
 
     private boolean handleBowlingMinigame(Plant template, String type, int x, int y, GameContext ctx, LevelManager levelManager, Plant plantToRemoveFromBelt) {
@@ -131,15 +139,13 @@ public class Planting implements Command {
         } else if (type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut")) {
             ctx.getProjectiles().add(new com.workshop.model.projectile.GiantWallnut(500, x, y, y, 2.0, template));
         } else {
-            ctx.getProjectiles().add(new com.workshop.model.projectile.BowlingWallnut(500, x, y, y, 2.0, template));
+            ctx.getProjectiles().add(new com.workshop.model.projectile.BowlingWallnut(190, x, y, y, 2.0, template));
         }
 
-        if (levelManager != null) {
-            levelManager.onPlantSuccess(template, ctx);
-        }
-
-        if (plantToRemoveFromBelt != null) {
-            ((ConveyorBeltManager) levelManager).getConveyorBelt().remove(plantToRemoveFromBelt);
+        if (plantToRemoveFromBelt != null && levelManager instanceof ConveyorBeltManager) {
+            ((ConveyorBeltManager) levelManager)
+                .getConveyorBelt()
+                .remove(plantToRemoveFromBelt);
         }
 
         Console.showMessage("BOWL! " + type + " is rolling!");
@@ -154,7 +160,7 @@ public class Planting implements Command {
 
         applyPlantFoodBoost(template, newPlant, type, ctx);
 
-        boolean needsSun = !isConveyorLevel && isHeldSeed;
+        boolean needsSun = !isConveyorLevel && !isVaseLevel(ctx) && isHeldSeed;
         if (needsSun) {
             ctx.setSunAmount(ctx.getSunAmount() - template.getSunCost());
         }
@@ -188,5 +194,10 @@ public class Planting implements Command {
             }
             Console.showMessage("Boosted plant food effect activated on planting!");
         }
+    }
+
+    private boolean isVaseLevel(GameContext ctx) {
+        return ctx.getLevel() != null
+            && ctx.getLevel().getLevelType() == LevelType.Vase_MG;
     }
 }

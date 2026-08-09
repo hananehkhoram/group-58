@@ -20,23 +20,35 @@ public class Vasecheccker {
     public Vasecheccker() {}
 
     public void startMiniGame(MenuManager menuManager) {
-        List<Level> bowlingLevels = LevelFactory.buildVaseLevels();
-        this.currentLevel = bowlingLevels.get(0);
+        startMiniGame(menuManager, 1);
+    }
 
-        Season vaseSeason = new VaseSeason(bowlingLevels);
+    public void startMiniGame(MenuManager menuManager, int levelNumber) {
+        List<Level> vaseLevels = LevelFactory.buildVaseLevels();
+
+        if (levelNumber < 1 || levelNumber > vaseLevels.size()) {
+            levelNumber = 1;
+        }
+
+        this.currentLevel = vaseLevels.get(levelNumber - 1);
+
+        Season vaseSeason = new VaseSeason(vaseLevels);
 
         this.ctx = new GameContext(this.currentLevel, vaseSeason);
-        ctx.setZombieFactory(new com.workshop.controller.repository.factory.ZombieFactory(DataManager.getInstance()));
-        this.ctx.setLevelManager(new com.workshop.controller.SpecialLevelManager.ConveyorBeltManager());
+        ctx.setZombieFactory(
+            new com.workshop.controller.repository.factory.ZombieFactory(
+                DataManager.getInstance()
+            )
+        );
+
         this.gameEngine = new GameEngine(this.ctx, menuManager);
         this.ctx.setGameEngine(this.gameEngine);
 
         LevelFactory.setUpVases(this.ctx);
 
-        ctx.setBattleStarted(true); //DebugF
+        ctx.setBattleStarted(true);
 
         System.out.print("start\n");
-
     }
 
     public GameContext getCtx(){

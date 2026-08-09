@@ -49,11 +49,6 @@ public class Zombotany {
             return;
         }
 
-        unlockFirstLevel(
-            currentUser,
-            levels
-        );
-
         int levelIndex =
             findLatestUnlockedLevel(
                 currentUser,
@@ -99,6 +94,19 @@ public class Zombotany {
             return;
         }
 
+        User currentUser =
+            UserManager.getInstance().getCurrentUser();
+
+        if (currentUser == null
+            || !currentUser.isLevelUnlocked(
+            levels.get(levelIndex).getName()
+        )) {
+            Console.showMessage(
+                "This Zombotany level is locked."
+            );
+            return;
+        }
+
         Level level = levels.get(levelIndex);
 
         ctx = new GameContext(
@@ -126,19 +134,6 @@ public class Zombotany {
                 + (levelIndex + 1)
                 + ". Choose your plants."
         );
-    }
-
-    private void unlockFirstLevel(
-        User user,
-        List<Level> levels
-    ) {
-        String firstLevelName =
-            levels.get(0).getName();
-
-        if (!user.isLevelUnlocked(firstLevelName)) {
-            user.unlockLevel(firstLevelName);
-            DataManager.getInstance().saveUser();
-        }
     }
 
     private int findLatestUnlockedLevel(

@@ -71,6 +71,9 @@ public class Tile {
 
 
     public boolean isPlantable() {
+        if (vase != null && !vase.isBroken()) {
+            return false;
+        }
         TerrainType t = getTerrainType();
 
         return t != TerrainType.WATER

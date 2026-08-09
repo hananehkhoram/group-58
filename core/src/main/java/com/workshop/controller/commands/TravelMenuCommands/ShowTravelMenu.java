@@ -9,6 +9,8 @@ import com.workshop.model.menus.allmenus.TravelMenu;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Console;
+import com.workshop.model.level.Level;
+import com.workshop.model.season.Season;
 
 import java.util.Comparator;
 import java.util.List;
@@ -46,7 +48,7 @@ public class ShowTravelMenu implements Command {
                 case "daily" -> showQuestPage(user, Quest.QuestCategory.DAILY, "Daily Quests");
                 case "main", "adventure" -> showQuestPage(user, Quest.QuestCategory.MAIN, "Main Quests");
                 case "epic", "special", "challenge" -> showQuestPage(user, Quest.QuestCategory.EPIC, "Epic Challenges");
-                case "minigames" -> Console.showMessage("Use enter minigame command.");
+                case "minigames" -> showMinigamesPage(user);
                 default -> Console.showMessage("Invalid page name. Try: daily, main, epic, minigames");
             }
         }
@@ -75,6 +77,48 @@ public class ShowTravelMenu implements Command {
         if (quests.isEmpty()) {
             sb.append("No quests in this page.\n");
         }
+        Console.showMessage(sb.toString());
+    }
+
+    private void showMinigamesPage(User user) {
+        String[] names = {
+            "Vasebreaker",
+            "Wallnut Bowling",
+            "I, Zombie",
+            "Beghouled",
+            "Zombotany"
+        };
+
+        StringBuilder sb = new StringBuilder("=== Minigames ===\n");
+
+        for (String name : names) {
+            Season season = DataManager.getInstance().seasons.get(name);
+
+            if (season == null || season.getLevels().isEmpty()) {
+                continue;
+            }
+
+            int unlockedLevel = 0;
+
+            for (int i = 0; i < season.getLevels().size(); i++) {
+                Level level = season.getLevels().get(i);
+
+                if (user.isLevelUnlocked(level.getName())) {
+                    unlockedLevel = i + 1;
+                }
+            }
+
+            if (unlockedLevel == 0) {
+                sb.append("[LOCKED] ").append(name).append("\n");
+            } else {
+                sb.append("[UNLOCKED] ")
+                    .append(name)
+                    .append(" - Level ")
+                    .append(unlockedLevel)
+                    .append("/3\n");
+            }
+        }
+
         Console.showMessage(sb.toString());
     }
 }

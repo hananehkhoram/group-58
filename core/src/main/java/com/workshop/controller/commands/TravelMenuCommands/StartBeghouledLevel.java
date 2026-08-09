@@ -4,6 +4,12 @@ import com.workshop.controller.MenuManager;
 import com.workshop.controller.commandHandler.Command;
 import com.workshop.model.MiniGame.Beghouled.BeghouldGame;
 import com.workshop.view.Console;
+import com.workshop.controller.repository.factory.LevelFactory;
+import com.workshop.model.level.Level;
+import com.workshop.model.user.User;
+import com.workshop.model.user.UserManager;
+
+import java.util.List;
 
 public class StartBeghouledLevel implements Command {
     private final MenuManager menuManager;
@@ -26,6 +32,23 @@ public class StartBeghouledLevel implements Command {
         try {
             int levelNumber =
                 Integer.parseInt(args[0]);
+
+            List<Level> levels = LevelFactory.buldBeghouledLevels();
+
+            if (levelNumber < 1 || levelNumber > levels.size()) {
+                Console.showMessage("Invalid Beghouled level number.");
+                return;
+            }
+
+            User user = UserManager.getInstance().getCurrentUser();
+
+            if (user == null
+                || !user.isLevelUnlocked(
+                levels.get(levelNumber - 1).getName()
+            )) {
+                Console.showMessage("This Beghouled level is locked.");
+                return;
+            }
 
             BeghouldGame game =
                 new BeghouldGame();

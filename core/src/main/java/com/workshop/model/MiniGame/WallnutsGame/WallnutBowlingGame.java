@@ -20,17 +20,24 @@ public class WallnutBowlingGame {
     public WallnutBowlingGame() {
     }
 
-    public void start() {
+    public void start(MenuManager menuManager) {
+        start(menuManager, 1);
+    }
+
+    public void start(MenuManager menuManager, int levelNumber) {
         List<Level> bowlingLevels = LevelFactory.buildWallnutsLevels();
-        this.currentLevel = bowlingLevels.get(0);
+
+        if (levelNumber < 1 || levelNumber > bowlingLevels.size()) {
+            levelNumber = 1;
+        }
+
+        this.currentLevel = bowlingLevels.get(levelNumber - 1);
 
         Season bowlingSeason = new WallnutsSeason(bowlingLevels);
 
         this.ctx = new GameContext(this.currentLevel, bowlingSeason);
-        this.gameEngine = new GameEngine(this.ctx, new MenuManager(ctx));
+        this.gameEngine = new GameEngine(this.ctx, menuManager);
         this.ctx.setGameEngine(this.gameEngine);
-
-        this.ctx.setLevelManager(new ConveyorBeltManager());
 
         this.ctx.setBattleStarted(true);
 

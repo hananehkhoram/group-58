@@ -215,6 +215,21 @@ public class GameContext {
                         NewsManager.addNews("New Minigame","You unlocked new minigame: "+minigameName);
                     }
                 }
+                if ("Beghouled".equalsIgnoreCase(this.season.getName())) {
+                    Season zombotany =
+                        DataManager.getInstance().seasons.get("Zombotany");
+
+                    if (zombotany != null && !zombotany.getLevels().isEmpty()) {
+                        currentUser.unlockLevel(
+                            zombotany.getLevels().get(0).getName()
+                        );
+
+                        NewsManager.addNews(
+                            "New Minigame",
+                            "You unlocked new minigame: Zombotany"
+                        );
+                    }
+                }
             }
             QuestManager.evaluateLevelEndQuests(this, currentUser);
             if (this.level.getLevelType() == LevelType.BONUS) {
