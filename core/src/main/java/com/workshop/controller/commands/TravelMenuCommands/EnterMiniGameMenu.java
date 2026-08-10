@@ -143,7 +143,8 @@ public class EnterMiniGameMenu implements Command {
             new BeghouledManager(
                 newCtx,
                 newEngine,
-                BEGHOULED_TARGETS[levelIndex]
+                BEGHOULED_TARGETS[levelIndex],
+                levelIndex + 1
             );
 
         newCtx.setBeghouldManager(manager);

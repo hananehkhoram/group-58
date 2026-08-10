@@ -63,7 +63,8 @@ public class BeghouldGame {
         beghouledManager = new BeghouledManager(
             ctx,
             gameEngine,
-            targetMatches
+            targetMatches,
+            levelNumber
         );
 
         ctx.setBeghouldManager(beghouledManager);

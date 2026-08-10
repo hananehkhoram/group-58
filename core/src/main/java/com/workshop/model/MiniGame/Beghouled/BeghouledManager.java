@@ -11,15 +11,7 @@ public class BeghouledManager {
     private static final int SUN_VALUE = 50;
 
     /** جدول ارتقا طبق سند: نام گیاه فعلی -> [نام گیاه ارتقایافته، هزینه به خورشید] */
-    private static final Map<String, Object[]> UPGRADE_TABLE = new HashMap<>();
-    static {
-        UPGRADE_TABLE.put("peashooter", new Object[]{"Repeater", 500});
-        UPGRADE_TABLE.put("repeater", new Object[]{"Mega Gatling Pea", 1500});
-        UPGRADE_TABLE.put("wall-nut", new Object[]{"Tall-nut", 500});
-        UPGRADE_TABLE.put("puff-shroom", new Object[]{"Fume-shroom", 250});
-        UPGRADE_TABLE.put("cabbage-pult", new Object[]{"Melon-pult", 1000});
-        UPGRADE_TABLE.put("melon-pult", new Object[]{"Winter Melon", 750});
-    }
+    private final Map<String, Object[]> upgradeTable;
 
     private GameContext ctx;
     private GameEngine engine;
@@ -44,16 +36,57 @@ public class BeghouledManager {
         }
     }
 
-    public BeghouledManager(GameContext ctx, GameEngine engine, int targetMatches) {
+    public BeghouledManager(
+        GameContext ctx,
+        GameEngine engine,
+        int targetMatches,
+        int levelNumber
+    ){
         this.ctx = ctx;
         this.engine = engine;
         this.targetMatches = targetMatches;
         this.currentMatches = 0;
-        this.craterGrid = new boolean[ctx.getLevel().getRows()][ctx.getLevel().getColumns()];
 
-        this.activePlantTypes = new ArrayList<>(Arrays.asList(
-                "Peashooter", "Wall-nut", "Puff-shroom", "Cabbage-pult", "Snow Pea"
-        ));
+        this.craterGrid =
+            new boolean[ctx.getLevel().getRows()]
+                [ctx.getLevel().getColumns()];
+
+        this.activePlantTypes =
+            new ArrayList<>(getPlantTypesForLevel(levelNumber));
+
+        this.upgradeTable = getUpgradeTableForLevel(levelNumber);
+    }
+
+    private List<String> getPlantTypesForLevel(int levelNumber) {
+        return switch (levelNumber) {
+            case 1 -> List.of(
+                "Peashooter",
+                "Wall-nut",
+                "Puff-shroom",
+                "Cabbage-pult",
+                "Snow Pea"
+            );
+
+            case 2 -> List.of(
+                "Peashooter",
+                "Wall-nut",
+                "Puff-shroom",
+                "Melon-pult",
+                "Snow Pea"
+            );
+
+            case 3 -> List.of(
+                "Repeater",
+                "Wall-nut",
+                "Fume-shroom",
+                "Cabbage-pult",
+                "Snow Pea"
+            );
+
+            default -> throw new IllegalArgumentException(
+                "Invalid Beghouled level: " + levelNumber
+            );
+        };
     }
 
     public void initBoard() {
@@ -83,6 +116,9 @@ public class BeghouledManager {
 
             removeMatches(initialMatches);
             applyGravityAndRefill();
+        }
+        if (!hasPossibleMove()) {
+            resetBoard();
         }
     }
 
@@ -122,7 +158,10 @@ public class BeghouledManager {
      * مطابق جدول سند (مثلاً peashooter -> repeater با هزینه ۵۰۰).
      */
     public String upgradeAll(String fromPlantName) {
-        Object[] upgrade = UPGRADE_TABLE.get(fromPlantName.toLowerCase());
+        Object[] upgrade =
+            upgradeTable.get(
+                fromPlantName.toLowerCase()
+            );
         if (upgrade == null) {
             return "No upgrade available for " + fromPlantName + ".";
         }
@@ -153,6 +192,14 @@ public class BeghouledManager {
 
         if (upgradedCount == 0) {
             return "No " + fromPlantName + " found on the board to upgrade.";
+        }
+
+        for (int i = 0; i < activePlantTypes.size(); i++) {
+            if (activePlantTypes.get(i)
+                .equalsIgnoreCase(fromPlantName)) {
+
+                activePlantTypes.set(i, toPlantName);
+            }
         }
 
         ctx.setSunAmount(ctx.getSunAmount() - cost);
@@ -426,6 +473,7 @@ public class BeghouledManager {
 
     private void checkWinCondition() {
         if (!ctx.isGameEnded() && currentMatches >= targetMatches) {
+            ctx.getAliveZombies().clear();
             ctx.triggerPlayerWin();
         }
     }
@@ -557,6 +605,89 @@ public class BeghouledManager {
             removeMatches(matches);
             applyGravityAndRefill();
         }
+    }
+
+    public int getCurrentMatches() {
+        return currentMatches;
+    }
+
+    public int getTargetMatches() {
+        return targetMatches;
+    }
+
+    private Map<String, Object[]> getUpgradeTableForLevel(
+        int levelNumber
+    ) {
+        Map<String, Object[]> upgrades = new HashMap<>();
+
+        switch (levelNumber) {
+            case 1 -> {
+                upgrades.put(
+                    "peashooter",
+                    new Object[]{"Repeater", 500}
+                );
+                upgrades.put(
+                    "repeater",
+                    new Object[]{"Mega Gatling Pea", 1500}
+                );
+                upgrades.put(
+                    "wall-nut",
+                    new Object[]{"Tall-nut", 500}
+                );
+                upgrades.put(
+                    "cabbage-pult",
+                    new Object[]{"Melon-pult", 1000}
+                );
+                upgrades.put(
+                    "melon-pult",
+                    new Object[]{"Winter Melon", 750}
+                );
+            }
+
+            case 2 -> {
+                upgrades.put(
+                    "peashooter",
+                    new Object[]{"Repeater", 500}
+                );
+                upgrades.put(
+                    "wall-nut",
+                    new Object[]{"Tall-nut", 500}
+                );
+                upgrades.put(
+                    "puff-shroom",
+                    new Object[]{"Fume-shroom", 250}
+                );
+                upgrades.put(
+                    "melon-pult",
+                    new Object[]{"Winter Melon", 750}
+                );
+            }
+
+            case 3 -> {
+                upgrades.put(
+                    "repeater",
+                    new Object[]{"Mega Gatling Pea", 1500}
+                );
+                upgrades.put(
+                    "wall-nut",
+                    new Object[]{"Tall-nut", 500}
+                );
+                upgrades.put(
+                    "cabbage-pult",
+                    new Object[]{"Melon-pult", 1000}
+                );
+                upgrades.put(
+                    "melon-pult",
+                    new Object[]{"Winter Melon", 750}
+                );
+            }
+
+            default -> throw new IllegalArgumentException(
+                "Invalid Beghouled level: " + levelNumber
+            );
+        }
+
+        return upgrades;
     }
 
 }
