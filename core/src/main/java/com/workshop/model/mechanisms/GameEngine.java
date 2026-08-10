@@ -44,6 +44,9 @@ public class GameEngine {
     }
 
     public void update(double deltaTime) {
+        if (ctx.isPaused()) {
+            return;
+        }
 
         int passedTicks = (int)(deltaTime * 10);
         int rows = this.ctx.getLevel().getRows();

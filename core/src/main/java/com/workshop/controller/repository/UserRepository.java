@@ -171,8 +171,11 @@ public class UserRepository implements AssetRepository<User> {
                 greenhouseSb.toString(),                                      // 27
                 dailyOffer,                                                   // 28
                 String.valueOf(u.getWinStreakAtMaxDifficulty()),              // 29
-                questProgressStr,                                              // 30
-                storedBoostsStr                                                // 31
+                questProgressStr,                                             // 30
+                storedBoostsStr,                                              // 31
+                String.valueOf(u.getGameSpeed()),                             // 32
+                String.valueOf(u.isGridEnabled()),                            // 33
+                String.valueOf(u.isDebugMode())                               // 34                                                // 31
         );
     }
 
@@ -298,6 +301,18 @@ public class UserRepository implements AssetRepository<User> {
             for (String plantName : f[31].split(LIST_SEP)) {
                 u.addStoredBoost(plantName);
             }
+        }
+
+        if (f.length > 32 && !f[32].isBlank()) {
+            u.setGameSpeed(Integer.parseInt(f[32]));
+        }
+
+        if (f.length > 33 && !f[33].isBlank()) {
+            u.setGridEnabled(Boolean.parseBoolean(f[33]));
+        }
+
+        if (f.length > 34 && !f[34].isBlank()) {
+            u.setDebugMode(Boolean.parseBoolean(f[34]));
         }
 
         return u;

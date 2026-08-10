@@ -402,25 +402,4 @@ public class Izambi {
         return gameEngine;
     }
 
-
-    public void advancedTimeCommand(double seconds) {
-        if (gameEngine == null || ctx == null) {
-            Console.showMessage("Game engine is null");
-            return;
-        }
-
-        int ticks = Math.max(
-            0,
-            (int) Math.round(seconds * 10)
-        );
-
-        for (
-            int i = 0;
-            i < ticks && !ctx.isGameEnded();
-            i++
-        ) {
-            ctx.getTimeManager().advanceTime(1);
-            gameEngine.update(0.1);
-        }
-    }
 }

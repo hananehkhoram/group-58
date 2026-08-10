@@ -59,13 +59,5 @@ public class Vasecheccker {
         return this.gameEngine;
     }
 
-    public void advancedTimeCommand(double sec){
-        if (this.gameEngine != null) {
-            this.gameEngine.update(sec);
-        }else {
-            System.out.println("Game engine is null\n");
-        }
-    }
-
 
 }

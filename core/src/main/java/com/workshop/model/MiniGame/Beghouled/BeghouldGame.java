@@ -97,23 +97,6 @@ public class BeghouldGame {
         );
     }
 
-    public void advancedTimeCommand(double seconds) {
-        if (gameEngine == null || ctx == null) {
-            Console.showMessage(
-                "Game engine is null"
-            );
-            return;
-        }
-
-        int ticks = (int) (seconds * 10);
-
-        if (ctx.getTimeManager() != null) {
-            ctx.getTimeManager().advanceTime(ticks);
-        }
-
-        gameEngine.update(seconds);
-    }
-
     public GameContext getCtx() {
         return ctx;
     }

@@ -15,6 +15,12 @@ public class AdvancedTime implements Command {
 
     @Override
     public void execute(String[] args) {
+        if (menuManager.getCtx() != null
+            && menuManager.getCtx().isPaused()) {
+            Console.showMessage("Game is paused.");
+            return;
+        }
+
         String ticksStr = args[0];
         int ticks;
         try {

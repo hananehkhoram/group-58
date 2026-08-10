@@ -52,16 +52,4 @@ public class WallnutBowlingGame {
         return this.gameEngine;
     }
 
-    public void advancedTimeCommand(double sec){
-        if (this.gameEngine != null && this.ctx != null) {
-            int ticks = (int) (sec * 10);
-
-            if (this.ctx.getTimeManager() != null) {
-                this.ctx.getTimeManager().advanceTime(ticks);
-            }
-            this.gameEngine.update(sec);
-        } else {
-            Console.showMessage("Game engine is null");
-        }
-    }
 }

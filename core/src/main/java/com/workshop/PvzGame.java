@@ -5,9 +5,10 @@ import com.badlogic.gdx.Game;
 import com.workshop.controller.repository.DataManager;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
-import com.workshop.view.Screens.LoginScreen;
-import com.workshop.view.Screens.MainScreen;
-import com.workshop.view.Screens.RegisterScreen;
+import com.workshop.view.Screens.*;
+import com.badlogic.gdx.Screen;
+import com.workshop.model.GameContext;
+import com.workshop.view.Screens.PauseOverlay;
 
 
 /**
@@ -62,6 +63,41 @@ public class PvzGame extends Game {
 
     public void showMain() {
         setScreen(new MainScreen(this, UserManager.getInstance().getCurrentUser()));
+    }
+
+    public void showQuest() {
+        setScreen(new QuestScreen(
+            this,
+            UserManager.getInstance().getCurrentUser()
+        ));
+    }
+
+    public void showTravelMenu() {
+        setScreen(new TravelMenuScreen(
+            this,
+            UserManager.getInstance().getCurrentUser()
+        ));
+    }
+
+    public void showSkinTest() {
+        setScreen(new SkinTestScreen(
+            this,
+            UserManager.getInstance().getCurrentUser()
+        ));
+    }
+
+    public void showSettings() {
+        setScreen(new SettingsScreen(
+            this,
+            UserManager.getInstance().getCurrentUser()
+        ));
+    }
+
+    public void showNews() {
+        setScreen(new NewsScreen(
+            this,
+            UserManager.getInstance().getCurrentUser()
+        ));
     }
 
     @Override

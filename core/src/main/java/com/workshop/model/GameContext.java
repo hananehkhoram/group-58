@@ -88,6 +88,8 @@ public class GameContext {
 
     private GameEngine gameEngine;
 
+    private boolean paused = false;
+
     public GameContext(Level level, Season season) {
         this.level = level;
         this.levelManager = DataManager.getInstance().createManagerForLevel(level);
@@ -388,6 +390,14 @@ public class GameContext {
 
     public boolean isBattleStarted() {
         return battleStarted;
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
     }
 
     public void setBattleStarted(boolean battleStarted) {

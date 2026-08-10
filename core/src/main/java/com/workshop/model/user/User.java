@@ -51,6 +51,9 @@ public class User {
     protected int lastSeason;
 
     private int difficultyLevel = 3;
+    private int gameSpeed = 1;
+    private boolean gridEnabled = false;
+    private boolean debugMode = false;
     private int lastReadNewsId = 0;
     private int coins;
     private int gems;
@@ -145,6 +148,30 @@ public class User {
 
     public void setDifficultyLevel(int difficultyLevel) {
         this.difficultyLevel = difficultyLevel;
+    }
+
+    public int getGameSpeed() {
+        return gameSpeed;
+    }
+
+    public void setGameSpeed(int gameSpeed) {
+        this.gameSpeed = gameSpeed;
+    }
+
+    public boolean isGridEnabled() {
+        return gridEnabled;
+    }
+
+    public void setGridEnabled(boolean gridEnabled) {
+        this.gridEnabled = gridEnabled;
+    }
+
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
     }
 
     public int getLastReadNewsId() {
