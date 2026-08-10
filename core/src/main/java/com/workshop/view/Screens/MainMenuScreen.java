@@ -44,6 +44,7 @@ public class MainMenuScreen implements Screen {
     private final Skin skin;
     private final Listener listener;
     private Texture dotTexture;
+    private Texture backgroundTexture;
 
     public MainMenuScreen(Listener listener) {
         this.listener = listener;
@@ -62,13 +63,11 @@ public class MainMenuScreen implements Screen {
         stage.addActor(root);
 
         Table panel = new Table();
-        panel.pad(30);
+        panel.pad(250);
+        panel.padBottom(150);
 
         User currentUser = UserManager.getInstance().getCurrentUser();
         String nickName = currentUser != null ? currentUser.getNickName() : "player";
-
-        Actor titleActor = buildLogoOrFallbackTitle(nickName);
-        panel.add(titleActor).width(560).height(180).padTop(10).row();
 
 
         TextButton playButton = new TextButton("Play", skin, "purple");
@@ -107,8 +106,8 @@ public class MainMenuScreen implements Screen {
         iconRow.add(settingsButton).size(75, 72);
         iconRow.add(profileButton).size(75, 72);
         iconRow.add(newsButton);
-        iconRow.add(logoutButton).width(130);
         panel.add(iconRow).padBottom(10).row();
+
 
         TextButton exitButton = new TextButton("Exit", skin, "brown");
         exitButton.addListener(new ChangeListener() {
@@ -118,18 +117,26 @@ public class MainMenuScreen implements Screen {
             }
         });
         panel.add(exitButton).width(200).padBottom(10).row();
+        panel.add(logoutButton)
+            .width(130)
+            .height(50)
+            .padBottom(5)
+            .row();
 
         root.add(panel).grow();
     }
 
 
     private Actor buildBackgroundOrNull() {
-        TextureRegion bgRegion = Textures.regionOrNull("IMAGE_MAINMENU_BACKGROUND");
-        if (bgRegion == null) return null;
+        backgroundTexture = new Texture(
+            Gdx.files.internal("IMAGES/mainmenu_background.png")
+        );
 
-        Image background = new Image(bgRegion);
-        background.setScaling(Scaling.fill); // cover the whole screen, cropping overflow instead of distorting
+        Image background = new Image(backgroundTexture);
+
+        background.setScaling(Scaling.fill);
         background.setFillParent(true);
+
         return background;
     }
 
@@ -256,6 +263,13 @@ public class MainMenuScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
-        if (dotTexture != null) dotTexture.dispose();
+
+        if (dotTexture != null) {
+            dotTexture.dispose();
+        }
+
+        if (backgroundTexture != null) {
+            backgroundTexture.dispose();
+        }
     }
 }
