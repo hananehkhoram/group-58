@@ -22,6 +22,7 @@ public class RegisterScreen implements Screen {
     public interface Listener {
         void onRegistrationFinished();
         void onSwitchToLogin();
+        void onExit();
     }
 
     private final Stage stage;
@@ -29,10 +30,11 @@ public class RegisterScreen implements Screen {
     private final RegisterMenu registerMenu;
     private final Listener listener;
 
+    // step 1 widgets
     private TextField usernameField, passwordField, passwordConfirmField, nicknameField, emailField;
     private SelectBox<String> genderBox;
-    private CheckBox visiblePassword;
 
+    // step 2 widgets
     private SelectBox<String> questionBox;
     private TextField answerField, answerConfirmField;
 
@@ -40,13 +42,15 @@ public class RegisterScreen implements Screen {
     private Table step1Table;
     private Table step2Table;
 
-
+    // persistent inline message (e.g. "account created, pick a question below") —
+    // deliberately NOT a Toast, since it needs to stay on screen while step 2 is filled in
     private Label statusLabel;
 
     public RegisterScreen(Listener listener) {
         this.listener = listener;
         this.skin = PvzSkin.get();
         this.stage = new Stage(new ScreenViewport());
+        // ctx isn't used by RegisterMenu's register()/pickQuestion() logic, null is fine here
         this.registerMenu = new RegisterMenu((GameContext) null);
 
         build();
@@ -61,9 +65,14 @@ public class RegisterScreen implements Screen {
         Table panel = new Table();
         panel.pad(30);
         panel.defaults().pad(6);
+        // TenPatch background from the skin (see pvz-skin README > "TenPatch Drawables For Backgrounds")
         panel.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
 
+        // "big"/"default" Label styles in this skin have no fontColor set, which
+        // defaults to white -> invisible on the cream panel background. Use
+        // "secondary" (explicit DarkBrown fontColor) for anything meant to be read.
         Label title = new Label("Create your account", skin, "big");
+        title.setColor(Color.valueOf("5B3A29"));
         panel.add(title).colspan(2).padBottom(16).row();
 
         statusLabel = new Label("", skin, "secondary");
@@ -76,31 +85,29 @@ public class RegisterScreen implements Screen {
 
         panel.add(statusLabel).colspan(2).width(360).padTop(12).row();
 
-        root.add(panel);
+        ScrollPane scrollPane = new ScrollPane(panel, skin);
+        scrollPane.setFadeScrollBars(false);
+        scrollPane.setScrollingDisabled(true, false); // vertical only
+        stage.setScrollFocus(scrollPane);
+
+        root.add(scrollPane).grow().pad(20);
     }
 
     private void buildStep1(Table panel) {
         step1Table = new Table();
         step1Table.defaults().pad(4);
 
-        visiblePassword = new CheckBox("Show",skin);
-
         usernameField = new TextField("", skin);
         usernameField.setMessageText("username");
 
         passwordField = new TextField("", skin);
         passwordField.setMessageText("password");
-        if (visiblePassword.isChecked()) {
-            passwordField.setPasswordCharacter('*');
-        }
+        passwordField.setPasswordCharacter('*');
         passwordField.setPasswordMode(true);
-
 
         passwordConfirmField = new TextField("", skin);
         passwordConfirmField.setMessageText("confirm password");
-        if (visiblePassword.isChecked()) {
-            passwordField.setPasswordCharacter('*');
-        }
+        passwordConfirmField.setPasswordCharacter('*');
         passwordConfirmField.setPasswordMode(true);
 
         nicknameField = new TextField("", skin);
@@ -112,18 +119,17 @@ public class RegisterScreen implements Screen {
         genderBox = new SelectBox<>(skin);
         genderBox.setItems("male", "female");
 
-        step1Table.add(new Label("Username", skin)).padTop(12).right();
+        step1Table.add(new Label("Username", skin, "secondary")).right();
         step1Table.add(usernameField).width(260).row();
-        step1Table.add(new Label("Password", skin)).right();
+        step1Table.add(new Label("Password", skin, "secondary")).right();
         step1Table.add(passwordField).width(260).row();
-        step1Table.add(new Label("Confirm password", skin)).right();
+        step1Table.add(new Label("Confirm password", skin, "secondary")).right();
         step1Table.add(passwordConfirmField).width(260).row();
-        step1Table.add(visiblePassword).colspan(2).left().row();
-        step1Table.add(new Label("Nickname", skin)).right();
+        step1Table.add(new Label("Nickname", skin, "secondary")).right();
         step1Table.add(nicknameField).width(260).row();
-        step1Table.add(new Label("Email", skin)).right();
+        step1Table.add(new Label("Email", skin, "secondary")).right();
         step1Table.add(emailField).width(260).row();
-        step1Table.add(new Label("Gender", skin)).right();
+        step1Table.add(new Label("Gender", skin, "secondary")).right();
         step1Table.add(genderBox).width(260).row();
 
         TextButton registerButton = new TextButton("Register", skin, "green");
@@ -142,8 +148,17 @@ public class RegisterScreen implements Screen {
             }
         });
 
+        TextButton exitButton = new TextButton("Exit", skin, "brown");
+        exitButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+                if (listener != null) listener.onExit();
+            }
+        });
+
         step1Table.add(registerButton).colspan(2).padTop(12).width(200).row();
         step1Table.add(loginLink).colspan(2).row();
+        step1Table.add(exitButton).colspan(2).padTop(8).width(200).row();
 
         panel.add(step1Table).row();
     }
@@ -165,11 +180,11 @@ public class RegisterScreen implements Screen {
         answerConfirmField = new TextField("", skin);
         answerConfirmField.setMessageText("confirm answer");
 
-        step2Table.add(new Label("Security question", skin)).colspan(2).row();
+        step2Table.add(new Label("Security question", skin, "secondary")).colspan(2).row();
         step2Table.add(questionBox).colspan(2).width(320).row();
-        step2Table.add(new Label("Answer", skin)).right();
+        step2Table.add(new Label("Answer", skin, "secondary")).right();
         step2Table.add(answerField).width(260).row();
-        step2Table.add(new Label("Confirm answer", skin)).right();
+        step2Table.add(new Label("Confirm answer", skin, "secondary")).right();
         step2Table.add(answerConfirmField).width(260).row();
 
         TextButton finishButton = new TextButton("Finish", skin, "green");
@@ -206,7 +221,7 @@ public class RegisterScreen implements Screen {
     }
 
     private void submitStep2() {
-        int questionId = questionBox.getSelectedIndex() + 1;
+        int questionId = questionBox.getSelectedIndex() + 1; // ids are 1-based
         String result = registerMenu.pickQuestion(
             questionId,
             answerField.getText(),
@@ -224,7 +239,7 @@ public class RegisterScreen implements Screen {
 
     private void setStatus(String message, boolean isError) {
         statusLabel.setText(message);
-        statusLabel.setColor(isError ? Color.SCARLET : Color.WHITE);
+        statusLabel.setColor(isError ? Color.SCARLET : Color.valueOf("5B3A29"));
     }
 
     @Override

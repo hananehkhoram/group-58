@@ -68,7 +68,9 @@ public class LoginScreen implements Screen {
         panel.defaults().pad(6);
         panel.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
 
+
         Label title = new Label("Login", skin, "big");
+        title.setColor(Color.valueOf("5B3A29"));
         panel.add(title).colspan(2).padBottom(16).row();
 
         statusLabel = new Label("", skin, "secondary");
@@ -82,7 +84,12 @@ public class LoginScreen implements Screen {
 
         panel.add(statusLabel).colspan(2).width(360).padTop(12).row();
 
-        root.add(panel);
+        ScrollPane scrollPane = new ScrollPane(panel, skin);
+        scrollPane.setFadeScrollBars(false);
+        scrollPane.setScrollingDisabled(true, false); // vertical only
+        stage.setScrollFocus(scrollPane);
+
+        root.add(scrollPane).grow().pad(20);
 
         showStep(Step.LOGIN);
     }
@@ -101,9 +108,9 @@ public class LoginScreen implements Screen {
 
         stayLoggedInBox = new CheckBox(" Stay logged in", skin);
 
-        loginTable.add(new Label("Username", skin)).right();
+        loginTable.add(new Label("Username", skin, "secondary")).right();
         loginTable.add(usernameField).width(260).row();
-        loginTable.add(new Label("Password", skin)).right();
+        loginTable.add(new Label("Password", skin, "secondary")).right();
         loginTable.add(passwordField).width(260).row();
         loginTable.add(stayLoggedInBox).colspan(2).left().row();
 
@@ -149,9 +156,9 @@ public class LoginScreen implements Screen {
         forgotEmailField = new TextField("", skin);
         forgotEmailField.setMessageText("email");
 
-        forgotEmailTable.add(new Label("Username", skin)).right();
+        forgotEmailTable.add(new Label("Username", skin, "secondary")).right();
         forgotEmailTable.add(forgotUsernameField).width(260).row();
-        forgotEmailTable.add(new Label("Email", skin)).right();
+        forgotEmailTable.add(new Label("Email", skin, "secondary")).right();
         forgotEmailTable.add(forgotEmailField).width(260).row();
 
         TextButton submit = new TextButton("Continue", skin, "green");
@@ -187,7 +194,7 @@ public class LoginScreen implements Screen {
         answerField.setMessageText("answer");
 
         forgotAnswerTable.add(securityQuestionLabel).colspan(2).width(320).padBottom(8).row();
-        forgotAnswerTable.add(new Label("Answer", skin)).right();
+        forgotAnswerTable.add(new Label("Answer", skin, "secondary")).right();
         forgotAnswerTable.add(answerField).width(260).row();
 
         TextButton submit = new TextButton("Continue", skin, "green");
@@ -211,7 +218,7 @@ public class LoginScreen implements Screen {
         newPasswordField.setPasswordCharacter('*');
         newPasswordField.setPasswordMode(true);
 
-        forgotNewPasswordTable.add(new Label("New password", skin)).right();
+        forgotNewPasswordTable.add(new Label("New password", skin, "secondary")).right();
         forgotNewPasswordTable.add(newPasswordField).width(260).row();
 
         TextButton submit = new TextButton("Set new password", skin, "green");
@@ -288,7 +295,7 @@ public class LoginScreen implements Screen {
 
     private void setStatus(String message, boolean isError) {
         statusLabel.setText(message == null ? "" : message);
-        statusLabel.setColor(isError ? Color.SCARLET : Color.WHITE);
+        statusLabel.setColor(isError ? Color.SCARLET : Color.valueOf("5B3A29"));
     }
 
     private void clearStatus() {
