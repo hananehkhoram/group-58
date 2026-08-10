@@ -14,11 +14,9 @@ import com.workshop.PvzGame;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.workshop.controller.NewsManager;
-import com.workshop.view.Screens.PauseOverlay;
 
 import pvz.skin.PvzSkin;
 
