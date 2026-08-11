@@ -24,14 +24,9 @@ import com.workshop.view.Toast;
 
 import pvz.skin.PvzSkin;
 
-/**
- * The main menu: the hub every other menu (Play/Game, Settings, News, Profile) is
- * reached from. Matches {@code MainMenu}'s notion of "new news" (a red dot on the
- * News button) via {@link MainMenu#shouldShowRedDot(User)}.
- */
+
 public class MainMenuScreen implements Screen {
 
-    /** Hook these up to whatever screens/logic those destinations end up being. */
     public interface Listener {
         void onPlay();
         void onSettings();
@@ -44,7 +39,6 @@ public class MainMenuScreen implements Screen {
     private final Skin skin;
     private final Listener listener;
     private Texture dotTexture;
-    private Texture backgroundTexture;
 
     public MainMenuScreen(Listener listener) {
         this.listener = listener;
@@ -69,6 +63,8 @@ public class MainMenuScreen implements Screen {
         User currentUser = UserManager.getInstance().getCurrentUser();
         String nickName = currentUser != null ? currentUser.getNickName() : "player";
 
+        Actor titleActor = buildLogoOrFallbackTitle(nickName);
+        panel.add(titleActor).width(560).height(180).padTop(5).row();
 
         TextButton playButton = new TextButton("Play", skin, "purple");
         playButton.addListener(new ChangeListener() {
@@ -128,15 +124,12 @@ public class MainMenuScreen implements Screen {
 
 
     private Actor buildBackgroundOrNull() {
-        backgroundTexture = new Texture(
-            Gdx.files.internal("IMAGES/mainmenu_background.png")
-        );
+        TextureRegion bgRegion = Textures.regionOrNull("IMAGE_MAINMENU_BACKGROUND");
+        if (bgRegion == null) return null;
 
-        Image background = new Image(backgroundTexture);
-
-        background.setScaling(Scaling.fill);
+        Image background = new Image(bgRegion);
+        background.setScaling(Scaling.fill); // cover the whole screen, cropping overflow instead of distorting
         background.setFillParent(true);
-
         return background;
     }
 
@@ -266,10 +259,6 @@ public class MainMenuScreen implements Screen {
 
         if (dotTexture != null) {
             dotTexture.dispose();
-        }
-
-        if (backgroundTexture != null) {
-            backgroundTexture.dispose();
         }
     }
 }

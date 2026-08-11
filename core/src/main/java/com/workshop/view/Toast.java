@@ -13,24 +13,30 @@ public final class Toast {//اعلان موقت
 
     private static final float FADE_DURATION = 0.25f;
     private static final float VISIBLE_DURATION = 3.5f;
+    private static final float MISSION_VISIBLE_DURATION = 5.5f; // objectives need more time to read
     private static final float TOP_MARGIN = 32f;
     private static final float MAX_WIDTH = 380f;
+    private static final float MISSION_MAX_WIDTH = 460f;
 
     private Toast() {}
 
     public static void showError(Stage stage, Skin skin, String message) {
-        show(stage, skin, message, Color.valueOf("E85D5D"));
+        show(stage, skin, message, Color.valueOf("E85D5D"), MAX_WIDTH, VISIBLE_DURATION);
     }
 
     public static void showSuccess(Stage stage, Skin skin, String message) {
-        show(stage, skin, message, Color.valueOf("6FCF6F"));
+        show(stage, skin, message, Color.valueOf("6FCF6F"), MAX_WIDTH, VISIBLE_DURATION);
     }
 
     public static void showInfo(Stage stage, Skin skin, String message) {
-        show(stage, skin, message, Color.WHITE);
+        show(stage, skin, message, Color.WHITE, MAX_WIDTH, VISIBLE_DURATION);
     }
 
-    private static void show(Stage stage, Skin skin, String message, Color textColor) {
+    public static void showMission(Stage stage, Skin skin, String message) {
+        show(stage, skin, message, Color.valueOf("5B3A29"), MISSION_MAX_WIDTH, MISSION_VISIBLE_DURATION);
+    }
+
+    private static void show(Stage stage, Skin skin, String message, Color textColor, float maxWidth, float visibleDuration) {
         if (message == null || message.isBlank()) return;
 
         Label label = new Label(message.trim(), skin, "default");
@@ -41,7 +47,7 @@ public final class Toast {//اعلان موقت
         Table toast = new Table();
         toast.pad(14, 22, 14, 22);
         toast.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
-        toast.add(label).width(MAX_WIDTH - 44);
+        toast.add(label).width(maxWidth - 44);
         toast.pack();
 
         toast.getColor().a = 0f;
@@ -55,7 +61,7 @@ public final class Toast {//اعلان موقت
                 Actions.fadeIn(FADE_DURATION),
                 Actions.moveTo(toast.getX(), restY, FADE_DURATION)
             ),
-            Actions.delay(VISIBLE_DURATION),
+            Actions.delay(visibleDuration),
             Actions.fadeOut(FADE_DURATION),
             Actions.removeActor()
         ));

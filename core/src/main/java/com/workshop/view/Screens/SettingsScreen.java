@@ -3,7 +3,6 @@ package com.workshop.view.Screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
@@ -19,6 +18,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import com.workshop.PvzGame;
 import com.workshop.controller.repository.DataManager;
+import com.workshop.controller.repository.Textures;
 import com.workshop.model.user.User;
 
 import pvz.skin.PvzSkin;
@@ -26,7 +26,6 @@ import pvz.skin.PvzSkin;
 public class SettingsScreen implements Screen {
 
     private final Stage stage;
-    private Texture backgroundTexture;
 
     public SettingsScreen(PvzGame game, User user) {
         Skin skin = PvzSkin.get();
@@ -37,13 +36,15 @@ public class SettingsScreen implements Screen {
     }
 
     private void buildBackground() {
-        backgroundTexture = new Texture(
-            Gdx.files.internal(
-                "IMAGES/Menus/Settings/SettingsBackground.png"
-            )
-        );
+        // TODO: no confirmed resource ID for a Settings-specific background yet —
+        // look it up with the PvZ Asset Browser (see libPVZ's README) and swap the
+        // string below. Falling back to the main menu background for now instead of
+        // a hardcoded file path that doesn't exist.
+        com.badlogic.gdx.graphics.g2d.TextureRegion bgRegion =
+            Textures.regionOrNull("IMAGE_MAINMENU_BACKGROUND");
+        if (bgRegion == null) return;
 
-        Image background = new Image(backgroundTexture);
+        Image background = new Image(bgRegion);
         background.setScaling(Scaling.fill);
         background.setFillParent(true);
 
@@ -324,9 +325,5 @@ public class SettingsScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
-
-        if (backgroundTexture != null) {
-            backgroundTexture.dispose();
-        }
     }
 }
