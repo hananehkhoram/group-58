@@ -57,21 +57,7 @@ public class EnterMiniGameMenu implements Command {
                 switch (number){
                     case 1:
                         List<Level> vaseLevels = LevelFactory.buildVaseLevels();
-                        User user = UserManager.getInstance().getCurrentUser();
-
-                        int vaseLevelIndex = -1;
-
-                        for (int i = vaseLevels.size() - 1; i >= 0; i--) {
-                            if (user.isLevelUnlocked(vaseLevels.get(i).getName())) {
-                                vaseLevelIndex = i;
-                                break;
-                            }
-                        }
-
-                        if (vaseLevelIndex < 0) {
-                            Console.showMessage("Vasebreaker is still locked.");
-                            break;
-                        }
+                        int vaseLevelIndex = 0;
 
                         Vasecheccker vaseGame = new Vasecheccker();
                         vaseGame.startMiniGame(menuManager, vaseLevelIndex + 1);
@@ -82,21 +68,7 @@ public class EnterMiniGameMenu implements Command {
 
                     case 2:
                         List<Level> wallnutLevels = LevelFactory.buildWallnutsLevels();
-                        User wallnutUser = UserManager.getInstance().getCurrentUser();
-
-                        int wallnutLevelIndex = -1;
-
-                        for (int i = wallnutLevels.size() - 1; i >= 0; i--) {
-                            if (wallnutUser.isLevelUnlocked(wallnutLevels.get(i).getName())) {
-                                wallnutLevelIndex = i;
-                                break;
-                            }
-                        }
-
-                        if (wallnutLevelIndex < 0) {
-                            Console.showMessage("Wallnut Bowling is still locked.");
-                            break;
-                        }
+                        int wallnutLevelIndex = 0;
 
                         WallnutBowlingGame wBGame = new WallnutBowlingGame();
                         wBGame.start(menuManager, wallnutLevelIndex + 1);
@@ -107,21 +79,7 @@ public class EnterMiniGameMenu implements Command {
 
                     case 3:
                         List<Level> izombieLevels = LevelFactory.buildIzombieLevels();
-                        User izombieUser = UserManager.getInstance().getCurrentUser();
-
-                        int izombieLevelIndex = -1;
-
-                        for (int i = izombieLevels.size() - 1; i >= 0; i--) {
-                            if (izombieUser.isLevelUnlocked(izombieLevels.get(i).getName())) {
-                                izombieLevelIndex = i;
-                                break;
-                            }
-                        }
-
-                        if (izombieLevelIndex < 0) {
-                            Console.showMessage("I, Zombie is still locked.");
-                            break;
-                        }
+                        int izombieLevelIndex = 0;
 
                         Izambi izambiModel = new Izambi();
                         izambiModel.startMiniGame(menuManager, izombieLevelIndex + 1);

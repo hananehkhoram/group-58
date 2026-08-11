@@ -16,13 +16,18 @@ import com.workshop.view.Screens.LoginScreen;
 import com.workshop.view.Screens.RegisterScreen;
 import com.workshop.view.Screens.MainMenuScreen;
 
-
+/**
+ * Entry point of the libGDX application (the "Game class" the console version never had).
+ * Owns screen switching and the user-data load/save lifecycle, mirroring what
+ * {@code GameEngineController} does for the console version.
+ */
 public class PvzGame extends Game {
 
     @Override
     public void create() {
         DataManager.getInstance().loadUser();
 
+        // Mirrors GameEngineController: auto-login whoever has "stay logged in" set.
         for (User u : UserManager.getInstance().users) {
             if (u.isStayedLogin()) {
                 UserManager.getInstance().login(u);
@@ -95,7 +100,19 @@ public class PvzGame extends Game {
                 UserManager.getInstance().logOut();
                 showLogin();
             }
+
+            @Override
+            public void onTest() {
+                showOldMain();
+            }
         }));
+    }
+
+    public void showOldMain() {
+        setScreen(new MainScreen(
+            this,
+            UserManager.getInstance().getCurrentUser()
+        ));
     }
 
     public void showQuest() {
@@ -146,6 +163,11 @@ public class PvzGame extends Game {
             @Override public void onBack() { showMain(); } // EXIT_TARGET(GAME) = MAIN
         }));
     }
+
+    public void showLeaderboard() {
+        setScreen(new LeaderBoardScreen(this));
+    }
+
 
     @Override
     public void dispose() {

@@ -34,24 +34,28 @@ public class QuestScreen implements Screen {
         stage.addActor(root);
 
         Label title = new Label("Quests", skin, "big");
-        root.add(title).padBottom(20).row();
+        root.add(title).padBottom(5).row();
 
         Table questTable = new Table();
-        questTable.setFillParent(true);
+        questTable.top().left();
 
-        List<Quest> quests = new ArrayList<>(DataManager.getInstance().quests.getAll());
+        List<Quest> quests =
+            new ArrayList<>(DataManager.getInstance().quests.getAll());
+
         quests.sort(
             Comparator.comparingInt(
                 (Quest quest) -> quest.getPriority().ordinal()
             ).reversed()
         );
 
-        for (Quest quest : quests){
+        for (Quest quest : quests) {
             addQuest(questTable, quest, user, skin);
         }
 
         ScrollPane scrollPane = new ScrollPane(questTable, skin);
         scrollPane.setFadeScrollBars(false);
+        scrollPane.setScrollingDisabled(true, false);
+        scrollPane.setScrollY(0);
 
         root.add(scrollPane)
             .width(800)
@@ -72,26 +76,87 @@ public class QuestScreen implements Screen {
 
     private void addQuest(Table table, Quest quest, User user, Skin skin) {
         boolean completed = user.isQuestCompleted(quest.getId());
-        int progress = user.getQuestProgress(quest.getId());
-        String status;
 
-        if (completed){
-            status = "Completed";
-        } else {
-            status = progress + " / " + quest.getTargetProgress();
-        }
+        int progress = user.getQuestProgress(quest.getId());
+        int target = Math.max(1, quest.getTargetProgress());
+
+        int shownProgress = Math.min(progress, target);
 
         Label name = new Label(quest.getName(), skin);
 
-        Label description = new Label(quest.getDescription(), skin);
-
+        Label description = new Label(
+            quest.getDescription(),
+            skin
+        );
         description.setWrap(true);
 
-        Label info = new Label("Category: " + quest.getCategory() + " | Priority: " + quest.getPriority() + " | Progress: " + status + " | Rewaerd: " + quest.getRewardAmount() + " " + quest.getRewardType(), skin);
+        Label info = new Label(
+            "Category: " + quest.getCategory()
+                + " | Priority: " + quest.getPriority()
+                + " | Reward: " + quest.getRewardAmount()
+                + " " + quest.getRewardType(),
+            skin
+        );
 
-        table.add(name).left().padTop(15).row();
-        table.add(description).width(700).left().padTop(5).row();
-        table.add(info).left().padTop(5).padBottom(15).row();
+        ProgressBar progressBar = new ProgressBar(
+            0,
+            target,
+            1,
+            false,
+            skin,
+            "xp_green"
+        );
+
+        if (completed) {
+            progressBar.setValue(target);
+        } else {
+            progressBar.setValue(shownProgress);
+        }
+
+        progressBar.setAnimateDuration(0.2f);
+
+        Label progressLabel;
+
+        if (completed) {
+            progressLabel = new Label("Completed", skin);
+        } else {
+            progressLabel = new Label(
+                shownProgress + " / " + target,
+                skin
+            );
+        }
+
+        Table progressTable = new Table();
+
+        progressTable.add(progressBar)
+            .width(350)
+            .height(20)
+            .padRight(15);
+
+        progressTable.add(progressLabel)
+            .left();
+
+        table.add(name)
+            .left()
+            .padTop(15)
+            .row();
+
+        table.add(description)
+            .width(700)
+            .left()
+            .padTop(5)
+            .row();
+
+        table.add(info)
+            .left()
+            .padTop(5)
+            .row();
+
+        table.add(progressTable)
+            .left()
+            .padTop(8)
+            .padBottom(15)
+            .row();
     }
 
     @Override

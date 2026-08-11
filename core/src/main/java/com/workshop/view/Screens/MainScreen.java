@@ -101,6 +101,16 @@ public class MainScreen implements Screen {
             newsStack.add(badgeLayer);
         }
 
+        TextButton leaderboardButton =
+            new TextButton("Leaderboard", skin, "default");
+
+        leaderboardButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.showLeaderboard();
+            }
+        });
+
         // ========================= TEST ==================================
 
         TextButton SkinButton = new TextButton("**SkinTest**", skin, "default");
@@ -154,6 +164,9 @@ public class MainScreen implements Screen {
         root.add(welcome).padBottom(20).row();
         root.add(travelMenuButton).width(200).row();
         root.add(SkinButton).width(200).row();
+        root.add(leaderboardButton)
+            .width(200)
+            .row();
         root.add(newsStack).width(200).row();
         root.add(logoutButton).width(200).row();
 

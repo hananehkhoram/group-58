@@ -93,19 +93,6 @@ public class Izambi {
 
         int levelIndex = levelNumber - 1;
 
-        User currentUser =
-            UserManager.getInstance().getCurrentUser();
-
-        if (currentUser == null
-            || !currentUser.isLevelUnlocked(
-            levels.get(levelNumber - 1).getName()
-        )) {
-            Console.showMessage(
-                "This I-Zombie level is locked."
-            );
-            return;
-        }
-
         currentLevel = levels.get(levelIndex);
 
         Season season = new IzombieSeason(levels);
