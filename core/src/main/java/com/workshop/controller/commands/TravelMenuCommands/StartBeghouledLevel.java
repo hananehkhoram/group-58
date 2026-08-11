@@ -6,8 +6,7 @@ import com.workshop.model.MiniGame.Beghouled.BeghouldGame;
 import com.workshop.view.Console;
 import com.workshop.controller.repository.factory.LevelFactory;
 import com.workshop.model.level.Level;
-import com.workshop.model.user.User;
-import com.workshop.model.user.UserManager;
+
 
 import java.util.List;
 
@@ -40,15 +39,7 @@ public class StartBeghouledLevel implements Command {
                 return;
             }
 
-            User user = UserManager.getInstance().getCurrentUser();
-
-            if (user == null
-                || !user.isLevelUnlocked(
-                levels.get(levelNumber - 1).getName()
-            )) {
-                Console.showMessage("This Beghouled level is locked.");
-                return;
-            }
+            int levelIndex = 0;
 
             BeghouldGame game =
                 new BeghouldGame();

@@ -38,6 +38,7 @@ public class MainMenuScreen implements Screen {
         void onNews();
         void onProfile();
         void onLogout();
+        void onTest();
     }
 
     private final Stage stage;
@@ -101,12 +102,34 @@ public class MainMenuScreen implements Screen {
             }
         });
 
+
         Table iconRow = new Table();
         iconRow.defaults().pad(6);
         iconRow.add(settingsButton).size(75, 72);
         iconRow.add(profileButton).size(75, 72);
         iconRow.add(newsButton);
         panel.add(iconRow).padBottom(10).row();
+
+        //===========================TEST====================================
+
+        TextButton testButton = new TextButton("TEST", skin, "brown");
+
+        testButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (listener != null) {
+                    listener.onTest();
+                }
+            }
+        });
+
+        panel.add(testButton)
+            .width(200)
+            .height(55)
+            .padBottom(10)
+            .row();
+
+        //================================================================================
 
 
         TextButton exitButton = new TextButton("Exit", skin, "brown");

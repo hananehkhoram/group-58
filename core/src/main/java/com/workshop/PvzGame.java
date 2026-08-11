@@ -98,7 +98,19 @@ public class PvzGame extends Game {
                 UserManager.getInstance().logOut();
                 showLogin();
             }
+
+            @Override
+            public void onTest() {
+                showOldMain();
+            }
         }));
+    }
+
+    public void showOldMain() {
+        setScreen(new MainScreen(
+            this,
+            UserManager.getInstance().getCurrentUser()
+        ));
     }
 
     public void showQuest() {
@@ -135,6 +147,11 @@ public class PvzGame extends Game {
             UserManager.getInstance().getCurrentUser()
         ));
     }
+
+    public void showLeaderboard() {
+        setScreen(new LeaderBoardScreen(this));
+    }
+
 
     @Override
     public void dispose() {

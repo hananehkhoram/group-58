@@ -133,20 +133,17 @@ public class Wave {
         String seasonName = ctx.getSeason().getName();
 
         if ("Zombotany".equalsIgnoreCase(seasonName)) {
-            Set<String> zombotanyZombies = Set.of(
-                "Peashooter Zombie",
-                "Wall-nut Zombie",
-                "Jalapeno Zombie",
-                "Squash Zombie"
-            );
-
             return ctx.getDataManager()
                 .zombies
                 .getZombieDataMap()
                 .entrySet()
                 .stream()
-                .filter(entry ->
-                    zombotanyZombies.contains(entry.getKey()))
+                .filter(entry -> {
+                    String id = entry.getValue().getId();
+
+                    return id != null
+                        && id.startsWith("ZombieZombotany");
+                })
                 .collect(Collectors.toMap(
                     Map.Entry::getKey,
                     Map.Entry::getValue

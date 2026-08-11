@@ -49,18 +49,7 @@ public class Zombotany {
             return;
         }
 
-        int levelIndex =
-            findLatestUnlockedLevel(
-                currentUser,
-                levels
-            );
-
-        if (levelIndex < 0) {
-            Console.showMessage(
-                "Zombotany is locked."
-            );
-            return;
-        }
+        int levelIndex = 0;
 
         startLevel(
             menuManager,
@@ -94,18 +83,6 @@ public class Zombotany {
             return;
         }
 
-        User currentUser =
-            UserManager.getInstance().getCurrentUser();
-
-        if (currentUser == null
-            || !currentUser.isLevelUnlocked(
-            levels.get(levelIndex).getName()
-        )) {
-            Console.showMessage(
-                "This Zombotany level is locked."
-            );
-            return;
-        }
 
         Level level = levels.get(levelIndex);
 
@@ -136,24 +113,6 @@ public class Zombotany {
         );
     }
 
-    private int findLatestUnlockedLevel(
-        User user,
-        List<Level> levels
-    ) {
-        for (int index = levels.size() - 1;
-             index >= 0;
-             index--) {
-
-            String levelName =
-                levels.get(index).getName();
-
-            if (user.isLevelUnlocked(levelName)) {
-                return index;
-            }
-        }
-
-        return -1;
-    }
 
     public GameContext getCtx() {
         return ctx;

@@ -42,19 +42,6 @@ public class BeghouldGame {
 
         int levelIndex = levelNumber - 1;
 
-        User currentUser =
-            UserManager.getInstance().getCurrentUser();
-
-        if (currentUser == null
-            || !currentUser.isLevelUnlocked(
-            beghouledLevels.get(levelNumber - 1).getName()
-        )) {
-            Console.showMessage(
-                "This Beghouled level is locked."
-            );
-            return;
-        }
-
         currentLevel = beghouledLevels.get(levelIndex);
 
         Season beghouledSeason =
