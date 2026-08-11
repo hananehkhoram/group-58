@@ -6,7 +6,6 @@ import com.workshop.model.level.LevelType;
 import com.workshop.model.user.UserManager;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.view.Console;
-import java.util.Set;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,8 +81,12 @@ public class Wave {
         }
 
         Map<String, Zombie> pool = getAvailableZombiePool(ctx);
+
         if (pool.isEmpty()) {
-            return;
+            throw new IllegalStateException(
+                "No zombies are configured for level type: "
+                    + ctx.getLevel().getLevelType()
+            );
         }
 
         int minCost = pool.values().stream()
@@ -92,7 +95,9 @@ public class Wave {
                 .min()
                 .orElse(-1);
         if (minCost < 0) {
-            return;
+            throw new IllegalStateException(
+                "All zombies in the wave pool have invalid wave costs."
+            );
         }
 
         Random random = (ctx.getLevel().getLevelType() == LevelType.BONUS)
@@ -130,29 +135,25 @@ public class Wave {
     }
 
     private Map<String, Zombie> getAvailableZombiePool(GameContext ctx) {
-        String seasonName = ctx.getSeason().getName();
-
-        if ("Zombotany".equalsIgnoreCase(seasonName)) {
-            return ctx.getDataManager()
+        Map<String, Zombie> allZombies =
+            ctx.getDataManager()
                 .zombies
-                .getZombieDataMap()
+                .getZombieDataMap();
+
+        if (ctx.getLevel().getLevelType() == LevelType.Zombotany_MG) {
+            return allZombies
                 .entrySet()
                 .stream()
-                .filter(entry -> {
-                    String id = entry.getValue().getId();
-
-                    return id != null
-                        && id.startsWith("ZombieZombotany");
-                })
+                .filter(entry -> isZombotanyZombie(entry.getValue()))
                 .collect(Collectors.toMap(
                     Map.Entry::getKey,
                     Map.Entry::getValue
                 ));
         }
 
-        return ctx.getDataManager()
-            .zombies
-            .getZombieDataMap()
+        String seasonName = ctx.getSeason().getName();
+
+        return allZombies
             .entrySet()
             .stream()
             .filter(entry ->
@@ -161,7 +162,8 @@ public class Wave {
                     .isAvailableInChapter(
                         entry.getKey(),
                         seasonName
-                    ))
+                    )
+            )
             .collect(Collectors.toMap(
                 Map.Entry::getKey,
                 Map.Entry::getValue
@@ -198,6 +200,14 @@ public class Wave {
                 .sum();
 
         return ((double) currentTotalHp / initialTotalHp) <= THRESHOLD_HP_RATIO;
+    }
+
+    private boolean isZombotanyZombie(Zombie zombie) {
+        if (zombie == null || zombie.getId() == null) {
+            return false;
+        }
+
+        return zombie.getId().startsWith("ZombieZombotany");
     }
 
     public void reset() {

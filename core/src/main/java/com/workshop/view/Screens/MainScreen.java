@@ -51,15 +51,6 @@ public class MainScreen implements Screen {
             }
         });
 
-        TextButton travelMenuButton =
-            new TextButton("**Travel Menu**", skin, "default");
-
-        travelMenuButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                game.showTravelMenu();
-            }
-        });
 
         ImageButton settingsButton =
             new ImageButton(skin, "default");
@@ -162,7 +153,6 @@ public class MainScreen implements Screen {
         stage.addActor(topBar);
 
         root.add(welcome).padBottom(20).row();
-        root.add(travelMenuButton).width(200).row();
         root.add(SkinButton).width(200).row();
         root.add(leaderboardButton)
             .width(200)

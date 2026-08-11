@@ -15,14 +15,33 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.workshop.PvzGame;
 import com.workshop.model.user.User;
 import pvz.skin.PvzSkin;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 public class TravelMenuScreen implements Screen {
 
     private final Stage stage;
+    private final Texture backgroundTexture;
+    private final Image background;
 
     public TravelMenuScreen(PvzGame game, User user) {
         Skin skin = PvzSkin.get();
         stage = new Stage(new ScreenViewport());
+
+        backgroundTexture = new Texture(
+            Gdx.files.internal("IMAGES/Menus/travel/travelBackground.png")
+        );
+
+        background = new Image(backgroundTexture);
+        background.setScaling(Scaling.fill);
+        background.setBounds(
+            0,
+            0,
+            stage.getViewport().getWorldWidth(),
+            stage.getViewport().getWorldHeight()
+        );
+
+        stage.addActor(background);
 
         Table root = new Table();
         root.setFillParent(true);
@@ -37,16 +56,82 @@ public class TravelMenuScreen implements Screen {
             }
         });
 
-        TextButton backButton = new TextButton("Back", skin, "default");
+        ImageButton backButton = new ImageButton(skin, "generic_close_circle");
         backButton.addListener(new  ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.showMain();
+                game.showGame();
             }
         });
 
-        root.add(questButton).row();
-        root.add(backButton).width(100);
+        TextButton vaseBreakerButton =
+            new TextButton("Vase Breaker", skin, "purple");
+
+        TextButton wallnutBowlingButton =
+            new TextButton("Wallnut Bowling", skin, "purple");
+
+        TextButton zombotanyButton =
+            new TextButton("Zombotany", skin, "purple");
+
+        TextButton iZombieButton =
+            new TextButton("I, Zombie", skin, "purple");
+
+        TextButton beghouledButton =
+            new TextButton("Beghouled", skin, "purple");
+
+        Table miniGameRow = new Table();
+
+        miniGameRow.add(vaseBreakerButton)
+            .width(170)
+            .padRight(15);
+
+        miniGameRow.add(wallnutBowlingButton)
+            .width(170)
+            .padRight(15);
+
+        miniGameRow.add(zombotanyButton)
+            .width(170)
+            .padRight(15);
+
+        miniGameRow.add(iZombieButton)
+            .width(170)
+            .padRight(15);
+
+        miniGameRow.add(beghouledButton)
+            .width(170);
+
+        Table miniGameContainer = new Table();
+        miniGameContainer.setFillParent(true);
+
+        miniGameContainer.bottom();
+        miniGameContainer.padBottom(70);
+
+        miniGameContainer.add(miniGameRow);
+
+        stage.addActor(miniGameContainer);
+
+        Table topLeft = new Table();
+        topLeft.setFillParent(true);
+        topLeft.top().left();
+        topLeft.padTop(20);
+        topLeft.padLeft(20);
+
+        topLeft.add(questButton)
+            .width(180);
+
+        stage.addActor(topLeft);
+
+
+        Table topRight = new Table();
+        topRight.setFillParent(true);
+        topRight.top().right();
+        topRight.padTop(20);
+        topRight.padRight(20);
+
+        topRight.add(backButton)
+            .width(180);
+
+        stage.addActor(topRight);
 
     }
 
@@ -67,6 +152,13 @@ public class TravelMenuScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+
+        background.setBounds(
+            0,
+            0,
+            stage.getViewport().getWorldWidth(),
+            stage.getViewport().getWorldHeight()
+        );
     }
 
     @Override
@@ -81,5 +173,6 @@ public class TravelMenuScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        backgroundTexture.dispose();
     }
 }

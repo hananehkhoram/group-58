@@ -32,6 +32,7 @@ public class GameScreen implements Screen {
     /** Hook this up to whatever screen-switching mechanism your Game class uses. */
     public interface Listener {
         void onEnterLevel(Season season, Level level);
+        void onTravelMenu();
         void onBack(); // EXIT_TARGET(GAME) = MAIN
     }
 
@@ -71,6 +72,23 @@ public class GameScreen implements Screen {
         buildChaptersStep(panel);
         buildLevelsStep(panel);
         levelsTable.setVisible(false);
+
+        TextButton travelMenuButton =
+            new TextButton("Travel Menu", skin, "default");
+
+        travelMenuButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (listener != null) {
+                    listener.onTravelMenu();
+                }
+            }
+        });
+
+        panel.add(travelMenuButton)
+            .padTop(16)
+            .width(200)
+            .row();
 
         TextButton backButton = new TextButton("Back", skin, "brown");
         backButton.addListener(new ChangeListener() {

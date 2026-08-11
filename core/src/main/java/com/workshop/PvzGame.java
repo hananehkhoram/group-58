@@ -157,10 +157,20 @@ public class PvzGame extends Game {
     }
     public void showGame() {
         setScreen(new GameScreen(new GameScreen.Listener() {
-            @Override public void onEnterLevel(Season season, Level level) {
-                // TODO: setScreen(new LevelScreen(...)) once gameplay screen exists
+            @Override
+            public void onEnterLevel(Season season, Level level) {
+                // TODO: gameplay screen
             }
-            @Override public void onBack() { showMain(); } // EXIT_TARGET(GAME) = MAIN
+
+            @Override
+            public void onTravelMenu() {
+                showTravelMenu();
+            }
+
+            @Override
+            public void onBack() {
+                showMain();
+            }
         }));
     }
 
