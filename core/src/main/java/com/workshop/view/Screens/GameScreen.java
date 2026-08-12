@@ -74,7 +74,7 @@ public class GameScreen implements Screen {
         levelsTable.setVisible(false);
 
         TextButton travelMenuButton =
-            new TextButton("Travel Menu", skin, "default");
+            new TextButton("TravelLog", skin, "default");
 
         travelMenuButton.addListener(new ChangeListener() {
             @Override

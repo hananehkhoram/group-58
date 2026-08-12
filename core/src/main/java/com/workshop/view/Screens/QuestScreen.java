@@ -23,6 +23,7 @@ import java.util.List;
 public class QuestScreen implements Screen {
 
     private final Stage stage;
+    private ImageButton backButton;
 
     public QuestScreen(PvzGame game, User user) {
         Skin skin = PvzSkin.get();
@@ -36,11 +37,136 @@ public class QuestScreen implements Screen {
         Label title = new Label("Quests", skin, "big");
         root.add(title).padBottom(5).row();
 
+        TextButton dailyButton =
+            new TextButton("Daily", skin, "default");
+
+        TextButton mainButton =
+            new TextButton("Main", skin, "default");
+
+        TextButton epicButton =
+            new TextButton("Epic", skin, "default");
+
+        Table categoryButtons = new Table();
+
+        categoryButtons.add(dailyButton)
+            .width(150)
+            .padRight(15);
+
+        categoryButtons.add(mainButton)
+            .width(150)
+            .padRight(15);
+
+        categoryButtons.add(epicButton)
+            .width(150);
+
+        root.add(categoryButtons)
+            .padBottom(15)
+            .row();
+
         Table questTable = new Table();
         questTable.top().left();
 
+
+        ScrollPane scrollPane = new ScrollPane(questTable, skin);
+        scrollPane.setFadeScrollBars(false);
+        scrollPane.setScrollingDisabled(true, false);
+
+
+        dailyButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                showCategory(
+                    questTable,
+                    Quest.QuestCategory.DAILY,
+                    user,
+                    skin
+                );
+
+                scrollPane.setScrollY(0);
+            }
+        });
+
+        mainButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                showCategory(
+                    questTable,
+                    Quest.QuestCategory.MAIN,
+                    user,
+                    skin
+                );
+
+                scrollPane.setScrollY(0);
+            }
+        });
+
+
+
+        epicButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                showCategory(
+                    questTable,
+                    Quest.QuestCategory.EPIC,
+                    user,
+                    skin
+                );
+
+                scrollPane.setScrollY(0);
+            }
+        });
+
+        showCategory(
+            questTable,
+            Quest.QuestCategory.MAIN,
+            user,
+            skin
+        );
+
+        root.add(scrollPane)
+            .width(800)
+            .height(500)
+            .padBottom(50)
+            .row();
+
+        backButton = new ImageButton(skin, "generic_close_circle");
+
+        backButton.setSize(70, 70);
+
+        backButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.showTravelMenu();
+            }
+        });
+
+        stage.addActor(backButton);
+
+        updateBackButtonPosition();
+    }
+
+    private void updateBackButtonPosition() {
+        float width = stage.getViewport().getWorldWidth();
+        float height = stage.getViewport().getWorldHeight();
+
+        float x = width * 0.94f - backButton.getWidth() / 2f;
+        float y = height * 0.92f - backButton.getHeight() / 2f;
+
+        backButton.setPosition(x, y);
+    }
+
+    private void showCategory(
+        Table questTable,
+        Quest.QuestCategory category,
+        User user,
+        Skin skin
+    ) {
+        questTable.clearChildren();
+
         List<Quest> quests =
             new ArrayList<>(DataManager.getInstance().quests.getAll());
+
+        quests.removeIf(quest -> quest.getCategory() != category);
 
         quests.sort(
             Comparator.comparingInt(
@@ -51,27 +177,6 @@ public class QuestScreen implements Screen {
         for (Quest quest : quests) {
             addQuest(questTable, quest, user, skin);
         }
-
-        ScrollPane scrollPane = new ScrollPane(questTable, skin);
-        scrollPane.setFadeScrollBars(false);
-        scrollPane.setScrollingDisabled(true, false);
-        scrollPane.setScrollY(0);
-
-        root.add(scrollPane)
-            .width(800)
-            .height(500)
-            .padBottom(50)
-            .row();
-
-        ImageButton backButton = new ImageButton(skin, "generic_close_circle");
-        backButton.addListener(new  ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                game.showTravelMenu();
-            }
-        });
-
-        root.add(backButton).width(200);
     }
 
     private void addQuest(Table table, Quest quest, User user, Skin skin) {
@@ -166,7 +271,12 @@ public class QuestScreen implements Screen {
 
     @Override
     public void render(float v) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClearColor(
+            0.32f,
+            0.18f,
+            0.42f,
+            1f
+        );
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.act(v);
@@ -174,8 +284,10 @@ public class QuestScreen implements Screen {
     }
 
     @Override
-    public void resize(int i, int i1) {
+    public void resize(int width, int height) {
+        stage.getViewport().update(width, height, true);
 
+        updateBackButtonPosition();
     }
 
     @Override
