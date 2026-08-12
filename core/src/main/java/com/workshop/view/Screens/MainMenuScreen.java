@@ -21,6 +21,7 @@ import com.workshop.model.menus.allmenus.MainMenu;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Toast;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 import pvz.skin.PvzSkin;
 
@@ -40,6 +41,7 @@ public class MainMenuScreen implements Screen {
     private final Skin skin;
     private final Listener listener;
     private Texture dotTexture;
+    private Texture backgroundTexture;
 
     public MainMenuScreen(Listener listener) {
         this.listener = listener;
@@ -53,7 +55,16 @@ public class MainMenuScreen implements Screen {
         Table root = new Table();
         root.setFillParent(true);
 
-        Actor background = buildBackgroundOrNull();
+        backgroundTexture = new Texture(
+            Gdx.files.internal("IMAGES/mainmenu_background.png")
+        );
+
+        Image background = new Image(backgroundTexture);
+        background.setFillParent(true);
+        background.setScaling(Scaling.fill);
+
+        stage.addActor(background);
+
         if (background != null) stage.addActor(background); // added first so it draws behind everything else
         stage.addActor(root);
 
@@ -145,16 +156,6 @@ public class MainMenuScreen implements Screen {
         root.add(panel).grow();
     }
 
-
-    private Actor buildBackgroundOrNull() {
-        TextureRegion bgRegion = Textures.regionOrNull("IMAGE_MAINMENU_BACKGROUND");
-        if (bgRegion == null) return null;
-
-        Image background = new Image(bgRegion);
-        background.setScaling(Scaling.fill); // cover the whole screen, cropping overflow instead of distorting
-        background.setFillParent(true);
-        return background;
-    }
 
     private Actor buildLogoOrFallbackTitle(String nickName) {
         TextureRegion logoRegion = Textures.regionOrNull("IMAGE_UI_MAINMENU_PVZ2_LOGO_HORIZONTAL");
@@ -280,8 +281,8 @@ public class MainMenuScreen implements Screen {
     public void dispose() {
         stage.dispose();
 
-        if (dotTexture != null) {
-            dotTexture.dispose();
+        if (backgroundTexture != null) {
+            backgroundTexture.dispose();
         }
     }
 }
