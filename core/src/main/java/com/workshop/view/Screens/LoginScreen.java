@@ -2,15 +2,19 @@ package com.workshop.view.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
 import com.workshop.model.menus.allmenus.LoginMenu;
 
@@ -23,6 +27,7 @@ public class LoginScreen implements Screen {
     public interface Listener {
         void onLoginSuccess();
         void onSwitchToRegister();
+        void onExit();
     }
 
     private enum Step { LOGIN, FORGOT_EMAIL, FORGOT_ANSWER, FORGOT_NEW_PASSWORD }
@@ -31,16 +36,18 @@ public class LoginScreen implements Screen {
     private final Skin skin;
     private final LoginMenu loginMenu;
     private final Listener listener;
+    private Texture backgroundTexture;
 
     private Table root;
     private Table loginTable, forgotEmailTable, forgotAnswerTable, forgotNewPasswordTable;
     private Label statusLabel;
 
-    // login step
+
+    private Cell<Actor> contentCell;
+
     private TextField usernameField, passwordField;
     private CheckBox stayLoggedInBox;
 
-    // forgot-password steps
     private TextField forgotUsernameField, forgotEmailField;
     private Label securityQuestionLabel;
     private TextField answerField;
@@ -58,45 +65,47 @@ public class LoginScreen implements Screen {
     }
 
     private void build() {
+        buildBackground();
         root = new Table();
         root.setFillParent(true);
         root.center();
         stage.addActor(root);
 
         Table panel = new Table();
-        panel.pad(30);
-        panel.defaults().pad(6);
-        panel.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
-
+        panel.pad(16);
+        panel.defaults().pad(3);
 
         Label title = new Label("Login", skin, "big");
         title.setColor(Color.valueOf("5B3A29"));
-        panel.add(title).colspan(2).padBottom(16).row();
+        panel.add(title).colspan(2).padBottom(8).row();
 
         statusLabel = new Label("", skin, "secondary");
         statusLabel.setWrap(true);
         statusLabel.setAlignment(Align.center);
 
-        buildLoginStep(panel);
-        buildForgotEmailStep(panel);
-        buildForgotAnswerStep(panel);
-        buildForgotNewPasswordStep(panel);
+        loginTable = buildLoginStep();
+        forgotEmailTable = buildForgotEmailStep();
+        forgotAnswerTable = buildForgotAnswerStep();
+        forgotNewPasswordTable = buildForgotNewPasswordStep();
 
-        panel.add(statusLabel).colspan(2).width(360).padTop(12).row();
+        contentCell = panel.add((Actor) loginTable).colspan(2);
+        contentCell.row();
+
+        panel.add(statusLabel).colspan(2).width(360).padTop(6).row();
 
         ScrollPane scrollPane = new ScrollPane(panel, skin);
         scrollPane.setFadeScrollBars(false);
-        scrollPane.setScrollingDisabled(true, false); // vertical only
+        scrollPane.setScrollingDisabled(true, false); // vertical only, kicks in only if it truly doesn't fit
         stage.setScrollFocus(scrollPane);
 
-        root.add(scrollPane).grow().pad(20);
+        root.add(scrollPane).grow().pad(10);
 
         showStep(Step.LOGIN);
     }
 
-    private void buildLoginStep(Table panel) {
-        loginTable = new Table();
-        loginTable.defaults().pad(4);
+    private Table buildLoginStep() {
+        Table loginTable = new Table();
+        loginTable.defaults().pad(3);
 
         usernameField = new TextField("", skin);
         usernameField.setMessageText("username");
@@ -139,16 +148,26 @@ public class LoginScreen implements Screen {
             }
         });
 
-        loginTable.add(loginButton).colspan(2).padTop(12).width(200).row();
+        TextButton exitButton = new TextButton("Exit", skin, "brown");
+        exitButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                // Matches console MenuExit: EXIT_TARGET(LOGIN) = REGISTER, not app quit.
+                if (listener != null) listener.onExit();
+            }
+        });
+
+        loginTable.add(loginButton).colspan(2).padTop(6).width(200).row();
         loginTable.add(forgotLink).colspan(2).row();
         loginTable.add(registerLink).colspan(2).row();
+        loginTable.add(exitButton).colspan(2).padTop(4).width(200).row();
 
-        panel.add(loginTable).row();
+        return loginTable;
     }
 
-    private void buildForgotEmailStep(Table panel) {
-        forgotEmailTable = new Table();
-        forgotEmailTable.defaults().pad(4);
+    private Table buildForgotEmailStep() {
+        Table forgotEmailTable = new Table();
+        forgotEmailTable.defaults().pad(3);
 
         forgotUsernameField = new TextField("", skin);
         forgotUsernameField.setMessageText("username");
@@ -177,15 +196,15 @@ public class LoginScreen implements Screen {
             }
         });
 
-        forgotEmailTable.add(submit).colspan(2).padTop(12).width(200).row();
+        forgotEmailTable.add(submit).colspan(2).padTop(6).width(200).row();
         forgotEmailTable.add(back).colspan(2).row();
 
-        panel.add(forgotEmailTable).row();
+        return forgotEmailTable;
     }
 
-    private void buildForgotAnswerStep(Table panel) {
-        forgotAnswerTable = new Table();
-        forgotAnswerTable.defaults().pad(4);
+    private Table buildForgotAnswerStep() {
+        Table forgotAnswerTable = new Table();
+        forgotAnswerTable.defaults().pad(3);
 
         securityQuestionLabel = new Label("", skin, "secondary");
         securityQuestionLabel.setWrap(true);
@@ -193,7 +212,7 @@ public class LoginScreen implements Screen {
         answerField = new TextField("", skin);
         answerField.setMessageText("answer");
 
-        forgotAnswerTable.add(securityQuestionLabel).colspan(2).width(320).padBottom(8).row();
+        forgotAnswerTable.add(securityQuestionLabel).colspan(2).width(320).padBottom(4).row();
         forgotAnswerTable.add(new Label("Answer", skin, "secondary")).right();
         forgotAnswerTable.add(answerField).width(260).row();
 
@@ -204,14 +223,14 @@ public class LoginScreen implements Screen {
                 submitForgotAnswer();
             }
         });
-        forgotAnswerTable.add(submit).colspan(2).padTop(12).width(200).row();
+        forgotAnswerTable.add(submit).colspan(2).padTop(6).width(200).row();
 
-        panel.add(forgotAnswerTable).row();
+        return forgotAnswerTable;
     }
 
-    private void buildForgotNewPasswordStep(Table panel) {
-        forgotNewPasswordTable = new Table();
-        forgotNewPasswordTable.defaults().pad(4);
+    private Table buildForgotNewPasswordStep() {
+        Table forgotNewPasswordTable = new Table();
+        forgotNewPasswordTable.defaults().pad(3);
 
         newPasswordField = new TextField("", skin);
         newPasswordField.setMessageText("new password");
@@ -228,17 +247,21 @@ public class LoginScreen implements Screen {
                 submitNewPassword();
             }
         });
-        forgotNewPasswordTable.add(submit).colspan(2).padTop(12).width(200).row();
+        forgotNewPasswordTable.add(submit).colspan(2).padTop(6).width(200).row();
 
-        panel.add(forgotNewPasswordTable).row();
+        return forgotNewPasswordTable;
     }
 
     private void showStep(Step step) {
         currentStep = step;
-        loginTable.setVisible(step == Step.LOGIN);
-        forgotEmailTable.setVisible(step == Step.FORGOT_EMAIL);
-        forgotAnswerTable.setVisible(step == Step.FORGOT_ANSWER);
-        forgotNewPasswordTable.setVisible(step == Step.FORGOT_NEW_PASSWORD);
+        Table table;
+        switch (step) {
+            case FORGOT_EMAIL: table = forgotEmailTable; break;
+            case FORGOT_ANSWER: table = forgotAnswerTable; break;
+            case FORGOT_NEW_PASSWORD: table = forgotNewPasswordTable; break;
+            default: table = loginTable;
+        }
+        contentCell.setActor(table);
     }
 
     private void submitLogin() {
@@ -267,6 +290,19 @@ public class LoginScreen implements Screen {
             securityQuestionLabel.setText(question);
             showStep(Step.FORGOT_ANSWER);
         }
+    }
+    private void buildBackground() {
+        FileHandle bgFile = Textures.assetsRoot().child("IMAGES/Menus/login/img.png");
+        if (!bgFile.exists()) {
+            Gdx.app.error("loginScreen", "Background not found at " + bgFile.file().getAbsolutePath());
+            return;
+        }
+
+        backgroundTexture = new Texture(bgFile);
+        Image background = new Image(backgroundTexture);
+        background.setScaling(Scaling.fill); // cover the whole screen, cropping overflow instead of distorting
+        background.setFillParent(true);
+        stage.addActor(background);
     }
 
     private void submitForgotAnswer() {
@@ -332,5 +368,8 @@ public class LoginScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        if (backgroundTexture != null) {
+            backgroundTexture.dispose();
+        }
     }
 }

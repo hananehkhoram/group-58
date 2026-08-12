@@ -50,6 +50,10 @@ public class PvzGame extends Game {
             public void onSwitchToRegister() {
                 showRegister();
             }
+            @Override
+            public void onExit() {
+                showRegister();
+            }
 
         }));
     }

@@ -11,6 +11,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.utils.Scaling;
+import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
 import com.workshop.model.menus.allmenus.ProfileMenu;
 import com.workshop.model.user.User;
@@ -30,6 +34,7 @@ public class ProfileScreen implements Screen {
     private final Skin skin;
     private final ProfileMenu profileMenu;
     private final Listener listener;
+    private Texture backgroundTexture;
 
     private Label infoLabel;
 
@@ -48,6 +53,8 @@ public class ProfileScreen implements Screen {
     }
 
     private void build() {
+        buildBackground();
+
         Table root = new Table();
         root.setFillParent(true);
         root.center();
@@ -56,7 +63,7 @@ public class ProfileScreen implements Screen {
         Table panel = new Table();
         panel.pad(30);
         panel.defaults().pad(6);
-        panel.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
+        //panel.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
 
         Label title = new Label("Profile", skin, "big");
         title.setColor(Color.valueOf("5B3A29")); // "big"/"default" styles default to white, invisible on the cream panel
@@ -83,6 +90,20 @@ public class ProfileScreen implements Screen {
         stage.setScrollFocus(scrollPane);
 
         root.add(scrollPane).grow().pad(20);
+    }
+
+    private void buildBackground() {
+        FileHandle bgFile = Textures.assetsRoot().child("IMAGES/Menus/profile/img.png");
+        if (!bgFile.exists()) {
+            Gdx.app.error("ProfileScreen", "Background not found at " + bgFile.file().getAbsolutePath());
+            return;
+        }
+
+        backgroundTexture = new Texture(bgFile);
+        Image background = new Image(backgroundTexture);
+        background.setScaling(Scaling.fill); // cover the whole screen, cropping overflow instead of distorting
+        background.setFillParent(true);
+        stage.addActor(background);
     }
 
     private void buildInfoSection(Table panel) {
@@ -228,5 +249,8 @@ public class ProfileScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        if (backgroundTexture != null) {
+            backgroundTexture.dispose();
+        }
     }
 }

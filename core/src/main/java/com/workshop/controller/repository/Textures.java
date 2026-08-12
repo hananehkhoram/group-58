@@ -23,15 +23,30 @@ import pvz.libpvz.textures.TextureBank;
 public final class Textures {
 
     private static TextureBank instance;
+    private static FileHandle cachedAssetsRoot;
 
     private Textures() {}
 
     public static TextureBank getInstance() {
         if (instance == null) {
-            FileHandle assetsRoot = locateAssetsRoot();
-            instance = new TextureBank("768", assetsRoot);
+            instance = new TextureBank("768", assetsRoot());
         }
         return instance;
+    }
+
+    /**
+     * The resolved assets/ folder, found by trying a handful of likely locations
+     * relative to wherever the JVM actually started (see class docs). Reuse this
+     * for any other raw file under assets/ — e.g.
+     * {@code Textures.assetsRoot().child("IMAGES/Menus/profile/img.png")} — instead
+     * of {@code Gdx.files.internal(...)}, which depends on the classpath copy of
+     * resources being up to date and ignores this same working-directory problem.
+     */
+    public static FileHandle assetsRoot() {
+        if (cachedAssetsRoot == null) {
+            cachedAssetsRoot = locateAssetsRoot();
+        }
+        return cachedAssetsRoot;
     }
 
     private static FileHandle locateAssetsRoot() {

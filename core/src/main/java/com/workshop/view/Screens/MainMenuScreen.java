@@ -65,7 +65,7 @@ public class MainMenuScreen implements Screen {
 
         stage.addActor(background);
 
-        if (background != null) stage.addActor(background); // added first so it draws behind everything else
+        if (background != null) stage.addActor(background);
         stage.addActor(root);
 
         Table panel = new Table();

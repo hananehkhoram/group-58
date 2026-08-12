@@ -2,14 +2,19 @@ package com.workshop.view.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
 import com.workshop.model.menus.allmenus.RegisterMenu;
 import com.workshop.model.user.SecurityQuestions;
@@ -29,12 +34,11 @@ public class RegisterScreen implements Screen {
     private final Skin skin;
     private final RegisterMenu registerMenu;
     private final Listener listener;
+    private Texture backgroundTexture;
 
-    // step 1 widgets
     private TextField usernameField, passwordField, passwordConfirmField, nicknameField, emailField;
     private SelectBox<String> genderBox;
 
-    // step 2 widgets
     private SelectBox<String> questionBox;
     private TextField answerField, answerConfirmField;
 
@@ -42,60 +46,74 @@ public class RegisterScreen implements Screen {
     private Table step1Table;
     private Table step2Table;
 
-    // persistent inline message (e.g. "account created, pick a question below") —
-    // deliberately NOT a Toast, since it needs to stay on screen while step 2 is filled in
+
+    private Cell<Actor> contentCell;
+
     private Label statusLabel;
 
     public RegisterScreen(Listener listener) {
         this.listener = listener;
         this.skin = PvzSkin.get();
         this.stage = new Stage(new ScreenViewport());
-        // ctx isn't used by RegisterMenu's register()/pickQuestion() logic, null is fine here
         this.registerMenu = new RegisterMenu((GameContext) null);
 
         build();
     }
 
     private void build() {
+        buildBackground();
         root = new Table();
         root.setFillParent(true);
         root.center();
         stage.addActor(root);
 
         Table panel = new Table();
-        panel.pad(30);
-        panel.defaults().pad(6);
+        panel.pad(16);
+        panel.defaults().pad(3);
         // TenPatch background from the skin (see pvz-skin README > "TenPatch Drawables For Backgrounds")
-        panel.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
+        //panel.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
 
-        // "big"/"default" Label styles in this skin have no fontColor set, which
-        // defaults to white -> invisible on the cream panel background. Use
-        // "secondary" (explicit DarkBrown fontColor) for anything meant to be read.
+
         Label title = new Label("Create your account", skin, "big");
         title.setColor(Color.valueOf("5B3A29"));
-        panel.add(title).colspan(2).padBottom(16).row();
+        panel.add(title).colspan(2).padBottom(8).row();
 
         statusLabel = new Label("", skin, "secondary");
         statusLabel.setWrap(true);
         statusLabel.setAlignment(Align.center);
 
-        buildStep1(panel);
-        buildStep2(panel);
-        step2Table.setVisible(false);
+        step1Table = buildStep1();
+        step2Table = buildStep2();
 
-        panel.add(statusLabel).colspan(2).width(360).padTop(12).row();
+        contentCell = panel.add((Actor) step1Table).colspan(2);
+        contentCell.row();
+
+        panel.add(statusLabel).colspan(2).width(360).padTop(6).row();
 
         ScrollPane scrollPane = new ScrollPane(panel, skin);
         scrollPane.setFadeScrollBars(false);
-        scrollPane.setScrollingDisabled(true, false); // vertical only
+        scrollPane.setScrollingDisabled(true, false); // vertical only, kicks in only if it truly doesn't fit
         stage.setScrollFocus(scrollPane);
 
-        root.add(scrollPane).grow().pad(20);
+        root.add(scrollPane).grow().pad(10);
+    }
+    private void buildBackground() {
+        FileHandle bgFile = Textures.assetsRoot().child("IMAGES/Menus/register/img.png");
+        if (!bgFile.exists()) {
+            Gdx.app.error("registerScreen", "Background not found at " + bgFile.file().getAbsolutePath());
+            return;
+        }
+
+        backgroundTexture = new Texture(bgFile);
+        Image background = new Image(backgroundTexture);
+        background.setScaling(Scaling.fill); // cover the whole screen, cropping overflow instead of distorting
+        background.setFillParent(true);
+        stage.addActor(background);
     }
 
-    private void buildStep1(Table panel) {
-        step1Table = new Table();
-        step1Table.defaults().pad(4);
+    private Table buildStep1() {
+        Table step1Table = new Table();
+        step1Table.defaults().pad(3);
 
         usernameField = new TextField("", skin);
         usernameField.setMessageText("username");
@@ -135,7 +153,7 @@ public class RegisterScreen implements Screen {
         TextButton registerButton = new TextButton("Register", skin, "green");
         registerButton.addListener(new ChangeListener() {
             @Override
-            public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+            public void changed(ChangeEvent event, Actor actor) {
                 submitStep1();
             }
         });
@@ -143,7 +161,7 @@ public class RegisterScreen implements Screen {
         TextButton loginLink = new TextButton("Already have an account? Login", skin, "default");
         loginLink.addListener(new ChangeListener() {
             @Override
-            public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+            public void changed(ChangeEvent event, Actor actor) {
                 if (listener != null) listener.onSwitchToLogin();
             }
         });
@@ -151,21 +169,21 @@ public class RegisterScreen implements Screen {
         TextButton exitButton = new TextButton("Exit", skin, "brown");
         exitButton.addListener(new ChangeListener() {
             @Override
-            public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+            public void changed(ChangeEvent event, Actor actor) {
                 if (listener != null) listener.onExit();
             }
         });
 
-        step1Table.add(registerButton).colspan(2).padTop(12).width(200).row();
+        step1Table.add(registerButton).colspan(2).padTop(6).width(200).row();
         step1Table.add(loginLink).colspan(2).row();
-        step1Table.add(exitButton).colspan(2).padTop(8).width(200).row();
+        step1Table.add(exitButton).colspan(2).padTop(4).width(200).row();
 
-        panel.add(step1Table).row();
+        return step1Table;
     }
 
-    private void buildStep2(Table panel) {
-        step2Table = new Table();
-        step2Table.defaults().pad(4);
+    private Table buildStep2() {
+        Table step2Table = new Table();
+        step2Table.defaults().pad(3);
 
         questionBox = new SelectBox<>(skin);
         String[] questionTexts = new String[SecurityQuestions.values().length];
@@ -190,13 +208,13 @@ public class RegisterScreen implements Screen {
         TextButton finishButton = new TextButton("Finish", skin, "green");
         finishButton.addListener(new ChangeListener() {
             @Override
-            public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+            public void changed(ChangeEvent event, Actor actor) {
                 submitStep2();
             }
         });
-        step2Table.add(finishButton).colspan(2).padTop(12).width(200).row();
+        step2Table.add(finishButton).colspan(2).padTop(6).width(200).row();
 
-        panel.add(step2Table).row();
+        return step2Table;
     }
 
     private void submitStep1() {
@@ -213,8 +231,7 @@ public class RegisterScreen implements Screen {
 
         if (success) {
             setStatus("Account created. Pick a security question below.", false);
-            step1Table.setVisible(false);
-            step2Table.setVisible(true);
+            contentCell.setActor(step2Table);
         } else {
             Toast.showError(stage, skin, result);
         }
@@ -272,5 +289,8 @@ public class RegisterScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        if (backgroundTexture != null) {
+            backgroundTexture.dispose();
+        }
     }
 }

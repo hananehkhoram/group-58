@@ -45,6 +45,7 @@ public class GameScreen implements Screen {
     private Table levelsTable;
     private Table levelRowsTable;
     private Label levelsTitle;
+    private Cell<Actor> contentCell;
 
     public GameScreen(Listener listener) {
         this.listener = listener;
@@ -69,9 +70,10 @@ public class GameScreen implements Screen {
         title.setColor(Color.valueOf("5B3A29"));
         panel.add(title).padBottom(16).row();
 
-        buildChaptersStep(panel);
-        buildLevelsStep(panel);
-        levelsTable.setVisible(false);
+        buildChaptersStep();
+        buildLevelsStep();
+        contentCell = panel.add((Actor) chaptersTable);
+        contentCell.row();
 
         TextButton travelMenuButton =
             new TextButton("TravelLog", skin, "default");
@@ -107,7 +109,7 @@ public class GameScreen implements Screen {
         root.add(scrollPane).grow().pad(20);
     }
 
-    private void buildChaptersStep(Table panel) {
+    private void buildChaptersStep() {
         chaptersTable = new Table();
         chaptersTable.defaults().pad(4);
 
@@ -117,8 +119,6 @@ public class GameScreen implements Screen {
         for (Season chapter : chapters) {
             chaptersTable.add(buildChapterRow(chapter, currentUser)).width(380).row();
         }
-
-        panel.add(chaptersTable).row();
     }
 
     private Table buildChapterRow(Season chapter, User currentUser) {
@@ -154,7 +154,7 @@ public class GameScreen implements Screen {
         return row;
     }
 
-    private void buildLevelsStep(Table panel) {
+    private void buildLevelsStep() {
         levelsTable = new Table();
         levelsTable.defaults().pad(4);
 
@@ -175,8 +175,6 @@ public class GameScreen implements Screen {
         levelsTable.add(levelsTitle).padBottom(8).row();
         levelsTable.add(backToChapters).padBottom(12).row();
         levelsTable.add(levelRowsTable).row();
-
-        panel.add(levelsTable).row();
     }
 
     private void showLevels(Season chapter) {
@@ -188,13 +186,11 @@ public class GameScreen implements Screen {
             levelRowsTable.add(buildLevelRow(chapter, level, currentUser)).width(380).row();
         }
 
-        chaptersTable.setVisible(false);
-        levelsTable.setVisible(true);
+        contentCell.setActor(levelsTable);
     }
 
     private void showChapters() {
-        chaptersTable.setVisible(true);
-        levelsTable.setVisible(false);
+        contentCell.setActor(chaptersTable);
     }
 
     private Table buildLevelRow(Season chapter, Level level, User currentUser) {

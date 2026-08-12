@@ -2,19 +2,19 @@ package com.workshop.view.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.workshop.PvzGame;
 import com.workshop.controller.NewsManager;
 import com.workshop.controller.repository.DataManager;
+import com.workshop.controller.repository.Textures;
 import com.workshop.model.News.News;
 import com.workshop.model.user.User;
 import pvz.skin.PvzSkin;
@@ -24,10 +24,12 @@ import java.util.List;
 public class NewsScreen implements Screen {
 
     private final Stage stage;
+    private Texture backgroundTexture;
 
     public NewsScreen(PvzGame game, User user) {
         Skin skin = PvzSkin.get();
         stage = new Stage(new ScreenViewport());
+        buildBackground();
 
         Table root = new Table();
         root.setFillParent(true);
@@ -78,6 +80,19 @@ public class NewsScreen implements Screen {
             .expand()
             .fill()
             .padTop(20);
+    }
+    private void buildBackground() {
+        FileHandle bgFile = Textures.assetsRoot().child("IMAGES/Menus/news/img.png");
+        if (!bgFile.exists()) {
+            Gdx.app.error("newsScreen", "Background not found at " + bgFile.file().getAbsolutePath());
+            return;
+        }
+
+        backgroundTexture = new Texture(bgFile);
+        Image background = new Image(backgroundTexture);
+        background.setScaling(Scaling.fill);
+        background.setFillParent(true);
+        stage.addActor(background);
     }
 
     private void addNews(Table table, News news, Skin skin) {
@@ -148,5 +163,8 @@ public class NewsScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        if (backgroundTexture != null) {
+            backgroundTexture.dispose();
+        }
     }
 }
