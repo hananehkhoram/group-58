@@ -73,10 +73,7 @@ public class MainMenuScreen implements Screen {
         panel.padBottom(150);
 
         User currentUser = UserManager.getInstance().getCurrentUser();
-        String nickName = currentUser != null ? currentUser.getNickName() : "player";
 
-        Actor titleActor = buildLogoOrFallbackTitle(nickName);
-        panel.add(titleActor).width(560).height(180).padTop(5).row();
 
         TextButton playButton = new TextButton("Play", skin, "purple");
         playButton.addListener(new ChangeListener() {
@@ -156,19 +153,6 @@ public class MainMenuScreen implements Screen {
         root.add(panel).grow();
     }
 
-
-    private Actor buildLogoOrFallbackTitle(String nickName) {
-        TextureRegion logoRegion = Textures.regionOrNull("IMAGE_UI_MAINMENU_PVZ2_LOGO_HORIZONTAL");
-        if (logoRegion != null) {
-            Image logo = new Image(logoRegion);
-            logo.setScaling(Scaling.fit);
-            return logo;
-        }
-
-        Label fallback = new Label("Welcome, " + nickName, skin, "big");
-        fallback.setColor(Color.valueOf("5B3A29")); // "big"/"default" styles default to white, invisible on the cream panel
-        return fallback;
-    }
 
     private Actor buildProfileButton() {
         TextureRegion iconRegion = Textures.regionOrNull("IMAGE_UI_MAINMENU_MM_CAMERA");
