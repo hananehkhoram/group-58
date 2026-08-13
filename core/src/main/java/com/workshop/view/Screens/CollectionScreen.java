@@ -259,6 +259,7 @@ public class CollectionScreen implements Screen {
             int seedsNeeded = 5 * (plant.getLevel() + 1);
             boolean canUpgrade = isUnlocked && plant.getLevel() < 4 && currentSeeds >= seedsNeeded;
 
+            if ("Unlocked".equals(filter) && !isUnlocked) continue;
             if ("Locked".equals(filter) && isUnlocked) continue;
             if ("Upgradable".equals(filter) && !canUpgrade) continue;
 
@@ -269,7 +270,6 @@ public class CollectionScreen implements Screen {
             if (col % maxCols == 0) gridTable.row();
         }
     }
-
     private Table createPlantCard(Plant plant, boolean isUnlocked, int currentSeeds, int seedsNeeded, float scale) {
         Table card = new Table();
         card.top();
