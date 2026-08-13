@@ -4,19 +4,28 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
 import com.workshop.model.season.Season;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.workshop.model.plants.Plant;
+import pvz.skin.PvzSkin;
+import com.workshop.controller.repository.Textures;
+import com.workshop.controller.repository.Textures;
+import com.workshop.view.gameplay.PlantAnimationLayer;
 
 public class GamePlayScreen implements Screen {
 
     private final Stage stage;
+    private final PauseOverlay pauseOverlay;
     private final GameContext gameContext;
 
     private final Texture leftTexture;
@@ -28,10 +37,17 @@ public class GamePlayScreen implements Screen {
     private final Image rightBackground;
 
     private final ShapeRenderer shapeRenderer;
+    private final Runnable exitAction;
 
-    public GamePlayScreen(Season season, Level level) {
+    public GamePlayScreen(
+        Season season,
+        Level level,
+        Runnable exitAction
+    ) {
+        this.exitAction = exitAction;
 
         gameContext = new GameContext(level, season);
+        Skin skin = PvzSkin.get();
 
         BackgroundPaths paths =
             fallbackIfMissing(getBackgroundPaths(season));
@@ -66,6 +82,56 @@ public class GamePlayScreen implements Screen {
         rightBackground = new Image(rightTexture);
 
         buildBackground();
+
+        PlantAnimationLayer plantAnimationLayer =
+            new PlantAnimationLayer(
+                gameContext,
+                getGridX(),
+                getGridY(),
+                getGridWidth(),
+                getGridHeight()
+            );
+
+        stage.addActor(plantAnimationLayer);
+
+        pauseOverlay = new PauseOverlay(
+            stage,
+            skin,
+            gameContext,
+            () -> {
+                System.out.println("Restart clicked");
+            },
+            () -> {
+                gameContext.setPaused(false);
+
+                if (exitAction != null) {
+                    exitAction.run();
+                }
+            }
+        );
+
+        ImageButton pauseTestButton =
+            new ImageButton(skin, "ingame_pause");
+
+        pauseTestButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                pauseOverlay.show();
+            }
+        });
+
+
+        Table topBar = new Table();
+        topBar.setFillParent(true);
+        topBar.top().right();
+        topBar.padTop(20);
+        topBar.padRight(20);
+
+        topBar.add(pauseTestButton)
+            .size(70, 70);
+
+        stage.addActor(topBar);
+
     }
 
     private void buildBackground() {
@@ -295,8 +361,6 @@ public class GamePlayScreen implements Screen {
             - getCellHeight() / 2f;
     }
 
-
-
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
@@ -308,10 +372,19 @@ public class GamePlayScreen implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        stage.act(delta);
+        if (pauseOverlay.isVisible()) {
+            stage.act(0);
+        } else {
+            stage.act(delta);
+        }
+
+        Textures.getInstance().update();
+
         stage.draw();
 
-        drawDebugGrid();
+        if (!pauseOverlay.isVisible()) {
+            drawDebugGrid();
+        }
     }
 
     @Override
@@ -339,5 +412,6 @@ public class GamePlayScreen implements Screen {
         centerTexture.dispose();
         rightTexture.dispose();
         shapeRenderer.dispose();
+        pauseOverlay.dispose();
     }
 }

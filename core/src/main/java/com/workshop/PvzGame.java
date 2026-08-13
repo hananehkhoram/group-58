@@ -8,9 +8,7 @@ import com.workshop.model.season.Season;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Screens.*;
-import com.badlogic.gdx.Screen;
-import com.workshop.model.GameContext;
-import com.workshop.view.Screens.PauseOverlay;
+
 
 import com.workshop.view.Screens.LoginScreen;
 import com.workshop.view.Screens.RegisterScreen;
@@ -105,18 +103,7 @@ public class PvzGame extends Game {
                 showLogin();
             }
 
-            @Override
-            public void onTest() {
-                showOldMain();
-            }
         }));
-    }
-
-    public void showOldMain() {
-        setScreen(new MainScreen(
-            this,
-            UserManager.getInstance().getCurrentUser()
-        ));
     }
 
     public void showQuest() {
@@ -161,7 +148,7 @@ public class PvzGame extends Game {
     }
 
     public void showGamePlay(Season season, Level level) {
-        setScreen(new GamePlayScreen(season, level));
+        setScreen(new GamePlayScreen(season, level, this::showGame));
     }
 
     public void showGame() {

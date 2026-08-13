@@ -3,6 +3,7 @@ package com.workshop.controller.repository;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import pvz.libpvz.pam.PamPlayer;
 
 import pvz.libpvz.textures.TextureBank;
 
@@ -24,6 +25,7 @@ public final class Textures {
 
     private static TextureBank instance;
     private static FileHandle cachedAssetsRoot;
+    private static PamPlayer pamPlayer;
 
     private Textures() {}
 
@@ -32,6 +34,16 @@ public final class Textures {
             instance = new TextureBank("768", assetsRoot());
         }
         return instance;
+    }
+
+    public static PamPlayer getPamPlayer() {
+        if (pamPlayer == null) {
+            pamPlayer = new PamPlayer(
+                getInstance(),
+                assetsRoot()
+            );
+        }
+        return pamPlayer;
     }
 
     /**
