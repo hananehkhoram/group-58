@@ -17,6 +17,10 @@ import com.workshop.model.user.User;
 import pvz.skin.PvzSkin;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 public class TravelMenuScreen implements Screen {
 
@@ -53,6 +57,23 @@ public class TravelMenuScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 game.showQuest();
+            }
+        });
+
+        Texture leaderboardTexture = new Texture(
+            Gdx.files.internal("IMAGES/Menus/leaderBoard/LBicon.png")
+        );
+
+        TextureRegionDrawable leaderboardDrawable =
+            new TextureRegionDrawable(leaderboardTexture);
+
+        ImageButton leaderboardButton =
+            new ImageButton(leaderboardDrawable);
+
+        leaderboardButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.showLeaderboard();
             }
         });
 
@@ -117,7 +138,12 @@ public class TravelMenuScreen implements Screen {
         topLeft.padLeft(20);
 
         topLeft.add(questButton)
-            .width(180);
+            .width(180)
+            .padRight(15);
+
+        topLeft.add(leaderboardButton)
+            .width(178.8f)
+            .height(52.2f);
 
         stage.addActor(topLeft);
 

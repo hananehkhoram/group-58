@@ -159,11 +159,16 @@ public class PvzGame extends Game {
             @Override public void onBack() { showMain(); }
         }));
     }
+
+    public void showGamePlay(Season season, Level level) {
+        setScreen(new GamePlayScreen(season, level));
+    }
+
     public void showGame() {
         setScreen(new GameScreen(new GameScreen.Listener() {
             @Override
             public void onEnterLevel(Season season, Level level) {
-                // TODO: gameplay screen
+                showGamePlay(season, level);
             }
 
             @Override

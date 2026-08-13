@@ -47,6 +47,8 @@ public class GameScreen implements Screen {
     private Label levelsTitle;
     private Cell<Actor> contentCell;
 
+    private static final boolean TEST_UNLOCK_ALL_LEVELS = true;
+
     public GameScreen(Listener listener) {
         this.listener = listener;
         this.skin = PvzSkin.get();
@@ -123,8 +125,12 @@ public class GameScreen implements Screen {
 
     private Table buildChapterRow(Season chapter, User currentUser) {
         List<Level> levels = chapter.getLevels();
-        int unlockedCount = countUnlocked(levels, currentUser);
-        boolean chapterUnlocked = unlockedCount > 0;
+        int unlockedCount = TEST_UNLOCK_ALL_LEVELS
+            ? levels.size()
+            : countUnlocked(levels, currentUser);
+
+        boolean chapterUnlocked =
+            TEST_UNLOCK_ALL_LEVELS || unlockedCount > 0;
 
         Table row = new Table();
         row.defaults().pad(4);
@@ -194,8 +200,10 @@ public class GameScreen implements Screen {
     }
 
     private Table buildLevelRow(Season chapter, Level level, User currentUser) {
-        boolean unlocked = currentUser != null && currentUser.isLevelUnlocked(level.getName());
-
+        boolean unlocked =
+            TEST_UNLOCK_ALL_LEVELS
+                || (currentUser != null
+                && currentUser.isLevelUnlocked(level.getName()));
         Table row = new Table();
         row.defaults().pad(4);
         row.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));

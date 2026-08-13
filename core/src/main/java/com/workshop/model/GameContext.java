@@ -360,6 +360,10 @@ public class GameContext {
         return gameEnded;
     }
 
+    public boolean isPlayerWon() {
+        return playerWon;
+    }
+
     public void setSetupPhase(boolean v) {
         this.isSetupPhase = v;
     }

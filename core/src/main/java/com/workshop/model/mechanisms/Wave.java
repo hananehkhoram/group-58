@@ -124,7 +124,6 @@ public class Wave {
             Zombie zombie = factory.create(name);
             placeZombie(ctx, zombie, random);
             ctx.addZombie(zombie);
-            zombie.setX(8.0);
             spawnedZombies.add(zombie);
             remainingBudget -= cost;
 
