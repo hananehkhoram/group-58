@@ -16,18 +16,12 @@ import com.workshop.view.Screens.LoginScreen;
 import com.workshop.view.Screens.RegisterScreen;
 import com.workshop.view.Screens.MainMenuScreen;
 
-/**
- * Entry point of the libGDX application (the "Game class" the console version never had).
- * Owns screen switching and the user-data load/save lifecycle, mirroring what
- * {@code GameEngineController} does for the console version.
- */
 public class PvzGame extends Game {
 
     @Override
     public void create() {
         DataManager.getInstance().loadUser();
 
-        // Mirrors GameEngineController: auto-login whoever has "stay logged in" set.
         for (User u : UserManager.getInstance().users) {
             if (u.isStayedLogin()) {
                 UserManager.getInstance().login(u);
@@ -100,6 +94,11 @@ public class PvzGame extends Game {
             }
 
             @Override
+            public void onCollection() {
+                showCollection();
+            }
+
+            @Override
             public void onLogout() {
                 UserManager.getInstance().logOut();
                 showLogin();
@@ -111,7 +110,6 @@ public class PvzGame extends Game {
             }
         }));
     }
-
     public void showOldMain() {
         setScreen(new MainScreen(
             this,
@@ -140,6 +138,20 @@ public class PvzGame extends Game {
         ));
     }
 
+    public void showCollection() {
+        setScreen(new CollectionScreen(null, new CollectionScreen.Listener() {
+            @Override
+            public void onBack() {
+                showMain();
+            }
+
+            @Override
+            public void onNavigateToScreen(Screen screen) {
+                setScreen(screen);
+            }
+        }));
+    }
+
     public void showSettings() {
         setScreen(new SettingsScreen(
             this,
@@ -163,7 +175,6 @@ public class PvzGame extends Game {
         setScreen(new GameScreen(new GameScreen.Listener() {
             @Override
             public void onEnterLevel(Season season, Level level) {
-                // TODO: gameplay screen
             }
 
             @Override
@@ -181,7 +192,6 @@ public class PvzGame extends Game {
     public void showLeaderboard() {
         setScreen(new LeaderBoardScreen(this));
     }
-
 
     @Override
     public void dispose() {

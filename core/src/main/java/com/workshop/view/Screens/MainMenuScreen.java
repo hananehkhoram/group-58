@@ -21,10 +21,8 @@ import com.workshop.model.menus.allmenus.MainMenu;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Toast;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 import pvz.skin.PvzSkin;
-
 
 public class MainMenuScreen implements Screen {
 
@@ -35,6 +33,7 @@ public class MainMenuScreen implements Screen {
         void onProfile();
         void onLogout();
         void onTest();
+        void onCollection();
     }
 
     private final Stage stage;
@@ -64,8 +63,6 @@ public class MainMenuScreen implements Screen {
         background.setScaling(Scaling.fill);
 
         stage.addActor(background);
-
-        if (background != null) stage.addActor(background);
         stage.addActor(root);
 
         Table panel = new Table();
@@ -73,7 +70,6 @@ public class MainMenuScreen implements Screen {
         panel.padBottom(150);
 
         User currentUser = UserManager.getInstance().getCurrentUser();
-
 
         TextButton playButton = new TextButton("Play", skin, "purple");
         playButton.addListener(new ChangeListener() {
@@ -93,6 +89,7 @@ public class MainMenuScreen implements Screen {
         });
 
         Actor profileButton = buildProfileButton();
+        Actor collectionButton = buildCollectionButton();
 
         boolean hasUnreadNews = currentUser != null
             && new MainMenu((GameContext) null).shouldShowRedDot(currentUser);
@@ -106,11 +103,11 @@ public class MainMenuScreen implements Screen {
             }
         });
 
-
         Table iconRow = new Table();
         iconRow.defaults().pad(6);
         iconRow.add(settingsButton).size(75, 72);
         iconRow.add(profileButton).size(75, 72);
+        iconRow.add(collectionButton).size(75, 72);
         iconRow.add(newsButton);
         panel.add(iconRow).padBottom(10).row();
 
@@ -135,7 +132,6 @@ public class MainMenuScreen implements Screen {
 
         //================================================================================
 
-
         TextButton exitButton = new TextButton("Exit", skin, "brown");
         exitButton.addListener(new ChangeListener() {
             @Override
@@ -152,7 +148,6 @@ public class MainMenuScreen implements Screen {
 
         root.add(panel).grow();
     }
-
 
     private Actor buildProfileButton() {
         TextureRegion iconRegion = Textures.regionOrNull("IMAGE_UI_MAINMENU_MM_CAMERA");
@@ -178,6 +173,32 @@ public class MainMenuScreen implements Screen {
             }
         });
         return profileButton;
+    }
+
+    private Actor buildCollectionButton() {
+        TextureRegion iconRegion = Textures.regionOrNull("IMAGE_UI_HUD_ALMANACBUTTON_BUTTONS_HUD_ALMANAC_NORMAL");
+
+        if (iconRegion != null) {
+            ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
+            style.imageUp = new TextureRegionDrawable(iconRegion);
+            ImageButton iconButton = new ImageButton(style);
+            iconButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    if (listener != null) listener.onCollection();
+                }
+            });
+            return iconButton;
+        }
+
+        TextButton collectionButton = new TextButton("Collection", skin, "green_small");
+        collectionButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (listener != null) listener.onCollection();
+            }
+        });
+        return collectionButton;
     }
 
     private Actor buildNewsButton(boolean showDot) {
@@ -225,12 +246,14 @@ public class MainMenuScreen implements Screen {
     }
 
     private TextureRegionDrawable getDotDrawable() {
-        int size = 16;
-        Pixmap pixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.valueOf("E85D5D"));
-        pixmap.fillCircle(size / 2, size / 2, size / 2);
-        dotTexture = new Texture(pixmap);
-        pixmap.dispose();
+        if (dotTexture == null) {
+            int size = 16;
+            Pixmap pixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
+            pixmap.setColor(Color.valueOf("E85D5D"));
+            pixmap.fillCircle(size / 2, size / 2, size / 2);
+            dotTexture = new Texture(pixmap);
+            pixmap.dispose();
+        }
         return new TextureRegionDrawable(new TextureRegion(dotTexture));
     }
 
@@ -267,6 +290,9 @@ public class MainMenuScreen implements Screen {
 
         if (backgroundTexture != null) {
             backgroundTexture.dispose();
+        }
+        if (dotTexture != null) {
+            dotTexture.dispose();
         }
     }
 }
