@@ -1,28 +1,24 @@
 package com.workshop.model.GreenHouseData;
 
-public class GreenHouse{
+
+public class GreenHouse {
+    public static final int ROWS = 3;
+    public static final int COLS = 4;
+
     private Pot[][] pots;
 
     public GreenHouse() {
-        this.pots = new Pot[4][5];
-
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 5; j++) {
+        this.pots = new Pot[ROWS][COLS];
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
                 pots[i][j] = new Pot();
-                pots[i][j] = new Pot();
-                if (i == 1) {
-                    pots[i][j].setLocked(false);
-                } else {
-                    pots[i][j].setLocked(true);
-                }
+                pots[i][j].setLocked(i != 1); // ردیف وسط از اول باز است
             }
         }
     }
 
-
     public boolean unlockPot(int x, int y) {
         if (isInvalidBounds(x, y)) return false;
-
         Pot pot = pots[x][y];
         if (pot.isLocked()) {
             pot.setLocked(false);
@@ -30,9 +26,10 @@ public class GreenHouse{
         }
         return false;
     }
+
     public boolean unlockFirstLockedPot() {
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 5; j++) {
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
                 if (pots[i][j].isLocked()) {
                     pots[i][j].setLocked(false);
                     return true;
@@ -48,8 +45,6 @@ public class GreenHouse{
     }
 
     private boolean isInvalidBounds(int x, int y) {
-        return x < 0 || x >= 4 || y < 0 || y >= 5;
+        return x < 0 || x >= ROWS || y < 0 || y >= COLS;
     }
-
-
 }

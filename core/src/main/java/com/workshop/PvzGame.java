@@ -21,9 +21,6 @@ import com.workshop.view.Screens.MainMenuScreen;
 
 public class PvzGame extends Game {
 
-    // null ctx here mirrors showCollection()'s `new CollectionScreen(null, ...)` -
-    // this MenuManager only exists so we can reuse startBattle()'s GameContext /
-    // GameEngine wiring; it isn't driving a console menu for the graphical screens.
     private final MenuManager menuManager = new MenuManager(null);
 
     @Override
@@ -107,6 +104,11 @@ public class PvzGame extends Game {
             }
 
             @Override
+            public void onGreenHouse() {
+                showGreenHouse();
+            }
+
+            @Override
             public void onLogout() {
                 UserManager.getInstance().logOut();
                 showLogin();
@@ -184,14 +186,10 @@ public class PvzGame extends Game {
         setScreen(new GameScreen(new GameScreen.Listener() {
             @Override
             public void onEnterLevel(Season season, Level level) {
-                // reuse the same wiring EnterChapter uses for the console flow,
-                // so GameContext + GameEngine are built the one way that's tested.
                 menuManager.startBattle(level, season);
                 GameContext ctx = menuManager.getCtx();
 
                 if (level.getLevelType() == LevelType.CONVEYOR_BELT) {
-                    // side-bar / conveyor-belt levels skip plant selection entirely,
-                    // so nothing has placed graves / started the battle yet - do it here.
                     season.onLevelStart(ctx);
                     for (Grave g : season.getInitialGraves(level)) {
                         ctx.placeGrave(g, g.getRow(), g.getCol());
@@ -224,20 +222,20 @@ public class PvzGame extends Game {
 
             @Override
             public void onStartBattle() {
-                // PlantSelectionMenu.startGame() already placed graves and set
-                // battleStarted=true (see PlantSelectionScreen) - just switch screens.
                 goToBattleScreen(ctx);
             }
         }));
     }
 
-    /**
-     * Hands off to the actual battle screen. Both entry points - conveyor-belt
-     * levels (which skip plant selection) and regular levels (after "Let's Rock")
-     * - call this once graves are placed and {@code ctx.setBattleStarted(true)}
-     * has run. {@code menuManager.getGameEngine()} is already wired to {@code ctx}
-     * by {@code startBattle()} above, so the battle screen just needs to render it.
-     */
+    public void showGreenHouse() {
+        setScreen(new GreenHouseScreen(null, new GreenHouseScreen.Listener() {
+            @Override
+            public void onBack() {
+                showMain();
+            }
+        }));
+    }
+
     private void goToBattleScreen(GameContext ctx) {
         // TODO: point this at whatever Screen actually renders the battle -
         // that class wasn't in the files shared with me. Something like:

@@ -1,5 +1,6 @@
 package com.workshop.controller.repository;
 
+import com.workshop.model.GreenHouseData.GreenHouse;
 import com.workshop.model.GreenHouseData.Pot;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.shopData.DailyOffer;
@@ -119,8 +120,8 @@ public class UserRepository implements AssetRepository<User> {
                 .toList());
 
         StringBuilder greenhouseSb = new StringBuilder();
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 5; j++) {
+        for (int i = 0; i < GreenHouse.ROWS; i++) {
+            for (int j = 0; j < GreenHouse.COLS; j++) {
                 Pot pot = u.getGreenHouse().getPot(i, j);
                 greenhouseSb.append(pot.isLocked()).append(PLANT_SEP)
                     .append(pot.isEmpty()).append(PLANT_SEP)
@@ -251,8 +252,8 @@ public class UserRepository implements AssetRepository<User> {
         if (!f[27].isBlank()) {
             String[] potEntries = f[27].split(LIST_SEP);
             int idx = 0;
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 5; j++) {
+            for (int i = 0; i < GreenHouse.ROWS; i++) {
+                for (int j = 0; j < GreenHouse.COLS; j++) {
                     String[] parts = potEntries[idx++].split(PLANT_SEP, -1);
                     Pot pot = u.getGreenHouse().getPot(i, j);
                     pot.setLocked(Boolean.parseBoolean(parts[0]));
@@ -268,6 +269,7 @@ public class UserRepository implements AssetRepository<User> {
                 }
             }
         }
+
 
         if (f.length > 28 && !f[28].isBlank()) {
             String[] offerParts = f[28].split(LIST_SEP, -1);

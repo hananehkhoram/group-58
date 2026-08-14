@@ -9,6 +9,7 @@ import com.workshop.model.menus.BaseMenu;
 import com.workshop.model.menus.MenuType;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.plants.plantFoodEffect.PlantFoodMode;
+import com.workshop.model.shopData.ItemType;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Console;
@@ -35,6 +36,23 @@ public class GreenHouseMenu extends BaseMenu {
         this.plantFactory = new PlantFactory(dm);
         this.name = "Greenhouse menu";
     }
+    public String buyPot(int x, int y) {
+        Pot pot = greenHouse.getPot(x, y);
+        if (pot == null) return "Invalid pot index.";
+        if (!pot.isLocked()) return "Pot is already unlocked.";
+
+        ItemType potItem = ItemType.POT_UNLOCK;
+        if (currentUser.getGems() < potItem.getPrice()) {
+            return "Not enough gems!";
+        }
+
+        currentUser.setGems(currentUser.getGems() - potItem.getPrice());
+        currentUser.setOwnedPotsCount(currentUser.getOwnedPotsCount() + 1);
+        greenHouse.unlockPot(x, y);
+        DataManager.getInstance().saveUser();
+        return "Pot unlocked!";
+    }
+
     public String showGreenHouse(){
         StringBuilder sb = new StringBuilder();
         sb.append("=== Welcome to the Greenhouse ===\n");

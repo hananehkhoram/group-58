@@ -35,6 +35,7 @@ public class MainMenuScreen implements Screen {
         void onLogout();
         void onTest();
         void onCollection();
+        void onGreenHouse();
     }
 
     private final Stage stage;
@@ -98,6 +99,8 @@ public class MainMenuScreen implements Screen {
 
         Actor profileButton = buildProfileButton();
         Actor collectionButton = buildCollectionButton();
+        Actor greenHouseButton = buildGreenHouseButton();
+
 
         boolean hasUnreadNews = currentUser != null
             && new MainMenu((GameContext) null).shouldShowRedDot(currentUser);
@@ -116,6 +119,7 @@ public class MainMenuScreen implements Screen {
         iconRow.add(settingsButton).size(75, 72);
         iconRow.add(profileButton).size(75, 72);
         iconRow.add(collectionButton).size(75, 72);
+        iconRow.add(greenHouseButton).size(75, 72);
         iconRow.add(newsButton);
         panel.add(iconRow).padBottom(10).row();
 
@@ -181,6 +185,31 @@ public class MainMenuScreen implements Screen {
             }
         });
         return profileButton;
+    }
+    private Actor buildGreenHouseButton() {
+        Texture icon = new Texture(Gdx.files.internal("IMAGES/Menus/GreenHouse/IMAGE_UI_MAINMENU_MM_GREENHOUSE.png"));
+        TextureRegion iconRegion = new TextureRegion(icon);
+        if (iconRegion != null) {
+            ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
+            style.imageUp = new TextureRegionDrawable(iconRegion);
+            ImageButton iconButton = new ImageButton(style);
+            iconButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    if (listener != null) listener.onGreenHouse();
+                }
+            });
+            return iconButton;
+        }
+
+        TextButton greenHouseButton = new TextButton("Greenhouse", skin, "green_small");
+        greenHouseButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (listener != null) listener.onGreenHouse();
+            }
+        });
+        return greenHouseButton;
     }
 
     private Actor buildCollectionButton() {
