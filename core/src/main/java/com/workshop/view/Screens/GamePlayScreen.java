@@ -13,7 +13,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.workshop.model.GameContext;
-import com.workshop.model.level.Level;
 import com.workshop.model.season.Season;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -52,20 +51,21 @@ public class GamePlayScreen implements Screen {
     private final float introCameraX;
     private final float gameplayCameraX;
     private final float cameraY;
-    private static final float INTRO_WAIT = 1;
+    private static final float INTRO_WAIT = 2;
     private static final float INTRO_DURATION = 1.4f;
 
     private float introTime;
     private boolean introFinished;
 
     public GamePlayScreen(
-        Season season,
-        Level level,
+        GameContext gameContext,
         Runnable exitAction
     ) {
         this.exitAction = exitAction;
+        this.gameContext = gameContext;
 
-        gameContext = new GameContext(level, season);
+        Season season = gameContext.getSeason();
+
         Skin skin = PvzSkin.get();
 
         BackgroundPaths paths =

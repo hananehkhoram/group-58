@@ -149,8 +149,8 @@ public class TravelMenuScreen implements Screen {
             .padRight(15);
 
         topLeft.add(leaderboardButton)
-            .width(178.8f)
-            .height(52.2f);
+            .width(89.4f)
+            .height(26.1f);
 
         stage.addActor(topLeft);
 

@@ -116,13 +116,6 @@ public class PvzGame extends Game {
 
         }));
     }
-    public void showOldMain() {
-        setScreen(new MainScreen(
-            this,
-            UserManager.getInstance().getCurrentUser()
-        ));
-    }
-
 
     public void showQuest() {
         setScreen(new QuestScreen(
@@ -179,8 +172,11 @@ public class PvzGame extends Game {
         }));
     }
 
-    public void showGamePlay(Season season, Level level) {
-        setScreen(new GamePlayScreen(season, level, this::showGame));
+    public void showGamePlay(GameContext ctx) {
+        setScreen(new GamePlayScreen(
+            ctx,
+            this::showGame
+        ));
     }
 
 
@@ -193,15 +189,16 @@ public class PvzGame extends Game {
 
                 if (level.getLevelType() == LevelType.CONVEYOR_BELT) {
                     season.onLevelStart(ctx);
+
                     for (Grave g : season.getInitialGraves(level)) {
                         ctx.placeGrave(g, g.getRow(), g.getCol());
                     }
+
                     ctx.setBattleStarted(true);
-                    goToBattleScreen(ctx);
+                    showGamePlay(ctx);
                 } else {
                     showPlantSelection(ctx);
                 }
-                showGamePlay(season, level);
             }
 
             @Override
@@ -225,7 +222,7 @@ public class PvzGame extends Game {
 
             @Override
             public void onStartBattle() {
-                goToBattleScreen(ctx);
+                showGamePlay(ctx);
             }
         }));
     }
@@ -239,13 +236,6 @@ public class PvzGame extends Game {
         }));
     }
 
-    private void goToBattleScreen(GameContext ctx) {
-        // TODO: point this at whatever Screen actually renders the battle -
-        // that class wasn't in the files shared with me. Something like:
-        // setScreen(new BattleScreen(ctx, menuManager.getGameEngine(), new BattleScreen.Listener() {
-        //     @Override public void onBattleEnd() { showGame(); }
-        // }));
-    }
 
     public void showLeaderboard() {
         setScreen(new LeaderBoardScreen(this));
