@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.workshop.controller.NewsManager;
+import com.workshop.view.components.CurrencyHeader;
 
 import pvz.skin.PvzSkin;
 
@@ -29,6 +30,7 @@ public class MainScreen implements Screen {
 
     private final Stage stage;
     private final PauseOverlay pauseOverlay;
+    private CurrencyHeader currencyHeader;
 
     public MainScreen(PvzGame game, User user) {
         Skin skin = PvzSkin.get();
@@ -36,8 +38,17 @@ public class MainScreen implements Screen {
 
         Table root = new Table();
         root.setFillParent(true);
-        root.center();
+        root.top();
+        root.padTop(10);
         stage.addActor(root);
+
+        Table topBarContainer = new Table();
+        currencyHeader = new CurrencyHeader();
+        topBarContainer.add(currencyHeader).right().padRight(10);
+        root.add(topBarContainer).fillX().height(45).pad(0, 0, 10, 0).row();
+
+        Table centerContent = new Table();
+        centerContent.center();
 
         String nickName = user != null ? user.getNickName() : "player";
         Label welcome = new Label("Welcome, " + nickName + "!", skin, "big");
@@ -152,19 +163,24 @@ public class MainScreen implements Screen {
 
         stage.addActor(topBar);
 
-        root.add(welcome).padBottom(20).row();
-        root.add(SkinButton).width(200).row();
-        root.add(leaderboardButton)
+        centerContent.add(welcome).padBottom(20).row();
+        centerContent.add(SkinButton).width(200).padBottom(10).row();
+        centerContent.add(leaderboardButton)
             .width(200)
+            .padBottom(10)
             .row();
-        root.add(newsStack).width(200).row();
-        root.add(logoutButton).width(200).row();
+        centerContent.add(newsStack).width(200).padBottom(10).row();
+        centerContent.add(logoutButton).width(200).row();
 
+        root.add(centerContent).expand().center();
     }
 
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        if (currencyHeader != null) {
+            currencyHeader.updateValues();
+        }
     }
 
     @Override

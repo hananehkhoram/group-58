@@ -92,11 +92,8 @@ public class ShopMenu extends BaseMenu {
 
     /** محدودیت‌های موجودی (مثل حداکثر تعداد گلدان یا پلانت‌فود) را چک می‌کند. */
     private String checkStockLimit(ItemType item, int count) {
-        if (item == ItemType.POT_UNLOCK && currentUser.getOwnedPotsCount() + count > 20) {
-            return "Purchase failed! You cannot own more than 20 pots.";
-        }
-        if (item == ItemType.PLANT_FOOD && currentUser.getPlantFoodCount() + count > 3) {
-            return "Purchase failed! You cannot hold more than 3 plant foods.";
+        if (item == ItemType.POT_UNLOCK && currentUser.getOwnedPotsCount() + count > GreenHouse.ROWS * GreenHouse.COLS) {
+            return "Purchase failed! You cannot own more than " + (GreenHouse.ROWS * GreenHouse.COLS) + " pots.";
         }
         return null;
     }

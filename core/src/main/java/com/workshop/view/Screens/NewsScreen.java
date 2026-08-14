@@ -17,6 +17,7 @@ import com.workshop.controller.repository.DataManager;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.News.News;
 import com.workshop.model.user.User;
+import com.workshop.view.components.CurrencyHeader;
 import pvz.skin.PvzSkin;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class NewsScreen implements Screen {
 
     private final Stage stage;
     private Texture backgroundTexture;
+    private CurrencyHeader currencyHeader;
 
     public NewsScreen(PvzGame game, User user) {
         Skin skin = PvzSkin.get();
@@ -33,8 +35,14 @@ public class NewsScreen implements Screen {
 
         Table root = new Table();
         root.setFillParent(true);
+        root.top();
         root.pad(30);
         stage.addActor(root);
+
+        Table topBar = new Table();
+        currencyHeader = new CurrencyHeader();
+        topBar.add(currencyHeader).right().padRight(10);
+        root.add(topBar).fillX().height(45).pad(0, 0, 10, 0).colspan(2).row();
 
         Label title = new Label("News", skin, "big");
 
@@ -130,6 +138,9 @@ public class NewsScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        if (currencyHeader != null) {
+            currencyHeader.updateValues();
+        }
     }
 
     @Override
