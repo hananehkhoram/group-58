@@ -52,7 +52,7 @@ public class GamePlayScreen implements Screen {
     private final float introCameraX;
     private final float gameplayCameraX;
     private final float cameraY;
-    private static final float INTRO_WAIT = 1;
+    private static final float INTRO_WAIT = 2;
     private static final float INTRO_DURATION = 1.4f;
 
     private float introTime;
