@@ -13,10 +13,10 @@ public final class Toast {//اعلان موقت
 
     private static final float FADE_DURATION = 0.25f;
     private static final float VISIBLE_DURATION = 3.5f;
-    private static final float MISSION_VISIBLE_DURATION = 5.5f; // objectives need more time to read
+    private static final float MISSION_VISIBLE_DURATION = 5.5f;
     private static final float TOP_MARGIN = 32f;
     private static final float MAX_WIDTH = 380f;
-    private static final float MISSION_MAX_WIDTH = 460f;
+    private static final float MISSION_MAX_WIDTH = 640f;
 
     private Toast() {}
 
@@ -33,23 +33,13 @@ public final class Toast {//اعلان موقت
     }
 
     public static void showMission(Stage stage, Skin skin, String message) {
-        show(stage, skin, message, Color.valueOf("5B3A29"), MISSION_MAX_WIDTH, MISSION_VISIBLE_DURATION);
+        showCentered(stage, skin, message, Color.valueOf("5B3A29"), MISSION_MAX_WIDTH, MISSION_VISIBLE_DURATION);
     }
 
     private static void show(Stage stage, Skin skin, String message, Color textColor, float maxWidth, float visibleDuration) {
         if (message == null || message.isBlank()) return;
 
-        Label label = new Label(message.trim(), skin, "default");
-        label.setColor(textColor);
-        label.setWrap(true);
-        label.setAlignment(Align.center);
-
-        Table toast = new Table();
-        toast.pad(14, 22, 14, 22);
-        toast.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
-        toast.add(label).width(maxWidth - 44);
-        toast.pack();
-
+        Table toast = buildToast(skin, message, textColor, maxWidth, "default");
         toast.getColor().a = 0f;
         stage.addActor(toast);
 
@@ -65,5 +55,39 @@ public final class Toast {//اعلان موقت
             Actions.fadeOut(FADE_DURATION),
             Actions.removeActor()
         ));
+    }
+
+    private static void showCentered(Stage stage, Skin skin, String message, Color textColor, float maxWidth, float visibleDuration) {
+        if (message == null || message.isBlank()) return;
+
+        Table toast = buildToast(skin, message, textColor, maxWidth, "big");
+        toast.getColor().a = 0f;
+        stage.addActor(toast);
+
+        float centerX = (stage.getWidth() - toast.getWidth()) / 2f;
+        float centerY = (stage.getHeight() - toast.getHeight()) / 2f;
+        toast.setPosition(centerX, centerY);
+
+        toast.addAction(Actions.sequence(
+            Actions.fadeIn(FADE_DURATION),
+            Actions.delay(visibleDuration),
+            Actions.fadeOut(FADE_DURATION),
+            Actions.removeActor()
+        ));
+    }
+
+    private static Table buildToast(Skin skin, String message, Color textColor, float maxWidth, String labelStyle) {
+        Label label = new Label(message.trim(), skin, labelStyle);
+        label.setColor(textColor);
+        label.setWrap(true);
+        label.setAlignment(Align.center);
+
+        Table toast = new Table();
+        toast.pad(20, 28, 20, 28);
+        toast.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
+        toast.add(label).width(maxWidth - 56);
+        toast.pack();
+
+        return toast;
     }
 }
