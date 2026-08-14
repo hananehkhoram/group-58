@@ -2,21 +2,26 @@ package com.workshop.view.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import com.workshop.controller.repository.DataManager;
+import com.workshop.controller.repository.Textures;
 import com.workshop.model.level.Level;
 import com.workshop.model.season.Season;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Toast;
+import com.workshop.view.components.CurrencyHeader;
 
 import pvz.skin.PvzSkin;
 
@@ -46,6 +51,8 @@ public class GameScreen implements Screen {
     private Table levelRowsTable;
     private Label levelsTitle;
     private Cell<Actor> contentCell;
+    private CurrencyHeader currencyHeader;
+    private Texture backgroundTexture;
 
     private static final boolean TEST_UNLOCK_ALL_LEVELS = true;
 
@@ -58,6 +65,7 @@ public class GameScreen implements Screen {
     }
 
     private void build() {
+        buildBackground();
         root = new Table();
         root.setFillParent(true);
         root.center();
@@ -66,10 +74,13 @@ public class GameScreen implements Screen {
         Table panel = new Table();
         panel.pad(30);
         panel.defaults().pad(6);
-        panel.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
+        //panel.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
+
+        currencyHeader = new CurrencyHeader();
+        panel.add(currencyHeader).right().padBottom(10).row();
 
         Label title = new Label("Chapters", skin, "big");
-        title.setColor(Color.valueOf("5B3A29"));
+        title.setColor(Color.valueOf("00CED1"));
         panel.add(title).padBottom(16).row();
 
         buildChaptersStep();
@@ -109,6 +120,19 @@ public class GameScreen implements Screen {
         stage.setScrollFocus(scrollPane);
 
         root.add(scrollPane).grow().pad(20);
+    }
+    private void buildBackground() {
+        FileHandle bgFile = Textures.assetsRoot().child("IMAGES/Menus/game/img.png");
+        if (!bgFile.exists()) {
+            Gdx.app.error("gameScreen", "Background not found at " + bgFile.file().getAbsolutePath());
+            return;
+        }
+
+        backgroundTexture = new Texture(bgFile);
+        Image background = new Image(backgroundTexture);
+        background.setScaling(Scaling.fill); // cover the whole screen, cropping overflow instead of distorting
+        background.setFillParent(true);
+        stage.addActor(background);
     }
 
     private void buildChaptersStep() {
@@ -165,7 +189,7 @@ public class GameScreen implements Screen {
         levelsTable.defaults().pad(4);
 
         levelsTitle = new Label("", skin, "secondary");
-        levelsTitle.setColor(Color.valueOf("5B3A29"));
+        levelsTitle.setColor(Color.valueOf("00CED1"));
 
         TextButton backToChapters = new TextButton("Back to chapters", skin, "default");
         backToChapters.addListener(new ChangeListener() {
@@ -185,6 +209,7 @@ public class GameScreen implements Screen {
 
     private void showLevels(Season chapter) {
         levelsTitle.setText(chapter.getName());
+        levelsTitle.setColor(Color.valueOf("00CED1"));
         levelRowsTable.clearChildren();
 
         User currentUser = UserManager.getInstance().getCurrentUser();
@@ -242,12 +267,20 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        if (currencyHeader != null) {
+            currencyHeader.updateValues();
+        }
     }
 
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (currencyHeader != null) {
+            currencyHeader.updateValues();
+        }
+
         stage.act(delta);
         stage.draw();
     }
@@ -269,5 +302,8 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        if (backgroundTexture != null) {
+            backgroundTexture.dispose();
+        }
     }
 }

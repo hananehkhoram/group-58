@@ -52,30 +52,18 @@ public class PlantSelectionMenu extends BaseMenu {
         return sb.toString();
     }
     public String addPlant(String plantType) {
-        List<Plant> allPlants = new ArrayList<>(plantRepository.getPlantDataMap().values());
         List<Plant> plants = new ArrayList<>(currentUser.getUnlockedPlantTypes());
-        List<Plant> plantsInCtx = new ArrayList<>(ctx.getActivePlants());
-        Plant inAllPlant = null;
         Plant inUserPlant = null;
-        boolean plantInCtx = false;
-        for (Plant p : allPlants){
-            if (p.getName().equalsIgnoreCase(plantType)) inAllPlant = p;
-        }
-        for (Plant p : plants){
-            if (p.getName().equalsIgnoreCase(plantType)) inUserPlant = p;
-        }
-        for (Plant p : plantsInCtx){
-            if (p.getName().equalsIgnoreCase(plantType)) plantInCtx = true;
-        }
-        if (inAllPlant == null) return "Invalid plant type.";
+        for (Plant p : plants) if (p.getName().equalsIgnoreCase(plantType)) inUserPlant = p;
+
         if (inUserPlant == null) return "Plant is not unlocked.";
-        if (plantInCtx) return "Plant is already chosen.";
+        for (Plant p : ctx.getActivePlants()) if (p.getName().equalsIgnoreCase(plantType)) return "Plant is already chosen.";
 
         Plant newPlant = plantFactory.create(String.valueOf(inUserPlant.getName()));
+        newPlant.setPlantFoodActive(inUserPlant.isPlantFoodActive());
         ctx.getActivePlants().add(newPlant);
-        return "Successfully added "+newPlant.getName()+" to your plants.";
-    }
-    public String removePlant(String plantType) {
+        return "Successfully added " + newPlant.getName() + " to your plants.";
+    }    public String removePlant(String plantType) {
         List<Plant> allPlants = new ArrayList<>(plantRepository.getPlantDataMap().values());
         List<Plant> plants = new ArrayList<>(currentUser.getUnlockedPlantTypes());
         List<Plant> plantsInCtx = new ArrayList<>(ctx.getActivePlants());
@@ -99,33 +87,17 @@ public class PlantSelectionMenu extends BaseMenu {
         return "Successfully removed "+plantInCtx.getName()+"from your plants.";
     }
     public String boostPlant(String plantType) {
-        List<Plant> allPlants = new ArrayList<>(plantRepository.getPlantDataMap().values());
         List<Plant> plants = new ArrayList<>(currentUser.getUnlockedPlantTypes());
-        List<Plant> plantsInCtx = new ArrayList<>(ctx.getActivePlants());
-        Plant inAllPlant = null;
-        Plant inUserPlant = null;
-        Plant plantInCtx = null;
-        for (Plant p : allPlants){
-            if (p.getName().equalsIgnoreCase(plantType)) inAllPlant = p;
-        }
-        for (Plant p : plants){
-            if (p.getName().equalsIgnoreCase(plantType)) inUserPlant = p;
-        }
-        for (Plant p : plantsInCtx){
-            if (p.getName().equalsIgnoreCase(plantType)) plantInCtx = p;
-        }
-        if (inAllPlant == null) return "Invalid plant type.";
-        if (inUserPlant == null) return "Plant is not unlocked.";
-        if (plantInCtx ==null) return "Plant is not chosen.";
-
+        Plant userPlant = null;
+        for (Plant p : plants) if (p.getName().equalsIgnoreCase(plantType)) userPlant = p;
+        if (userPlant == null) return "Plant is not unlocked.";
         if (currentUser.getGems() < 2) return "You don't have enough gems.";
+
         currentUser.setGems(currentUser.getGems() - 2);
-        plantInCtx.setPlantFoodActive(true);
-
-        return "Successfully boosted "+plantInCtx.getName()+"from your plants.";
-
-    }
-    public String startGame() {
+        userPlant.setPlantFoodActive(true);
+        for (Plant p : ctx.getActivePlants()) if (p.getName().equalsIgnoreCase(plantType)) p.setPlantFoodActive(true);
+        return "Successfully boosted " + userPlant.getName() + "!";
+    }    public String startGame() {
         if (ctx.getActivePlants().isEmpty()) {
             return "You must choose at least one plant before starting.";
         }

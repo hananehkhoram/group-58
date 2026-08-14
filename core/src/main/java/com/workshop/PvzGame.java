@@ -2,30 +2,31 @@ package com.workshop;
 
 import com.badlogic.gdx.Game;
 
+import com.workshop.controller.MenuManager;
 import com.workshop.controller.repository.DataManager;
 import com.workshop.model.level.Level;
+import com.workshop.model.level.LevelType;
+import com.workshop.model.season.Grave;
 import com.workshop.model.season.Season;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Screens.*;
-
+import com.badlogic.gdx.Screen;
+import com.workshop.model.GameContext;
+import com.workshop.view.Screens.PauseOverlay;
 
 import com.workshop.view.Screens.LoginScreen;
 import com.workshop.view.Screens.RegisterScreen;
 import com.workshop.view.Screens.MainMenuScreen;
 
-/**
- * Entry point of the libGDX application (the "Game class" the console version never had).
- * Owns screen switching and the user-data load/save lifecycle, mirroring what
- * {@code GameEngineController} does for the console version.
- */
 public class PvzGame extends Game {
+
+    private final MenuManager menuManager = new MenuManager(null);
 
     @Override
     public void create() {
         DataManager.getInstance().loadUser();
 
-        // Mirrors GameEngineController: auto-login whoever has "stay logged in" set.
         for (User u : UserManager.getInstance().users) {
             if (u.isStayedLogin()) {
                 UserManager.getInstance().login(u);
@@ -98,6 +99,16 @@ public class PvzGame extends Game {
             }
 
             @Override
+            public void onCollection() {
+                showCollection();
+            }
+
+            @Override
+            public void onGreenHouse() {
+                showGreenHouse();
+            }
+
+            @Override
             public void onLogout() {
                 UserManager.getInstance().logOut();
                 showLogin();
@@ -105,6 +116,13 @@ public class PvzGame extends Game {
 
         }));
     }
+    public void showOldMain() {
+        setScreen(new MainScreen(
+            this,
+            UserManager.getInstance().getCurrentUser()
+        ));
+    }
+
 
     public void showQuest() {
         setScreen(new QuestScreen(
@@ -125,6 +143,20 @@ public class PvzGame extends Game {
             this,
             UserManager.getInstance().getCurrentUser()
         ));
+    }
+
+    public void showCollection() {
+        setScreen(new CollectionScreen(null, new CollectionScreen.Listener() {
+            @Override
+            public void onBack() {
+                showMain();
+            }
+
+            @Override
+            public void onNavigateToScreen(Screen screen) {
+                setScreen(screen);
+            }
+        }));
     }
 
     public void showSettings() {
@@ -151,10 +183,24 @@ public class PvzGame extends Game {
         setScreen(new GamePlayScreen(season, level, this::showGame));
     }
 
+
     public void showGame() {
         setScreen(new GameScreen(new GameScreen.Listener() {
             @Override
             public void onEnterLevel(Season season, Level level) {
+                menuManager.startBattle(level, season);
+                GameContext ctx = menuManager.getCtx();
+
+                if (level.getLevelType() == LevelType.CONVEYOR_BELT) {
+                    season.onLevelStart(ctx);
+                    for (Grave g : season.getInitialGraves(level)) {
+                        ctx.placeGrave(g, g.getRow(), g.getCol());
+                    }
+                    ctx.setBattleStarted(true);
+                    goToBattleScreen(ctx);
+                } else {
+                    showPlantSelection(ctx);
+                }
                 showGamePlay(season, level);
             }
 
@@ -170,10 +216,40 @@ public class PvzGame extends Game {
         }));
     }
 
+    public void showPlantSelection(GameContext ctx) {
+        setScreen(new PlantSelectionScreen(ctx, new PlantSelectionScreen.Listener() {
+            @Override
+            public void onBack() {
+                showGame();
+            }
+
+            @Override
+            public void onStartBattle() {
+                goToBattleScreen(ctx);
+            }
+        }));
+    }
+
+    public void showGreenHouse() {
+        setScreen(new GreenHouseScreen(null, new GreenHouseScreen.Listener() {
+            @Override
+            public void onBack() {
+                showMain();
+            }
+        }));
+    }
+
+    private void goToBattleScreen(GameContext ctx) {
+        // TODO: point this at whatever Screen actually renders the battle -
+        // that class wasn't in the files shared with me. Something like:
+        // setScreen(new BattleScreen(ctx, menuManager.getGameEngine(), new BattleScreen.Listener() {
+        //     @Override public void onBattleEnd() { showGame(); }
+        // }));
+    }
+
     public void showLeaderboard() {
         setScreen(new LeaderBoardScreen(this));
     }
-
 
     @Override
     public void dispose() {

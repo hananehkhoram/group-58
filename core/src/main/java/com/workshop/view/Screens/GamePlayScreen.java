@@ -19,8 +19,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import pvz.skin.PvzSkin;
 import com.workshop.controller.repository.Textures;
-import com.workshop.controller.repository.Textures;
 import com.workshop.view.gameplay.PlantAnimationLayer;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.math.MathUtils;
 
 public class GamePlayScreen implements Screen {
 
@@ -38,6 +40,23 @@ public class GamePlayScreen implements Screen {
 
     private final ShapeRenderer shapeRenderer;
     private final Runnable exitAction;
+
+    private final OrthographicCamera worldCamera;
+
+    private final float fullWorldWidth;
+    private final float gameplayWorldWidth;
+
+    private final FitViewport worldViewport;
+    private final float worldHeight;
+
+    private final float introCameraX;
+    private final float gameplayCameraX;
+    private final float cameraY;
+    private static final float INTRO_WAIT = 1;
+    private static final float INTRO_DURATION = 1.4f;
+
+    private float introTime;
+    private boolean introFinished;
 
     public GamePlayScreen(
         Season season,
@@ -64,16 +83,44 @@ public class GamePlayScreen implements Screen {
             Gdx.files.internal(paths.right)
         );
 
-        float worldWidth =
+        fullWorldWidth =
             leftTexture.getWidth()
                 + centerTexture.getWidth()
                 + rightTexture.getWidth();
 
-        float worldHeight = centerTexture.getHeight();
+        worldHeight = centerTexture.getHeight();
 
-        stage = new Stage(
-            new FitViewport(worldWidth, worldHeight)
+        gameplayWorldWidth =
+            leftTexture.getWidth()
+                + centerTexture.getWidth();
+
+        worldViewport = new FitViewport(
+            fullWorldWidth,
+            worldHeight
         );
+
+        stage = new Stage(worldViewport);
+
+        worldCamera =
+            (OrthographicCamera) stage.getCamera();
+
+        introCameraX =
+            fullWorldWidth / 2f;
+
+        gameplayCameraX =
+            gameplayWorldWidth / 2f;
+
+        cameraY =
+            worldHeight / 2f;
+
+        worldCamera.position.set(
+            introCameraX,
+            cameraY,
+            0f
+        );
+
+        worldCamera.zoom = 1f;
+        worldCamera.update();
 
         shapeRenderer = new ShapeRenderer();
 
@@ -361,6 +408,84 @@ public class GamePlayScreen implements Screen {
             - getCellHeight() / 2f;
     }
 
+    private void updateIntroCamera(float delta) {
+        if (introFinished || pauseOverlay.isVisible()) {
+            return;
+        }
+
+        introTime += delta;
+
+        if (introTime < INTRO_WAIT) {
+            return;
+        }
+
+        float progress =
+            (introTime - INTRO_WAIT) / INTRO_DURATION;
+
+        progress = MathUtils.clamp(
+            progress,
+            0f,
+            1f
+        );
+
+        float smoothProgress =
+            Interpolation.smooth.apply(progress);
+
+        float currentWorldWidth = MathUtils.lerp(
+            fullWorldWidth,
+            gameplayWorldWidth,
+            smoothProgress
+        );
+
+        worldViewport.setWorldSize(
+            currentWorldWidth,
+            worldHeight
+        );
+
+        worldViewport.update(
+            Gdx.graphics.getWidth(),
+            Gdx.graphics.getHeight(),
+            false
+        );
+
+        worldCamera.position.set(
+            MathUtils.lerp(
+                introCameraX,
+                gameplayCameraX,
+                smoothProgress
+            ),
+            cameraY,
+            0f
+        );
+
+        worldCamera.zoom = 1f;
+        worldCamera.update();
+
+        if (progress >= 1f) {
+            worldViewport.setWorldSize(
+                gameplayWorldWidth,
+                worldHeight
+            );
+
+            worldViewport.update(
+                Gdx.graphics.getWidth(),
+                Gdx.graphics.getHeight(),
+                false
+            );
+
+            worldCamera.position.set(
+                gameplayCameraX,
+                cameraY,
+                0f
+            );
+
+            worldCamera.zoom = 1f;
+            worldCamera.update();
+
+            introFinished = true;
+        }
+    }
+
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
@@ -371,6 +496,8 @@ public class GamePlayScreen implements Screen {
 
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        updateIntroCamera(delta);
 
         if (pauseOverlay.isVisible()) {
             stage.act(0);
@@ -389,7 +516,13 @@ public class GamePlayScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+        worldViewport.update(
+            width,
+            height,
+            false
+        );
+
+        worldCamera.update();
     }
 
     @Override

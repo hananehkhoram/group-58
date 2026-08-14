@@ -45,6 +45,7 @@ public class LeaderBoardScreen implements Screen {
     private final Table rowsTable;
     private final EnumMap<SortColumn, TextButton> headerButtons =
         new EnumMap<>(SortColumn.class);
+    private com.workshop.view.components.CurrencyHeader currencyHeader;
 
     private SortColumn sortColumn = SortColumn.SCORE;
     private boolean ascending = false;
@@ -58,6 +59,11 @@ public class LeaderBoardScreen implements Screen {
         root.top();
         root.padTop(30);
         stage.addActor(root);
+
+        Table topBar = new Table();
+        currencyHeader = new com.workshop.view.components.CurrencyHeader();
+        topBar.add(currencyHeader).right().padRight(10);
+        root.add(topBar).fillX().height(45).pad(0, 0, 10, 0).row();
 
         Label title = new Label("Leaderboard", skin, "big");
         root.add(title).padBottom(25).row();
@@ -125,11 +131,12 @@ public class LeaderBoardScreen implements Screen {
             header.add(label)
                 .width(width)
                 .center();
+
             return;
         }
 
-        TextButton button = new TextButton(text, skin, "default");
-        headerButtons.put(column, button);
+        TextButton button =
+            new TextButton(text, skin, "default");
 
         button.addListener(new ClickListener(Input.Buttons.LEFT) {
             @Override
@@ -180,6 +187,10 @@ public class LeaderBoardScreen implements Screen {
     }
 
     private void refreshRows() {
+        if (currencyHeader != null) {
+            currencyHeader.updateValues();
+        }
+
         rowsTable.clearChildren();
 
         List<User> users = new ArrayList<>(
@@ -294,6 +305,7 @@ public class LeaderBoardScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        refreshRows();
     }
 
     @Override
