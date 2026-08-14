@@ -114,10 +114,6 @@ public class PvzGame extends Game {
                 showLogin();
             }
 
-            @Override
-            public void onTest() {
-                showOldMain();
-            }
         }));
     }
     public void showOldMain() {
@@ -126,6 +122,7 @@ public class PvzGame extends Game {
             UserManager.getInstance().getCurrentUser()
         ));
     }
+
 
     public void showQuest() {
         setScreen(new QuestScreen(
@@ -182,6 +179,11 @@ public class PvzGame extends Game {
         }));
     }
 
+    public void showGamePlay(Season season, Level level) {
+        setScreen(new GamePlayScreen(season, level, this::showGame));
+    }
+
+
     public void showGame() {
         setScreen(new GameScreen(new GameScreen.Listener() {
             @Override
@@ -199,6 +201,7 @@ public class PvzGame extends Game {
                 } else {
                     showPlantSelection(ctx);
                 }
+                showGamePlay(season, level);
             }
 
             @Override

@@ -1,9 +1,11 @@
 package com.workshop.view.Screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -12,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
@@ -21,6 +24,7 @@ import com.workshop.model.user.User;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
 
 import pvz.skin.PvzSkin;
@@ -39,6 +43,8 @@ public class LeaderBoardScreen implements Screen {
     private final Stage stage;
     private final Skin skin;
     private final Table rowsTable;
+    private final EnumMap<SortColumn, TextButton> headerButtons =
+        new EnumMap<>(SortColumn.class);
     private com.workshop.view.components.CurrencyHeader currencyHeader;
 
     private SortColumn sortColumn = SortColumn.SCORE;
@@ -93,14 +99,22 @@ public class LeaderBoardScreen implements Screen {
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.showMain();
+                game.showTravelMenu();
             }
         });
 
-        root.add(backButton)
-            .size(70, 70)
-            .padTop(10);
+        Table backContainer = new Table();
+        backContainer.setFillParent(true);
+        backContainer.top().right();
+        backContainer.padTop(20);
+        backContainer.padRight(20);
 
+        backContainer.add(backButton)
+            .size(70, 70);
+
+        stage.addActor(backContainer);
+
+        updateHeaderTexts();
         refreshRows();
     }
 
@@ -124,9 +138,9 @@ public class LeaderBoardScreen implements Screen {
         TextButton button =
             new TextButton(text, skin, "default");
 
-        button.addListener(new ChangeListener() {
+        button.addListener(new ClickListener(Input.Buttons.LEFT) {
             @Override
-            public void changed(ChangeEvent event, Actor actor) {
+            public void clicked(InputEvent event, float x, float y) {
                 sortBy(column);
             }
         });
@@ -144,7 +158,32 @@ public class LeaderBoardScreen implements Screen {
             ascending = true;
         }
 
+        updateHeaderTexts();
         refreshRows();
+    }
+
+    private void updateHeaderTexts() {
+        setHeaderText(SortColumn.USERNAME, "Username");
+        setHeaderText(SortColumn.SEASON_LEVEL, "Season / Level");
+        setHeaderText(SortColumn.MINIGAMES, "Minigames");
+        setHeaderText(SortColumn.DAILY_QUESTS, "Daily");
+        setHeaderText(SortColumn.OTHER_QUESTS, "Other");
+        setHeaderText(SortColumn.SCORE, "Mew Point");
+
+        TextButton activeButton = headerButtons.get(sortColumn);
+        if (activeButton == null) {
+            return;
+        }
+
+        String direction = ascending ? " ^" : " v";
+        activeButton.setText(activeButton.getText().toString() + direction);
+    }
+
+    private void setHeaderText(SortColumn column, String text) {
+        TextButton button = headerButtons.get(column);
+        if (button != null) {
+            button.setText(text);
+        }
     }
 
     private void refreshRows() {
@@ -161,12 +200,9 @@ public class LeaderBoardScreen implements Screen {
                 .values()
         );
 
-        Comparator<User> comparator = getComparator();
-
-        users.sort(comparator);
+        users.sort(getComparator());
 
         int rank = 1;
-
         for (User user : users) {
             addUserRow(rank, user);
             rank++;
@@ -187,32 +223,48 @@ public class LeaderBoardScreen implements Screen {
             case SEASON_LEVEL:
                 comparator = Comparator
                     .comparingInt(User::getLastSeason)
-                    .thenComparingInt(User::getLastLevel);
+                    .thenComparingInt(User::getLastLevel)
+                    .thenComparing(
+                        User::getUsername,
+                        String.CASE_INSENSITIVE_ORDER
+                    );
                 break;
 
             case MINIGAMES:
-                comparator = Comparator.comparingInt(
-                    User::getMinigamesCompleted
-                );
+                comparator = Comparator
+                    .comparingInt(User::getMinigamesCompleted)
+                    .thenComparing(
+                        User::getUsername,
+                        String.CASE_INSENSITIVE_ORDER
+                    );
                 break;
 
             case DAILY_QUESTS:
-                comparator = Comparator.comparingInt(
-                    User::getDailyQuestsCompletedCount
-                );
+                comparator = Comparator
+                    .comparingInt(User::getDailyQuestsCompletedCount)
+                    .thenComparing(
+                        User::getUsername,
+                        String.CASE_INSENSITIVE_ORDER
+                    );
                 break;
 
             case OTHER_QUESTS:
-                comparator = Comparator.comparingInt(
-                    User::getOtherQuestsCompletedCount
-                );
+                comparator = Comparator
+                    .comparingInt(User::getOtherQuestsCompletedCount)
+                    .thenComparing(
+                        User::getUsername,
+                        String.CASE_INSENSITIVE_ORDER
+                    );
                 break;
 
             case SCORE:
             default:
-                comparator = Comparator.comparingInt(
-                    User::getMaxMewPoint
-                );
+                comparator = Comparator
+                    .comparingInt(User::getMaxMewPoint)
+                    .thenComparing(
+                        User::getUsername,
+                        String.CASE_INSENSITIVE_ORDER
+                    );
                 break;
         }
 
@@ -230,26 +282,10 @@ public class LeaderBoardScreen implements Screen {
         addCell(String.valueOf(rank), 55);
         addCell(user.getUsername(), 180);
         addCell(seasonLevel, 170);
-
-        addCell(
-            String.valueOf(user.getMinigamesCompleted()),
-            120
-        );
-
-        addCell(
-            String.valueOf(user.getDailyQuestsCompletedCount()),
-            110
-        );
-
-        addCell(
-            String.valueOf(user.getOtherQuestsCompletedCount()),
-            110
-        );
-
-        addCell(
-            String.valueOf(user.getMaxMewPoint()),
-            130
-        );
+        addCell(String.valueOf(user.getMinigamesCompleted()), 120);
+        addCell(String.valueOf(user.getDailyQuestsCompletedCount()), 110);
+        addCell(String.valueOf(user.getOtherQuestsCompletedCount()), 110);
+        addCell(String.valueOf(user.getMaxMewPoint()), 130);
 
         rowsTable.row();
     }
@@ -274,7 +310,12 @@ public class LeaderBoardScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClearColor(
+            0.32f,
+            0.18f,
+            0.42f,
+            1f
+        );
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.act(delta);

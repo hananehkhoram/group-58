@@ -33,7 +33,6 @@ public class MainMenuScreen implements Screen {
         void onNews();
         void onProfile();
         void onLogout();
-        void onTest();
         void onCollection();
         void onGreenHouse();
     }
@@ -67,6 +66,8 @@ public class MainMenuScreen implements Screen {
         background.setScaling(Scaling.fill);
 
         stage.addActor(background);
+
+        if (background != null) stage.addActor(background);
         stage.addActor(root);
 
         Table topBar = new Table();
@@ -123,26 +124,6 @@ public class MainMenuScreen implements Screen {
         iconRow.add(newsButton);
         panel.add(iconRow).padBottom(10).row();
 
-        //===========================TEST====================================
-
-        TextButton testButton = new TextButton("TEST", skin, "brown");
-
-        testButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (listener != null) {
-                    listener.onTest();
-                }
-            }
-        });
-
-        panel.add(testButton)
-            .width(200)
-            .height(55)
-            .padBottom(10)
-            .row();
-
-        //================================================================================
 
         TextButton exitButton = new TextButton("Exit", skin, "brown");
         exitButton.addListener(new ChangeListener() {
