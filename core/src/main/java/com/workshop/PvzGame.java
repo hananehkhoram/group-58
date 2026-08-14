@@ -179,8 +179,8 @@ public class PvzGame extends Game {
         }));
     }
 
-    public void showGamePlay(Season season, Level level) {
-        setScreen(new GamePlayScreen(season, level, this::showGame));
+    public void showGamePlay(GameContext ctx) {
+        setScreen(new GamePlayScreen(ctx, this::showGame));
     }
 
 
@@ -201,7 +201,6 @@ public class PvzGame extends Game {
                 } else {
                     showPlantSelection(ctx);
                 }
-                showGamePlay(season, level);
             }
 
             @Override
@@ -240,11 +239,7 @@ public class PvzGame extends Game {
     }
 
     private void goToBattleScreen(GameContext ctx) {
-        // TODO: point this at whatever Screen actually renders the battle -
-        // that class wasn't in the files shared with me. Something like:
-        // setScreen(new BattleScreen(ctx, menuManager.getGameEngine(), new BattleScreen.Listener() {
-        //     @Override public void onBattleEnd() { showGame(); }
-        // }));
+        showGamePlay(ctx);
     }
 
     public void showLeaderboard() {

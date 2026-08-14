@@ -12,11 +12,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.workshop.controller.MenuManager;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
+import com.workshop.model.mechanisms.GameEngine;
 import com.workshop.model.season.Season;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.workshop.model.user.UserManager;
 import pvz.skin.PvzSkin;
 import com.workshop.controller.repository.Textures;
 import com.workshop.view.gameplay.PlantAnimationLayer;
@@ -28,7 +31,12 @@ public class GamePlayScreen implements Screen {
 
     private final Stage stage;
     private final PauseOverlay pauseOverlay;
+
+    private final GameEngine gameEngine;
     private final GameContext gameContext;
+
+    private static final float TICK_DURATION = 0.1f;
+    private float timeAccumulator = 0f;
 
     private final Texture leftTexture;
     private final Texture centerTexture;
@@ -59,13 +67,15 @@ public class GamePlayScreen implements Screen {
     private boolean introFinished;
 
     public GamePlayScreen(
-        Season season,
-        Level level,
+        GameContext gameContext,
         Runnable exitAction
     ) {
         this.exitAction = exitAction;
 
-        gameContext = new GameContext(level, season);
+        this.gameContext = gameContext;
+        this.gameEngine = gameContext.getGameEngine();
+        Season season = gameContext.getSeason();
+
         Skin skin = PvzSkin.get();
 
         BackgroundPaths paths =
@@ -498,6 +508,17 @@ public class GamePlayScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         updateIntroCamera(delta);
+
+        if (!pauseOverlay.isVisible()
+            && !gameContext.isPaused()
+            && !gameContext.isGameEnded()) {
+            timeAccumulator += delta;
+            while (timeAccumulator >= TICK_DURATION) {
+                gameContext.getTimeManager().advanceTime(1);
+                gameEngine.update(TICK_DURATION);
+                timeAccumulator -= TICK_DURATION;
+            }
+        }
 
         if (pauseOverlay.isVisible()) {
             stage.act(0);
