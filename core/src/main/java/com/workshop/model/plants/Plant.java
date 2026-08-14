@@ -26,6 +26,7 @@ public class Plant implements Damageable {
 
     private boolean hasLilyPadUnderneath;
 
+
     private List<StatEffect>[] statUpgrades;
     private List<BehaviorEffect>[] behaviorUpgrades;
 

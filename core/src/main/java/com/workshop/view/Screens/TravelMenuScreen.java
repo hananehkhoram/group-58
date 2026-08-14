@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.workshop.PvzGame;
 import com.workshop.model.user.User;
+import com.workshop.view.components.CurrencyHeader;
 import pvz.skin.PvzSkin;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -23,6 +24,7 @@ public class TravelMenuScreen implements Screen {
     private final Stage stage;
     private final Texture backgroundTexture;
     private final Image background;
+    private CurrencyHeader currencyHeader;
 
     public TravelMenuScreen(PvzGame game, User user) {
         Skin skin = PvzSkin.get();
@@ -45,8 +47,13 @@ public class TravelMenuScreen implements Screen {
 
         Table root = new Table();
         root.setFillParent(true);
-        root.center();
+        root.top();
         stage.addActor(root);
+
+        Table topBar = new Table();
+        currencyHeader = new CurrencyHeader();
+        topBar.add(currencyHeader).right().padRight(10);
+        root.add(topBar).fillX().height(45).pad(10, 0, 0, 0).row();
 
         ImageButton questButton = new ImageButton(skin, "hud_quests");
         questButton.addListener(new ChangeListener() {
@@ -138,6 +145,9 @@ public class TravelMenuScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        if (currencyHeader != null) {
+            currencyHeader.updateValues();
+        }
     }
 
     @Override

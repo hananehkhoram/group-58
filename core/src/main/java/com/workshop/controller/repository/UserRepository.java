@@ -10,7 +10,6 @@ import com.workshop.model.zombie.Zombie;
 
 import java.util.*;
 
-// load and save data
 public class UserRepository implements AssetRepository<User> {
     private final Map<String, User> userMap = new HashMap<>();
     private static final String FIELD_SEP = "|";
@@ -27,7 +26,6 @@ public class UserRepository implements AssetRepository<User> {
         java.nio.file.Path path = java.nio.file.Path.of(filePath);
         PATH = path.toString();
 
-        // اجرای اول هنوز users.dat وجود ندارد؛ این حالت خطا نیست.
         if (!java.nio.file.Files.exists(path)) {
             return;
         }
@@ -93,89 +91,88 @@ public class UserRepository implements AssetRepository<User> {
         }
     }
 
-
     private String serializeUser(User u) {
         String plantNames = u.getUnlockedPlantTypes() == null ? "" :
-                String.join(LIST_SEP, u.getUnlockedPlantTypes().stream()
-                                      .map(p -> p.getName() + PLANT_SEP + p.getLevel())
-                                      .toList());
+            String.join(LIST_SEP, u.getUnlockedPlantTypes().stream()
+                .map(p -> p.getName() + PLANT_SEP + p.getLevel() + PLANT_SEP + p.isPlantFoodActive())
+                .toList());
         String zombieNames = u.getSeenZombies() == null ? "" :
-                String.join(LIST_SEP, u.getSeenZombies().stream().map(Zombie::getName).toList());
+            String.join(LIST_SEP, u.getSeenZombies().stream().map(Zombie::getName).toList());
         String levels = u.getUnlockedLevels() == null ? "" : String.join(LIST_SEP, u.getUnlockedLevels());
         String completedQuests = u.getCompletedQuestIds() == null ? "" : String.join(LIST_SEP, u.getCompletedQuestIds());
 
         String plantName = (u.getLastDailyOffer() != null && u.getLastDailyOffer().getPlantType() != null)
-                ? u.getLastDailyOffer().getPlantType().getName() : "";
+            ? u.getLastDailyOffer().getPlantType().getName() : "";
         String dailyOffer = u.getLastDailyOffer() == null ? "" :
-                u.getLastDailyOffer().getId() + LIST_SEP + u.getLastDailyOffer().getDate() + LIST_SEP
+            u.getLastDailyOffer().getId() + LIST_SEP + u.getLastDailyOffer().getDate() + LIST_SEP
                 + u.getLastDailyOffer().isPurchased() + LIST_SEP + plantName + LIST_SEP + u.isBoughtDailyOfferToday();
 
         String seedPackets = String.join(LIST_SEP,
-                u.getPlantSeedsInventory().entrySet().stream()
-                        .map(e -> e.getKey() + PLANT_SEP + e.getValue())
-                        .toList());
+            u.getPlantSeedsInventory().entrySet().stream()
+                .map(e -> e.getKey() + PLANT_SEP + e.getValue())
+                .toList());
 
         String storedBoostsStr = String.join(LIST_SEP,
-                u.getStoredBoosts().entrySet().stream()
-                        .filter(java.util.Map.Entry::getValue)
-                        .map(java.util.Map.Entry::getKey)
-                        .toList());
+            u.getStoredBoosts().entrySet().stream()
+                .filter(java.util.Map.Entry::getValue)
+                .map(java.util.Map.Entry::getKey)
+                .toList());
 
         StringBuilder greenhouseSb = new StringBuilder();
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 5; j++) {
                 Pot pot = u.getGreenHouse().getPot(i, j);
                 greenhouseSb.append(pot.isLocked()).append(PLANT_SEP)
-                        .append(pot.isEmpty()).append(PLANT_SEP)
-                        .append(pot.getPlantType() == null ? "" : pot.getPlantType().getName()).append(PLANT_SEP)
-                        .append(pot.getRemainingPlantedTime()).append(PLANT_SEP)
-                        .append(pot.isPlantReady()).append(PLANT_SEP)
-                        .append(pot.isMarigold());
+                    .append(pot.isEmpty()).append(PLANT_SEP)
+                    .append(pot.getPlantType() == null ? "" : pot.getPlantType().getName()).append(PLANT_SEP)
+                    .append(pot.getRemainingPlantedTime()).append(PLANT_SEP)
+                    .append(pot.isPlantReady()).append(PLANT_SEP)
+                    .append(pot.isMarigold());
                 greenhouseSb.append(LIST_SEP);
             }
         }
 
         String questProgressStr = u.getAllQuestProgress() == null ? "" :
-                String.join(LIST_SEP, u.getAllQuestProgress().entrySet().stream()
-                                      .map(e -> e.getKey() + PLANT_SEP + e.getValue())
-                                      .toList());
+            String.join(LIST_SEP, u.getAllQuestProgress().entrySet().stream()
+                .map(e -> e.getKey() + PLANT_SEP + e.getValue())
+                .toList());
 
         return String.join(FIELD_SEP,
-                u.getUsername(),                                              // 0
-                u.getPassword(),                                              // 1
-                u.getNickName(),                                              // 2
-                u.getEmail(),                                                 // 3
-                u.getGender().name(),                                         // 4
-                u.getSecurityQuestion() == null ? "" : String.valueOf(u.getSecurityQuestion().getId()), // 5
-                u.getSecurityAnswer() == null ? "" : u.getSecurityAnswer(),   // 6
-                String.valueOf(u.isStayedLogin()),                            // 7
-                String.valueOf(u.getCoins()),                                 // 8
-                String.valueOf(u.getGems()),                                  // 9
-                String.valueOf(u.getDifficultyLevel()),                       // 10
-                String.valueOf(u.getLastReadNewsId()),                        // 11
-                String.valueOf(u.getGamesPlayed()),                           // 12
-                String.valueOf(u.getMaxMewPoint()),                           // 13
-                String.valueOf(u.getNumberOfPassedLevels()),                  // 14
-                String.valueOf(u.getPlantFoodCount()),                        // 15
-                String.valueOf(u.getOwnedPotsCount()),                        // 16
-                String.valueOf(u.getLastLevel()),                             // 17
-                String.valueOf(u.getLastSeason()),                            // 18
-                String.valueOf(u.getMinigamesCompleted()),                    // 19
-                String.valueOf(u.getDailyQuestsCompletedCount()),             // 20
-                String.valueOf(u.getOtherQuestsCompletedCount()),             // 21
-                levels,                                                       // 22
-                plantNames,                                                   // 23
-                zombieNames,                                                  // 24
-                completedQuests,                                              // 25
-                seedPackets,                                                  // 26
-                greenhouseSb.toString(),                                      // 27
-                dailyOffer,                                                   // 28
-                String.valueOf(u.getWinStreakAtMaxDifficulty()),              // 29
-                questProgressStr,                                             // 30
-                storedBoostsStr,                                              // 31
-                String.valueOf(u.getGameSpeed()),                             // 32
-                String.valueOf(u.isGridEnabled()),                            // 33
-                String.valueOf(u.isDebugMode())                               // 34                                                // 31
+            u.getUsername(),
+            u.getPassword(),
+            u.getNickName(),
+            u.getEmail(),
+            u.getGender().name(),
+            u.getSecurityQuestion() == null ? "" : String.valueOf(u.getSecurityQuestion().getId()),
+            u.getSecurityAnswer() == null ? "" : u.getSecurityAnswer(),
+            String.valueOf(u.isStayedLogin()),
+            String.valueOf(u.getCoins()),
+            String.valueOf(u.getGems()),
+            String.valueOf(u.getDifficultyLevel()),
+            String.valueOf(u.getLastReadNewsId()),
+            String.valueOf(u.getGamesPlayed()),
+            String.valueOf(u.getMaxMewPoint()),
+            String.valueOf(u.getNumberOfPassedLevels()),
+            String.valueOf(u.getPlantFoodCount()),
+            String.valueOf(u.getOwnedPotsCount()),
+            String.valueOf(u.getLastLevel()),
+            String.valueOf(u.getLastSeason()),
+            String.valueOf(u.getMinigamesCompleted()),
+            String.valueOf(u.getDailyQuestsCompletedCount()),
+            String.valueOf(u.getOtherQuestsCompletedCount()),
+            levels,
+            plantNames,
+            zombieNames,
+            completedQuests,
+            seedPackets,
+            greenhouseSb.toString(),
+            dailyOffer,
+            String.valueOf(u.getWinStreakAtMaxDifficulty()),
+            questProgressStr,
+            storedBoostsStr,
+            String.valueOf(u.getGameSpeed()),
+            String.valueOf(u.isGridEnabled()),
+            String.valueOf(u.isDebugMode())
         );
     }
 
@@ -217,12 +214,14 @@ public class UserRepository implements AssetRepository<User> {
         List<Plant> plants = new ArrayList<>();
         if (!f[23].isBlank()) {
             for (String entry : f[23].split(LIST_SEP)) {
-                String[] parts = entry.split(PLANT_SEP, 2);
+                String[] parts = entry.split(PLANT_SEP, 3);
                 String plantName = parts[0];
-                int plantLevel = parts.length > 1 ? Integer.parseInt(parts[1]) : 1;
+                int plantLevel = parts.length > 1 && !parts[1].isBlank() ? Integer.parseInt(parts[1]) : 1;
+                boolean isBoosted = parts.length > 2 && Boolean.parseBoolean(parts[2]);
                 Plant p = DataManager.getInstance().plants.get(plantName);
                 if (p != null) {
                     p.setLevel(plantLevel);
+                    p.setPlantFoodActive(isBoosted);
                     plants.add(p);
                 }
             }
@@ -317,7 +316,6 @@ public class UserRepository implements AssetRepository<User> {
 
         return u;
     }
-
 
     @Override
     public User get(String id) {

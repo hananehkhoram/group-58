@@ -2,8 +2,11 @@ package com.workshop;
 
 import com.badlogic.gdx.Game;
 
+import com.workshop.controller.MenuManager;
 import com.workshop.controller.repository.DataManager;
 import com.workshop.model.level.Level;
+import com.workshop.model.level.LevelType;
+import com.workshop.model.season.Grave;
 import com.workshop.model.season.Season;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
@@ -17,6 +20,11 @@ import com.workshop.view.Screens.RegisterScreen;
 import com.workshop.view.Screens.MainMenuScreen;
 
 public class PvzGame extends Game {
+
+    // null ctx here mirrors showCollection()'s `new CollectionScreen(null, ...)` -
+    // this MenuManager only exists so we can reuse startBattle()'s GameContext /
+    // GameEngine wiring; it isn't driving a console menu for the graphical screens.
+    private final MenuManager menuManager = new MenuManager(null);
 
     @Override
     public void create() {
@@ -171,10 +179,28 @@ public class PvzGame extends Game {
             @Override public void onBack() { showMain(); }
         }));
     }
+
     public void showGame() {
         setScreen(new GameScreen(new GameScreen.Listener() {
             @Override
             public void onEnterLevel(Season season, Level level) {
+                // reuse the same wiring EnterChapter uses for the console flow,
+                // so GameContext + GameEngine are built the one way that's tested.
+                menuManager.startBattle(level, season);
+                GameContext ctx = menuManager.getCtx();
+
+                if (level.getLevelType() == LevelType.CONVEYOR_BELT) {
+                    // side-bar / conveyor-belt levels skip plant selection entirely,
+                    // so nothing has placed graves / started the battle yet - do it here.
+                    season.onLevelStart(ctx);
+                    for (Grave g : season.getInitialGraves(level)) {
+                        ctx.placeGrave(g, g.getRow(), g.getCol());
+                    }
+                    ctx.setBattleStarted(true);
+                    goToBattleScreen(ctx);
+                } else {
+                    showPlantSelection(ctx);
+                }
             }
 
             @Override
@@ -187,6 +213,37 @@ public class PvzGame extends Game {
                 showMain();
             }
         }));
+    }
+
+    public void showPlantSelection(GameContext ctx) {
+        setScreen(new PlantSelectionScreen(ctx, new PlantSelectionScreen.Listener() {
+            @Override
+            public void onBack() {
+                showGame();
+            }
+
+            @Override
+            public void onStartBattle() {
+                // PlantSelectionMenu.startGame() already placed graves and set
+                // battleStarted=true (see PlantSelectionScreen) - just switch screens.
+                goToBattleScreen(ctx);
+            }
+        }));
+    }
+
+    /**
+     * Hands off to the actual battle screen. Both entry points - conveyor-belt
+     * levels (which skip plant selection) and regular levels (after "Let's Rock")
+     * - call this once graves are placed and {@code ctx.setBattleStarted(true)}
+     * has run. {@code menuManager.getGameEngine()} is already wired to {@code ctx}
+     * by {@code startBattle()} above, so the battle screen just needs to render it.
+     */
+    private void goToBattleScreen(GameContext ctx) {
+        // TODO: point this at whatever Screen actually renders the battle -
+        // that class wasn't in the files shared with me. Something like:
+        // setScreen(new BattleScreen(ctx, menuManager.getGameEngine(), new BattleScreen.Listener() {
+        //     @Override public void onBattleEnd() { showGame(); }
+        // }));
     }
 
     public void showLeaderboard() {

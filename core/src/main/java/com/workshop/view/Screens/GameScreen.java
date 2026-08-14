@@ -17,6 +17,7 @@ import com.workshop.model.season.Season;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Toast;
+import com.workshop.view.components.CurrencyHeader;
 
 import pvz.skin.PvzSkin;
 
@@ -46,6 +47,7 @@ public class GameScreen implements Screen {
     private Table levelRowsTable;
     private Label levelsTitle;
     private Cell<Actor> contentCell;
+    private CurrencyHeader currencyHeader;
 
     public GameScreen(Listener listener) {
         this.listener = listener;
@@ -65,6 +67,9 @@ public class GameScreen implements Screen {
         panel.pad(30);
         panel.defaults().pad(6);
         panel.setBackground(skin.getDrawable("image_ui_dialog_asset_inner_bkgd_10"));
+
+        currencyHeader = new CurrencyHeader();
+        panel.add(currencyHeader).right().padBottom(10).row();
 
         Label title = new Label("Chapters", skin, "big");
         title.setColor(Color.valueOf("5B3A29"));
@@ -234,12 +239,20 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        if (currencyHeader != null) {
+            currencyHeader.updateValues();
+        }
     }
 
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (currencyHeader != null) {
+            currencyHeader.updateValues();
+        }
+
         stage.act(delta);
         stage.draw();
     }

@@ -1,7 +1,6 @@
 package com.workshop.view.Screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -15,7 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
@@ -25,38 +24,40 @@ import com.workshop.model.plants.PlantFamily;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Toast;
+import com.workshop.view.components.CurrencyHeader;
 
 import pvz.libpvz.pam.PamPlayer;
 import pvz.skin.PvzSkin;
 
-public class PlantDetailsScreen implements Screen {
+public class PlantDetailsScreen extends BaseScreen {
 
-    public interface BackListener {
+    public interface Listener {
         void onBack();
+        void onPlantUpdated();
     }
-
-    private final Stage stage;
-    private final Skin skin;
-    private final Plant plant;
-    private final BackListener backListener;
-    private final CollectionMenu menuLogic;
-    private final User currentUser;
-    private final PamPlayer pamPlayer;
-
-    private Texture menuBgTexture;
-    private Image bg;
-    private float stateTime = 0f;
 
     private static final float BASE_WIDTH = 1280f;
     private static final float BASE_HEIGHT = 720f;
-    private static final Color BG_COLOR = Color.valueOf("0d1b3e");
 
-    public PlantDetailsScreen(GameContext ctx, Plant plant, PamPlayer pamPlayer, BackListener backListener) {
+    private final Stage stage;
+    private final Plant plant;
+    private final Listener listener;
+    private final CollectionMenu menuLogic;
+    private final User currentUser;
+    private final PamPlayer pamPlayer;
+    private CurrencyHeader currencyHeader;
+
+    private float stateTime = 0f;
+    private Image bg;
+
+    public PlantDetailsScreen(GameContext ctx, Plant plant, PamPlayer pamPlayer, Listener listener) {
+        super(PvzSkin.get());
+
         this.plant = plant;
         this.pamPlayer = pamPlayer;
-        this.backListener = backListener;
-        this.skin = PvzSkin.get();
-        this.stage = new Stage(new FitViewport(BASE_WIDTH, BASE_HEIGHT));
+        this.listener = listener;
+
+        this.stage = new Stage(new ScreenViewport());
         this.menuLogic = new CollectionMenu(ctx);
         this.currentUser = UserManager.getInstance().getCurrentUser();
 
@@ -69,214 +70,267 @@ public class PlantDetailsScreen implements Screen {
         Table root = new Table();
         root.setFillParent(true);
 
-        if (menuBgTexture == null) {
-            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-            pixmap.setColor(BG_COLOR);
-            pixmap.fill();
-            menuBgTexture = new Texture(pixmap);
-            pixmap.dispose();
-        }
+        String bgTexturePath = "IMAGES/Menus/Collection/plantDetailBG.png";
 
-        bg = new Image(new TextureRegionDrawable(new TextureRegion(menuBgTexture)));
+        if (Gdx.files.internal(bgTexturePath).exists()) {
+            Texture bgTexture = new Texture(Gdx.files.internal(bgTexturePath));
+            bgTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            bg = new Image(new TextureRegionDrawable(new TextureRegion(bgTexture)));
+        } else {
+            Gdx.app.error("PlantDetailsScreen", "Background texture not found at: " + bgTexturePath);
+            bg = new Image(createWhiteDrawable(Color.valueOf("0d1b3e")));
+        }
         bg.setFillParent(true);
         bg.setScaling(Scaling.fill);
         stage.addActor(bg);
+
         stage.addActor(root);
 
         float scale = getScaleFactor();
 
-        Table topBar = new Table();
-        TextButton backBtn = new TextButton("Back", skin, "brown");
-        backBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (backListener != null) backListener.onBack();
-            }
-        });
-        topBar.add(backBtn).width(110 * scale).height(45 * scale).left().pad(15);
-
-        Label nameTitle = createSafeLabel(plant.getName(), "big");
-        nameTitle.setFontScale(1.3f * scale);
-        topBar.add(nameTitle).expandX().center();
+        Table topBar = buildTopBar(scale);
         root.add(topBar).fillX().row();
 
         Table contentArea = new Table();
+        Table leftCol = buildLeftColumn(scale);
+        Table rightCol = buildRightColumn(scale);
 
+        contentArea.add(leftCol).padRight(50 * scale).top();
+        contentArea.add(rightCol).top().expandX().fillX().row();
+
+        root.add(contentArea).expand().center().padTop(10 * scale).row();
+
+        buildActionButton(root, scale);
+    }
+
+    private Table buildTopBar(float scale) {
+        Table topBar = new Table();
+
+        ImageButton closeButton = new ImageButton(skin, "generic_close_circle");
+        closeButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (listener != null) listener.onBack();
+            }
+        });
+        topBar.add(closeButton).width(110 * scale).height(45 * scale).left().pad(15);
+
+        Label nameTitle = createSafeLabel(plant.getName(), "big");
+        topBar.add(nameTitle).expandX().center();
+
+        currencyHeader = new CurrencyHeader();
+        topBar.add(currencyHeader).right().padRight(15);
+
+        return topBar;
+    }
+
+    private Table buildLeftColumn(float scale) {
         Table leftCol = new Table();
 
-        Actor plantPamActor = createPlantPamActor(plant.getName(), scale);
-        leftCol.add(plantPamActor).size(200 * scale, 200 * scale).padBottom(15 * scale).row();
-
-        Label lvlLabel = createSafeLabel("Level " + plant.getLevel(), "big");
-        lvlLabel.setFontScale(0.9f * scale);
-        leftCol.add(lvlLabel).padBottom(5 * scale).row();
-
-        int currentSeeds = currentUser != null ? currentUser.getSeedCount(plant.getName()) : 0;
-        int seedsNeeded = 5 * (plant.getLevel() + 1);
-        ProgressBar bar = createAlmanacProgressBar(seedsNeeded, currentSeeds);
-        leftCol.add(bar).width(200 * scale).height(16 * scale).padBottom(5 * scale).row();
-
-        Label seedsLbl = createSafeLabel(currentSeeds + " / " + seedsNeeded, "big");
-        seedsLbl.setFontScale(0.75f * scale);
-        leftCol.add(seedsLbl).row();
-
-        contentArea.add(leftCol).padRight(40 * scale).top();
-
-        Table rightCol = new Table();
-        rightCol.defaults().left().pad(4 * scale);
-
-        Table statsGrid = new Table();
-        statsGrid.defaults().left().pad(6 * scale);
-
-        statsGrid.add(createSafeLabel("SUN COST:", "big")).right();
-        statsGrid.add(createSafeLabel(String.valueOf(plant.getSunCost()), "big")).padRight(20 * scale);
-
-        statsGrid.add(createSafeLabel("RECHARGE:", "big")).right();
-        statsGrid.add(createSafeLabel(plant.getRechargeTime() + "s", "big")).row();
-
-        statsGrid.add(createSafeLabel("TOUGHNESS:", "big")).right();
-        statsGrid.add(createSafeLabel(String.valueOf(plant.getBaseHp()), "big")).padRight(20 * scale);
-
-        statsGrid.add(createSafeLabel("DAMAGE:", "big")).right();
-
-        Table damageCell = new Table();
-
-        Actor damagePamActor = new Actor() {
-            @Override
-            public void draw(Batch batch, float parentAlpha) {
-                super.draw(batch, parentAlpha);
-                if (pamPlayer != null) {
-                    float drawX = getX() + getWidth() / 2f;
-                    float drawY = getY() + getHeight() / 2f;
-                    boolean drawn = false;
-
-                    String[] paths = {
-                        "EFFECTS/EMPEACH_DAMAGE/EMPEACH_DAMAGE.PAM",
-                        "EFFECTS/EMPEACH_DAMAGE/EMPEACH_DAMAGE",
-                        "IMAGES/768/FULL/EFFECTS/EMPEACH_DAMAGE/EMPEACH_DAMAGE.PAM"
-                    };
-
-                    String[] anims = {"idle", "anim_idle", "animation", "", null};
-
-                    for (String path : paths) {
-                        for (String anim : anims) {
-                            try {
-                                pamPlayer.draw(batch, path, anim, stateTime, drawX, drawY, true);
-                                drawn = true;
-                                break;
-                            } catch (Exception ignored) {}
-                        }
-                        if (drawn) break;
-                    }
-                }
-            }
-        };
-
-        damageCell.add(damagePamActor).size(28 * scale, 28 * scale).padRight(5 * scale);
-        damageCell.add(createSafeLabel(String.valueOf(plant.getDamage()), "big"));
-        statsGrid.add(damageCell).row();
-
-        statsGrid.add(createSafeLabel("RANGE:", "big")).right();
-        statsGrid.add(createSafeLabel(plant.getFamily() != null && plant.getFamily().equals(PlantFamily.LOBBER) ? "Lobbed" : "Straight", "big")).padRight(20 * scale);
-
-        rightCol.add(statsGrid).padBottom(10 * scale).row();
-
-        Table familyTable = new Table();
-        familyTable.add(createSafeLabel("FAMILY: ", "big")).left();
-        familyTable.add(createSafeLabel(plant.getFamily() != null ? plant.getFamily().name() : "None", "big")).left();
-        rightCol.add(familyTable).padBottom(10 * scale).row();
-
-        Table pfTable = new Table();
-        Label pfTitle = createSafeLabel("Plant Food: ", "big");
-        pfTitle.setColor(Color.YELLOW);
-        pfTable.add(pfTitle).top().left();
-
-        Label pfDesc = createSafeLabel(plant.getPlantFoodMode() != null ? String.valueOf(plant.getPlantFoodMode()) : "No Plant Food Effect", "big");
-        pfDesc.setWrap(true);
-        pfTable.add(pfDesc).width(320 * scale).left();
-        rightCol.add(pfTable).padBottom(10 * scale).row();
-
-        if (plant.getAbilityParams() != null && !plant.getAbilityParams().isEmpty()) {
-            Label descLbl = createSafeLabel(String.valueOf(plant.getAbilityParams()), "big");
-            descLbl.setWrap(true);
-            rightCol.add(descLbl).width(420 * scale).padTop(5 * scale).row();
+        Stack plantStack = new Stack();
+        Drawable woodBg = getStatIconDrawable("wood_bg");
+        if (woodBg != null) {
+            plantStack.add(new Image(woodBg));
+        } else {
+            Table t = new Table();
+            t.setBackground(createWhiteDrawable(Color.valueOf("4a3319")));
+            plantStack.add(t);
         }
 
-        contentArea.add(rightCol).top().row();
+        Actor plantPamActor = createPlantPamActor(scale);
+        Table animWrapper = new Table();
+        animWrapper.add(plantPamActor).size(180 * scale, 180 * scale).center();
+        plantStack.add(animWrapper);
 
-        root.add(contentArea).expand().center().row();
+        leftCol.add(plantStack).size(240 * scale, 240 * scale).padBottom(10 * scale).row();
 
+        Label lvlLabel = createSafeLabel("Level " + plant.getLevel(), "big");
+        leftCol.add(lvlLabel).padBottom(5 * scale).row();
+
+        int nextLevel = plant.getLevel() + 1;
+        int currentSeeds = currentUser != null ? currentUser.getSeedCount(plant.getName()) : 0;
+        int seedsNeeded = 5 * nextLevel;
+
+        ProgressBar bar = createAlmanacProgressBar(seedsNeeded, currentSeeds);
+        leftCol.add(bar).width(220 * scale).height(16 * scale).padBottom(5 * scale).row();
+
+        String seedText = (plant.getLevel() >= 4) ? "MAX LEVEL" : currentSeeds + " / " + seedsNeeded + " Seeds";
+        Label seedsLbl = createSafeLabel(seedText, "big");
+        leftCol.add(seedsLbl).row();
+
+        return leftCol;
+    }
+
+    private Drawable getStatIconDrawable(String fileNameWithoutExt) {
+        String fullPath = "IMAGES/Menus/Collection/" + fileNameWithoutExt + ".png";
+        try {
+            if (Gdx.files.internal(fullPath).exists()) {
+                Texture tex = new Texture(Gdx.files.internal(fullPath));
+                tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+                return new TextureRegionDrawable(new TextureRegion(tex));
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    private Drawable createWhiteDrawable(Color color) {
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(color);
+        pixmap.fill();
+        Texture texture = new Texture(pixmap);
+        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        pixmap.dispose();
+        return new TextureRegionDrawable(new TextureRegion(texture));
+    }
+
+    private Table createStatBox(Drawable icon, String labelText, String valueText, float scale) {
+        Table box = new Table();
+        box.setBackground(createWhiteDrawable(Color.valueOf("2f6c2f")));
+
+        if (icon != null) {
+            box.add(new Image(icon)).size(32 * scale, 32 * scale).pad(6 * scale);
+        } else {
+            box.add().size(32 * scale, 32 * scale).pad(6 * scale);
+        }
+
+        Table textTable = new Table();
+        textTable.defaults().left();
+        Label lbl = createSafeLabel(labelText, "default");
+        lbl.setFontScale(0.75f * scale);
+        lbl.setColor(Color.LIGHT_GRAY);
+        textTable.add(lbl).row();
+
+        Label val = createSafeLabel(valueText, "big");
+        val.setFontScale(0.9f * scale);
+        textTable.add(val);
+
+        box.add(textTable).expandX().fillX().padRight(10 * scale);
+        return box;
+    }
+
+    private Table buildRightColumn(float scale) {
+        Table rightCol = new Table();
+        rightCol.defaults().left().padBottom(10 * scale);
+
+        Table statsGrid = new Table();
+        statsGrid.defaults().space(10 * scale);
+
+        Drawable costIcon = getStatIconDrawable("cost");
+        Drawable damageIcon = getStatIconDrawable("damage");
+        Drawable rangeIcon = getStatIconDrawable("range");
+        Drawable rechargeIcon = getStatIconDrawable("recharge");
+        Drawable toughnessIcon = getStatIconDrawable("toughness");
+        Drawable familyIcon = getStatIconDrawable("family");
+
+        Table col1 = new Table();
+        col1.defaults().padBottom(8 * scale).fillX();
+        col1.add(createStatBox(costIcon, "SUN COST", String.valueOf(plant.getSunCost()), scale)).width(220 * scale).row();
+        col1.add(createStatBox(toughnessIcon, "TOUGHNESS", String.valueOf(plant.getBaseHp()), scale)).width(220 * scale).row();
+
+        String rangeStr = !plant.getTags().isEmpty() ? plant.getTags().toString() : "None";
+        col1.add(createStatBox(familyIcon, "TAGS", rangeStr, scale)).width(220 * scale).row();
+
+        Table col2 = new Table();
+        col2.defaults().padBottom(8 * scale).fillX();
+        col2.add(createStatBox(rechargeIcon, "RECHARGE", plant.getRechargeTime() + "s", scale)).width(220 * scale).row();
+        col2.add(createStatBox(damageIcon, "DAMAGE", String.valueOf(plant.getDamage()), scale)).width(220 * scale).row();
+
+        String familyStr = plant.getFamily() != null ? plant.getFamily().name() : "None";
+        col2.add(createStatBox(rangeIcon, "FAMILY", familyStr, scale)).width(220 * scale).row();
+
+        statsGrid.add(col1).padRight(15 * scale);
+        statsGrid.add(col2);
+        rightCol.add(statsGrid).row();
+
+        Table pfTable = new Table();
+        pfTable.defaults().left();
+        Label pfTitle = createSafeLabel("Plant Food Effect:", "big");
+        pfTitle.setFontScale(0.9f * scale);
+        pfTitle.setColor(Color.YELLOW);
+        pfTable.add(pfTitle).padBottom(3 * scale).row();
+
+        String pfDescText = plant.getPlantFoodMode() != null ? String.valueOf(plant.getPlantFoodMode()) : "No Special Effect";
+        Label pfDesc = createSafeLabel(pfDescText, "default");
+        pfDesc.setWrap(true);
+        pfTable.add(pfDesc).width(460 * scale);
+        rightCol.add(pfTable).padBottom(8 * scale).row();
+
+        return rightCol;
+    }
+
+    private void buildActionButton(Table root, float scale) {
         boolean isUnlocked = currentUser != null && currentUser.getUnlockedPlantTypes().stream()
             .anyMatch(p -> p.getName().equalsIgnoreCase(plant.getName()));
 
         if (isUnlocked) {
-            TextButton upgradeBtn = new TextButton("Upgrade Plant", skin, "green_small");
+            int nextLevel = plant.getLevel() + 1;
+            int coinsNeeded = 500 * nextLevel;
+
+            String btnText = (plant.getLevel() >= 4) ? "MAX LEVEL" : "Upgrade (" + coinsNeeded + " Coins)";
+            TextButton upgradeBtn = new TextButton(btnText, skin, "default");
+
+            if (plant.getLevel() >= 4) {
+                upgradeBtn.setDisabled(true);
+            }
+
             upgradeBtn.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    String msg = menuLogic.upgradePlant(plant.getName());
-                    Toast.showError(stage, skin, msg);
-                    buildUI();
+                    if (plant.getLevel() >= 4) return;
+                    submitUpgrade();
                 }
             });
-            root.add(upgradeBtn).width(220 * scale).height(50 * scale).padBottom(30 * scale);
+            root.add(upgradeBtn).width(280 * scale).height(50 * scale).padBottom(20 * scale);
         } else {
             TextButton buyBtn = new TextButton("Buy Plant (2000 Coins)", skin, "purple");
             buyBtn.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    String msg = menuLogic.purchasePlant(plant.getName());
-                    Toast.showError(stage, skin, msg);
-                    buildUI();
+                    submitPurchase();
                 }
             });
-            root.add(buyBtn).width(260 * scale).height(50 * scale).padBottom(30 * scale);
+            root.add(buyBtn).width(260 * scale).height(50 * scale).padBottom(20 * scale);
         }
     }
 
-    private Actor createPlantPamActor(String plantName, float scale) {
-        String rawName = plantName.toUpperCase();
-        String folderName = rawName.replace(" ", "").replace("-", "").replace("-", "");
-        if (folderName.equalsIgnoreCase("PRIMALPOTATOMINE")) {
-            folderName = "PRIMAL_POTATOMINE";
+    private void submitUpgrade() {
+        String result = menuLogic.upgradePlant(plant.getName());
+        boolean success = result != null && result.startsWith("Successfully");
+
+        if (success) {
+            Toast.showSuccess(stage, skin, result);
+            if (listener != null) listener.onPlantUpdated();
+            if (currencyHeader != null) currencyHeader.updateValues();
+            buildUI();
+        } else {
+            Toast.showError(stage, skin, result);
         }
+    }
 
-        final String finalFolderName = folderName;
+    private void submitPurchase() {
+        String result = menuLogic.purchasePlant(plant.getName());
+        boolean success = result != null && result.startsWith("Successfully");
 
+        if (success) {
+            Toast.showSuccess(stage, skin, result);
+            if (listener != null) listener.onPlantUpdated();
+            if (currencyHeader != null) currencyHeader.updateValues();
+            buildUI();
+        } else {
+            Toast.showError(stage, skin, result);
+        }
+    }
+
+    private Actor createPlantPamActor(float scale) {
         return new Table() {
             @Override
             public void draw(Batch batch, float parentAlpha) {
                 super.draw(batch, parentAlpha);
-
                 float drawX = getX() + getWidth() / 2f;
                 float drawY = getY() + 20f * scale;
-                boolean drawn = false;
-
-                if (pamPlayer != null) {
-                    String[] possiblePaths = {
-                        "PLANT/" + finalFolderName + "/" + finalFolderName + ".PAM"
-                    };
-
-                    for (String pamPath : possiblePaths) {
-                        if (pamPath.equals("PLANT/CATTAILMINT/CATTAILMINT.PAM") ||
-                            pamPath.equals("PLANT/CATTAIL/CATTAIL.PAM")) {
-                            continue;
-                        }
-                        try {
-                            pamPlayer.draw(batch, pamPath, "idle", stateTime, drawX, drawY, true);
-                            drawn = true;
-                            break;
-                        } catch (Exception ignored) {
-                        }
-                    }
-                }
-
-                if (!drawn) {
-                    TextureRegion reg = Textures.regionOrNull("PLANT_" + rawName.replace(" ", "_"));
-                    if (reg != null) {
-                        batch.draw(reg, drawX - (40 * scale), drawY, 80 * scale, 80 * scale);
-                    }
-                }
+                ScreenResourceManager.drawPlantAnimation(
+                    batch, pamPlayer, plant.getName(), stateTime, drawX, drawY, false
+                );
             }
         };
     }
@@ -301,27 +355,21 @@ public class PlantDetailsScreen implements Screen {
     }
 
     private float getScaleFactor() {
-        float scaleX = stage.getWidth() / BASE_WIDTH;
-        float scaleY = stage.getHeight() / BASE_HEIGHT;
+        float scaleX = (float) Gdx.graphics.getWidth() / BASE_WIDTH;
+        float scaleY = (float) Gdx.graphics.getHeight() / BASE_HEIGHT;
         return Math.max(0.8f, Math.min(scaleX, scaleY));
-    }
-
-    private Label createSafeLabel(String text, String styleName) {
-        if (skin.has(styleName, Label.LabelStyle.class)) {
-            return new Label(text, skin, styleName);
-        }
-        return new Label(text, skin);
     }
 
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        if (currencyHeader != null) currencyHeader.updateValues();
     }
 
     @Override
     public void render(float delta) {
         stateTime += delta;
-        Gdx.gl.glClearColor(BG_COLOR.r, BG_COLOR.g, BG_COLOR.b, BG_COLOR.a);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.act(delta);
@@ -332,17 +380,16 @@ public class PlantDetailsScreen implements Screen {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
         if (bg != null) {
-            bg.setSize(stage.getWidth(), stage.getHeight());
+            bg.setSize(width, height);
         }
     }
-
-    @Override public void pause() {}
-    @Override public void resume() {}
-    @Override public void hide() {}
 
     @Override
     public void dispose() {
         stage.dispose();
-        if (menuBgTexture != null) menuBgTexture.dispose();
+        if (bg != null && bg.getDrawable() instanceof TextureRegionDrawable) {
+            ((TextureRegionDrawable) bg.getDrawable()).getRegion().getTexture().dispose();
+        }
+        super.dispose();
     }
 }

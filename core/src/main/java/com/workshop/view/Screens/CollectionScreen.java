@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -20,7 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.workshop.controller.repository.DataManager;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
@@ -29,6 +28,8 @@ import com.workshop.model.plants.Plant;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.model.zombie.Zombie;
+import com.workshop.view.Toast;
+import com.workshop.view.components.CurrencyHeader;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 import pvz.skin.PvzSkin;
@@ -38,19 +39,25 @@ import java.util.List;
 
 public class CollectionScreen implements Screen {
 
+    public interface Listener {
+        void onBack();
+        void onNavigateToScreen(Screen screen);
+    }
+
     private static final float BASE_WIDTH = 1280f;
     private static final float BASE_HEIGHT = 720f;
-    private static TextureBank textureBank;
-    private static PamPlayer pamPlayer;
+    public static TextureBank textureBank;
+    public static PamPlayer pamPlayer;
     private final GameContext ctx;
     private final Stage stage;
     private final Skin skin;
     private final Listener listener;
     private final CollectionMenu menuLogic;
-    private final User currentUser;
+    private User currentUser;
     private Table rootTable;
     private Table gridTable;
     private SelectBox<String> filterBox;
+    private CurrencyHeader currencyHeader;
     private boolean showingPlants = true;
     private Texture fallbackCardBg;
     private Texture menuBgTexture;
@@ -61,7 +68,7 @@ public class CollectionScreen implements Screen {
         this.ctx = ctx;
         this.listener = listener;
         this.skin = PvzSkin.get();
-        this.stage = new Stage(new FitViewport(BASE_WIDTH, BASE_HEIGHT));
+        this.stage = new Stage(new ScreenViewport());
         this.menuLogic = new CollectionMenu(ctx);
         this.currentUser = UserManager.getInstance().getCurrentUser();
         this.batch = new SpriteBatch();
@@ -78,15 +85,24 @@ public class CollectionScreen implements Screen {
         }
     }
 
+    private float getScaleFactor() {
+        float scaleX = (float) Gdx.graphics.getWidth() / BASE_WIDTH;
+        float scaleY = (float) Gdx.graphics.getHeight() / BASE_HEIGHT;
+        return Math.max(0.8f, Math.min(scaleX, scaleY)) * 1.2f;
+    }
+
     private void buildUI() {
+        stage.clear();
         rootTable = new Table();
         rootTable.setFillParent(true);
 
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(new Color(0.35f, 0.15f, 0.08f, 1f));
-        pixmap.fill();
-        menuBgTexture = new Texture(pixmap);
-        pixmap.dispose();
+        if (menuBgTexture == null) {
+            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+            pixmap.setColor(0.35f, 0.15f, 0.08f, 1f);
+            pixmap.fill();
+            menuBgTexture = new Texture(pixmap);
+            pixmap.dispose();
+        }
 
         Image bg = new Image(new TextureRegionDrawable(new TextureRegion(menuBgTexture)));
         bg.setFillParent(true);
@@ -94,91 +110,23 @@ public class CollectionScreen implements Screen {
         stage.addActor(bg);
         stage.addActor(rootTable);
 
+        float scale = getScaleFactor();
+
         Table header = new Table();
-        TextButton backBtn = new TextButton("Back", skin, "brown");
-        backBtn.addListener(new ChangeListener() {
+        ImageButton closeButton = new ImageButton(skin, "generic_close_circle");
+        closeButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (listener != null) listener.onBack();
             }
         });
-        header.add(backBtn).width(110).height(45).left().pad(10);
+        header.add(closeButton).width(110 * scale).height(45 * scale).left().pad(10 * scale);
 
-        Label titleLabel = createSafeLabel("ALMANAC OF PLANTS & ZOMBIES", "big");
+        Label titleLabel = new Label("ALMANAC OF PLANTS & ZOMBIES", skin, "big");
         header.add(titleLabel).expandX().center();
 
-        Table currencyTable = new Table();
-        long gems = currentUser != null ? currentUser.getGems() : 0;
-        long coins = currentUser != null ? currentUser.getCoins() : 0;
-
-        final String diamondPamPath = "768/INITIAL/EFFECTS/COIN_DIAMOND/COIN_DIAMOND.PAM";
-        final String coinPamPath = "768/INITIAL/EFFECTS/COIN_STACK/COIN_STACK.PAM";
-        final float iconScale = 0.3f;
-
-        Table diamondPamContainer = new Table() {
-            @Override
-            public void draw(com.badlogic.gdx.graphics.g2d.Batch batch, float parentAlpha) {
-                super.draw(batch, parentAlpha);
-                textureBank.update();
-
-                Matrix4 oldMatrix = batch.getTransformMatrix().cpy();
-                float drawX = getX() + getWidth() / 2f;
-                float drawY = getY() + getHeight() / 2f;
-
-                Matrix4 scaleMatrix = oldMatrix.cpy();
-                scaleMatrix.translate(drawX, drawY, 0);
-                scaleMatrix.scale(iconScale, iconScale, 1f);
-                scaleMatrix.translate(-drawX, -drawY, 0);
-                batch.setTransformMatrix(scaleMatrix);
-
-                try {
-                    pamPlayer.draw(batch, diamondPamPath, "idle", stateTime, drawX, drawY, true);
-                } catch (Exception ignored) {
-                }
-
-                batch.setTransformMatrix(oldMatrix);
-            }
-        };
-
-        currencyTable.add(diamondPamContainer).size(35, 35).padRight(6);
-
-        Label gemLbl = createSafeLabel(String.valueOf(gems), "big");
-        gemLbl.setFontScale(0.55f);
-        currencyTable.add(gemLbl).padRight(25);
-
-        Table coinPamContainer = new Table() {
-            @Override
-            public void draw(com.badlogic.gdx.graphics.g2d.Batch batch, float parentAlpha) {
-                super.draw(batch, parentAlpha);
-                textureBank.update();
-
-                Matrix4 oldMatrix = batch.getTransformMatrix().cpy();
-                float drawX = getX() + getWidth() / 2f;
-                float drawY = getY() + getHeight() / 2f;
-
-                Matrix4 scaleMatrix = oldMatrix.cpy();
-                scaleMatrix.translate(drawX, drawY, 0);
-                scaleMatrix.scale(iconScale, iconScale, 1f);
-                scaleMatrix.translate(-drawX, -drawY, 0);
-                batch.setTransformMatrix(scaleMatrix);
-
-
-                try {
-                    pamPlayer.draw(batch, coinPamPath, "idle", stateTime, drawX, drawY, true);
-                } catch (Exception ignored) {
-                }
-
-                batch.setTransformMatrix(oldMatrix);
-            }
-        };
-
-        currencyTable.add(coinPamContainer).size(35, 35).padRight(6);
-
-        Label coinLbl = createSafeLabel(String.valueOf(coins), "big");
-        coinLbl.setFontScale(0.55f);
-        currencyTable.add(coinLbl);
-
-        header.add(currencyTable).right().padRight(15);
+        currencyHeader = new CurrencyHeader();
+        header.add(currencyHeader).right().padRight(15 * scale);
         rootTable.add(header).fillX().row();
 
         Table tabTable = new Table();
@@ -212,17 +160,35 @@ public class CollectionScreen implements Screen {
             }
         });
 
-        tabTable.add(plantsTabBtn).width(140).height(45).pad(5);
-        tabTable.add(zombiesTabBtn).width(140).height(45).pad(5);
-        tabTable.add(filterBox).width(160).height(40).padLeft(30);
-        rootTable.add(tabTable).left().pad(10).row();
+        tabTable.add(plantsTabBtn).width(140 * scale).height(45 * scale).pad(5 * scale);
+        tabTable.add(zombiesTabBtn).width(140 * scale).height(45 * scale).pad(5 * scale);
+        tabTable.add(filterBox).width(160 * scale).height(40 * scale).padLeft(30 * scale);
+        rootTable.add(tabTable).left().pad(10 * scale).row();
+
+        Table divider = new Table();
+        if (skin.has("image_ui_almanac_general_line_10", Drawable.class)) {
+            divider.setBackground(skin.getDrawable("image_ui_almanac_general_line_10"));
+        } else {
+            Pixmap pixmap = new Pixmap(1, 2, Pixmap.Format.RGBA8888);
+            pixmap.setColor(new Color(0.6f, 0.4f, 0.2f, 0.8f));
+            pixmap.fill();
+            Texture lineTexture = new Texture(pixmap);
+            pixmap.dispose();
+            divider.setBackground(new TextureRegionDrawable(new TextureRegion(lineTexture)));
+        }
+        rootTable.add(divider).fillX().height(2 * scale).padLeft(10 * scale).padRight(10 * scale).padBottom(5 * scale).row();
 
         gridTable = new Table();
         gridTable.top().left();
         ScrollPane scrollPane = createAlmanacScrollPane(gridTable);
 
-        rootTable.add(scrollPane).grow().pad(10);
-        refreshPlantsList();
+        rootTable.add(scrollPane).grow().pad(10 * scale);
+
+        if (showingPlants) {
+            refreshPlantsList();
+        } else {
+            refreshZombiesList();
+        }
     }
 
     private ScrollPane createAlmanacScrollPane(Actor actor) {
@@ -240,8 +206,21 @@ public class CollectionScreen implements Screen {
         return scrollPane;
     }
 
+    private void updateUserData() {
+        this.currentUser = UserManager.getInstance().getCurrentUser();
+        if (currencyHeader != null) {
+            currencyHeader.updateValues();
+        }
+    }
+
     private void refreshPlantsList() {
         gridTable.clear();
+        updateUserData();
+
+        if (DataManager.getInstance().plants == null || DataManager.getInstance().plants.getPlantDataMap() == null) {
+            Toast.showError(stage, skin, "Plant data not available!");
+            return;
+        }
 
         List<Plant> allPlants = new ArrayList<>(DataManager.getInstance().plants.getPlantDataMap().values());
         List<Plant> unlockedPlants = currentUser != null ? currentUser.getUnlockedPlantTypes() : new ArrayList<>();
@@ -249,7 +228,7 @@ public class CollectionScreen implements Screen {
 
         int maxCols = 6;
         int col = 0;
-        float scale = 1.0f;
+        float scale = getScaleFactor();
 
         for (Plant plant : allPlants) {
             boolean isUnlocked = unlockedPlants.stream()
@@ -270,6 +249,7 @@ public class CollectionScreen implements Screen {
             if (col % maxCols == 0) gridTable.row();
         }
     }
+
     private Table createPlantCard(Plant plant, boolean isUnlocked, int currentSeeds, int seedsNeeded, float scale) {
         Table card = new Table();
         card.top();
@@ -295,12 +275,12 @@ public class CollectionScreen implements Screen {
                 }
 
                 String rawName = plant.getName().toUpperCase();
-                String folderName = rawName.replace(" ", "").replace("-", "").replace("-", "");
+                String folderName = rawName.replace(" ", "").replace("-", "");
                 if (folderName.equalsIgnoreCase("PRIMALPOTATOMINE")) {
                     folderName = "PRIMAL_POTATOMINE";
                 }
                 float drawX = getX() + getWidth() / 2f;
-                float drawY = getY() + 12f;
+                float drawY = getY() + 12f * scale;
                 boolean drawn = false;
                 String[] possiblePaths = {
                     "PLANT/" + folderName + "/" + folderName + ".PAM"
@@ -322,7 +302,7 @@ public class CollectionScreen implements Screen {
                 if (!drawn) {
                     TextureRegion reg = Textures.regionOrNull("PLANT_" + rawName.replace(" ", "_"));
                     if (reg != null) {
-                        batch.draw(reg, drawX - 30, drawY, 60, 60);
+                        batch.draw(reg, drawX - 30 * scale, drawY, 60 * scale, 60 * scale);
                     }
                 }
 
@@ -344,21 +324,18 @@ public class CollectionScreen implements Screen {
 
         card.add(stack).size(130 * scale, 95 * scale).padTop(10 * scale).row();
 
-        Label nameLbl = createSafeLabel(plant.getName(), "big");
-        nameLbl.setFontScale(0.55f * scale);
+        Label nameLbl = createSafeLabel(plant.getName(), "default");
         nameLbl.setWrap(true);
         nameLbl.setAlignment(Align.center);
         card.add(nameLbl).width(150 * scale).height(32 * scale).center().padTop(6 * scale).row();
 
-        Label levelLbl = createSafeLabel("Lvl " + plant.getLevel(), "big");
-        levelLbl.setFontScale(0.52f * scale);
+        Label levelLbl = createSafeLabel("Lvl " + plant.getLevel(), "default");
         card.add(levelLbl).padTop(4 * scale).row();
 
         ProgressBar seedBar = createAlmanacProgressBar(seedsNeeded, currentSeeds);
         card.add(seedBar).width(135 * scale).height(12 * scale).padTop(6 * scale).row();
 
-        Label seedsTxt = createSafeLabel(currentSeeds + "/" + seedsNeeded, "big");
-        seedsTxt.setFontScale(0.50f * scale);
+        Label seedsTxt = createSafeLabel(currentSeeds + "/" + seedsNeeded, "default");
         card.add(seedsTxt).padTop(4 * scale).padBottom(10 * scale).row();
 
         card.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
@@ -366,12 +343,25 @@ public class CollectionScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (listener != null) {
-                    listener.onNavigateToScreen(new PlantDetailsScreen(
+                    PlantDetailsScreen detailsScreen = new PlantDetailsScreen(
                         ctx,
                         plant,
                         pamPlayer,
-                        () -> listener.onNavigateToScreen(CollectionScreen.this)
-                    ));
+                        new PlantDetailsScreen.Listener() {
+                            @Override
+                            public void onBack() {
+                                listener.onNavigateToScreen(CollectionScreen.this);
+                            }
+
+                            @Override
+                            public void onPlantUpdated() {
+                                refreshPlantsList();
+                            }
+                        }
+                    );
+                    listener.onNavigateToScreen(detailsScreen);
+                } else {
+                    Toast.showError(stage, skin, "Navigation Listener is null!");
                 }
             }
         });
@@ -400,13 +390,19 @@ public class CollectionScreen implements Screen {
 
     private void refreshZombiesList() {
         gridTable.clear();
+        updateUserData();
+
+        if (DataManager.getInstance().zombies == null || DataManager.getInstance().zombies.getZombieDataMap() == null) {
+            Toast.showError(stage, skin, "Zombie data not available!");
+            return;
+        }
 
         List<Zombie> allZombies = new ArrayList<>(DataManager.getInstance().zombies.getZombieDataMap().values());
         List<Zombie> seenZombies = currentUser != null ? currentUser.getSeenZombies() : new ArrayList<>();
 
         int maxCols = 9;
         int col = 0;
-        float scale = 1.0f;
+        float scale = getScaleFactor();
 
         for (Zombie zombie : allZombies) {
             boolean isSeen = seenZombies.stream()
@@ -441,7 +437,7 @@ public class CollectionScreen implements Screen {
                     String folderName = rawName.replace(" ", "");
 
                     float drawX = getX() + getWidth() / 2f;
-                    float drawY = getY() + 10f;
+                    float drawY = getY() + 10f * scale;
 
                     boolean drawn = false;
                     String[] possiblePaths = {
@@ -461,15 +457,14 @@ public class CollectionScreen implements Screen {
                     if (!drawn) {
                         TextureRegion reg = Textures.regionOrNull("ZOMBIE_" + rawName.replace(" ", "_"));
                         if (reg != null) {
-                            batch.draw(reg, drawX - 25, drawY, 55, 55);
+                            batch.draw(reg, drawX - 25 * scale, drawY, 55 * scale, 55 * scale);
                         }
                     }
                 }
             };
             card.add(pamContainer).size(55 * scale, 55 * scale).padTop(10 * scale).row();
 
-            Label nameLbl = createSafeLabel(zombie.getName(), "big");
-            nameLbl.setFontScale(0.58f * scale);
+            Label nameLbl = createSafeLabel(zombie.getName(), "default");
             nameLbl.setWrap(true);
             nameLbl.setAlignment(Align.center);
             card.add(nameLbl).width(115 * scale).height(34 * scale).center().padTop(4 * scale).row();
@@ -484,14 +479,24 @@ public class CollectionScreen implements Screen {
                             pamPlayer,
                             () -> listener.onNavigateToScreen(CollectionScreen.this)
                         ));
+                    } else {
+                        Toast.showError(stage, skin, "Navigation Listener is null!");
                     }
                 }
             });
         } else {
-            Label questionMark = createSafeLabel("?", "big");
+            Label questionMark = createSafeLabel("?", "default");
             questionMark.setFontScale(2.5f * scale);
             questionMark.setColor(Color.GRAY);
             card.add(questionMark).expand().center();
+
+            card.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
+            card.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    Toast.showError(stage, skin, "Zombie not encountered yet!");
+                }
+            });
         }
 
         return card;
@@ -518,6 +523,12 @@ public class CollectionScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        updateUserData();
+        if (showingPlants) {
+            refreshPlantsList();
+        } else {
+            refreshZombiesList();
+        }
     }
 
     @Override
@@ -553,11 +564,5 @@ public class CollectionScreen implements Screen {
         if (fallbackCardBg != null) fallbackCardBg.dispose();
         if (menuBgTexture != null) menuBgTexture.dispose();
         if (batch != null) batch.dispose();
-    }
-
-    public interface Listener {
-        void onBack();
-
-        void onNavigateToScreen(Screen screen);
     }
 }

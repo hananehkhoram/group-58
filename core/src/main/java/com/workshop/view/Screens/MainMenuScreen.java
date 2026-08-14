@@ -21,6 +21,7 @@ import com.workshop.model.menus.allmenus.MainMenu;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Toast;
+import com.workshop.view.components.CurrencyHeader;
 
 import pvz.skin.PvzSkin;
 
@@ -41,6 +42,7 @@ public class MainMenuScreen implements Screen {
     private final Listener listener;
     private Texture dotTexture;
     private Texture backgroundTexture;
+    private CurrencyHeader currencyHeader;
 
     public MainMenuScreen(Listener listener) {
         this.listener = listener;
@@ -53,6 +55,7 @@ public class MainMenuScreen implements Screen {
     private void build() {
         Table root = new Table();
         root.setFillParent(true);
+        root.top();
 
         backgroundTexture = new Texture(
             Gdx.files.internal("IMAGES/mainmenu_background.png")
@@ -64,6 +67,11 @@ public class MainMenuScreen implements Screen {
 
         stage.addActor(background);
         stage.addActor(root);
+
+        Table topBar = new Table();
+        currencyHeader = new CurrencyHeader();
+        topBar.add(currencyHeader).right().padRight(10);
+        root.add(topBar).fillX().height(45).pad(10, 0, 0, 0).row();
 
         Table panel = new Table();
         panel.pad(250);
