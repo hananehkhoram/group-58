@@ -105,11 +105,22 @@ public final class PlantAnimationResolver {
                 continue;
             }
 
-            if (!"pam".equalsIgnoreCase(child.extension())) {
+            if (!"pam".equalsIgnoreCase(
+                child.extension()
+            )) {
                 continue;
             }
 
-            String fileName = child.nameWithoutExtension();
+            String normalizedPath =
+                childPath.replace('\\', '/').toUpperCase();
+
+            if (!normalizedPath.contains("/ZOMBIE/")) {
+                continue;
+            }
+
+            String fileName =
+                child.nameWithoutExtension();
+
             pamPaths.putIfAbsent(
                 normalize(fileName),
                 childPath

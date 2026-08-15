@@ -22,6 +22,7 @@ import com.workshop.view.gameplay.PlantAnimationLayer;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
+import com.workshop.view.gameplay.ZombieIntroLayer;
 
 public class GamePlayScreen implements Screen {
 
@@ -51,7 +52,7 @@ public class GamePlayScreen implements Screen {
     private final float introCameraX;
     private final float gameplayCameraX;
     private final float cameraY;
-    private static final float INTRO_WAIT = 2;
+    private static final float INTRO_WAIT = 3;
     private static final float INTRO_DURATION = 1.4f;
 
     private float introTime;
@@ -129,6 +130,42 @@ public class GamePlayScreen implements Screen {
         rightBackground = new Image(rightTexture);
 
         buildBackground();
+
+        ZombieIntroLayer zombieIntroLayer =
+            new ZombieIntroLayer();
+
+        float rightX =
+            leftTexture.getWidth()
+                + centerTexture.getWidth();
+
+        float rightWidth =
+            rightTexture.getWidth();
+
+        float height =
+            rightTexture.getHeight();
+
+        float[][] zombiePoints =
+            getZombieIntroPoints(season);
+
+        String[] introZombies =
+            getIntroZombiePamNames(season);
+
+        int count = Math.min(
+            introZombies.length,
+            zombiePoints.length
+        );
+
+        for (int i = 0; i < count; i++) {
+            float[] point = zombiePoints[i];
+
+            zombieIntroLayer.addZombie(
+                introZombies[i],
+                rightX + rightWidth * point[0],
+                height * point[1]
+            );
+        }
+
+        stage.addActor(zombieIntroLayer);
 
         PlantAnimationLayer plantAnimationLayer =
             new PlantAnimationLayer(
@@ -214,6 +251,8 @@ public class GamePlayScreen implements Screen {
         stage.addActor(centerBackground);
         stage.addActor(rightBackground);
     }
+
+
 
     private BackgroundPaths getBackgroundPaths(Season season) {
 
@@ -483,6 +522,92 @@ public class GamePlayScreen implements Screen {
             worldCamera.update();
 
             introFinished = true;
+        }
+    }
+
+    private float[][] getZombieIntroPoints(Season season) {
+        switch (season.getName()) {
+
+            case "Ancient Egypt":
+                return new float[][] {
+                    {0.28f, 0.38f},
+                    {0.15f, 0.46f},
+                    {0.12f, 0.65f},
+                    {0.23f, 0.60f}
+                };
+
+            case "Big Wave Beach":
+                return new float[][] {
+                    {0.72f, 0.36f},
+                    {0.30f, 0.43f},
+                    {0.48f, 0.50f},
+                    {0.35f, 0.57f},
+                    {0.22f, 0.64f}
+                };
+
+            case "Dark Ages":
+                return new float[][] {
+                    {0.38f, 0.34f},
+                    {0.29f, 0.41f},
+                    {0.20f, 0.48f},
+                    {0.12f, 0.55f}
+                };
+
+            case "FrozenCave":
+                return new float[][] {
+                    {0.30f, 0.34f},
+                    {0.5f, 0.42f},
+                    {0.16f, 0.50f},
+                    {0.6f, 0.65f}
+                };
+
+            default:
+                return new float[][] {
+                    {0.28f, 0.38f},
+                    {0.20f, 0.46f},
+                    {0.12f, 0.54f}
+                };
+        }
+    }
+
+    private String[] getIntroZombiePamNames(Season season) {
+
+        switch (season.getName()) {
+
+            case "Ancient Egypt":
+                return new String[] {
+                    "ZOMBIE_EGYPT_BASIC",
+                    "ZOMBIE_EGYPT_RA",
+                    "ZOMBIE_EXPLORER",
+                    "ZOMBIE_EGYPT_TOMBRAISER"
+                };
+
+            case "FrozenCave":
+                return new String[] {
+                    "DODO",
+                    "HUNTER",
+                    "TROGLOBITE"
+                };
+
+            case "Big Wave Beach":
+                return new String[] {
+                    "FISHERMAN",
+                    "SNORKEL",
+                    "OCTOPUS"
+                };
+
+            case "Dark Ages":
+                return new String[] {
+                    "JESTER",
+                    "WIZARD",
+                    "KING",
+                    "DRAGON"
+                };
+
+            default:
+                return new String[] {
+                    "ZOMBIE_EGYPT_BASIC"
+                };
         }
     }
 
