@@ -36,6 +36,7 @@ public class Zombie implements Damageable {
 
     private boolean isIced = false;
     private double iceHp = 0;
+    private boolean initialFrozenBlock = false;
 
     private boolean isEating = false;
     private boolean movingBackward = false;
@@ -58,15 +59,23 @@ public class Zombie implements Damageable {
     }
 
     public void setAsInitialFrozenBlock() {
-        this.isIced = true;
-        effects.add(Effects.FROZEN);
-        this.iceHp = 600;
+        initialFrozenBlock = true;
+        isIced = true;
+        iceHp = 600;
+
+        if (!effects.contains(Effects.FROZEN)) {
+            effects.add(Effects.FROZEN);
+        }
     }
 
     public void update(GameContext ctx, double deltaTime) {
         if (isDead()) {
             if (random.nextInt(100) < 5) {
             ctx.addLoot(new LootItem(LootItem.LootType.SEED, (int) getX(), getRow()));}
+            return;
+        }
+
+        if (initialFrozenBlock) {
             return;
         }
 
@@ -112,6 +121,26 @@ public class Zombie implements Damageable {
     public boolean isMovingBackward() { return movingBackward; }
 
     public void takeDamage(double damage) {
+
+        if (initialFrozenBlock) {
+            iceHp -= damage;
+
+            if (iceHp <= 0) {
+                initialFrozenBlock = false;
+                isIced = false;
+
+                if (effects != null) {
+                    effects.remove(Effects.FROZEN);
+                }
+
+                Console.showMessage(
+                    "Zombie broke free from ice!"
+                );
+            }
+
+            return;
+        }
+
         if (isIced) {
             iceHp -= damage;
             if (iceHp <= 0) {
@@ -195,7 +224,11 @@ public class Zombie implements Damageable {
         if (isIced) {
             iceHp = 0;
             isIced = false;
-            if (effects != null) effects.remove(Effects.FROZEN);
+            initialFrozenBlock = false;
+
+            if (effects != null) {
+                effects.remove(Effects.FROZEN);
+            }
         }
     }
 
@@ -257,6 +290,9 @@ public class Zombie implements Damageable {
     public double getX() { return x; }
     public double getY() { return y; }
     public boolean isIced() { return isIced; }
+    public boolean isInitialFrozenBlock() {
+        return initialFrozenBlock;
+    }
     public boolean isEating() { return isEating; }
     public long getSpawnTick() {return spawnTick;}
 

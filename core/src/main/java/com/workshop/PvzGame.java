@@ -13,7 +13,10 @@ import com.workshop.model.user.UserManager;
 import com.workshop.view.Screens.*;
 import com.badlogic.gdx.Screen;
 import com.workshop.model.GameContext;
-import com.workshop.view.Screens.PauseOverlay;
+import com.workshop.model.plants.Plant;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.workshop.view.Screens.LoginScreen;
 import com.workshop.view.Screens.RegisterScreen;
@@ -173,9 +176,51 @@ public class PvzGame extends Game {
     }
 
     public void showGamePlay(GameContext ctx) {
-        setScreen(new GamePlayScreen(ctx, this::showGame));
+        setScreen(new GamePlayScreen(
+            ctx,
+            () -> restartGamePlay(ctx),
+            this::showGame
+        ));
     }
 
+    private void restartGamePlay(GameContext oldCtx) {
+        Level level = oldCtx.getLevel();
+        Season season = oldCtx.getSeason();
+
+        List<Plant> selectedPlants =
+            new ArrayList<>(oldCtx.getActivePlants());
+
+        menuManager.startBattle(level, season);
+
+        GameContext newCtx = menuManager.getCtx();
+
+        for (Plant selectedPlant : selectedPlants) {
+            Plant freshPlant =
+                newCtx.getPlantFactory().create(
+                    selectedPlant.getName()
+                );
+
+            freshPlant.setPlantFoodActive(
+                selectedPlant.isPlantFoodActive()
+            );
+
+            newCtx.getActivePlants().add(freshPlant);
+        }
+
+        season.onLevelStart(newCtx);
+
+        for (Grave grave : season.getInitialGraves(level)) {
+            newCtx.placeGrave(
+                grave,
+                grave.getRow(),
+                grave.getCol()
+            );
+        }
+
+        newCtx.setBattleStarted(true);
+
+        showGamePlay(newCtx);
+    }
 
     public void showGame() {
         setScreen(new GameScreen(new GameScreen.Listener() {

@@ -9,7 +9,6 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.workshop.controller.MenuManager;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
 import com.workshop.model.mechanisms.GameEngine;
@@ -25,6 +24,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.workshop.view.gameplay.ZombieIntroLayer;
+import com.workshop.view.gameplay.ZombieAnimationLayer;
 
 public class GamePlayScreen implements Screen {
 
@@ -74,6 +74,7 @@ public class GamePlayScreen implements Screen {
 
     public GamePlayScreen(
         GameContext gameContext,
+        Runnable restartAction,
         Runnable exitAction
     ) {
         this.exitAction = exitAction;
@@ -84,6 +85,14 @@ public class GamePlayScreen implements Screen {
         Level level = gameContext.getLevel();
 
         Skin skin = PvzSkin.get();
+
+        String iceBlockPam =
+            "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_ZOMBIE/FROSTBITE_ICE_BLOCK_ZOMBIE.PAM";
+
+        Gdx.app.log(
+            "IceBlockTest",
+            "clips: " + Textures.getPamPlayer().clips(iceBlockPam)
+        );
 
         BackgroundPaths paths =
             fallbackIfMissing(getBackgroundPaths(season));
@@ -200,12 +209,25 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(plantAnimationLayer);
 
+        ZombieAnimationLayer zombieAnimationLayer =
+            new ZombieAnimationLayer(
+                gameContext,
+                getGridX(),
+                getGridY(),
+                getGridWidth(),
+                getGridHeight()
+            );
+
+        stage.addActor(zombieAnimationLayer);
+
         pauseOverlay = new PauseOverlay(
             stage,
             skin,
             gameContext,
             () -> {
-                System.out.println("Restart clicked");
+                if (restartAction != null) {
+                    restartAction.run();
+                }
             },
             () -> {
                 gameContext.setPaused(false);
