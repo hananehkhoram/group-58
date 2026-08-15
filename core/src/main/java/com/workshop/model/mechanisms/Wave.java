@@ -42,7 +42,7 @@ public class Wave {
         }
         started = true;
 
-        announceStart();
+        announceStart(ctx);
 
         if (ctx.getSeason() != null) {
             ctx.getSeason().onWaveStart(ctx, waveNumber, isLastWave);
@@ -55,10 +55,12 @@ public class Wave {
                 .sum();
     }
 
-    private void announceStart() {
-        Console.showMessage(isLastWave
-                ? "The final wave has come.\n"
-                : "Wave " + waveNumber + " started.\n");
+    private void announceStart(GameContext ctx) {
+        String message = isLastWave
+            ? "The final wave has come."
+            : "Wave " + waveNumber + " started.";
+        Console.showMessage(message + "\n");
+        ctx.announce(message);
     }
 
     private int calculateEffectiveBudget() {

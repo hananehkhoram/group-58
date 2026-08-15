@@ -95,6 +95,7 @@ public class DarkAgesSeason extends Season{
                                         Console.simplePrint("Necromancy! A zombie rises from the grave at" +
                                                 " [" + r + "," + c + "].\n");
 
+                                        ctx.announce("Necromancy! A zombie is rising from a grave!");
                                         Zombie summonedZombie = zombieFactory.create("Default");
                                         summonedZombie.setX(c);
                                         summonedZombie.setY(r);

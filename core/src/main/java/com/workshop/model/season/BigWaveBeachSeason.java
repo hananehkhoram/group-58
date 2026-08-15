@@ -110,5 +110,6 @@ public class BigWaveBeachSeason extends Season{
 
                 ctx.addZombie(zombie);
                 Console.simplePrint("A zombie emerges from the low tide at (" + row + ", " + col + ")!\n");
+                ctx.announce("Water’s pulling back zombies are coming right out of the sea!");
         }
 }

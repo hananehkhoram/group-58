@@ -53,6 +53,17 @@ public class GameContext {
 
     private DataManager dm;
     private PlantFactory plantFactory;
+    private final Deque<String> pendingAnnouncements = new ArrayDeque<>();
+
+    public void announce(String message) {
+        if (message != null && !message.isBlank()) {
+            pendingAnnouncements.addLast(message);
+        }
+    }
+
+    public String pollAnnouncement() {
+        return pendingAnnouncements.pollFirst();
+    }
     private boolean isSetupPhase = false;
     private LevelManager levelManager;
     private boolean activeWaveInProgress = false;

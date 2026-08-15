@@ -90,4 +90,31 @@ public final class Toast {//اعلان موقت
 
         return toast;
     }
+    public static void showAnnouncement(Stage stage, Skin skin, String message) {
+        if (message == null || message.isBlank()) return;
+
+        Label label = new Label(message.trim(), skin, "big");
+        label.setColor(Color.valueOf("D6231C"));
+        label.setFontScale(1.3f);
+        label.setWrap(true);
+        label.setAlignment(Align.center);
+
+        Table holder = new Table();
+        holder.add(label).width(MISSION_MAX_WIDTH - 40);
+        holder.pack();
+        holder.getColor().a = 0f;
+        stage.addActor(holder);
+
+        holder.setPosition(
+            (stage.getWidth() - holder.getWidth()) / 2f,
+            stage.getHeight() * 0.55f
+        );
+
+        holder.addAction(Actions.sequence(
+            Actions.fadeIn(FADE_DURATION),
+            Actions.delay(MISSION_VISIBLE_DURATION),
+            Actions.fadeOut(FADE_DURATION),
+            Actions.removeActor()
+        ));
+    }
 }

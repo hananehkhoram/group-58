@@ -69,6 +69,9 @@ public class GamePlayScreen implements Screen {
     private float introTime;
     private boolean introFinished;
 
+    private static final float MISSION_DISPLAY_TIME = 6f;
+    private float screenElapsedTime = 0f;
+
     public GamePlayScreen(
         GameContext gameContext,
         Runnable exitAction
@@ -722,6 +725,8 @@ public class GamePlayScreen implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        screenElapsedTime += delta;
+
         updateIntroCamera(delta);
 
         if (!pauseOverlay.isVisible()
@@ -736,6 +741,13 @@ public class GamePlayScreen implements Screen {
         }
 
         updateHud();
+
+        if (screenElapsedTime >= MISSION_DISPLAY_TIME) {
+            String announcement;
+            while ((announcement = gameContext.pollAnnouncement()) != null) {
+                Toast.showAnnouncement(stage, PvzSkin.get(), announcement);
+            }
+        }
 
         if (pauseOverlay.isVisible()) {
             stage.act(0);
