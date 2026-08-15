@@ -71,6 +71,7 @@ public class GamePlayScreen implements Screen {
 
     public GamePlayScreen(
         GameContext gameContext,
+        Runnable restartAction,
         Runnable exitAction
     ) {
         this.exitAction = exitAction;
@@ -202,7 +203,9 @@ public class GamePlayScreen implements Screen {
             skin,
             gameContext,
             () -> {
-                System.out.println("Restart clicked");
+                if (restartAction != null) {
+                    restartAction.run();
+                }
             },
             () -> {
                 gameContext.setPaused(false);
