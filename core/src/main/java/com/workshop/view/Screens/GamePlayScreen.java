@@ -684,7 +684,7 @@ public class GamePlayScreen implements Screen {
 
             case "FrozenCave":
                 return new String[] {
-                    "DODO",
+                    "ZOMBIE_ICEAGE_DODORIDER",
                     "HUNTER",
                     "TROGLOBITE"
                 };
@@ -692,7 +692,7 @@ public class GamePlayScreen implements Screen {
             case "Big Wave Beach":
                 return new String[] {
                     "FISHERMAN",
-                    "SNORKEL",
+                    "SNORKELER",
                     "OCTOPUS"
                 };
 
