@@ -1,5 +1,7 @@
 package com.workshop.view.gameplay;
 
 public enum ZombieAnimationState {
-    IDLE
+    IDLE,
+    WALK,
+    EAT
 }

@@ -3,6 +3,7 @@ package com.workshop.view.gameplay;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.workshop.controller.repository.Textures;
+import com.workshop.model.zombie.Zombie;
 
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,20 @@ public final class ZombieAnimationResolver {
         }
 
         scanDirectory(root, PAM_PREFIX);
+    }
+
+    public ZombieAnimationSpec resolve(
+        Zombie zombie,
+        String seasonName
+    ) {
+        if (zombie == null) {
+            return null;
+        }
+
+        String pamName =
+            resolvePamName(zombie, seasonName);
+
+        return resolve(pamName);
     }
 
     public ZombieAnimationSpec resolve(String pamName) {
@@ -85,9 +100,93 @@ public final class ZombieAnimationResolver {
                 idleClip
             );
 
+        String walkClip = findClip(clips, "walk");
+
+        if (walkClip == null) {
+            walkClip = findClip(clips, "move");
+        }
+
+        if (walkClip != null) {
+            spec.setClip(
+                ZombieAnimationState.WALK,
+                walkClip
+            );
+        }
+
+        String eatClip = findClip(clips, "eat");
+
+        if (eatClip == null) {
+            eatClip = findClip(clips, "attack");
+        }
+
+        if (eatClip != null) {
+            spec.setClip(
+                ZombieAnimationState.EAT,
+                eatClip
+            );
+        }
+
+        Gdx.app.log(
+            "ZombieAnimationResolver",
+            pamName
+                + " -> "
+                + pamPath
+                + " | clips: "
+                + clips
+                + " | walk: "
+                + walkClip
+                + " | eat: "
+                + eatClip
+        );
+
         resolvedSpecs.put(key, spec);
 
         return spec;
+    }
+
+    private String resolvePamName(
+        Zombie zombie,
+        String seasonName
+    ) {
+        String zombieName = zombie.getName();
+
+        if (zombieName == null) {
+            return "";
+        }
+
+        if (isBasicZombie(zombieName)) {
+            return getBasicZombiePam(seasonName);
+        }
+
+        return zombieName;
+    }
+
+    private boolean isBasicZombie(String zombieName) {
+        return "Default".equalsIgnoreCase(zombieName)
+            || "cone head".equalsIgnoreCase(zombieName)
+            || "bucket head".equalsIgnoreCase(zombieName)
+            || "brick head".equalsIgnoreCase(zombieName)
+            || "knight".equalsIgnoreCase(zombieName);
+    }
+
+    private String getBasicZombiePam(String seasonName) {
+        if (seasonName == null) {
+            return "ZOMBIE_EGYPT_BASIC";
+        }
+
+        if ("FrozenCave".equalsIgnoreCase(seasonName)) {
+            return "ZOMBIE_ICEAGE_BASIC";
+        }
+
+        if ("Big Wave Beach".equalsIgnoreCase(seasonName)) {
+            return "ZOMBIE_BEACH_BASIC";
+        }
+
+        if ("Dark Ages".equalsIgnoreCase(seasonName)) {
+            return "ZOMBIE_DARK_BASIC";
+        }
+
+        return "ZOMBIE_EGYPT_BASIC";
     }
 
     private void scanDirectory(
