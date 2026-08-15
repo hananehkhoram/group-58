@@ -173,10 +173,7 @@ public class PvzGame extends Game {
     }
 
     public void showGamePlay(GameContext ctx) {
-        setScreen(new GamePlayScreen(
-            ctx,
-            this::showGame
-        ));
+        setScreen(new GamePlayScreen(ctx, this::showGame));
     }
 
 
@@ -236,6 +233,9 @@ public class PvzGame extends Game {
         }));
     }
 
+    private void goToBattleScreen(GameContext ctx) {
+        showGamePlay(ctx);
+    }
 
     public void showLeaderboard() {
         setScreen(new LeaderBoardScreen(this));

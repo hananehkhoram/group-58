@@ -122,28 +122,72 @@ public final class ZombieAnimationResolver {
         }
     }
 
-    private String findPamPath(String key) {
+    private String findPamPath(String pamName) {
 
+        String key = normalize(pamName);
+
+        // اول exact match
         String exact = pamPaths.get(key);
 
         if (exact != null) {
             return exact;
         }
 
+        String upperName =
+            pamName.toUpperCase();
+
+        String[] requestedParts =
+            upperName.split("[^A-Z0-9]+");
+
+        String wantedToken =
+            requestedParts[requestedParts.length - 1];
+
         for (Map.Entry<String, String> entry
             : pamPaths.entrySet()) {
 
-            String pamKey = entry.getKey();
+            String path =
+                entry.getValue()
+                    .replace('\\', '/')
+                    .toUpperCase();
 
-            if (pamKey.contains(key)) {
-                Gdx.app.log(
-                    "ZombieAnimationResolver",
-                    "Matched " + key
-                        + " -> "
-                        + entry.getValue()
-                );
+            // فقط PAMهای واقعی بخش Zombie
+            if (!path.contains("/ZOMBIE/")) {
+                continue;
+            }
 
-                return entry.getValue();
+            int lastSlash =
+                path.lastIndexOf('/');
+
+            String fileName =
+                lastSlash >= 0
+                    ? path.substring(lastSlash + 1)
+                    : path;
+
+            if (fileName.endsWith(".PAM")) {
+                fileName =
+                    fileName.substring(
+                        0,
+                        fileName.length() - 4
+                    );
+            }
+
+            String[] tokens =
+                fileName.split("[^A-Z0-9]+");
+
+            for (String token : tokens) {
+
+                if (token.equals(wantedToken)) {
+
+                    Gdx.app.log(
+                        "ZombieAnimationResolver",
+                        "Matched "
+                            + pamName
+                            + " -> "
+                            + entry.getValue()
+                    );
+
+                    return entry.getValue();
+                }
             }
         }
 

@@ -6,16 +6,18 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.workshop.controller.MenuManager;
 import com.workshop.model.GameContext;
+import com.workshop.model.level.Level;
+import com.workshop.model.mechanisms.GameEngine;
 import com.workshop.model.season.Season;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.workshop.model.user.UserManager;
+import com.workshop.view.Toast;
 import pvz.skin.PvzSkin;
 import com.workshop.controller.repository.Textures;
 import com.workshop.view.gameplay.PlantAnimationLayer;
@@ -28,11 +30,20 @@ public class GamePlayScreen implements Screen {
 
     private final Stage stage;
     private final PauseOverlay pauseOverlay;
+
+    private final GameEngine gameEngine;
     private final GameContext gameContext;
+
+    private static final float TICK_DURATION = 0.1f;
+    private float timeAccumulator = 0f;
 
     private final Texture leftTexture;
     private final Texture centerTexture;
     private final Texture rightTexture;
+
+    private Label sunAmountLabel;
+    private Label plantFoodAmountLabel;
+    private ProgressBar zombieProgressBar;
 
     private final Image leftBackground;
     private final Image centerBackground;
@@ -63,9 +74,11 @@ public class GamePlayScreen implements Screen {
         Runnable exitAction
     ) {
         this.exitAction = exitAction;
-        this.gameContext = gameContext;
 
+        this.gameContext = gameContext;
+        this.gameEngine = gameContext.getGameEngine();
         Season season = gameContext.getSeason();
+        Level level = gameContext.getLevel();
 
         Skin skin = PvzSkin.get();
 
@@ -101,6 +114,7 @@ public class GamePlayScreen implements Screen {
         );
 
         stage = new Stage(worldViewport);
+
 
         worldCamera =
             (OrthographicCamera) stage.getCamera();
@@ -158,6 +172,11 @@ public class GamePlayScreen implements Screen {
         for (int i = 0; i < count; i++) {
             float[] point = zombiePoints[i];
 
+            Gdx.app.log(
+                "ZombieIntro",
+                "Showing intro zombie: " + introZombies[i]
+            );
+
             zombieIntroLayer.addZombie(
                 introZombies[i],
                 rightX + rightWidth * point[0],
@@ -205,16 +224,95 @@ public class GamePlayScreen implements Screen {
         });
 
 
-        Table topBar = new Table();
-        topBar.setFillParent(true);
-        topBar.top().right();
-        topBar.padTop(20);
-        topBar.padRight(20);
+        Image sunIcon = new Image(skin, "image_ui_hud_ingame_sun");
 
-        topBar.add(pauseTestButton)
-            .size(70, 70);
+        sunAmountLabel = new Label(
+            String.valueOf(gameContext.getSunAmount()),
+            skin
+        );
 
-        stage.addActor(topBar);
+        Table sunCounter = new Table();
+        sunCounter.add(sunIcon).size(56, 57).padRight(8);
+        sunCounter.add(sunAmountLabel);
+
+        Image plantFoodIcon = new Image(
+            skin.get("plantfood", ImageButton.ImageButtonStyle.class).imageUp
+        );
+
+        plantFoodAmountLabel = new Label(
+            String.valueOf(currentPlantFoodCount()),
+            skin
+        );
+
+        Table plantFoodCounter = new Table();
+        plantFoodCounter.add(plantFoodIcon).size(48, 48).padRight(8);
+        plantFoodCounter.add(plantFoodAmountLabel);
+
+        zombieProgressBar = new ProgressBar(
+            0f,
+            1f,
+            0.001f,
+            false,
+            skin,
+            "ingame_progress"
+        );
+
+        zombieProgressBar.setAnimateDuration(0.3f);
+        updateHud();
+
+        Table hudTable = new Table();
+        hudTable.setFillParent(true);
+        hudTable.top();
+        hudTable.pad(20);
+        Table leftCounters = new Table();
+        leftCounters.add(sunCounter).left().row();
+        leftCounters.add(plantFoodCounter).left().padTop(6);
+
+        hudTable.add(leftCounters)
+            .left()
+            .top();
+
+        hudTable.add(zombieProgressBar)
+            .expandX()
+            .width(273)
+            .height(33)
+            .padLeft(20)
+            .padRight(20);
+
+        hudTable.add(pauseTestButton)
+            .size(70, 70)
+            .right()
+            .top();
+
+        stage.addActor(hudTable);
+        Toast.showMission(stage, skin, com.workshop.model.level.LevelObjectives.describe(level));
+
+    }
+    private int currentPlantFoodCount() {
+        com.workshop.model.user.User user = UserManager.getInstance().getCurrentUser();
+        return user != null ? user.getPlantFoodCount() : 0;
+    }
+
+    private void updateHud() {
+        sunAmountLabel.setText(
+            String.valueOf(gameContext.getSunAmount())
+        );
+        plantFoodAmountLabel.setText(
+            String.valueOf(currentPlantFoodCount())
+        );
+
+        com.workshop.model.mechanisms.Wave[] waves =
+            gameContext.getLevel().getWaves();
+
+        int totalWaves = waves != null ? waves.length : 0;
+
+        float progress = totalWaves > 0
+            ? (float) gameContext.getCurrentWaveIndex() / totalWaves
+            : 0f;
+
+        zombieProgressBar.setValue(
+            MathUtils.clamp(1f - progress, 0f, 1f)
+        );
 
     }
 
@@ -530,10 +628,11 @@ public class GamePlayScreen implements Screen {
 
             case "Ancient Egypt":
                 return new float[][] {
-                    {0.28f, 0.38f},
-                    {0.15f, 0.46f},
-                    {0.12f, 0.65f},
-                    {0.23f, 0.60f}
+                    {0.32f, 0.38f},
+                    {0.21f, 0.46f},
+                    {0.25f, 0.60f},
+                    {0.19f, 0.32f}
+
                 };
 
             case "Big Wave Beach":
@@ -547,18 +646,19 @@ public class GamePlayScreen implements Screen {
 
             case "Dark Ages":
                 return new float[][] {
-                    {0.38f, 0.34f},
-                    {0.29f, 0.41f},
-                    {0.20f, 0.48f},
-                    {0.12f, 0.55f}
+                    {0.5f, 0.5f},
+                    {0.18f, 0.55f},
+                    {0.35f, 0.40f},
+                    {0.2f, 0.30f}
                 };
 
             case "FrozenCave":
                 return new float[][] {
-                    {0.30f, 0.34f},
+                    {0.17f, 0.50f},
                     {0.5f, 0.42f},
-                    {0.16f, 0.50f},
-                    {0.6f, 0.65f}
+                    {0.30f, 0.34f},
+                    {0.50f, 0.65f}
+
                 };
 
             default:
@@ -623,6 +723,19 @@ public class GamePlayScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         updateIntroCamera(delta);
+
+        if (!pauseOverlay.isVisible()
+            && !gameContext.isPaused()
+            && !gameContext.isGameEnded()) {
+            timeAccumulator += delta;
+            while (timeAccumulator >= TICK_DURATION) {
+                gameContext.getTimeManager().advanceTime(1);
+                gameEngine.update(TICK_DURATION);
+                timeAccumulator -= TICK_DURATION;
+            }
+        }
+
+        updateHud();
 
         if (pauseOverlay.isVisible()) {
             stage.act(0);

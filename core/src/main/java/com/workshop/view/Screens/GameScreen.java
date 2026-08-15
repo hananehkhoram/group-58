@@ -241,7 +241,6 @@ public class GameScreen implements Screen {
             playButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    Toast.showMission(stage, skin, com.workshop.model.level.LevelObjectives.describe(level));
                     if (listener != null) listener.onEnterLevel(chapter, level);
                 }
             });
