@@ -25,11 +25,14 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.workshop.view.gameplay.ZombieIntroLayer;
 import com.workshop.view.gameplay.ZombieAnimationLayer;
+import com.workshop.view.gameplay.SunAnimationLayer;
 
 public class GamePlayScreen implements Screen {
 
     private final Stage stage;
     private final PauseOverlay pauseOverlay;
+    private final WinLoseOverlay winLoseOverlay;
+    private boolean resultOverlayShown = false;
 
     private final GameEngine gameEngine;
     private final GameContext gameContext;
@@ -63,11 +66,16 @@ public class GamePlayScreen implements Screen {
     private final float introCameraX;
     private final float gameplayCameraX;
     private final float cameraY;
-    private static final float INTRO_WAIT = 3;
+    private static final float INTRO_WAIT = 3f;
     private static final float INTRO_DURATION = 1.4f;
 
-    private float introTime;
-    private boolean introFinished;
+    private static final float POST_INTRO_WAIT = 3f;
+
+    private float introTime = 0f;
+    private boolean introFinished = false;
+
+    private float postIntroTime = 0f;
+    private boolean gameplayStarted = false;
 
     private static final float MISSION_DISPLAY_TIME = 6f;
     private float screenElapsedTime = 0f;
@@ -238,6 +246,25 @@ public class GamePlayScreen implements Screen {
             }
         );
 
+        winLoseOverlay = new WinLoseOverlay(
+            stage,
+            skin,
+            () -> {
+                gameContext.setPaused(false);
+
+                if (restartAction != null) {
+                    restartAction.run();
+                }
+            },
+            () -> {
+                gameContext.setPaused(false);
+
+                if (exitAction != null) {
+                    exitAction.run();
+                }
+            }
+        );
+
         ImageButton pauseTestButton =
             new ImageButton(skin, "ingame_pause");
 
@@ -310,8 +337,26 @@ public class GamePlayScreen implements Screen {
             .top();
 
         stage.addActor(hudTable);
-        Toast.showMission(stage, skin, com.workshop.model.level.LevelObjectives.describe(level));
 
+        SunAnimationLayer sunAnimationLayer =
+            new SunAnimationLayer(
+                gameContext,
+                gameEngine,
+                sunCounter,
+                getGridX(),
+                getGridY(),
+                getGridWidth(),
+                getGridHeight()
+            );
+
+        stage.addActor(sunAnimationLayer);
+
+        Toast.showMission(
+            stage,
+            skin,
+            com.workshop.model.level.LevelObjectives.describe(level),
+            INTRO_WAIT + INTRO_DURATION
+        );
     }
     private int currentPlantFoodCount() {
         com.workshop.model.user.User user = UserManager.getInstance().getCurrentUser();
@@ -648,6 +693,23 @@ public class GamePlayScreen implements Screen {
         }
     }
 
+    private void updateGameplayStartDelay(float delta) {
+        if (!introFinished || gameplayStarted) {
+            return;
+        }
+
+        if (pauseOverlay.isVisible() || gameContext.isPaused()) {
+            return;
+        }
+
+        postIntroTime += delta;
+
+        if (postIntroTime >= POST_INTRO_WAIT) {
+            gameplayStarted = true;
+            timeAccumulator = 0f;
+        }
+    }
+
     private float[][] getZombieIntroPoints(Season season) {
         switch (season.getName()) {
 
@@ -750,28 +812,55 @@ public class GamePlayScreen implements Screen {
         screenElapsedTime += delta;
 
         updateIntroCamera(delta);
+        updateGameplayStartDelay(delta);
 
-        if (!pauseOverlay.isVisible()
+        if (gameplayStarted
+            && !pauseOverlay.isVisible()
+            && !winLoseOverlay.isVisible()
             && !gameContext.isPaused()
             && !gameContext.isGameEnded()) {
+
             timeAccumulator += delta;
-            while (timeAccumulator >= TICK_DURATION) {
+
+            while (timeAccumulator >= TICK_DURATION
+                && !gameContext.isGameEnded()) {
+
                 gameContext.getTimeManager().advanceTime(1);
                 gameEngine.update(TICK_DURATION);
                 timeAccumulator -= TICK_DURATION;
             }
         }
 
-        updateHud();
+        // نمایش پنجره برد یا باخت فقط یک بار
+        if (gameContext.isGameEnded() && !resultOverlayShown) {
+            resultOverlayShown = true;
 
-        if (screenElapsedTime >= MISSION_DISPLAY_TIME) {
-            String announcement;
-            while ((announcement = gameContext.pollAnnouncement()) != null) {
-                Toast.showAnnouncement(stage, PvzSkin.get(), announcement);
+            if (gameContext.isPlayerWon()) {
+                winLoseOverlay.showWin();
+            } else {
+                winLoseOverlay.showLose();
             }
         }
 
-        if (pauseOverlay.isVisible()) {
+        updateHud();
+
+        if (screenElapsedTime >= MISSION_DISPLAY_TIME
+            && !gameContext.isGameEnded()) {
+
+            String announcement;
+
+            while ((announcement = gameContext.pollAnnouncement()) != null) {
+                Toast.showAnnouncement(
+                    stage,
+                    PvzSkin.get(),
+                    announcement
+                );
+            }
+        }
+
+        if (pauseOverlay.isVisible()
+            || winLoseOverlay.isVisible()) {
+
             stage.act(0);
         } else {
             stage.act(delta);
@@ -781,7 +870,11 @@ public class GamePlayScreen implements Screen {
 
         stage.draw();
 
-        if (!pauseOverlay.isVisible()) {
+        if (!pauseOverlay.isVisible()
+            && !winLoseOverlay.isVisible()
+            && UserManager.getInstance().getCurrentUser() != null
+            && UserManager.getInstance().getCurrentUser().isGridEnabled()) {
+
             drawDebugGrid();
         }
     }
@@ -818,5 +911,6 @@ public class GamePlayScreen implements Screen {
         rightTexture.dispose();
         shapeRenderer.dispose();
         pauseOverlay.dispose();
+        winLoseOverlay.dispose();
     }
 }

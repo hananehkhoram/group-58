@@ -18,7 +18,7 @@ public class SunProducers implements BaseAbility {
         if (sunType == com.workshop.model.mechanisms.SunType.BURST_CONSUME) {
             if (!collected) {
                 collected = true;
-                ctx.produceSun(plant.getRow(), plant.getCol(), amount);
+                ctx.produceSun(plant.getCol(), plant.getRow(), amount, sunType);
                 com.workshop.view.Console.showMessage("plant " + plant.getName() +
                         " produced a one-time burst of sun at (" + plant.getRow() + ", " + plant.getCol() + ")");
             }
@@ -30,8 +30,8 @@ public class SunProducers implements BaseAbility {
             int rateOfPlant = Integer.parseInt(rate);
             int currentSecond = ctx.getTimeManager().getTotalSeconds();
 
-            int x = plant.getRow();
-            int y = plant.getCol();
+            int x = plant.getCol();
+            int y = plant.getRow();
 
             if (currentSecond - plant.getLastActionSecond() >= rateOfPlant ){
                 if (!ctx.isSunPresent(x , y)){
@@ -46,7 +46,7 @@ public class SunProducers implements BaseAbility {
                         }
                     }
 
-                    ctx.produceSun(x , y, finalAmount);
+                    ctx.produceSun(x , y, finalAmount,  sunType);
                     plant.setLastActionSecond(currentSecond);
                     com.workshop.view.Console.showMessage("plant " + plant.getName() +
                             " produced a sun at (" + x + ", " + y + ")");
@@ -74,7 +74,7 @@ public class SunProducers implements BaseAbility {
                 self.setPlantFoodActive(true);
             }
 
-            ctx.produceSun(self.getRow(), self.getCol(), bonusSun);
+            ctx.produceSun(self.getCol(), self.getRow(), bonusSun, SunType.NORMAL);
             com.workshop.view.Console.showMessage("Plant Food: " + self.getName() + " instantly produced " + bonusSun + " sun!");
         }
     }
