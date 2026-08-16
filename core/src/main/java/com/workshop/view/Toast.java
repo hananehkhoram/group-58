@@ -13,7 +13,6 @@ public final class Toast {//اعلان موقت
 
     private static final float FADE_DURATION = 0.25f;
     private static final float VISIBLE_DURATION = 3.5f;
-    private static final float MISSION_VISIBLE_DURATION = 5.5f;
     private static final float TOP_MARGIN = 32f;
     private static final float MAX_WIDTH = 380f;
     private static final float MISSION_MAX_WIDTH = 640f;
@@ -32,8 +31,20 @@ public final class Toast {//اعلان موقت
         show(stage, skin, message, Color.WHITE, MAX_WIDTH, VISIBLE_DURATION);
     }
 
-    public static void showMission(Stage stage, Skin skin, String message) {
-        showCentered(stage, skin, message, Color.valueOf("5B3A29"), MISSION_MAX_WIDTH, MISSION_VISIBLE_DURATION);
+    public static void showMission(
+        Stage stage,
+        Skin skin,
+        String message,
+        float totalDuration
+    ) {
+        showCentered(
+            stage,
+            skin,
+            message,
+            Color.valueOf("5B3A29"),
+            MISSION_MAX_WIDTH,
+            totalDuration
+        );
     }
 
     private static void show(Stage stage, Skin skin, String message, Color textColor, float maxWidth, float visibleDuration) {
@@ -68,9 +79,14 @@ public final class Toast {//اعلان موقت
         float centerY = (stage.getHeight() - toast.getHeight()) / 2f;
         toast.setPosition(centerX, centerY);
 
+        float holdDuration = Math.max(
+            0f,
+            visibleDuration - 2f * FADE_DURATION
+        );
+
         toast.addAction(Actions.sequence(
             Actions.fadeIn(FADE_DURATION),
-            Actions.delay(visibleDuration),
+            Actions.delay(holdDuration),
             Actions.fadeOut(FADE_DURATION),
             Actions.removeActor()
         ));
@@ -112,7 +128,7 @@ public final class Toast {//اعلان موقت
 
         holder.addAction(Actions.sequence(
             Actions.fadeIn(FADE_DURATION),
-            Actions.delay(MISSION_VISIBLE_DURATION),
+            Actions.delay(VISIBLE_DURATION),
             Actions.fadeOut(FADE_DURATION),
             Actions.removeActor()
         ));

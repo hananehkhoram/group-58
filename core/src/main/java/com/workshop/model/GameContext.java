@@ -22,6 +22,7 @@ import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.view.Console;
+import com.workshop.model.mechanisms.SunType;
 
 import java.util.*;
 
@@ -45,6 +46,7 @@ public class GameContext {
     private List<Projectile> projectiles = new ArrayList<>();
     private TimeManager timeManager;
     private Map<String, Integer> producedSuns = new HashMap<>();
+    private Map<String, SunType> producedSunTypes = new HashMap<>();
     private final List<LootItem> activeLoots = new ArrayList<>();
     private SunManager sunManager;
     private int totalSunProducedInLevel = 0;
@@ -141,8 +143,23 @@ public class GameContext {
     }
 
     public void produceSun(int x, int y, int amount) {
+        produceSun(x, y, amount, SunType.NORMAL);
+    }
+
+    public void produceSun(
+        int x,
+        int y,
+        int amount,
+        SunType type
+    ) {
         String key = x + ", " + y;
-        producedSuns.put(key, producedSuns.getOrDefault(key, 0) + amount);
+
+        producedSuns.put(
+            key,
+            producedSuns.getOrDefault(key, 0) + amount
+        );
+
+        producedSunTypes.put(key, type);
     }
 
     public boolean isSunPresent(int x, int y) {
@@ -153,6 +170,8 @@ public class GameContext {
         String key = x + ", " + y;
         if (producedSuns.containsKey(key)) {
             int amount = producedSuns.remove(key);
+            producedSunTypes.remove(key);
+
             addSun(amount);
             return amount;
         }
@@ -558,5 +577,16 @@ public class GameContext {
             || type == LevelType.Izambie_MG
             || type == LevelType.Beghouled_MG
             || type == LevelType.Zombotany_MG;
+    }
+
+    public Map<String, Integer> getProducedSuns() {
+        return producedSuns;
+    }
+
+    public SunType getProducedSunTypeAt(int x, int y) {
+        return producedSunTypes.getOrDefault(
+            x + ", " + y,
+            SunType.NORMAL
+        );
     }
 }

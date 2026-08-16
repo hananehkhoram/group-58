@@ -101,6 +101,33 @@ public class SunManager {
         return false;
     }
 
+    public boolean collectSun(Sun sun, GameEngine engine) {
+        if (sun == null || !activeSunDrops.contains(sun)) {
+            return false;
+        }
+
+        if (!sun.isOnGround()
+            && sun.getType() == SunType.RADIOACTIVE) {
+
+            explodeRadioactive(
+                sun.getX(),
+                sun.getY(),
+                engine
+            );
+
+            activeSunDrops.remove(sun);
+            return true;
+        }
+
+        int amount =
+            sun.getType() == SunType.SPECIAL ? 100 : 25;
+
+        engine.getCtx().addSun(amount);
+        activeSunDrops.remove(sun);
+
+        return true;
+    }
+
     private void explodeRadioactive(int x, int y, GameEngine engine) {
         for (var z : engine.getCtx().getAliveZombies()) {
             if (Math.abs(z.getX() - x) <= 2 && Math.abs(z.getY() - y) <= 2) {
