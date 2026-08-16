@@ -38,8 +38,37 @@ public class LevelFactory {
     public static List<Level> buildAncientEgyptLevels() {
         List<Level> levels = new ArrayList<>();
 
-        levels.add(new Level("Ancient Egypt - Day 1", 5, 9,
-                generateWaves(5, 100, 250), LevelType.NORMAL, null));
+        Level day1 = new Level("Ancient Egypt - Day 1", 5, 9,
+            generateWaves(5, 100, 250), LevelType.NORMAL, null);
+
+        String davePam =
+            "768/INITIAL/CRAZYDAVE/DAVEWINNIE_NARRATIONICONS/DAVEWINNIE_NARRATIONICONS.PAM";
+        String daveClip = "dave";
+
+        String pennyResourceId = "IMAGE_UI_PENNY_PURSUITS_ZOMBOSS_PENNY";
+
+        day1.setIntroDialogue(List.of(
+            com.workshop.model.level.DialogueLine.withPamPortrait(
+                "Crazy Dave", davePam, daveClip,
+                "Welcome to Ancient Egypt!"),
+            com.workshop.model.level.DialogueLine.withResourcePortrait(
+                "Penny", pennyResourceId,
+                "Please wait 4500 years for your taco to be ready... more or less.")
+        ));
+
+        day1.setWinDialogue(List.of(
+            com.workshop.model.level.DialogueLine.withPamPortrait(
+                "Crazy Dave", davePam, daveClip,
+                "Love you mummy!")
+        ));
+
+        day1.setLoseDialogue(List.of(
+            com.workshop.model.level.DialogueLine.withPamPortrait(
+                "Crazy Dave", davePam, daveClip,
+                "oh noooo let's try again.")
+        ));
+
+        levels.add(day1);
 
         List<Plant> conveyorPool = List.of(p("Peashooter"), p("Sunflower"), p("Wall-nut"), p("Snow Pea"));
         levels.add(new Level("Ancient Egypt - Day 2", 5, 9,
@@ -66,8 +95,33 @@ public class LevelFactory {
     public static List<Level> buildFrozenCaveLevels() {
         List<Level> levels = new ArrayList<>();
 
-        levels.add(new Level("Frozen Caves - Day 1", 5, 9,
+        Level day1 = (new Level("Frozen Caves - Day 1", 5, 9,
                 generateWaves(6, 150, 220), LevelType.NORMAL, null));
+        String davePam =
+            "768/INITIAL/CRAZYDAVE/DAVEWINNIE_NARRATIONICONS/DAVEWINNIE_NARRATIONICONS.PAM";
+        String daveClip = "dave";
+
+        String pennyResourceId = "IMAGE_UI_PENNY_PURSUITS_ZOMBOSS_PENNY";
+
+        day1.setIntroDialogue(List.of(
+            com.workshop.model.level.DialogueLine.withPamPortrait(
+                "Crazy Dave", davePam, daveClip,
+                "Old timey piano music: downloaded")
+        ));
+
+        day1.setWinDialogue(List.of(
+            com.workshop.model.level.DialogueLine.withPamPortrait(
+                "Crazy Dave", davePam, daveClip,
+                "Let's go get my taco!")
+        ));
+
+        day1.setLoseDialogue(List.of(
+            com.workshop.model.level.DialogueLine.withPamPortrait(
+                "Crazy Dave", davePam, daveClip,
+                "oh noooo i'm frozen.")
+        ));
+
+        levels.add(day1);
 
         Level deadlineLevel = new Level("Frozen Caves - Day 2", 5, 9,
                 generateWaves(6, 160, 200), LevelType.DEADLINE, null);
@@ -90,8 +144,37 @@ public class LevelFactory {
     public static List<Level> buildBigWaveBeachLevels() {
         List<Level> levels = new ArrayList<>();
 
-        levels.add(new Level("Big Wave Beach - Day 1", 5, 9,
+        Level day1 = (new Level("Big Wave Beach - Day 1", 5, 9,
                 generateWaves(6, 170, 220), LevelType.NORMAL, null));
+
+        String davePam =
+            "768/INITIAL/CRAZYDAVE/DAVEWINNIE_NARRATIONICONS/DAVEWINNIE_NARRATIONICONS.PAM";
+        String daveClip = "dave";
+
+        String pennyResourceId = "IMAGE_UI_PENNY_PURSUITS_ZOMBOSS_PENNY";
+
+        day1.setIntroDialogue(List.of(
+            com.workshop.model.level.DialogueLine.withPamPortrait(
+                "Crazy Dave", davePam, daveClip,
+                "Look at this beeeeautiful beach!"),
+            com.workshop.model.level.DialogueLine.withResourcePortrait(
+                "Penny", pennyResourceId,
+                "Caution, User Dave. My sensors indicate there are zombies on your beach...")
+        ));
+
+        day1.setWinDialogue(List.of(
+            com.workshop.model.level.DialogueLine.withPamPortrait(
+                "Crazy Dave", davePam, daveClip,
+                "LoViNg this day!")
+        ));
+
+        day1.setLoseDialogue(List.of(
+            com.workshop.model.level.DialogueLine.withPamPortrait(
+                "Crazy Dave", davePam, daveClip,
+                "Quite unpleasant.")
+        ));
+
+        levels.add(day1);
 
         Level saveSeedsLevel = new Level("Big Wave Beach - Day 2", 5, 9,
                 generateWaves(6, 180, 200), LevelType.SAVE_QUR_SEEDS, null,
@@ -119,9 +202,37 @@ public class LevelFactory {
     public static List<Level> buildDarkAgesLevels() {
         List<Level> levels = new ArrayList<>();
 
-        levels.add(new Level("Dark Ages - Day 1", 5, 9,
+        Level day1 = (new Level("Dark Ages - Day 1", 5, 9,
                 generateWaves(7, 200, 200), LevelType.NORMAL, null));
 
+        String davePam =
+            "768/INITIAL/CRAZYDAVE/DAVEWINNIE_NARRATIONICONS/DAVEWINNIE_NARRATIONICONS.PAM";
+        String daveClip = "dave";
+
+        String pennyResourceId = "IMAGE_UI_PENNY_PURSUITS_ZOMBOSS_PENNY";
+
+        day1.setIntroDialogue(List.of(
+            com.workshop.model.level.DialogueLine.withPamPortrait(
+                "Crazy Dave", davePam, daveClip,
+                "Whoa there! Who dimmed the lights?"),
+            com.workshop.model.level.DialogueLine.withResourcePortrait(
+                "Penny", pennyResourceId,
+                "No one, User Dave. We have simply arrived in the Dark Ages.")
+        ));
+
+        day1.setWinDialogue(List.of(
+            com.workshop.model.level.DialogueLine.withPamPortrait(
+                "Crazy Dave", davePam, daveClip,
+                "you are my light in these dark ages!")
+        ));
+
+        day1.setLoseDialogue(List.of(
+            com.workshop.model.level.DialogueLine.withPamPortrait(
+                "Crazy Dave", davePam, daveClip,
+                "oh noooo let's try again.")
+        ));
+
+        levels.add(day1);
         levels.add(new Level("Dark Ages - Day 2", 5, 9,
                 generateWaves(7, 210, 180), LevelType.NIGHT_OPS, null));
 

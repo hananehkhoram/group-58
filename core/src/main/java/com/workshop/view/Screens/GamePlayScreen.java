@@ -4,7 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -25,6 +27,9 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.workshop.view.gameplay.ZombieIntroLayer;
 import com.workshop.view.gameplay.ZombieAnimationLayer;
+import com.workshop.model.level.DialogueLine;
+
+import java.util.List;
 
 public class GamePlayScreen implements Screen {
 
@@ -43,6 +48,7 @@ public class GamePlayScreen implements Screen {
 
     private Label sunAmountLabel;
     private Label plantFoodAmountLabel;
+    private Label waveLabel;
     private ProgressBar zombieProgressBar;
 
     private final Image leftBackground;
@@ -71,6 +77,10 @@ public class GamePlayScreen implements Screen {
 
     private static final float MISSION_DISPLAY_TIME = 6f;
     private float screenElapsedTime = 0f;
+
+    private boolean dialogueBlocking = false;
+    private boolean endDialogueShown = false;
+    private WinLoseOverlay winLoseOverlay;
 
     public GamePlayScreen(
         GameContext gameContext,
@@ -238,6 +248,23 @@ public class GamePlayScreen implements Screen {
             }
         );
 
+        winLoseOverlay = new WinLoseOverlay(
+            stage,
+            skin,
+            () -> {
+                if (restartAction != null) {
+                    restartAction.run();
+                }
+            },
+            () -> {
+                gameContext.setPaused(false);
+
+                if (exitAction != null) {
+                    exitAction.run();
+                }
+            }
+        );
+
         ImageButton pauseTestButton =
             new ImageButton(skin, "ingame_pause");
 
@@ -283,6 +310,26 @@ public class GamePlayScreen implements Screen {
         );
 
         zombieProgressBar.setAnimateDuration(0.3f);
+
+        float progressBarWidth = 273f;
+        float progressBarHeight = 33f;
+
+        com.badlogic.gdx.scenes.scene2d.ui.Stack progressStack =
+            new com.badlogic.gdx.scenes.scene2d.ui.Stack();
+        progressStack.add(zombieProgressBar);
+        progressStack.add(
+            buildWaveFlagsOverlay(skin, level, progressBarWidth, progressBarHeight)
+        );
+
+        waveLabel = new Label("", skin);
+        waveLabel.setFontScale(0.8f);
+
+        Table progressColumn = new Table();
+        progressColumn.add(progressStack)
+            .size(progressBarWidth, progressBarHeight)
+            .row();
+        progressColumn.add(waveLabel).padTop(6);
+
         updateHud();
 
         Table hudTable = new Table();
@@ -297,10 +344,8 @@ public class GamePlayScreen implements Screen {
             .left()
             .top();
 
-        hudTable.add(zombieProgressBar)
+        hudTable.add(progressColumn)
             .expandX()
-            .width(273)
-            .height(33)
             .padLeft(20)
             .padRight(20);
 
@@ -310,12 +355,89 @@ public class GamePlayScreen implements Screen {
             .top();
 
         stage.addActor(hudTable);
-        Toast.showMission(stage, skin, com.workshop.model.level.LevelObjectives.describe(level));
+
+        // --- دیالوگ شروع مرحله (اختیاری) و بعد از آن، منوی آغاز مرحله ---
+        List<DialogueLine> introDialogue = level.getIntroDialogue();
+
+        if (introDialogue != null && !introDialogue.isEmpty()) {
+            dialogueBlocking = true;
+
+            new DialogueOverlay(
+                stage,
+                skin,
+                introDialogue,
+                () -> {
+                    dialogueBlocking = false;
+
+                    Toast.showMission(
+                        stage,
+                        skin,
+                        com.workshop.model.level.LevelObjectives.describe(level)
+                    );
+                }
+            ).show();
+        } else {
+            Toast.showMission(
+                stage,
+                skin,
+                com.workshop.model.level.LevelObjectives.describe(level)
+            );
+        }
 
     }
     private int currentPlantFoodCount() {
         com.workshop.model.user.User user = UserManager.getInstance().getCurrentUser();
         return user != null ? user.getPlantFoodCount() : 0;
+    }
+
+    private Group buildWaveFlagsOverlay(
+        Skin skin,
+        Level level,
+        float barWidth,
+        float barHeight
+    ) {
+        Group overlay = new Group();
+        overlay.setSize(barWidth, barHeight);
+        overlay.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
+
+        com.workshop.model.mechanisms.Wave[] waves = level.getWaves();
+        int totalWaves = waves != null ? waves.length : 0;
+
+        if (totalWaves == 0) {
+            return overlay;
+        }
+
+        for (int i = 1; i <= totalWaves; i++) {
+            boolean isFinalWave = (i == totalWaves);
+
+            TextureRegion flagRegion = skin.getRegion(
+                isFinalWave
+                    ? "image_ui_hud_ingame_progress_meter_flag_pole"
+                    : "image_ui_hud_ingame_progress_meter_flag_default"
+            );
+
+            if (flagRegion == null) {
+                continue;
+            }
+
+            Image flag = new Image(flagRegion);
+
+            float flagWidth = flagRegion.getRegionWidth();
+            float flagHeight = flagRegion.getRegionHeight();
+
+            // موج ۱ نزدیک سمت چپ نوار، آخرین موج (پرچم بزرگ‌تر) سمت راست —
+            // مستقل از جهت پر شدن نوار، فقط ترتیب موج‌ها را نشان می‌دهد.
+            float xFraction = (float) i / totalWaves;
+            float x = xFraction * barWidth - flagWidth / 2f;
+            x = MathUtils.clamp(x, 0f, barWidth - flagWidth);
+
+            float y = barHeight - flagHeight / 2f;
+
+            flag.setPosition(x, y);
+            overlay.addActor(flag);
+        }
+
+        return overlay;
     }
 
     private void updateHud() {
@@ -331,14 +453,68 @@ public class GamePlayScreen implements Screen {
 
         int totalWaves = waves != null ? waves.length : 0;
 
-        float progress = totalWaves > 0
-            ? (float) gameContext.getCurrentWaveIndex() / totalWaves
-            : 0f;
+
+        int currentWaveIndex = gameContext.getCurrentWaveIndex();
+
+        float overallProgress = 0f;
+
+        if (totalWaves > 0 && currentWaveIndex > 0) {
+            int activeWaveArrayIndex =
+                Math.min(currentWaveIndex - 1, totalWaves - 1);
+
+            com.workshop.model.mechanisms.Wave activeWave =
+                waves[activeWaveArrayIndex];
+
+
+            float waveInternalProgress = activeWave.getProgress();
+
+            overallProgress =
+                (activeWaveArrayIndex + waveInternalProgress) / totalWaves;
+        }
+
 
         zombieProgressBar.setValue(
-            MathUtils.clamp(1f - progress, 0f, 1f)
+            MathUtils.clamp(1f - overallProgress, 0f, 1f)
         );
 
+        int currentWaveDisplay = totalWaves > 0
+            ? MathUtils.clamp(currentWaveIndex, 1, totalWaves)
+            : 0;
+
+        waveLabel.setText(
+            totalWaves > 0
+                ? "wave " + currentWaveDisplay + " from " + totalWaves
+                : ""
+        );
+
+    }
+
+    private void showEndOfLevelDialogue() {
+        boolean won = gameContext.isPlayerWon();
+
+        List<DialogueLine> lines = won
+            ? gameContext.getLevel().getWinDialogue()
+            : gameContext.getLevel().getLoseDialogue();
+
+        Runnable showFinalOverlay = won
+            ? winLoseOverlay::showWin
+            : winLoseOverlay::showLose;
+
+        if (lines != null && !lines.isEmpty()) {
+            dialogueBlocking = true;
+
+            new DialogueOverlay(
+                stage,
+                PvzSkin.get(),
+                lines,
+                () -> {
+                    dialogueBlocking = false;
+                    showFinalOverlay.run();
+                }
+            ).show();
+        } else {
+            showFinalOverlay.run();
+        }
     }
 
     private void buildBackground() {
@@ -753,7 +929,8 @@ public class GamePlayScreen implements Screen {
 
         if (!pauseOverlay.isVisible()
             && !gameContext.isPaused()
-            && !gameContext.isGameEnded()) {
+            && !gameContext.isGameEnded()
+            && !dialogueBlocking) {
             timeAccumulator += delta;
             while (timeAccumulator >= TICK_DURATION) {
                 gameContext.getTimeManager().advanceTime(1);
@@ -763,6 +940,11 @@ public class GamePlayScreen implements Screen {
         }
 
         updateHud();
+
+        if (gameContext.isGameEnded() && !endDialogueShown) {
+            endDialogueShown = true;
+            showEndOfLevelDialogue();
+        }
 
         if (screenElapsedTime >= MISSION_DISPLAY_TIME) {
             String announcement;
@@ -818,5 +1000,6 @@ public class GamePlayScreen implements Screen {
         rightTexture.dispose();
         shapeRenderer.dispose();
         pauseOverlay.dispose();
+        winLoseOverlay.dispose();
     }
 }
