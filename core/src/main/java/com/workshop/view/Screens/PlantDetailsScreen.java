@@ -328,8 +328,27 @@ public class PlantDetailsScreen extends BaseScreen {
                 super.draw(batch, parentAlpha);
                 float drawX = getX() + getWidth() / 2f;
                 float drawY = getY() + 20f * scale;
+
+                String rawName = plant.getName().toUpperCase();
+                String folderName = rawName.replace(" ", "").replace("-", "");
+
+                String clip = "idle";
+                if (folderName.equalsIgnoreCase("SUNSHROOM") || folderName.equalsIgnoreCase("PUFFSHROOM")) {
+                    clip = "idle_stage1";
+                } else if (folderName.contains("MINT")) {
+                    clip = "intro";
+                } else if (folderName.contains("BUSTER")) {
+                    clip = "attack";
+                } else if (folderName.contains("ELECTRICBLUE") || folderName.equalsIgnoreCase("CAULIPOWER")) {
+                    clip = "idle1_1";
+                } else if (folderName.contains("KIWIBEAST")) {
+                    clip = "idle_stage1_";
+                } else if (folderName.contains("DOOMSHROOM")) {
+                    clip = "stage1_spawn";
+                }
+
                 ScreenResourceManager.drawPlantAnimation(
-                    batch, pamPlayer, plant.getName(), stateTime, drawX, drawY, false
+                    batch, pamPlayer, plant.getName(), clip, stateTime, drawX, drawY, false
                 );
             }
         };

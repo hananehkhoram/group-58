@@ -10,14 +10,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.workshop.controller.repository.Textures;
@@ -47,8 +44,6 @@ public class PlantSelectionScreen implements Screen {
     }
 
     private static final int MAX_SELECTED_PLANTS = 8;
-    private static final float BASE_WIDTH = 1280f;
-    private static final float BASE_HEIGHT = 720f;
 
     private static TextureBank textureBank;
     private static PamPlayer pamPlayer;
@@ -138,7 +133,7 @@ public class PlantSelectionScreen implements Screen {
 
         sidebarSlotsTable = new Table();
         leftSidebar.add(sidebarSlotsTable).expandY().top().padTop(2).row();
-        bodyTable.add(leftSidebar).width(130).growY().padRight(4);
+        bodyTable.add(leftSidebar).width(140).growY().padRight(4);
 
         Table mainArea = new Table();
         mainArea.defaults().pad(4);
@@ -196,6 +191,28 @@ public class PlantSelectionScreen implements Screen {
         refreshSidebarSlots();
     }
 
+    private void renderPlantWithClipFallback(Batch batch, String plantName, float time, float x, float y, boolean grayedOut) {
+        String[] clips = {"idle", "idle_stage1", "intro", "animation", "anim"};
+        for (String clip : clips) {
+            try {
+                ScreenResourceManager.drawPlantAnimation(
+                    batch, pamPlayer, plantName, clip, time, x, y, grayedOut
+                );
+                return;
+            } catch (Exception ignored) {
+            }
+        }
+        try {
+            TextureRegion reg = Textures.regionOrNull("PLANT_" + plantName.toUpperCase().replace(" ", "_"));
+            if (reg != null) {
+                if (grayedOut) batch.setColor(0.3f, 0.3f, 0.3f, 1f);
+                batch.draw(reg, x - 25, y, 50, 50);
+                if (grayedOut) batch.setColor(Color.WHITE);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
     private void rebuildDetailPanel() {
         detailPanel.clearChildren();
         if (focusedPlant == null) return;
@@ -206,16 +223,12 @@ public class PlantSelectionScreen implements Screen {
                 super.draw(batch, parentAlpha);
                 float drawX = getX() + getWidth() / 2f;
                 float drawY = getY() + 10f;
-                String rawName = focusedPlant.getName().toUpperCase().replace(" ", "").replace("-", "");
-                try {
-                    pamPlayer.draw(batch, "PLANT/" + rawName + "/" + rawName + ".PAM", "idle", globalAnimTime, drawX, drawY, true);
-                } catch (Exception e) {
-                    TextureRegion reg = Textures.regionOrNull("PLANT_" + focusedPlant.getName().toUpperCase().replace(" ", "_"));
-                    if (reg != null) batch.draw(reg, drawX - 25, drawY, 50, 50);
-                }
+                renderPlantWithClipFallback(
+                    batch, focusedPlant.getName(), globalAnimTime, drawX, drawY, false
+                );
             }
         };
-        detailPanel.add(animTable).size(100, 100).padLeft(50).padRight(50);
+        detailPanel.add(animTable).size(120, 120).padLeft(50).padRight(50);
 
         Table infoColumn = new Table();
         infoColumn.top().left();
@@ -289,98 +302,20 @@ public class PlantSelectionScreen implements Screen {
         detailPanel.add(infoColumn).expand().left().pad(5);
     }
 
-    private Table createPlantCard(Plant plant, boolean isUnlocked, int currentSeeds, int seedsNeeded, float scale) {
-        Table card = new Table();
-        card.top();
+    private void refreshAvailableGrid(List<Plant> allUnlocked) {
+        availableGrid.clear();
+        availableCards.clear();
+        int maxCols = 5;
+        int col = 0;
 
-        Plant activeInst = getActivePlantInstance(plant);
-        boolean isBoosted = (activeInst != null && activeInst.isPlantFoodActive()) || plant.isPlantFoodActive();
+        for (Plant plant : allUnlocked) {
+            PlantCardActor card = new PlantCardActor(plant, pamPlayer, textureBank, skin, PlantCardActor.Mode.SLOT);
 
-        if (isBoosted) {
-            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-            pixmap.setColor(Color.GOLD);
-            pixmap.fill();
-            Texture goldTex = new Texture(pixmap);
-            goldTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            pixmap.dispose();
-            card.setBackground(new TextureRegionDrawable(new TextureRegion(goldTex)));
-        } else if (skin.has("PlantAlmanacBorder", Drawable.class)) {
-            card.setBackground(skin.getDrawable("PlantAlmanacBorder"));
-        } else {
-            card.setBackground(getFallbackCardBackground());
-        }
+            boolean selected = isPlantSelected(plant);
+            card.setSelected(selected);
+            card.setBoosted(plant.isPlantFoodActive());
 
-        Stack stack = new Stack();
-
-        Table pamContainer = new Table() {
-            @Override
-            public void draw(Batch batch, float parentAlpha) {
-                super.draw(batch, parentAlpha);
-                textureBank.update();
-
-                if (!isUnlocked) {
-                    batch.setColor(0.3f, 0.3f, 0.3f, 1f);
-                } else {
-                    batch.setColor(Color.WHITE);
-                }
-
-                String rawName = plant.getName().toUpperCase();
-                String folderName = rawName.replace(" ", "").replace("-", "");
-                if (folderName.equalsIgnoreCase("PRIMALPOTATOMINE")) {
-                    folderName = "PRIMAL_POTATOMINE";
-                }
-                float drawX = getX() + getWidth() / 2f;
-                float drawY = getY() + 8f * scale;
-                boolean drawn = false;
-                String[] possiblePaths = {
-                    "PLANT/" + folderName + "/" + folderName + ".PAM"
-                };
-
-                for (String pamPath : possiblePaths) {
-                    if (pamPath.equals("PLANT/CATTAILMINT/CATTAILMINT.PAM") ||
-                        pamPath.equals("PLANT/CATTAIL/CATTAIL.PAM")) {
-                        continue;
-                    }
-                    try {
-                        pamPlayer.draw(batch, pamPath, "idle", globalAnimTime, drawX, drawY, true);
-                        drawn = true;
-                        break;
-                    } catch (Exception ignored) {
-                    }
-                }
-
-                if (!drawn) {
-                    TextureRegion reg = Textures.regionOrNull("PLANT_" + rawName.replace(" ", "_"));
-                    if (reg != null) {
-                        batch.draw(reg, drawX - 25 * scale, drawY, 50 * scale, 50 * scale);
-                    }
-                }
-
-                batch.setColor(Color.WHITE);
-            }
-        };
-
-        stack.add(pamContainer);
-        card.add(stack).size(110 * scale, 75 * scale).padTop(6 * scale).row();
-
-        Label nameLbl = createSafeLabel(plant.getName(), "default");
-        nameLbl.setWrap(true);
-        nameLbl.setAlignment(Align.center);
-        card.add(nameLbl).width(120 * scale).height(24 * scale).center().padTop(2 * scale).row();
-
-        Label levelLbl = createSafeLabel("Lvl " + plant.getLevel(), "default");
-        card.add(levelLbl).padTop(2 * scale).row();
-
-        ProgressBar seedBar = createAlmanacProgressBar(seedsNeeded, currentSeeds);
-        card.add(seedBar).width(110 * scale).height(10 * scale).padTop(4 * scale).row();
-
-        Label seedsTxt = createSafeLabel(currentSeeds + "/" + seedsNeeded, "default");
-        card.add(seedsTxt).padTop(2 * scale).padBottom(6 * scale).row();
-
-        card.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
-        card.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
+            card.setOnClick(c -> {
                 focusedPlant = plant;
                 if (isPlantSelected(plant)) {
                     menuLogic.removePlant(plant.getName());
@@ -394,49 +329,10 @@ public class PlantSelectionScreen implements Screen {
                     Toast.showError(stage, skin, "You can only select up to " + MAX_SELECTED_PLANTS + " plants!");
                 }
                 refreshAll();
-            }
-        });
+            });
 
-        return card;
-    }
-
-    private ProgressBar createAlmanacProgressBar(int seedsNeeded, int currentSeeds) {
-        ProgressBar.ProgressBarStyle style = new ProgressBar.ProgressBarStyle();
-        if (skin.has("image_ui_almanac_plants_plant_fuelbar_10", Drawable.class)) {
-            style.background = skin.getDrawable("image_ui_almanac_plants_plant_fuelbar_10");
-        } else {
-            style.background = skin.get(ProgressBar.ProgressBarStyle.class).background;
-        }
-
-        if (skin.has("image_ui_almanac_general_fuelbar_fill_10", Drawable.class)) {
-            style.knobBefore = skin.getDrawable("image_ui_almanac_general_fuelbar_fill_10");
-        } else {
-            style.knobBefore = skin.get(ProgressBar.ProgressBarStyle.class).knobBefore;
-        }
-
-        ProgressBar seedBar = new ProgressBar(0, seedsNeeded, 1, false, style);
-        seedBar.setValue(Math.min(currentSeeds, seedsNeeded));
-        return seedBar;
-    }
-
-    private void refreshAvailableGrid(List<Plant> allUnlocked) {
-        availableGrid.clear();
-        availableCards.clear();
-        int maxCols = 6;
-        int col = 0;
-        float scale = 0.75f;
-
-        for (Plant plant : allUnlocked) {
-            int currentSeeds = currentUser != null ? currentUser.getSeedCount(plant.getName()) : 0;
-            int seedsNeeded = 5 * (plant.getLevel() + 1);
-
-            Table card = createPlantCard(plant, true, currentSeeds, seedsNeeded, scale);
-
-            if (isPlantSelected(plant)) {
-                card.setColor(Color.GREEN);
-            }
-
-            availableGrid.add(card).size(135 * scale * 1.3f, 175 * scale * 1.3f).pad(4);
+            availableCards.put(plant.getName(), card);
+            availableGrid.add(card).size(135, 190).pad(5);
             col++;
             if (col % maxCols == 0) availableGrid.row();
         }
@@ -456,11 +352,11 @@ public class PlantSelectionScreen implements Screen {
             });
             activeSlotActors.add(card);
             Container<PlantCardActor> slotContainer = new Container<>(card);
-            slotContainer.size(110, 100);
+            slotContainer.size(110, 85);
             sidebarSlotsTable.add(slotContainer).padBottom(6).row();
         }
         for (int i = selected.size(); i < MAX_SELECTED_PLANTS; i++) {
-            sidebarSlotsTable.add(buildEmptySlot()).size(110, 48).padBottom(6).row();
+            sidebarSlotsTable.add(buildEmptySlot()).size(110, 85).padBottom(6).row();
         }
     }
 
