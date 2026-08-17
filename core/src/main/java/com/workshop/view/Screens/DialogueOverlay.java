@@ -19,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
+import com.workshop.controller.repository.Audio;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.level.DialogueLine;
 
@@ -133,6 +134,16 @@ public class DialogueOverlay {
         nameLabel.setText(line.getSpeakerName());
         textLabel.setText(line.getText());
 
+        // "موقع حرف زدن دیو" — only while Dave is the one talking.
+        boolean isDave = line.getSpeakerName() != null
+            && line.getSpeakerName().toLowerCase().contains("dave");
+
+        if (isDave) {
+            Audio.playMusic("music/crazydaveextralong1", true);
+        } else {
+            Audio.stopMusic();
+        }
+
         portraitSlot.clearChildren();
 
         String pamPath = line.getPortraitPamPath();
@@ -175,6 +186,8 @@ public class DialogueOverlay {
 
     private void finish() {
         overlay.remove();
+
+        Audio.stopMusic();
 
         for (Texture texture : loadedPortraits) {
             texture.dispose();
@@ -247,6 +260,8 @@ public class DialogueOverlay {
 
             batch.setTransformMatrix(scaled);
 
+            batch.setColor(1f, 1f, 1f, parentAlpha);
+
             Textures.getPamPlayer().draw(
                 batch,
                 pamPath,
@@ -259,6 +274,7 @@ public class DialogueOverlay {
 
             batch.flush();
             batch.setTransformMatrix(original);
+            batch.setColor(1f, 1f, 1f, parentAlpha);
         }
 
         private void resolveClip() {

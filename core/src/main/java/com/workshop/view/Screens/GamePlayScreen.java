@@ -21,6 +21,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Toast;
 import pvz.skin.PvzSkin;
+import com.workshop.controller.repository.Audio;
 import com.workshop.controller.repository.Textures;
 import com.workshop.view.gameplay.GraveAnimationLayer;
 import com.workshop.view.gameplay.PlantAnimationLayer;
@@ -228,6 +229,17 @@ public class GamePlayScreen implements Screen {
             );
 
         stage.addActor(graveAnimationLayer);
+
+        com.workshop.view.gameplay.WaterLayer waterLayer =
+            new com.workshop.view.gameplay.WaterLayer(
+                gameContext,
+                getGridX(),
+                getGridY(),
+                getGridWidth(),
+                getGridHeight()
+            );
+
+        stage.addActor(waterLayer);
 
         PlantAnimationLayer plantAnimationLayer =
             new PlantAnimationLayer(
@@ -1061,8 +1073,10 @@ public class GamePlayScreen implements Screen {
 
             if (gameContext.isPlayerWon()) {
                 winLoseOverlay.showWin();
+                Audio.playMusic("music/winmusic", false);
             } else {
                 winLoseOverlay.showLose();
+                Audio.playMusic("music/losemusic", false);
             }
         }
 
@@ -1082,6 +1096,11 @@ public class GamePlayScreen implements Screen {
                     PvzSkin.get(),
                     announcement
                 );
+            }
+
+            String soundCue;
+            while ((soundCue = gameContext.pollSoundCue()) != null) {
+                Audio.playMusic(soundCue, false);
             }
         }
 
@@ -1134,6 +1153,8 @@ public class GamePlayScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+
+        Audio.stopMusic();
 
         leftTexture.dispose();
         centerTexture.dispose();

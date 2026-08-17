@@ -196,6 +196,7 @@ public class GameEngine {
 
                 if (!mower.isActivated()) {
                     mower.activate();
+                    ctx.playSound("music/lawnmower");
                 }
             }
 
@@ -262,8 +263,8 @@ public class GameEngine {
 
     public Zombie[] getRowZombies(int row) {
         return ctx.getAliveZombies().stream()
-                .filter(z -> z.getY() == row)
-                .toArray(Zombie[]::new);
+            .filter(z -> z.getY() == row)
+            .toArray(Zombie[]::new);
     }
 
     private void updatePlants(double deltaTime) {
@@ -277,7 +278,7 @@ public class GameEngine {
             if (p.getHp() <= 0) {
                 ctx.getPlantGrid()[p.getRow()][p.getCol()] = null;
                 if (ctx.getLevel().getLevelType() == com.workshop.model.level.LevelType.Beghouled_MG
-                        && ctx.getBeghouldManager() != null) {
+                    && ctx.getBeghouldManager() != null) {
                     ctx.getBeghouldManager().markCrater(p.getRow(), p.getCol());
                 }
                 it.remove();
@@ -346,8 +347,8 @@ public class GameEngine {
         if (p.getTrajectory() == TrajectoryType.BOWLING) {
             int maxRows = ctx.getLevel().getRows();
             int newRow = (pRow == 0) ? pRow + 1
-                    : (pRow == maxRows - 1) ? pRow - 1
-                    : (Math.random() < 0.5 ? pRow - 1 : pRow + 1);
+                : (pRow == maxRows - 1) ? pRow - 1
+                  : (Math.random() < 0.5 ? pRow - 1 : pRow + 1);
             p.bounceLane(newRow);
             return false;
         }
@@ -431,7 +432,7 @@ public class GameEngine {
         for (Zombie other : ctx.getAliveZombies()) {
             if (other == primaryTarget || other.isDead()) continue;
             if (Math.abs(other.getRow() - primaryTarget.getRow()) <= 1
-                    && Math.abs(other.getX() - primaryTarget.getX()) <= 1.0) {
+                && Math.abs(other.getX() - primaryTarget.getX()) <= 1.0) {
                 other.takeDamage(p.getDamage());
                 if ("AOE_ICE".equals(lobType)) {
                     other.applySlowOrFreeze();
@@ -620,10 +621,10 @@ public class GameEngine {
 
                 if (zombieName.equalsIgnoreCase("Gargantuar")) {
                     com.workshop.view.Console.simplePrint("ROAR! A Gargantuar emerged from the vase at " +
-                            "(" + col + ", " + row + ")!\n");
+                        "(" + col + ", " + row + ")!\n");
                 } else {
                     com.workshop.view.Console.simplePrint("A " + zombieName + " popped out of the vase at " +
-                            "(" + col + ", " + row + ")!\n");
+                        "(" + col + ", " + row + ")!\n");
                 }
 
             } catch (IllegalArgumentException e) {
@@ -633,7 +634,7 @@ public class GameEngine {
         } else if (vase.getContent() == VaseContent.PLANT) {
             tile.setDroppedSeed(vase.getHiddenEntityName(), 100);
             com.workshop.view.Console.simplePrint("A seed packet for " + vase.getHiddenEntityName() + "dropped at" +
-                    " (" + col + ", " + row + ")!\n");
+                " (" + col + ", " + row + ")!\n");
         }
     }
 

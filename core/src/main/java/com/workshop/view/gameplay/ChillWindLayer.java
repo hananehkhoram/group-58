@@ -133,6 +133,10 @@ public final class ChillWindLayer extends Group {
 
             batch.setTransformMatrix(scaled);
 
+            // اگه اکتورِ قبلی رنگِ batch رو نیمه‌شفاف گذاشته باشه، اینجا
+            // صریحاً به حالتِ عادی برمی‌گردونیمش.
+            batch.setColor(1f, 1f, 1f, parentAlpha);
+
             Textures.getPamPlayer().draw(
                 batch,
                 WIND_PAM,
@@ -145,6 +149,7 @@ public final class ChillWindLayer extends Group {
 
             batch.flush();
             batch.setTransformMatrix(original);
+            batch.setColor(1f, 1f, 1f, parentAlpha);
         }
 
         private void resolveClipAndScale() {

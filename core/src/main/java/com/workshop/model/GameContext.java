@@ -77,6 +77,21 @@ public class GameContext {
     public String pollAnnouncement() {
         return pendingAnnouncements.pollFirst();
     }
+
+    // Same idea as pendingAnnouncements, but for one-shot sound cues (e.g. the lawn
+    // mower starting up) — model code pushes a sound key here, the active gameplay
+    // screen drains it and actually plays the audio.
+    private final Deque<String> pendingSoundCues = new ArrayDeque<>();
+
+    public void playSound(String soundKey) {
+        if (soundKey != null && !soundKey.isBlank()) {
+            pendingSoundCues.addLast(soundKey);
+        }
+    }
+
+    public String pollSoundCue() {
+        return pendingSoundCues.pollFirst();
+    }
     private boolean isSetupPhase = false;
     private LevelManager levelManager;
     private boolean activeWaveInProgress = false;

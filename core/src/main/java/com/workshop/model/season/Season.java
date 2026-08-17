@@ -45,4 +45,5 @@ public abstract class Season {
     public String getName() { return name; }
     public List<Level> getLevels() { return levels; }
 
+    public Set<GridCell> getLowTideCells(GameContext ctx) { return Set.of(); }
 }

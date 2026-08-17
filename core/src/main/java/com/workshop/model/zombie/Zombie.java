@@ -346,4 +346,8 @@ public class Zombie implements Damageable {
         return this.effects.contains(effect);
     }
     public List<Effects> getEffect() {return effects;}
+
+    public double getIceHp() {
+        return iceHp;
+    }
 }
