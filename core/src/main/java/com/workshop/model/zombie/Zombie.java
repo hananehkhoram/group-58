@@ -37,13 +37,14 @@ public class Zombie implements Damageable {
     private boolean isIced = false;
     private double iceHp = 0;
     private boolean initialFrozenBlock = false;
+    private boolean enteredViaSandstorm = false;
 
     private boolean isEating = false;
     private boolean movingBackward = false;
 
-        public Zombie() {
-            this.effects = new ArrayList<>();
-        }
+    public Zombie() {
+        this.effects = new ArrayList<>();
+    }
 
     public Zombie(String id, String name, int hp, double eatDps,
                   double speed, int wavePointCost, int weight) {
@@ -71,7 +72,7 @@ public class Zombie implements Damageable {
     public void update(GameContext ctx, double deltaTime) {
         if (isDead()) {
             if (random.nextInt(100) < 5) {
-            ctx.addLoot(new LootItem(LootItem.LootType.SEED, (int) getX(), getRow()));}
+                ctx.addLoot(new LootItem(LootItem.LootType.SEED, (int) getX(), getRow()));}
             return;
         }
 
@@ -167,7 +168,7 @@ public class Zombie implements Damageable {
         hp -= remaining;
         if (hp <= 0){
             Console.showMessage("Zombie of type "+this.getName() +
-                    " is dead at " + this.getX() + ", " + this.getY());
+                " is dead at " + this.getX() + ", " + this.getY());
         }
     }
 
@@ -293,6 +294,8 @@ public class Zombie implements Damageable {
     public boolean isInitialFrozenBlock() {
         return initialFrozenBlock;
     }
+    public boolean isEnteredViaSandstorm() { return enteredViaSandstorm; }
+    public void setEnteredViaSandstorm(boolean enteredViaSandstorm) { this.enteredViaSandstorm = enteredViaSandstorm; }
     public boolean isEating() { return isEating; }
     public long getSpawnTick() {return spawnTick;}
 
@@ -312,7 +315,7 @@ public class Zombie implements Damageable {
 
     public String zombieInfo() {
         return String.format("[%s] \n   HP:%d \n    Armors:%s \n    Position: %f , %f \n    Effects:%s",
-                name, hp, getStringArmor(), x, y, getStringEffects());
+            name, hp, getStringArmor(), x, y, getStringEffects());
     }
 
     private String getStringArmor() {
@@ -320,7 +323,7 @@ public class Zombie implements Damageable {
         for (Behaviors b : behaviors.values()) {
             if (b instanceof Armor) {
                 sb.append("\n       ").append(((Armor) b).getArmorType())
-                        .append(": ").append(((Armor) b).getArmorHP());
+                    .append(": ").append(((Armor) b).getArmorHP());
             }
         }
         return sb.toString();

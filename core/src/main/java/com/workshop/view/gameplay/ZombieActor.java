@@ -15,6 +15,14 @@ public final class ZombieActor extends Actor {
     private static final String INITIAL_FROZEN_BLOCK_PAM =
         "768/INITIAL/EFFECTS/ICEBLOOM_ICE_BLOCK_ZOMBIE/ICEBLOOM_ICE_BLOCK_ZOMBIE.PAM";
 
+
+    private static final String SANDSTORM_TOP_PAM =
+        "768/INITIAL/EFFECTS/SANDSTORM_TOP/SANDSTORM_TOP.PAM";
+    private static final String SANDSTORM_TOP_CLIP = "idle";
+    private static final float SANDSTORM_EFFECT_DURATION = 1.2f;
+
+    private float sandstormEffectTime;
+
     private ZombieAnimationState currentState =
         ZombieAnimationState.IDLE;
 
@@ -33,6 +41,13 @@ public final class ZombieActor extends Actor {
     @Override
     public void act(float delta) {
         super.act(delta);
+
+        if (zombie.isEnteredViaSandstorm()) {
+            sandstormEffectTime += delta;
+            if (sandstormEffectTime >= SANDSTORM_EFFECT_DURATION) {
+                zombie.setEnteredViaSandstorm(false);
+            }
+        }
 
         if (zombie.isInitialFrozenBlock()) {
             return;
@@ -101,6 +116,18 @@ public final class ZombieActor extends Actor {
             getY(),
             true
         );
+
+        if (zombie.isEnteredViaSandstorm()) {
+            pamPlayer.draw(
+                batch,
+                SANDSTORM_TOP_PAM,
+                SANDSTORM_TOP_CLIP,
+                sandstormEffectTime,
+                getX(),
+                getY(),
+                false
+            );
+        }
     }
 
     public ZombieAnimationState getCurrentState() {

@@ -56,11 +56,22 @@ public class GameContext {
     private DataManager dm;
     private PlantFactory plantFactory;
     private final Deque<String> pendingAnnouncements = new ArrayDeque<>();
+    private final Deque<Integer> pendingWindRows = new ArrayDeque<>();
 
     public void announce(String message) {
         if (message != null && !message.isBlank()) {
             pendingAnnouncements.addLast(message);
         }
+    }
+
+
+    public void announceWindRow(int row) {
+        pendingWindRows.addLast(row);
+    }
+
+
+    public Integer pollWindRow() {
+        return pendingWindRows.pollFirst();
     }
 
     public String pollAnnouncement() {
@@ -232,7 +243,7 @@ public class GameContext {
             if (levelIndex + 1 < levelsInSeason.size()) {
                 currentUser.unlockLevel(levelsInSeason.get(levelIndex + 1).getName());
                 NewsManager.addNews("New Level In Season","You unlocked new level: "+
-                        levelsInSeason.get(levelIndex + 1).getName()+" in seasson: "+currentUser.getLastSeason());
+                    levelsInSeason.get(levelIndex + 1).getName()+" in seasson: "+currentUser.getLastSeason());
             } else {
                 Season nextSeason = DataManager.getInstance().seasons.getNextSeason(this.season);
                 if (nextSeason != null && !nextSeason.getLevels().isEmpty()) {
@@ -270,7 +281,7 @@ public class GameContext {
         }
         DataManager.getInstance().saveUser();
         Console.
-                showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
+            showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
     }
 
     public void triggerPlayerLoss() {

@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
 import com.workshop.model.mechanisms.GameEngine;
+import com.workshop.model.season.DarkAgesSeason;
 import com.workshop.model.season.Season;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -21,6 +22,7 @@ import com.workshop.model.user.UserManager;
 import com.workshop.view.Toast;
 import pvz.skin.PvzSkin;
 import com.workshop.controller.repository.Textures;
+import com.workshop.view.gameplay.GraveAnimationLayer;
 import com.workshop.view.gameplay.PlantAnimationLayer;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Interpolation;
@@ -216,6 +218,17 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(zombieIntroLayer);
 
+        GraveAnimationLayer graveAnimationLayer =
+            new GraveAnimationLayer(
+                gameContext,
+                getGridX(),
+                getGridY(),
+                getGridWidth(),
+                getGridHeight()
+            );
+
+        stage.addActor(graveAnimationLayer);
+
         PlantAnimationLayer plantAnimationLayer =
             new PlantAnimationLayer(
                 gameContext,
@@ -237,6 +250,17 @@ public class GamePlayScreen implements Screen {
             );
 
         stage.addActor(zombieAnimationLayer);
+
+        com.workshop.view.gameplay.ChillWindLayer chillWindLayer =
+            new com.workshop.view.gameplay.ChillWindLayer(
+                gameContext,
+                getGridX(),
+                getGridY(),
+                getGridWidth(),
+                getGridHeight()
+            );
+
+        stage.addActor(chillWindLayer);
 
         pauseOverlay = new PauseOverlay(
             stage,
@@ -703,6 +727,49 @@ public class GamePlayScreen implements Screen {
         shapeRenderer.end();
     }
 
+    /**
+     * "همچنین خانه‌های نکرومنسی نیز باید روی زمین مشخص باشند" — a plain translucent
+     * red fill over each Necromancy cell (Dark Ages only). No fancy effect needed,
+     * just something the player can see.
+     */
+    private void drawNecromancyMarkers() {
+        if (!(gameContext.getSeason() instanceof DarkAgesSeason darkAges)) {
+            return;
+        }
+
+        float gridX = getGridX();
+        float gridY = getGridY();
+        float cellWidth = getCellWidth();
+        float cellHeight = getCellHeight();
+
+        int rows = gameContext.getLevel().getRows();
+        int columns = gameContext.getLevel().getColumns();
+
+        shapeRenderer.setProjectionMatrix(stage.getCamera().combined);
+
+        Gdx.gl.glEnable(com.badlogic.gdx.graphics.GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA, com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(1f, 0f, 0f, 0.28f);
+
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < columns; col++) {
+                if (!darkAges.isNecromancyCell(row, col)) {
+                    continue;
+                }
+
+                float x = gridX + col * cellWidth;
+                float y = gridY + (rows - 1 - row) * cellHeight;
+
+                shapeRenderer.rect(x, y, cellWidth, cellHeight);
+            }
+        }
+
+        shapeRenderer.end();
+        Gdx.gl.glDisable(com.badlogic.gdx.graphics.GL20.GL_BLEND);
+    }
+
     private BackgroundPaths fallbackIfMissing(
         BackgroundPaths paths
     ) {
@@ -1027,6 +1094,10 @@ public class GamePlayScreen implements Screen {
         Textures.getInstance().update();
 
         stage.draw();
+
+        if (!pauseOverlay.isVisible() && !winLoseOverlay.isVisible()) {
+            drawNecromancyMarkers();
+        }
 
         if (!pauseOverlay.isVisible()
             && !winLoseOverlay.isVisible()
