@@ -1,6 +1,7 @@
 package com.workshop.view.Screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.workshop.controller.repository.Textures;
@@ -60,24 +61,21 @@ public final class ScreenResourceManager {
      * Attempts to draw a plant PAM animation with multiple path fallback strategies.
      * Tries several common path patterns before falling back to static Texture lookup.
      *
-     * Path resolution order:
-     *   1. Direct "PLANT/FOLDERNAME/FOLDERNAME.PAM"
-     *   2. If animation fails, tries alternative path with underscores
-     *   3. Falls back to Textures.regionOrNull() for static sprites
-     *
-     * @param batch The render batch
+     * @param batch     The render batch
      * @param pamPlayer The PAM animation player
      * @param plantName The plant name (e.g., "Peashooter")
+     * @param clip      The animation clip name (e.g., "idle", "idle_stage1", "intro", etc.)
      * @param stateTime Current animation time (for looping)
-     * @param drawX X position to draw at
-     * @param drawY Y position to draw at
-     * @param isLocked If true, draws at reduced brightness
+     * @param drawX     X position to draw at
+     * @param drawY     Y position to draw at
+     * @param isLocked  If true, draws at reduced brightness
      * @return true if animation was successfully drawn, false if fallback was used
      */
     public static boolean drawPlantAnimation(
         Batch batch,
         PamPlayer pamPlayer,
         String plantName,
+        String clip,
         float stateTime,
         float drawX,
         float drawY,
@@ -103,24 +101,30 @@ public final class ScreenResourceManager {
         // Skip known problematic plants
         if (folderName.equalsIgnoreCase("CATTAILMINT") ||
             folderName.equalsIgnoreCase("CATTAIL")) {
+            batch.setColor(Color.WHITE);
             return drawPlantFallback(batch, plantName, drawX, drawY);
         }
 
+        // لیست کلیپ‌ها جهت تست: ابتدا کلیپ درخواستی، سپس کلیپ‌های عمومی جهت fallback
+        String activeClip = (clip != null && !clip.trim().isEmpty()) ? clip : "idle";
+        String[] clipsToTry = activeClip.equalsIgnoreCase("idle")
+            ? new String[]{"idle"}
+            : new String[]{activeClip, "idle"};
+
         for (String pamPath : possiblePaths) {
-            try {
-                if (pamPlayer != null) {
-                    pamPlayer.draw(batch, pamPath, "idle", stateTime, drawX, drawY, true);
+            for (String currentClip : clipsToTry) {
+                try {
+                    pamPlayer.draw(batch, pamPath, currentClip, stateTime, drawX, drawY, true);
+                    batch.setColor(Color.WHITE);
+                    return true;
+                } catch (Exception e) {
+                    Gdx.app.debug("ScreenResourceManager",
+                        "Failed clip '" + currentClip + "' for path: " + pamPath + " (" + e.getMessage() + ")");
                 }
-                batch.setColor(com.badlogic.gdx.graphics.Color.WHITE);
-                return true;
-            } catch (Exception e) {
-                // Log at debug level only
-                Gdx.app.debug("ScreenResourceManager",
-                    "Failed to load plant PAM: " + pamPath + " (" + e.getMessage() + ")");
             }
         }
 
-        batch.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+        batch.setColor(Color.WHITE);
         return drawPlantFallback(batch, plantName, drawX, drawY);
     }
 
