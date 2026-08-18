@@ -10,17 +10,21 @@ public final class GraveActor extends Actor {
 
     private final Grave grave;
     private final PamPlayer pamPlayer;
+    private final HitFlashEffect hitFlash;
 
     private float stateTime;
 
     public GraveActor(Grave grave, PamPlayer pamPlayer) {
         this.grave = grave;
+        this.hitFlash =
+            new HitFlashEffect(grave::getHp);
         this.pamPlayer = pamPlayer;
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
+        hitFlash.update(delta);
         stateTime += delta;
     }
 
@@ -32,6 +36,8 @@ public final class GraveActor extends Actor {
         if (pamPath == null || clip == null) {
             return;
         }
+        float flash = hitFlash.getIntensity();
+        batch.setColor(1f + flash, 1f + flash, 1f + flash, parentAlpha);
 
         pamPlayer.draw(
             batch,
