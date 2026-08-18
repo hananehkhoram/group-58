@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -18,6 +19,7 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import com.workshop.PvzGame;
+import com.workshop.controller.repository.Audio;
 import com.workshop.controller.repository.DataManager;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.user.User;
@@ -123,6 +125,14 @@ public class SettingsScreen implements Screen {
             user.isDebugMode()
         );
 
+        Slider musicVolumeSlider =
+            new Slider(0f, 1f, 0.01f, false, skin, "default-horizontal");
+        musicVolumeSlider.setValue(Audio.getMusicVolume());
+
+        Slider sfxVolumeSlider =
+            new Slider(0f, 1f, 0.01f, false, skin, "default-horizontal");
+        sfxVolumeSlider.setValue(Audio.getSfxVolume());
+
         TextButton backButton =
             new TextButton(
                 "Back",
@@ -137,6 +147,8 @@ public class SettingsScreen implements Screen {
             gameSpeedBox,
             gridCheckBox,
             debugCheckBox,
+            musicVolumeSlider,
+            sfxVolumeSlider,
             backButton
         );
 
@@ -192,6 +204,34 @@ public class SettingsScreen implements Screen {
             .padBottom(15)
             .row();
 
+        settingsPanel.add(
+                new Label(
+                    "Music Volume",
+                    skin
+                )
+            )
+            .pad(10)
+            .right();
+
+        settingsPanel.add(musicVolumeSlider)
+            .width(200)
+            .pad(10)
+            .row();
+
+        settingsPanel.add(
+                new Label(
+                    "Sound Volume",
+                    skin
+                )
+            )
+            .pad(10)
+            .right();
+
+        settingsPanel.add(sfxVolumeSlider)
+            .width(200)
+            .pad(10)
+            .row();
+
         settingsPanel.add(backButton)
             .colspan(2)
             .width(200)
@@ -211,6 +251,8 @@ public class SettingsScreen implements Screen {
         SelectBox<Integer> gameSpeedBox,
         CheckBox gridCheckBox,
         CheckBox debugCheckBox,
+        Slider musicVolumeSlider,
+        Slider sfxVolumeSlider,
         TextButton backButton
     ) {
         difficultyBox.addListener(
@@ -264,6 +306,34 @@ public class SettingsScreen implements Screen {
                 ) {
                     user.setDebugMode(
                         debugCheckBox.isChecked()
+                    );
+                }
+            }
+        );
+
+        musicVolumeSlider.addListener(
+            new ChangeListener() {
+                @Override
+                public void changed(
+                    ChangeEvent event,
+                    Actor actor
+                ) {
+                    Audio.setMusicVolume(
+                        musicVolumeSlider.getValue()
+                    );
+                }
+            }
+        );
+
+        sfxVolumeSlider.addListener(
+            new ChangeListener() {
+                @Override
+                public void changed(
+                    ChangeEvent event,
+                    Actor actor
+                ) {
+                    Audio.setSfxVolume(
+                        sfxVolumeSlider.getValue()
                     );
                 }
             }

@@ -38,11 +38,13 @@ public class LootItem {
 
         if (lootRoll == 0) {
             ctx.addLoot(new LootItem(LootType.COIN, x, y));
+            ctx.playSound("sfx:music/coin");
             if (currentUser != null) {
                 Console.showMessage("A zombie dropeed a coin; you have should collect it.");
             }
         } else if (lootRoll == 1) {
             ctx.addLoot(new LootItem(LootType.DIAMOND, x, y));
+            ctx.playSound("sfx:music/diamond");
             if (currentUser != null) {
                 Console.showMessage("A zombie dropeed a diamond; you should collect it.");
             }

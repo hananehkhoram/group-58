@@ -196,7 +196,7 @@ public class GameEngine {
 
                 if (!mower.isActivated()) {
                     mower.activate();
-                    ctx.playSound("music/lawnmower");
+                    ctx.playSound("sfx:music/lawnmower");
                 }
             }
 

@@ -16,6 +16,8 @@ public final class ZombieActor extends Actor {
     private final Zombie zombie;
     private final ZombieAnimationSpec animationSpec;
     private final PamPlayer pamPlayer;
+    private static final double DANGER_ZONE_X = 1.5;
+    private static final float MAX_DANGER_TINT = 0.65f;
 
     private static final String ICE_BLOCK_PAM =
         "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_ZOMBIE/FROSTBITE_ICE_BLOCK_ZOMBIE.PAM";
@@ -138,10 +140,14 @@ public final class ZombieActor extends Actor {
             return;
         }
 
-        // اگه اکتورِ قبلی توی همین فریم رنگِ batch رو نیمه‌شفاف گذاشته
-        // باشه (مثلاً پوششِ ساحل پست)، اینجا صریحاً برمی‌گردونیمش به حالت
-        // عادی تا روی این زامبی اثر نذاره.
-        batch.setColor(1f, 1f, 1f, parentAlpha);
+
+        float dangerTint = resolveDangerTint(zombie.getX());
+        batch.setColor(
+            1f,
+            1f - dangerTint,
+            1f - dangerTint,
+            parentAlpha
+        );
 
         pamPlayer.draw(
             batch,
@@ -171,6 +177,19 @@ public final class ZombieActor extends Actor {
                 );
             }
         }
+    }
+    private float resolveDangerTint(double zombieX) {
+        if (zombieX >= DANGER_ZONE_X) {
+            return 0f;
+        }
+
+        float proximity = MathUtils.clamp(
+            (float) (1.0 - zombieX / DANGER_ZONE_X),
+            0f,
+            1f
+        );
+
+        return proximity * MAX_DANGER_TINT;
     }
 
     private void drawIceBlock(Batch batch, float parentAlpha) {

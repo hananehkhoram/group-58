@@ -1448,7 +1448,11 @@ public class GamePlayScreen implements Screen {
 
             String soundCue;
             while ((soundCue = gameContext.pollSoundCue()) != null) {
-                Audio.playMusic(soundCue, false);
+                if (soundCue.startsWith("sfx:")) {
+                    Audio.playSfx(soundCue.substring("sfx:".length()));
+                } else {
+                    Audio.playMusic(soundCue, false);
+                }
             }
         }
 
