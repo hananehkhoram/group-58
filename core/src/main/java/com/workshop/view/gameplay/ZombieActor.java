@@ -27,9 +27,10 @@ public final class ZombieActor extends Actor {
     // Zombie.setAsInitialFrozenBlock()).
     private static final double INITIAL_ICE_HP = 600.0;
 
+    private String resolvedSandstormClip;
+    private boolean sandstormClipResolved;
     private static final String SANDSTORM_TOP_PAM =
         "768/INITIAL/EFFECTS/SANDSTORM_TOP/SANDSTORM_TOP.PAM";
-    private static final String SANDSTORM_TOP_CLIP = "idle";
     private static final float SANDSTORM_EFFECT_DURATION = 1.2f;
 
     private float sandstormEffectTime;
@@ -91,6 +92,32 @@ public final class ZombieActor extends Actor {
         }
     }
 
+    private void resolveSandstormClip() {
+        List<String> clips = pamPlayer.clips(SANDSTORM_TOP_PAM);
+
+        if (clips == null || clips.isEmpty()) {
+            Gdx.app.error(
+                "ZombieActor",
+                "No clips found for PAM: " + SANDSTORM_TOP_PAM
+            );
+            return;
+        }
+
+        if (clips.contains("idle")) {
+            resolvedSandstormClip = "idle";
+        } else if (clips.contains("animation")) {
+            resolvedSandstormClip = "animation";
+        } else {
+            resolvedSandstormClip = clips.get(0);
+        }
+
+        Gdx.app.log(
+            "ZombieActor",
+            "Sandstorm clips: " + clips
+                + " | selected: " + resolvedSandstormClip
+        );
+    }
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
         if (zombie.isDead()) {
@@ -133,15 +160,22 @@ public final class ZombieActor extends Actor {
         );
 
         if (zombie.isEnteredViaSandstorm()) {
-            pamPlayer.draw(
-                batch,
-                SANDSTORM_TOP_PAM,
-                SANDSTORM_TOP_CLIP,
-                sandstormEffectTime,
-                getX(),
-                getY(),
-                false
-            );
+            if (!sandstormClipResolved) {
+                resolveSandstormClip();
+                sandstormClipResolved = true;
+            }
+
+            if (resolvedSandstormClip != null) {
+                pamPlayer.draw(
+                    batch,
+                    SANDSTORM_TOP_PAM,
+                    resolvedSandstormClip,
+                    sandstormEffectTime,
+                    getX(),
+                    getY(),
+                    false
+                );
+            }
         }
     }
     private float resolveDangerTint(double zombieX) {

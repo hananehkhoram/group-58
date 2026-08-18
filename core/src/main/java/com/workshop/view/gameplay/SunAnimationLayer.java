@@ -370,7 +370,6 @@ public final class SunAnimationLayer extends Group {
         );
 
         updateAppearance(image, type, amount);
-
         return image;
     }
 

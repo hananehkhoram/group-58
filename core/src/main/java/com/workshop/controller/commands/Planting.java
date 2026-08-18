@@ -109,7 +109,7 @@ public class Planting implements Command {
             return false;
         }
 
-        boolean needsSun = !isConveyorLevel && !isVaseLevel(ctx) && isHeldSeed;
+        boolean needsSun = !isConveyorLevel && !isVaseLevel(ctx) && !isHeldSeed;
         if (needsSun && ctx.getSunAmount() < template.getSunCost()) {
             Console.showMessage("Not enough sun.");
             return false;
@@ -160,7 +160,7 @@ public class Planting implements Command {
 
         applyPlantFoodBoost(template, newPlant, type, ctx);
 
-        boolean needsSun = !isConveyorLevel && !isVaseLevel(ctx) && isHeldSeed;
+        boolean needsSun = !isConveyorLevel && !isVaseLevel(ctx) && !isHeldSeed;
         if (needsSun) {
             ctx.setSunAmount(ctx.getSunAmount() - template.getSunCost());
         }

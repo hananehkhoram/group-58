@@ -158,6 +158,12 @@ public final class ZombieAnimationResolver {
             return getBasicZombiePam(seasonName);
         }
 
+        if (zombie.getId() != null
+            && !zombie.getId().isBlank()) {
+
+            return zombie.getId();
+        }
+
         return zombieName;
     }
 
@@ -225,11 +231,43 @@ public final class ZombieAnimationResolver {
 
         String key = normalize(pamName);
 
-        // اول exact match
         String exact = pamPaths.get(key);
 
         if (exact != null) {
             return exact;
+        }
+
+        String coreKey = key;
+
+        if (coreKey.startsWith("ZOMBIE")) {
+            coreKey = coreKey.substring("ZOMBIE".length());
+        }
+
+        for (Map.Entry<String, String> entry : pamPaths.entrySet()) {
+
+            String path = entry.getValue()
+                .replace('\\', '/')
+                .toUpperCase();
+
+            if (!path.contains("/ZOMBIE/")) {
+                continue;
+            }
+
+            String candidateKey = entry.getKey();
+
+            if (!coreKey.isEmpty()
+                && candidateKey.contains(coreKey)) {
+
+                Gdx.app.log(
+                    "ZombieAnimationResolver",
+                    "Matched by ID: "
+                        + pamName
+                        + " -> "
+                        + entry.getValue()
+                );
+
+                return entry.getValue();
+            }
         }
 
         String upperName =
