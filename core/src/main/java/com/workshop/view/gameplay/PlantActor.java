@@ -16,6 +16,7 @@ public final class PlantActor extends Actor {
     private final Plant plant;
     private final PlantAnimationSpec animationSpec;
     private final PamPlayer pamPlayer;
+    private final HitFlashEffect hitFlash;
 
     private static final String ICE_BLOCK_PAM =
         "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_PLANT/FROSTBITE_ICE_BLOCK_PLANT.PAM";
@@ -52,6 +53,8 @@ public final class PlantActor extends Actor {
         PamPlayer pamPlayer
     ) {
         this.plant = plant;
+        this.hitFlash =
+            new HitFlashEffect(plant::getHp);
         this.animationSpec = animationSpec;
         this.pamPlayer = pamPlayer;
     }
@@ -59,6 +62,7 @@ public final class PlantActor extends Actor {
     @Override
     public void act(float delta) {
         super.act(delta);
+        hitFlash.update(delta);
 
         // گیاهِ کاملاً یخ‌زده دیگه انیمیشن/عمل نداره؛ فقط بلوک یخ روش می‌مونه.
         if (!plant.isIced()) {
@@ -84,7 +88,8 @@ public final class PlantActor extends Actor {
             // اگه اکتورِ قبلی توی همین فریم رنگِ batch رو نیمه‌شفاف گذاشته
             // باشه (مثلاً پوششِ ساحل پست)، اینجا صریحاً برمی‌گردونیمش به
             // حالت عادی تا روی این گیاه اثر نذاره.
-            batch.setColor(1f, 1f, 1f, parentAlpha);
+            float flash = hitFlash.getIntensity();
+            batch.setColor(1f + flash, 1f + flash, 1f + flash, parentAlpha);
 
             pamPlayer.draw(
                 batch,

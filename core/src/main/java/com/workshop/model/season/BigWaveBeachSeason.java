@@ -116,7 +116,7 @@ public class BigWaveBeachSeason extends Season{
     private void checkLowTideZombies(GameContext ctx) {
         for (GridCell cell : lowTideCells) {
             boolean underWater = isWaterCell(cell.getRow(), cell.getCol(), ctx);
-            if (!underWater) continue;
+            if (underWater) continue;
 
             if (random.nextDouble() < LOW_TIDE_ZOMBIE_CHANCE) {
                 spawnZombieFromLowTide(ctx, cell.getRow(), cell.getCol());

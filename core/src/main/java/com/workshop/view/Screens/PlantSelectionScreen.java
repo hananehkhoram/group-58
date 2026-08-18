@@ -132,7 +132,13 @@ public class PlantSelectionScreen implements Screen {
         leftSidebar.add(sidebarTitle).padBottom(2).row();
 
         sidebarSlotsTable = new Table();
-        leftSidebar.add(sidebarSlotsTable).expandY().top().padTop(2).row();
+        sidebarSlotsTable.top();
+
+        ScrollPane slotsScrollPane = new ScrollPane(sidebarSlotsTable, skin);
+        slotsScrollPane.setFadeScrollBars(false);
+        slotsScrollPane.setScrollingDisabled(true, false); // فقط اسکرولِ عمودی
+
+        leftSidebar.add(slotsScrollPane).expand().fill().padTop(2).row();
         bodyTable.add(leftSidebar).width(140).growY().padRight(4);
 
         Table mainArea = new Table();

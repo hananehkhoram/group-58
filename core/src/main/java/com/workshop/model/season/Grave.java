@@ -50,4 +50,8 @@ public class Grave {
     public GraveType getType() {
         return type;
     }
+
+    public int getHp() {
+        return hp;
+    }
 }

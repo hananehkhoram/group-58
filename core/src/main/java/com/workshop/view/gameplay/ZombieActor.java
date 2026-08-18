@@ -19,6 +19,8 @@ public final class ZombieActor extends Actor {
     private static final double DANGER_ZONE_X = 1.5;
     private static final float MAX_DANGER_TINT = 0.65f;
 
+    private final HitFlashEffect hitFlash;
+
     private static final String ICE_BLOCK_PAM =
         "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_ZOMBIE/FROSTBITE_ICE_BLOCK_ZOMBIE.PAM";
     private static final String ICE_BLOCK_PREFERRED_CLIP = "idle";
@@ -50,6 +52,8 @@ public final class ZombieActor extends Actor {
         PamPlayer pamPlayer
     ) {
         this.zombie = zombie;
+        this.hitFlash =
+            new HitFlashEffect(zombie::getHp);
         this.animationSpec = animationSpec;
         this.pamPlayer = pamPlayer;
     }
@@ -57,6 +61,7 @@ public final class ZombieActor extends Actor {
     @Override
     public void act(float delta) {
         super.act(delta);
+        hitFlash.update(delta);
 
         if (zombie.isEnteredViaSandstorm()) {
             sandstormEffectTime += delta;
@@ -142,10 +147,12 @@ public final class ZombieActor extends Actor {
 
 
         float dangerTint = resolveDangerTint(zombie.getX());
+        float flash = hitFlash.getIntensity();
+
         batch.setColor(
-            1f,
-            1f - dangerTint,
-            1f - dangerTint,
+            1f + flash,
+            1f - dangerTint + flash,
+            1f - dangerTint + flash,
             parentAlpha
         );
 
