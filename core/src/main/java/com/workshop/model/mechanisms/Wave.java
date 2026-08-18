@@ -61,6 +61,12 @@ public class Wave {
             : "Wave " + waveNumber + " started.";
         Console.showMessage(message + "\n");
         ctx.announce(message);
+
+
+
+        if (isLastWave) {
+            ctx.playSound("sfx:music/finalwave");
+        }
     }
 
     private int calculateEffectiveBudget() {

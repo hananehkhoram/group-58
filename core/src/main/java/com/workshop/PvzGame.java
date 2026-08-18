@@ -3,6 +3,7 @@ package com.workshop;
 import com.badlogic.gdx.Game;
 
 import com.workshop.controller.MenuManager;
+import com.workshop.controller.repository.Audio;
 import com.workshop.controller.repository.DataManager;
 import com.workshop.model.level.Level;
 import com.workshop.model.level.LevelType;
@@ -25,6 +26,21 @@ import com.workshop.view.Screens.MainMenuScreen;
 public class PvzGame extends Game {
 
     private final MenuManager menuManager = new MenuManager(null);
+
+    @Override
+    public void setScreen(Screen screen) {
+        super.setScreen(screen);
+
+        // "توی منوهای بازی music/main، وقتی بازی رو play می‌کنیم music/game" — a
+        // single choke point instead of sprinkling Audio.playMusic() in every
+        // show*() method, so no future screen can forget to set the right track.
+        // Audio.playMusic() itself no-ops if the requested track is already playing.
+        if (screen instanceof GamePlayScreen) {
+            Audio.playMusic("music/game", true);
+        } else {
+            Audio.playMusic("music/main", true);
+        }
+    }
 
     @Override
     public void create() {
