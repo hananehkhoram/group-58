@@ -21,6 +21,7 @@ import java.util.List;
 import com.workshop.view.Screens.LoginScreen;
 import com.workshop.view.Screens.RegisterScreen;
 import com.workshop.view.Screens.MainMenuScreen;
+import com.workshop.model.MiniGame.VaseGame.Vasecheccker;
 
 public class PvzGame extends Game {
 
@@ -284,6 +285,30 @@ public class PvzGame extends Game {
 
     public void showLeaderboard() {
         setScreen(new LeaderBoardScreen(this));
+    }
+
+    public void showVaseBreaker() {
+        Vasecheccker vaseGame = new Vasecheccker();
+
+        vaseGame.startMiniGame(
+            menuManager,
+            1
+        );
+
+        GameContext ctx = vaseGame.getCtx();
+
+        menuManager.setCtx(ctx);
+        menuManager.setGameEngine(
+            vaseGame.getGameEngine()
+        );
+
+        setScreen(
+            new GamePlayScreen(
+                ctx,
+                this::showVaseBreaker,
+                this::showTravelMenu
+            )
+        );
     }
 
     @Override

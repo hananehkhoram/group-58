@@ -56,7 +56,6 @@ public class GamePlayScreen implements Screen {
     private final Stage stage;
     private final PauseOverlay pauseOverlay;
     private final WinLoseOverlay winLoseOverlay;
-    private boolean resultOverlayShown = false;
 
     private final GameEngine gameEngine;
     private final GameContext gameContext;
@@ -610,9 +609,15 @@ public class GamePlayScreen implements Screen {
             ? gameContext.getLevel().getWinDialogue()
             : gameContext.getLevel().getLoseDialogue();
 
-        Runnable showFinalOverlay = won
-            ? winLoseOverlay::showWin
-            : winLoseOverlay::showLose;
+        Runnable showFinalOverlay = () -> {
+            if (won) {
+                Audio.playMusic("music/winmusic", false);
+                winLoseOverlay.showWin();
+            } else {
+                Audio.playMusic("music/losemusic", false);
+                winLoseOverlay.showLose();
+            }
+        };
 
         if (lines != null && !lines.isEmpty()) {
             dialogueBlocking = true;
@@ -774,9 +779,9 @@ public class GamePlayScreen implements Screen {
 
             case "Vasebreaker":
                 return new BackgroundPaths(
-                    "IMAGES/Menus/GamePlay/VasebreakerLeft.png",
-                    "IMAGES/Menus/GamePlay/Vasebreaker.png",
-                    "IMAGES/Menus/GamePlay/VasebreakerRight.png"
+                    "IMAGES/Menus/MiniGame/VaseBreakerLeft.png",
+                    "IMAGES/Menus/MiniGame/VaseBreaker.png",
+                    "IMAGES/Menus/MiniGame/VaseBreakerRight.png"
                 );
 
             case "I, Zombie":
@@ -1414,19 +1419,6 @@ public class GamePlayScreen implements Screen {
                 gameContext.getTimeManager().advanceTime(1);
                 gameEngine.update(TICK_DURATION);
                 timeAccumulator -= TICK_DURATION;
-            }
-        }
-
-        // نمایش پنجره برد یا باخت فقط یک بار
-        if (gameContext.isGameEnded() && !resultOverlayShown) {
-            resultOverlayShown = true;
-
-            if (gameContext.isPlayerWon()) {
-                winLoseOverlay.showWin();
-                Audio.playMusic("music/winmusic", false);
-            } else {
-                winLoseOverlay.showLose();
-                Audio.playMusic("music/losemusic", false);
             }
         }
 

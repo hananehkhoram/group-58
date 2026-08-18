@@ -107,6 +107,18 @@ public class TravelMenuScreen implements Screen {
         TextButton beghouledButton =
             new TextButton("Beghouled", skin, "purple");
 
+        vaseBreakerButton.addListener(
+            new ChangeListener() {
+                @Override
+                public void changed(
+                    ChangeEvent event,
+                    Actor actor
+                ) {
+                    game.showVaseBreaker();
+                }
+            }
+        );
+
         Table miniGameRow = new Table();
 
         miniGameRow.add(vaseBreakerButton)
