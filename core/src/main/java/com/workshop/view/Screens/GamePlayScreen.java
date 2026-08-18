@@ -47,6 +47,9 @@ import com.workshop.controller.MenuManager;
 import com.workshop.controller.commands.Planting;
 import com.workshop.model.plants.Plant;
 import com.workshop.view.widgets.PlantCardActor;
+import com.workshop.view.gameplay.VaseAnimationLayer;
+import com.workshop.model.level.LevelType;
+import com.workshop.view.gameplay.DroppedSeedLayer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,6 +128,17 @@ public class GamePlayScreen implements Screen {
 
     private boolean dialogueBlocking = false;
     private boolean endDialogueShown = false;
+
+    //===========================TEST=============================
+
+    private static final String NORMAL_VASE_PAM =
+        "768/.../VASE_NORMAL/VASE_NORMAL.PAM";
+
+    private static final String PLANT_VASE_PAM =
+        "768/.../VASE_PLANT/VASE_PLANT.PAM";
+
+    private static final String GARGANTUAR_VASE_PAM =
+        "768/.../VASE_GARGANTUAR/VASE_GARGANTUAR.PAM";
 
 
     public GamePlayScreen(
@@ -283,6 +297,36 @@ public class GamePlayScreen implements Screen {
             );
 
         stage.addActor(waterLayer);
+
+        if (level.getLevelType() == LevelType.Vase_MG) {
+
+            VaseAnimationLayer vaseAnimationLayer =
+                new VaseAnimationLayer(
+                    gameContext,
+                    gameEngine,
+                    getGridX(),
+                    getGridY(),
+                    getGridWidth(),
+                    getGridHeight()
+                );
+
+            stage.addActor(vaseAnimationLayer);
+        }
+
+        DroppedSeedLayer droppedSeedLayer =
+            new DroppedSeedLayer(
+                gameContext,
+                gameEngine,
+                getGridX(),
+                getGridY(),
+                getGridWidth(),
+                getGridHeight(),
+                this::selectDroppedSeed
+            );
+
+        stage.addActor(
+            droppedSeedLayer
+        );
 
         PlantAnimationLayer plantAnimationLayer =
             new PlantAnimationLayer(
@@ -459,11 +503,12 @@ public class GamePlayScreen implements Screen {
         // --- دیالوگ شروع مرحله (اختیاری) و بعد از آن، منوی آغاز مرحله ---
         List<DialogueLine> introDialogue = level.getIntroDialogue();
 
+        buildSeedBank(skin);
+        setupPlantingClick();
+
         if (introDialogue != null && !introDialogue.isEmpty()) {
             dialogueBlocking = true;
 
-        buildSeedBank(skin);
-        setupPlantingClick();
 
         Toast.showMission(
             stage,
@@ -779,9 +824,9 @@ public class GamePlayScreen implements Screen {
 
             case "Vasebreaker":
                 return new BackgroundPaths(
-                    "IMAGES/Menus/MiniGame/VaseBreakerLeft.png",
-                    "IMAGES/Menus/MiniGame/VaseBreaker.png",
-                    "IMAGES/Menus/MiniGame/VaseBreakerRight.png"
+                    "IMAGES/Menus/MiniGame/VaseSmasherLeft.png",
+                    "IMAGES/Menus/MiniGame/VaseSmasher.png",
+                    "IMAGES/Menus/MiniGame/VaseSmasherRight.png"
                 );
 
             case "I, Zombie":
@@ -1253,8 +1298,19 @@ public class GamePlayScreen implements Screen {
                 + " cost=" + selectedPlantForPlacement.getSunCost()
         );
 
-        if (gameContext.getSunAmount()
-            < selectedPlantForPlacement.getSunCost()) {
+        boolean usingHeldSeed =
+            gameContext.getHeldSeed() != null
+                && gameContext
+                .getHeldSeed()
+                .equalsIgnoreCase(
+                    selectedPlantForPlacement
+                        .getName()
+                );
+
+        if (!usingHeldSeed
+            && gameContext.getSunAmount()
+            < selectedPlantForPlacement
+            .getSunCost()) {
 
             Toast.showError(
                 stage,
@@ -1477,6 +1533,40 @@ public class GamePlayScreen implements Screen {
             && UserManager.getInstance().getCurrentUser().isGridEnabled()) {
 
             drawDebugGrid();
+        }
+    }
+
+    private void selectDroppedSeed(
+        String plantName
+    ) {
+        try {
+            Plant plant =
+                gameContext
+                    .getPlantFactory()
+                    .create(plantName);
+
+            selectedPlantForPlacement =
+                plant;
+
+            for (PlantCardActor card
+                : seedBankCards) {
+
+                card.setFocused(false);
+            }
+
+            showPlantOnMouse(
+                plant
+            );
+
+        } catch (Exception e) {
+            gameContext.setHeldSeed(null);
+
+            Gdx.app.error(
+                "VaseSeed",
+                "Could not pick plant: "
+                    + plantName,
+                e
+            );
         }
     }
 

@@ -153,20 +153,34 @@ public class GameEngine {
     }
 
     private void updateZombies(double deltaTime) {
-        List<Zombie> deathsThisTick = new ArrayList<>();
 
-        Iterator<Zombie> iterator =
-            ctx.getAliveZombies().iterator();
+        List<Zombie> deathsThisTick =
+            new ArrayList<>();
+
+        List<Zombie> zombiesSnapshot =
+            new ArrayList<>(
+                ctx.getAliveZombies()
+            );
 
         IZombieManager iZombieManager =
             getIZombieManager();
 
-        while (iterator.hasNext()) {
-            Zombie zombie = iterator.next();
+        for (Zombie zombie : zombiesSnapshot) {
 
+            // ممکن است قبلاً توسط اتفاق دیگری حذف شده باشد
+            if (!ctx.getAliveZombies().contains(zombie)) {
+                continue;
+            }
 
-            zombie.update(ctx, deltaTime);
+            zombie.update(
+                ctx,
+                deltaTime
+            );
 
+            // ممکن است update باعث حذفش شده باشد
+            if (!ctx.getAliveZombies().contains(zombie)) {
+                continue;
+            }
 
             if (iZombieManager != null
                 && !zombie.isDead()
@@ -177,17 +191,20 @@ public class GameEngine {
                     zombie.getRow()
                 );
 
-                iterator.remove();
+                ctx.getAliveZombies()
+                    .remove(zombie);
+
                 continue;
             }
-
 
             if (iZombieManager == null
                 && !zombie.isMovingBackward()
                 && zombie.getX() <= LOSS_X) {
 
                 LawnMower mower =
-                    lawnMowers[(int) zombie.getY()];
+                    lawnMowers[
+                        (int) zombie.getY()
+                        ];
 
                 if (!mower.isAvailable()) {
                     ctx.triggerPlayerLoss();
@@ -196,41 +213,55 @@ public class GameEngine {
 
                 if (!mower.isActivated()) {
                     mower.activate();
-                    ctx.playSound("sfx:music/lawnmower");
+
+                    ctx.playSound(
+                        "sfx:music/lawnmower"
+                    );
                 }
             }
 
             if (zombie.isDead()) {
+
                 for (
                     Behaviors behavior
                     : zombie.getBehaviors().values()
                 ) {
-                    behavior.onDeath(zombie, ctx);
+                    behavior.onDeath(
+                        zombie,
+                        ctx
+                    );
                 }
 
                 LootItem.tryDropLoot(
                     ctx,
-                    (int) Math.floor(zombie.getX()),
+                    (int) Math.floor(
+                        zombie.getX()
+                    ),
                     zombie.getRow()
                 );
 
-                iterator.remove();
+                ctx.getAliveZombies()
+                    .remove(zombie);
 
                 ctx.incrementZombieKills();
 
-                deathsThisTick.add(zombie);
+                deathsThisTick.add(
+                    zombie
+                );
 
                 ctx.recordZombieKillTick();
 
-
                 if (iZombieManager == null) {
+
                     boolean noMowerLeftInRow =
                         !lawnMowers[
                             (int) zombie.getY()
                             ].isAvailable();
 
                     if (noMowerLeftInRow
-                        && Math.floor(zombie.getX()) == 0) {
+                        && Math.floor(
+                        zombie.getX()
+                    ) == 0) {
 
                         ctx.recordAlmostLostKill();
                     }
@@ -239,7 +270,10 @@ public class GameEngine {
         }
 
         com.workshop.controller.ScoringManager
-            .onZombiesDied(ctx, deathsThisTick);
+            .onZombiesDied(
+                ctx,
+                deathsThisTick
+            );
     }
 
     private void updateLawnMowers(double deltaTime) {
@@ -268,20 +302,56 @@ public class GameEngine {
     }
 
     private void updatePlants(double deltaTime) {
-        Iterator<Plant> it = ctx.getAlivePlants().iterator();
-        while (it.hasNext()) {
-            Plant p = it.next();
-            PlantActivator.activate(p, ctx, this);
-            if (p.getName() != null && p.getName().equalsIgnoreCase("Imitater")) {
+
+        List<Plant> plantsSnapshot =
+            new ArrayList<>(
+                ctx.getAlivePlants()
+            );
+
+        for (Plant p : plantsSnapshot) {
+
+            // ممکنه گیاه قبلاً توسط ability دیگری حذف شده باشه
+            if (!ctx.getAlivePlants().contains(p)) {
                 continue;
             }
+
+            PlantActivator.activate(
+                p,
+                ctx,
+                this
+            );
+
+            // خود ability ممکنه همین گیاه رو حذف کرده باشه
+            if (!ctx.getAlivePlants().contains(p)) {
+                continue;
+            }
+
+            if (p.getName() != null
+                && p.getName()
+                .equalsIgnoreCase("Imitater")) {
+
+                continue;
+            }
+
             if (p.getHp() <= 0) {
-                ctx.getPlantGrid()[p.getRow()][p.getCol()] = null;
-                if (ctx.getLevel().getLevelType() == com.workshop.model.level.LevelType.Beghouled_MG
+
+                ctx.getPlantGrid()
+                    [p.getRow()]
+                    [p.getCol()] = null;
+
+                if (ctx.getLevel().getLevelType()
+                    == LevelType.Beghouled_MG
                     && ctx.getBeghouldManager() != null) {
-                    ctx.getBeghouldManager().markCrater(p.getRow(), p.getCol());
+
+                    ctx.getBeghouldManager()
+                        .markCrater(
+                            p.getRow(),
+                            p.getCol()
+                        );
                 }
-                it.remove();
+
+                ctx.getAlivePlants().remove(p);
+
                 ctx.incrementPlantsLost(p);
             }
         }

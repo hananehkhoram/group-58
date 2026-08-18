@@ -11,10 +11,10 @@ import java.util.Map;
 public final class PlantAnimationResolver {
 
     private static final String PLANT_ROOT =
-        "IMAGES/768/INITIAL/PLANT";
+        "IMAGES/768";
 
     private static final String PAM_PREFIX =
-        "768/INITIAL/PLANT";
+        "768";
 
     private final Map<String, String> pamPaths =
         new HashMap<>();
@@ -128,6 +128,15 @@ public final class PlantAnimationResolver {
             if (!"pam".equalsIgnoreCase(
                 child.extension()
             )) {
+                continue;
+            }
+
+            String normalizedPath =
+                childPath
+                    .replace('\\', '/')
+                    .toUpperCase();
+
+            if (!normalizedPath.contains("/PLANT/")) {
                 continue;
             }
 

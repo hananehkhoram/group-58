@@ -377,10 +377,10 @@ public class LevelFactory {
             vasePool.add(new Vase(VaseContent.EMPTY, null));
         }
         for (int i = 0; i < peashooterCount; i++) {
-            vasePool.add(new Vase(VaseContent.PLANT, "peashooter"));
+            vasePool.add(new Vase(VaseContent.PLANT, "Peashooter"));
         }
         for (int i = 0; i < squashCount; i++) {
-            vasePool.add(new Vase(VaseContent.PLANT, "squash"));
+            vasePool.add(new Vase(VaseContent.PLANT, "Squash"));
         }
         for (int i = 0; i < melonCount; i++) {
             vasePool.add(new Vase(VaseContent.PLANT, "Winter Melon"));
