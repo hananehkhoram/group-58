@@ -8,7 +8,6 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.utils.Align;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.plants.Plant;
 import pvz.libpvz.pam.PamPlayer;
@@ -52,12 +51,15 @@ public class PlantCardActor extends Table {
 
     public void rebuildUI() {
         clearChildren();
+        clearListeners();
         top();
 
-        if (skin.has("SeedPacketBorder", Drawable.class)) {
-            setBackground(skin.getDrawable("SeedPacketBorder"));
-        } else if (skin.has("PlantAlmanacBorder", Drawable.class)) {
-            setBackground(skin.getDrawable("PlantAlmanacBorder"));
+        if (mode == Mode.GRID) {
+            if (skin.has("SeedPacketBorder", Drawable.class)) {
+                setBackground(skin.getDrawable("SeedPacketBorder"));
+            } else if (skin.has("PlantAlmanacBorder", Drawable.class)) {
+                setBackground(skin.getDrawable("PlantAlmanacBorder"));
+            }
         }
 
         Table pamContainer = new Table() {
@@ -88,27 +90,74 @@ public class PlantCardActor extends Table {
             }
         };
 
-        float pamHeight = (mode == Mode.SLOT) ? 50f : 65f;
-        add(pamContainer).size(90, pamHeight).padTop(4).row();
-
         if (mode == Mode.GRID) {
+
+            add(pamContainer)
+                .size(90f, 65f)
+                .padTop(4f)
+                .row();
+
             Table footerTable = new Table();
 
-            Label lvlLbl = createSafeLabel("LVL " + plant.getLevel(), "big");
+            Label lvlLbl = createSafeLabel(
+                "LVL " + plant.getLevel(),
+                "big"
+            );
             lvlLbl.setFontScale(0.32f);
-            footerTable.add(lvlLbl).left().expandX();
 
-            Label sunLbl = createSafeLabel(String.valueOf(plant.getSunCost()), "big");
+            footerTable.add(lvlLbl)
+                .left()
+                .expandX();
+
+            Label sunLbl = createSafeLabel(
+                String.valueOf(plant.getSunCost()),
+                "big"
+            );
+
             sunLbl.setFontScale(0.45f);
-            sunLbl.setColor(Color.YELLOW);
+            sunLbl.setColor(Color.WHITE);
+
             footerTable.add(sunLbl).right();
 
-            add(footerTable).fillX().padLeft(6).padRight(6).padBottom(4).row();
+            add(footerTable)
+                .fillX()
+                .padLeft(6f)
+                .padRight(6f)
+                .padBottom(4f)
+                .row();
+
         } else {
-            Label sunLbl = createSafeLabel(String.valueOf(plant.getSunCost()), "big");
-            sunLbl.setFontScale(0.42f);
-            sunLbl.setColor(Color.YELLOW);
-            add(sunLbl).padBottom(2).row();
+
+            Table slotRow = new Table();
+
+            slotRow.add(pamContainer)
+                .size(62f, 58f)
+                .left();
+
+            Label sunLbl = createSafeLabel(
+                String.valueOf(plant.getSunCost()),
+                "big"
+            );
+
+            sunLbl.setFontScale(0.58f);
+            sunLbl.setColor(Color.WHITE);
+
+            slotRow.add(sunLbl)
+                .width(36f)
+                .right()
+                .padRight(4f);
+
+            slotRow.add(pamContainer)
+                .size(62f, 58f)
+                .left();
+
+            slotRow.add().expandX();
+
+            slotRow.add(sunLbl)
+                .right();
+
+            add(slotRow)
+                .size(250f, 58f);
         }
 
         if (isBoosted) {
@@ -136,4 +185,5 @@ public class PlantCardActor extends Table {
     private Label createSafeLabel(String text, String styleName) {
         return skin.has(styleName, Label.LabelStyle.class) ? new Label(text, skin, styleName) : new Label(text, skin);
     }
+
 }

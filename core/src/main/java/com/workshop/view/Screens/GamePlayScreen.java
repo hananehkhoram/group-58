@@ -5,9 +5,12 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
@@ -26,6 +29,19 @@ import com.badlogic.gdx.math.MathUtils;
 import com.workshop.view.gameplay.ZombieIntroLayer;
 import com.workshop.view.gameplay.ZombieAnimationLayer;
 import com.workshop.view.gameplay.SunAnimationLayer;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+
+import com.workshop.view.gameplay.PlantActor;
+import com.workshop.view.gameplay.PlantAnimationResolver;
+import com.workshop.view.gameplay.PlantAnimationSpec;
+import com.workshop.controller.MenuManager;
+import com.workshop.controller.commands.Planting;
+import com.workshop.model.plants.Plant;
+import com.workshop.view.widgets.PlantCardActor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GamePlayScreen implements Screen {
 
@@ -79,6 +95,25 @@ public class GamePlayScreen implements Screen {
 
     private static final float MISSION_DISPLAY_TIME = 6f;
     private float screenElapsedTime = 0f;
+    private final List<PlantCardActor> seedBankCards =
+        new ArrayList<>();
+
+    private Plant selectedPlantForPlacement;
+    private int hoveredPlantRow = -1;
+    private int hoveredPlantColumn = -1;
+    private PlantActor mousePlantPreview;
+
+    private final PlantAnimationResolver plantPreviewResolver =
+        new PlantAnimationResolver();
+
+    private final Vector2 mouseStagePosition =
+        new Vector2();
+
+    private final Planting plantingCommand;
+
+    private Table seedBankContainer;
+
+    private Table seedBankTable;
 
     public GamePlayScreen(
         GameContext gameContext,
@@ -89,6 +124,15 @@ public class GamePlayScreen implements Screen {
 
         this.gameContext = gameContext;
         this.gameEngine = gameContext.getGameEngine();
+
+        MenuManager plantingMenuManager =
+            new MenuManager(gameContext);
+
+        plantingMenuManager.setGameEngine(gameEngine);
+
+        this.plantingCommand =
+            new Planting(plantingMenuManager);
+
         Season season = gameContext.getSeason();
         Level level = gameContext.getLevel();
 
@@ -351,6 +395,9 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(sunAnimationLayer);
 
+        buildSeedBank(skin);
+        setupPlantingClick();
+
         Toast.showMission(
             stage,
             skin,
@@ -420,7 +467,73 @@ public class GamePlayScreen implements Screen {
         stage.addActor(rightBackground);
     }
 
+    private void buildSeedBank(Skin skin) {
+        seedBankTable = new Table();
+        seedBankTable.setFillParent(true);
+        seedBankTable.left().top();
 
+        seedBankTable.padLeft(110f);
+        seedBankTable.padTop(20f);
+
+        // مستطیل بزرگ پشت کارت‌ها
+        Table seedBankPanel = new Table();
+        seedBankPanel.top();
+
+        if (skin.has("SeedPacketBorder", Drawable.class)) {
+            seedBankPanel.setBackground(
+                skin.getDrawable("SeedPacketBorder")
+            );
+        }
+
+        Table cardsTable = new Table();
+        cardsTable.top();
+
+        seedBankCards.clear();
+
+        for (Plant plant : gameContext.getActivePlants()) {
+
+            PlantCardActor card = new PlantCardActor(
+                plant,
+                Textures.getPamPlayer(),
+                Textures.getInstance(),
+                skin,
+                PlantCardActor.Mode.SLOT
+            );
+
+            seedBankCards.add(card);
+
+            card.setOnClick(clickedCard -> {
+                selectPlant(clickedCard);
+            });
+
+            cardsTable.add(card)
+                .size(100f, 58f)
+                .padBottom(60f)
+                .row();
+        }
+
+        seedBankPanel.add(cardsTable)
+            .top()
+            .padTop(15f);
+
+        seedBankTable.add(seedBankPanel)
+            .width(125f)
+            .height(worldHeight - 40f)
+            .top();
+
+        stage.addActor(seedBankTable);
+    }
+
+    private void selectPlant(PlantCardActor clickedCard) {
+        selectedPlantForPlacement =
+            clickedCard.getPlant();
+
+        for (PlantCardActor card : seedBankCards) {
+            card.setFocused(card == clickedCard);
+        }
+
+        showPlantOnMouse(selectedPlantForPlacement);
+    }
 
     private BackgroundPaths getBackgroundPaths(Season season) {
 
@@ -798,6 +911,237 @@ public class GamePlayScreen implements Screen {
         }
     }
 
+    private void showPlantOnMouse(Plant plant) {
+        if (mousePlantPreview != null) {
+            mousePlantPreview.remove();
+            mousePlantPreview = null;
+        }
+
+        PlantAnimationSpec spec =
+            plantPreviewResolver.resolve(
+                plant.getName()
+            );
+
+        if (spec == null) {
+            return;
+        }
+
+        mousePlantPreview = new PlantActor(
+            plant,
+            spec,
+            Textures.getPamPlayer()
+        );
+
+        mousePlantPreview.setTouchable(
+            Touchable.disabled
+        );
+
+        stage.addActor(mousePlantPreview);
+    }
+
+    private void updatePlantMousePreview() {
+        if (mousePlantPreview == null) {
+            return;
+        }
+
+        mouseStagePosition.set(
+            Gdx.input.getX(),
+            Gdx.input.getY()
+        );
+
+        stage.screenToStageCoordinates(
+            mouseStagePosition
+        );
+
+        mousePlantPreview.setPosition(
+            mouseStagePosition.x,
+            mouseStagePosition.y
+        );
+    }
+
+    private void setupPlantingClick() {
+        stage.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+
+                if (selectedPlantForPlacement == null) {
+                    return;
+                }
+
+                float stageX = event.getStageX();
+                float stageY = event.getStageY();
+
+                if (stageX < getGridX()
+                    || stageX >= getGridX() + getGridWidth()
+                    || stageY < getGridY()
+                    || stageY >= getGridY() + getGridHeight()) {
+
+                    return;
+                }
+
+                int column = (int) (
+                    (stageX - getGridX()) / getCellWidth()
+                );
+
+                int row = (int) (
+                    (getGridY() + getGridHeight() - stageY)
+                        / getCellHeight()
+                );
+
+                plantSelectedPlant(column, row);
+            }
+        });
+    }
+
+    private void plantSelectedPlant(int column, int row) {
+        if (selectedPlantForPlacement == null) {
+            return;
+        }
+
+        Gdx.app.log(
+            "PlantingUI",
+            "TRY " + selectedPlantForPlacement.getName()
+                + " row=" + row
+                + " col=" + column
+                + " sun=" + gameContext.getSunAmount()
+                + " cost=" + selectedPlantForPlacement.getSunCost()
+        );
+
+        if (gameContext.getSunAmount()
+            < selectedPlantForPlacement.getSunCost()) {
+
+            Toast.showError(
+                stage,
+                PvzSkin.get(),
+                "Not enough sun!"
+            );
+
+            return;
+        }
+
+        Plant before =
+            gameContext.getPlantGrid()[row][column];
+
+        plantingCommand.execute(
+            new String[] {
+                selectedPlantForPlacement.getName(),
+                String.valueOf(column),
+                String.valueOf(row)
+            }
+        );
+
+        Plant after =
+            gameContext.getPlantGrid()[row][column];
+
+        Gdx.app.log(
+            "PlantingUI",
+            "AFTER = " + (after == null ? "null" : after.getName())
+        );
+
+        if (after != null && after != before) {
+            clearPlantSelection();
+            updateHud();
+        }
+    }
+
+    private void clearPlantSelection() {
+        selectedPlantForPlacement = null;
+
+        if (mousePlantPreview != null) {
+            mousePlantPreview.remove();
+            mousePlantPreview = null;
+        }
+
+        for (PlantCardActor card : seedBankCards) {
+            card.setFocused(false);
+        }
+    }
+
+    private void updatePlantingHover() {
+        if (selectedPlantForPlacement == null) {
+            hoveredPlantRow = -1;
+            hoveredPlantColumn = -1;
+            return;
+        }
+
+        mouseStagePosition.set(
+            Gdx.input.getX(),
+            Gdx.input.getY()
+        );
+
+        stage.screenToStageCoordinates(mouseStagePosition);
+
+        float x = mouseStagePosition.x;
+        float y = mouseStagePosition.y;
+
+        if (x < getGridX()
+            || x >= getGridX() + getGridWidth()
+            || y < getGridY()
+            || y >= getGridY() + getGridHeight()) {
+
+            hoveredPlantRow = -1;
+            hoveredPlantColumn = -1;
+            return;
+        }
+
+        hoveredPlantColumn =
+            (int) ((x - getGridX()) / getCellWidth());
+
+        hoveredPlantRow =
+            (int) (
+                (getGridY() + getGridHeight() - y)
+                    / getCellHeight()
+            );
+    }
+
+    private void drawPlantingHighlight() {
+        if (hoveredPlantRow < 0
+            || hoveredPlantColumn < 0) {
+            return;
+        }
+
+        float x =
+            getGridX()
+                + hoveredPlantColumn * getCellWidth();
+
+        float y =
+            getGridY()
+                + getGridHeight()
+                - (hoveredPlantRow + 1) * getCellHeight();
+
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(
+            GL20.GL_SRC_ALPHA,
+            GL20.GL_ONE_MINUS_SRC_ALPHA
+        );
+
+        shapeRenderer.setProjectionMatrix(
+            stage.getCamera().combined
+        );
+
+        shapeRenderer.begin(
+            ShapeRenderer.ShapeType.Filled
+        );
+
+        shapeRenderer.setColor(
+            1f,
+            1f,
+            1f,
+            0.20f
+        );
+
+        shapeRenderer.rect(
+            x,
+            y,
+            getCellWidth(),
+            getCellHeight()
+        );
+
+        shapeRenderer.end();
+
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+    }
+
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
@@ -843,6 +1187,12 @@ public class GamePlayScreen implements Screen {
         }
 
         updateHud();
+        updatePlantMousePreview();
+        updatePlantingHover();
+
+        for (PlantCardActor card : seedBankCards) {
+            card.updateAnimation(delta);
+        }
 
         if (screenElapsedTime >= MISSION_DISPLAY_TIME
             && !gameContext.isGameEnded()) {
@@ -869,6 +1219,7 @@ public class GamePlayScreen implements Screen {
         Textures.getInstance().update();
 
         stage.draw();
+        drawPlantingHighlight();
 
         if (!pauseOverlay.isVisible()
             && !winLoseOverlay.isVisible()

@@ -35,6 +35,26 @@ public final class PlantAnimationResolver {
         }
 
         scanDirectory(root, PAM_PREFIX);
+
+        List<String> sunClips =
+            Textures.getPamPlayer().clips(
+                "768/INITIAL/EFFECTS/SUN/SUN.PAM"
+            );
+
+        Gdx.app.log(
+            "SUN TEST",
+            "SUN clips: " + sunClips
+        );
+
+        List<String> radioactiveClips =
+            Textures.getPamPlayer().clips(
+                "768/FULL/EFFECTS/SUN_BOMB/SUN_BOMB.PAM"
+            );
+
+        Gdx.app.log(
+            "SUN TEST",
+            "SUN_BOMB clips: " + radioactiveClips
+        );
     }
 
     public PlantAnimationSpec resolve(String plantName) {
@@ -108,13 +128,6 @@ public final class PlantAnimationResolver {
             if (!"pam".equalsIgnoreCase(
                 child.extension()
             )) {
-                continue;
-            }
-
-            String normalizedPath =
-                childPath.replace('\\', '/').toUpperCase();
-
-            if (!normalizedPath.contains("/ZOMBIE/")) {
                 continue;
             }
 
