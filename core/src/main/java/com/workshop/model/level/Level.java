@@ -21,6 +21,10 @@ public class Level {
     private List<Plant> bannedPlants = new ArrayList<>();
     private List<Plant> forcedPlants = new ArrayList<>();
 
+    private List<DialogueLine> introDialogue = new ArrayList<>();
+    private List<DialogueLine> winDialogue = new ArrayList<>();
+    private List<DialogueLine> loseDialogue = new ArrayList<>();
+
     private List<Plant> conveyorPlantPool = new ArrayList<>();
 
     private int maxWaterColumn = 5;
@@ -154,6 +158,30 @@ public class Level {
     public void setSunProductionMode(boolean b) { this.isSunProductionMode = b; }
     public int getMaxWaterColumn() {
         return maxWaterColumn;
+    }
+
+    public List<DialogueLine> getIntroDialogue() {
+        return introDialogue;
+    }
+
+    public void setIntroDialogue(List<DialogueLine> introDialogue) {
+        this.introDialogue = introDialogue != null ? introDialogue : new ArrayList<>();
+    }
+
+    public List<DialogueLine> getWinDialogue() {
+        return winDialogue;
+    }
+
+    public void setWinDialogue(List<DialogueLine> winDialogue) {
+        this.winDialogue = winDialogue != null ? winDialogue : new ArrayList<>();
+    }
+
+    public List<DialogueLine> getLoseDialogue() {
+        return loseDialogue;
+    }
+
+    public void setLoseDialogue(List<DialogueLine> loseDialogue) {
+        this.loseDialogue = loseDialogue != null ? loseDialogue : new ArrayList<>();
     }
 }
 

@@ -56,6 +56,7 @@ public class GameContext {
     private DataManager dm;
     private PlantFactory plantFactory;
     private final Deque<String> pendingAnnouncements = new ArrayDeque<>();
+    private final Deque<Integer> pendingWindRows = new ArrayDeque<>();
 
     public void announce(String message) {
         if (message != null && !message.isBlank()) {
@@ -63,8 +64,33 @@ public class GameContext {
         }
     }
 
+
+    public void announceWindRow(int row) {
+        pendingWindRows.addLast(row);
+    }
+
+
+    public Integer pollWindRow() {
+        return pendingWindRows.pollFirst();
+    }
+
     public String pollAnnouncement() {
         return pendingAnnouncements.pollFirst();
+    }
+
+    // Same idea as pendingAnnouncements, but for one-shot sound cues (e.g. the lawn
+    // mower starting up) — model code pushes a sound key here, the active gameplay
+    // screen drains it and actually plays the audio.
+    private final Deque<String> pendingSoundCues = new ArrayDeque<>();
+
+    public void playSound(String soundKey) {
+        if (soundKey != null && !soundKey.isBlank()) {
+            pendingSoundCues.addLast(soundKey);
+        }
+    }
+
+    public String pollSoundCue() {
+        return pendingSoundCues.pollFirst();
     }
     private boolean isSetupPhase = false;
     private LevelManager levelManager;
@@ -232,7 +258,7 @@ public class GameContext {
             if (levelIndex + 1 < levelsInSeason.size()) {
                 currentUser.unlockLevel(levelsInSeason.get(levelIndex + 1).getName());
                 NewsManager.addNews("New Level In Season","You unlocked new level: "+
-                        levelsInSeason.get(levelIndex + 1).getName()+" in seasson: "+currentUser.getLastSeason());
+                    levelsInSeason.get(levelIndex + 1).getName()+" in seasson: "+currentUser.getLastSeason());
             } else {
                 Season nextSeason = DataManager.getInstance().seasons.getNextSeason(this.season);
                 if (nextSeason != null && !nextSeason.getLevels().isEmpty()) {
@@ -270,7 +296,7 @@ public class GameContext {
         }
         DataManager.getInstance().saveUser();
         Console.
-                showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
+            showMessage("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
     }
 
     public void triggerPlayerLoss() {

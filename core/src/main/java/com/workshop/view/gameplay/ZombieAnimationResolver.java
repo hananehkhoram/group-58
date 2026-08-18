@@ -279,6 +279,21 @@ public final class ZombieAnimationResolver {
         String wantedToken =
             requestedParts[requestedParts.length - 1];
 
+        // پاس اول: توکنِ کاملاً یکسان (مثلاً "SNORKELER" == "SNORKELER")
+        String exactTokenMatch = findByToken(wantedToken, true);
+
+        if (exactTokenMatch != null) {
+            return exactTokenMatch;
+        }
+
+        // پاس دوم، انعطاف‌پذیرتر: پیشوند/شامل‌بودن (مثلاً اسمِ مدلِ زامبی
+        // "Snorkel" ولی فایل واقعی‌ش "...SNORKELER.PAM" است — یکی زیرمجموعه‌ی
+        // دیگریه، دقیقاً یکی نیست).
+        return findByToken(wantedToken, false);
+    }
+
+    private String findByToken(String wantedToken, boolean exact) {
+
         for (Map.Entry<String, String> entry
             : pamPaths.entrySet()) {
 
@@ -313,12 +328,19 @@ public final class ZombieAnimationResolver {
 
             for (String token : tokens) {
 
-                if (token.equals(wantedToken)) {
+                boolean matches = exact
+                    ? token.equals(wantedToken)
+                    : (wantedToken.length() >= 4
+                       && token.length() >= 4
+                       && (token.startsWith(wantedToken)
+                           || wantedToken.startsWith(token)));
+
+                if (matches) {
 
                     Gdx.app.log(
                         "ZombieAnimationResolver",
-                        "Matched "
-                            + pamName
+                        (exact ? "Matched " : "Loosely matched ")
+                            + wantedToken
                             + " -> "
                             + entry.getValue()
                     );

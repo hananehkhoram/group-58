@@ -80,12 +80,27 @@ public class PlantCardActor extends Table {
                 String rawName = plant.getName().toUpperCase().replace(" ", "").replace("-", "");
                 if (rawName.equalsIgnoreCase("PRIMALPOTATOMINE")) rawName = "PRIMAL_POTATOMINE";
 
-                try {
-                    pamPlayer.draw(batch, "PLANT/" + rawName + "/" + rawName + ".PAM", "idle", animTime, drawX, drawY, true);
-                } catch (Exception e) {
-                    TextureRegion reg = Textures.regionOrNull("PLANT_" + plant.getName().toUpperCase().replace(" ", "_"));
-                    if (reg != null) batch.draw(reg, drawX - 25, drawY, 50, 50);
+                String pamPath = "PLANT/" + rawName + "/" + rawName + ".PAM";
+                String[] clips = {"idle", "idle_stage1", "intro", "animation", "anim", "attack", "idle1_1", "stage1_spawn"};
+                boolean drawn = false;
+
+                for (String clip : clips) {
+                    try {
+                        pamPlayer.draw(batch, pamPath, clip, animTime, drawX, drawY, true);
+                        drawn = true;
+                        break;
+                    } catch (Exception ignored) {
+                    }
                 }
+
+                if (!drawn) {
+                    try {
+                        TextureRegion reg = Textures.regionOrNull("PLANT_" + plant.getName().toUpperCase().replace(" ", "_"));
+                        if (reg != null) batch.draw(reg, drawX - 25, drawY, 50, 50);
+                    } catch (Exception ignored) {
+                    }
+                }
+
                 batch.setColor(Color.WHITE);
             }
         };

@@ -268,8 +268,9 @@ public class CollectionScreen implements Screen {
                 super.draw(batch, parentAlpha);
                 textureBank.update();
 
+                // 1. Render Plant Animation
                 if (!isUnlocked) {
-                    batch.setColor(0.3f, 0.3f, 0.3f, 1f);
+                    batch.setColor(0.35f, 0.35f, 0.35f, 0.85f); // Dark tint for locked plant
                 } else {
                     batch.setColor(Color.WHITE);
                 }
@@ -281,46 +282,66 @@ public class CollectionScreen implements Screen {
                 }
                 float drawX = getX() + getWidth() / 2f;
                 float drawY = getY() + 12f * scale;
-                boolean drawn = false;
-                String[] possiblePaths = {
-                    "PLANT/" + folderName + "/" + folderName + ".PAM"
-                };
 
-                for (String pamPath : possiblePaths) {
-                    if (pamPath.equals("PLANT/CATTAILMINT/CATTAILMINT.PAM") ||
-                        pamPath.equals("PLANT/CATTAIL/CATTAIL.PAM")) {
-                        continue;
-                    }
-                    try {
-                        pamPlayer.draw(batch, pamPath, "idle", stateTime, drawX, drawY, true);
-                        drawn = true;
-                        break;
-                    } catch (Exception ignored) {
-                    }
-                }
+                String pamPath = "PLANT/" + folderName + "/" + folderName + ".PAM";
+                if (!pamPath.equals("PLANT/CATTAILMINT/CATTAILMINT.PAM") && !pamPath.equals("PLANT/CATTAIL/CATTAIL.PAM")) {
+                    List<String> preferredClips = new ArrayList<>();
 
-                if (!drawn) {
-                    TextureRegion reg = Textures.regionOrNull("PLANT_" + rawName.replace(" ", "_"));
-                    if (reg != null) {
-                        batch.draw(reg, drawX - 30 * scale, drawY, 60 * scale, 60 * scale);
+                    if (folderName.equalsIgnoreCase("SUNSHROOM") || folderName.equalsIgnoreCase("PUFFSHROOM")) {
+                        preferredClips.add("idle_stage1");
+                    } else if (folderName.contains("MINT")) {
+                        preferredClips.add("intro");
+                    } else if (folderName.contains("BUSTER")) {
+                        preferredClips.add("attack");
+                    } else if (folderName.contains("ELECTRICBLUE") || folderName.equalsIgnoreCase("CAULIPOWER")) {
+                        preferredClips.add("idle1_1");
+                    } else if (folderName.contains("KIWIBEAST")) {
+                        preferredClips.add("idle_stage1_");
+                    } else if (folderName.contains("DOOMSHROOM")) {
+                        preferredClips.add("stage1_spawn");
+                    }
+
+                    // Fallback animation clips if the specific one fails
+                    String[] defaultClips = {"idle", "idle_stage1", "intro", "animation", "anim", "attack", "idle1_1", "stage1_spawn"};
+                    for (String c : defaultClips) {
+                        if (!preferredClips.contains(c)) {
+                            preferredClips.add(c);
+                        }
+                    }
+
+                    boolean drawn = false;
+                    for (String clip : preferredClips) {
+                        try {
+                            pamPlayer.draw(batch, pamPath, clip, stateTime, drawX, drawY, true);
+                            drawn = true;
+                            break;
+                        } catch (Exception ignored) {
+                        }
+                    }
+
+                    if (!drawn) {
+                        try {
+                            TextureRegion reg = Textures.regionOrNull("PLANT_" + plant.getName().toUpperCase().replace(" ", "_"));
+                            if (reg != null) {
+                                batch.draw(reg, drawX - 25 * scale, drawY, 50 * scale, 50 * scale);
+                            }
+                        } catch (Exception ignored) {
+                        }
                     }
                 }
 
                 batch.setColor(Color.WHITE);
+                if (!isUnlocked) {
+                    String lockPamPath = "768/FULL/UI/LOCK_ANIMS/LOCK_ANIMS.PAM";
+                    try {
+                        pamPlayer.draw(batch, lockPamPath, "locked", stateTime, drawX + 230f, drawY + 60f * scale, true);
+                    } catch (Exception ignored) {
+                    }
+                }
             }
         };
 
         stack.add(pamContainer);
-
-        if (!isUnlocked) {
-            TextureRegion lockRegion = Textures.regionOrNull("image_ui_generic_buttons_hud_zg_locked");
-            if (lockRegion != null) {
-                Image lockImg = new Image(lockRegion);
-                Table lockWrapper = new Table();
-                lockWrapper.add(lockImg).size(30 * scale, 30 * scale).center();
-                stack.add(lockWrapper);
-            }
-        }
 
         card.add(stack).size(130 * scale, 95 * scale).padTop(10 * scale).row();
 

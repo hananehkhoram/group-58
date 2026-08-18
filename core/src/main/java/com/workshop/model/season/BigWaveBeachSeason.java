@@ -16,100 +16,123 @@ import java.util.Random;
 import java.util.Set;
 
 public class BigWaveBeachSeason extends Season{
-        private final Random random = new Random();
+    private final Random random = new Random();
 
-        // ستونی که در حال حاضر مرز آب است (مثلاً اگر ۵ باشد، یعنی ستون‌های ۵ تا آخر آب هستند)
-        private int currentWaterColumn;
+    // ستونی که در حال حاضر مرز آب است (مثلاً اگر ۵ باشد، یعنی ستون‌های ۵ تا آخر آب هستند)
+    private int currentWaterColumn;
 
-        private final Set<GridCell> lowTideCells = new HashSet<>();//شاید زامبی از زیرشون در بیاد
+    private final Set<GridCell> lowTideCells = new HashSet<>();//شاید زامبی از زیرشون در بیاد
 
-        private static final double LOW_TIDE_ZOMBIE_CHANCE = 0.25;
+    private static final double LOW_TIDE_ZOMBIE_CHANCE = 0.25;
 
 
-        public BigWaveBeachSeason(List<Level> levels) {
-                super("Big Wave Beach", levels,3);
+    public BigWaveBeachSeason(List<Level> levels) {
+        super("Big Wave Beach", levels,3);
+    }
+
+    @Override
+    public Set<GridCell> getWaterCells(GameContext ctx) {
+        Set<GridCell> cells = new HashSet<>();
+        int rows = ctx.getLevel().getRows();
+        int cols = ctx.getLevel().getColumns();
+        for (int r = 0; r < rows; r++) {
+            for (int c = currentWaterColumn; c < cols; c++) {
+                cells.add(new GridCell(r, c));
+            }
         }
+        return cells;
+    }
 
-        @Override
-        public Set<GridCell> getWaterCells(GameContext ctx) {
-                Set<GridCell> cells = new HashSet<>();
-                int rows = ctx.getLevel().getRows();
-                int cols = ctx.getLevel().getColumns();
-                for (int r = 0; r < rows; r++) {
-                        for (int c = currentWaterColumn; c < cols; c++) {
-                                cells.add(new GridCell(r, c));
+    @Override
+    public Set<GridCell> getLowTideCells(GameContext ctx) {
+        return lowTideCells;
+    }
+
+    @Override
+    public void onWaveStart(GameContext ctx, int waveNumber, boolean isLastWave) {
+        int totalColumns = ctx.getLevel().getColumns();
+        int maxColumns = ctx.getLevel().getMaxWaterColumn();
+        int prospectiveWaterColumns = 3 + random.nextInt(Math.max(1, maxColumns - 2));
+        int newWaterColumn = totalColumns - prospectiveWaterColumns;
+        this.currentWaterColumn = newWaterColumn;
+        Console.simplePrint("The tide changes! Water now covers columns from " +
+            currentWaterColumn + " to the right.");
+
+        checkPlantsDrowning(ctx);
+        checkLowTideZombies(ctx);
+    }
+
+    @Override
+    public void onLevelStart(GameContext ctx) {
+        this.currentWaterColumn = ctx.getLevel().getColumns() - 3;
+        buildLowTideCells(ctx);
+        Console.simplePrint("Big Wave Beach started. Water starts at column: " +
+            currentWaterColumn + "\n");
+    }
+
+    private void buildLowTideCells(GameContext ctx) {
+        lowTideCells.clear();
+
+        int rows = ctx.getLevel().getRows();
+        int totalColumns = ctx.getLevel().getColumns();
+        int maxWaterColumn = ctx.getLevel().getMaxWaterColumn();
+
+        int deepestWaterColumn = totalColumns - maxWaterColumn;
+        int shallowestWaterColumn = totalColumns - 3;
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = Math.max(0, deepestWaterColumn); c < shallowestWaterColumn; c++) {
+                lowTideCells.add(new GridCell(r, c));
+            }
+        }
+    }
+
+    @Override
+    public boolean isWaterCell(int row, int col, GameContext ctx) {
+        return col >= this.currentWaterColumn;
+    }
+
+    private void checkPlantsDrowning(GameContext ctx) {
+        Plant[][] grid = ctx.getPlantGrid();
+        int rows = ctx.getLevel().getRows();
+        int cols = ctx.getLevel().getColumns();
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                if (isWaterCell(r, c, ctx)) {
+                    Plant plant = grid[r][c];
+                    if (plant != null) {
+                        if (!plant.hasTheTag(Tag.WATER) && !plant.isHasLilyPadUnderneath()) {
+                            Console.simplePrint(plant.getName() +
+                                " drowned at [" + r + "," + c + "]!\n");
+                            grid[r][c] = null;
+                            ctx.getAlivePlants().remove(plant);
                         }
+                    }
                 }
-                return cells;
+            }
         }
+    }
+    private void checkLowTideZombies(GameContext ctx) {
+        for (GridCell cell : lowTideCells) {
+            boolean underWater = isWaterCell(cell.getRow(), cell.getCol(), ctx);
+            if (!underWater) continue;
 
-        @Override
-        public void onWaveStart(GameContext ctx, int waveNumber, boolean isLastWave) {
-                int totalColumns = ctx.getLevel().getColumns();
-                int maxColumns = ctx.getLevel().getMaxWaterColumn();
-                int prospectiveWaterColumns = 3 + random.nextInt(Math.max(1, maxColumns - 2));
-                int newWaterColumn = totalColumns - prospectiveWaterColumns;
-                this.currentWaterColumn = newWaterColumn;
-                Console.simplePrint("The tide changes! Water now covers columns from " +
-                        currentWaterColumn + " to the right.");
-
-                checkPlantsDrowning(ctx);
-                checkLowTideZombies(ctx);
+            if (random.nextDouble() < LOW_TIDE_ZOMBIE_CHANCE) {
+                spawnZombieFromLowTide(ctx, cell.getRow(), cell.getCol());
+            }
         }
+    }
 
-        @Override
-        public void onLevelStart(GameContext ctx) {
-                this.currentWaterColumn = ctx.getLevel().getColumns() - 3;
-                Console.simplePrint("Big Wave Beach started. Water starts at column: " +
-                        currentWaterColumn + "\n");
-        }
+    private void spawnZombieFromLowTide(GameContext ctx, int row, int col) {
+        ZombieFactory zombieFactory = new ZombieFactory(DataManager.getInstance());
+        Zombie zombie = zombieFactory.create("Default");
 
-        @Override
-        public boolean isWaterCell(int row, int col, GameContext ctx) {
-                return col >= this.currentWaterColumn;
-        }
+        zombie.setY(row);
+        zombie.setX(col);
 
-        private void checkPlantsDrowning(GameContext ctx) {
-                Plant[][] grid = ctx.getPlantGrid();
-                int rows = ctx.getLevel().getRows();
-                int cols = ctx.getLevel().getColumns();
-
-                for (int r = 0; r < rows; r++) {
-                        for (int c = 0; c < cols; c++) {
-                                if (isWaterCell(r, c, ctx)) {
-                                        Plant plant = grid[r][c];
-                                        if (plant != null) {
-                                                if (!plant.hasTheTag(Tag.WATER) && !plant.isHasLilyPadUnderneath()) {
-                                                        Console.simplePrint(plant.getName() +
-                                                                " drowned at [" + r + "," + c + "]!\n");
-                                                        grid[r][c] = null;
-                                                        ctx.getAlivePlants().remove(plant);
-                                                }
-                                        }
-                                }
-                        }
-                }
-        }
-        private void checkLowTideZombies(GameContext ctx) {
-                for (GridCell cell : lowTideCells) {
-                        boolean underWater = isWaterCell(cell.getRow(), cell.getCol(), ctx);
-                        if (!underWater) continue;
-
-                        if (random.nextDouble() < LOW_TIDE_ZOMBIE_CHANCE) {
-                                spawnZombieFromLowTide(ctx, cell.getRow(), cell.getCol());
-                        }
-                }
-        }
-
-        private void spawnZombieFromLowTide(GameContext ctx, int row, int col) {
-                ZombieFactory zombieFactory = new ZombieFactory(DataManager.getInstance());
-                Zombie zombie = zombieFactory.create("Default");
-
-                zombie.setY(row);
-                zombie.setX(col);
-
-                ctx.addZombie(zombie);
-                Console.simplePrint("A zombie emerges from the low tide at (" + row + ", " + col + ")!\n");
-                ctx.announce("Water’s pulling back zombies are coming right out of the sea!");
-        }
+        ctx.addZombie(zombie);
+        Console.simplePrint("A zombie emerges from the low tide at (" + row + ", " + col + ")!\n");
+        ctx.announce("Water’s pulling back zombies are coming right out of the sea!");
+    }
 }

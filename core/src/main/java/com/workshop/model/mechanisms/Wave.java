@@ -51,8 +51,8 @@ public class Wave {
         spawnZombies(ctx, calculateEffectiveBudget());
 
         initialTotalHp = spawnedZombies.stream()
-                .mapToInt(Zombie::getHp)
-                .sum();
+            .mapToInt(Zombie::getHp)
+            .sum();
     }
 
     private void announceStart(GameContext ctx) {
@@ -82,6 +82,10 @@ public class Wave {
             return;
         }
 
+        if (isAncientEgyptFlagWave(ctx)) {
+            ctx.announce("A sandstorm sweeps is approaching!");
+        }
+
         Map<String, Zombie> pool = getAvailableZombiePool(ctx);
 
         if (pool.isEmpty()) {
@@ -92,10 +96,10 @@ public class Wave {
         }
 
         int minCost = pool.values().stream()
-                .mapToInt(Zombie::getWavePointCost)
-                .filter(cost -> cost > 0)
-                .min()
-                .orElse(-1);
+            .mapToInt(Zombie::getWavePointCost)
+            .filter(cost -> cost > 0)
+            .min()
+            .orElse(-1);
         if (minCost < 0) {
             throw new IllegalStateException(
                 "All zombies in the wave pool have invalid wave costs."
@@ -103,17 +107,17 @@ public class Wave {
         }
 
         Random random = (ctx.getLevel().getLevelType() == LevelType.BONUS)
-                ? new Random(waveNumber)
-                : new Random();
+            ? new Random(waveNumber)
+            : new Random();
         ZombieFactory factory = new ZombieFactory(ctx.getDataManager());
         int remainingBudget = budget;
 
         while (remainingBudget >= minCost) {
             int finalRemainingBudget = remainingBudget;
             List<Map.Entry<String, Zombie>> affordable = pool.entrySet().stream()
-                    .filter(e -> e.getValue().getWavePointCost() > 0
-                            && e.getValue().getWavePointCost() <= finalRemainingBudget)
-                    .collect(Collectors.toList());
+                .filter(e -> e.getValue().getWavePointCost() > 0
+                    && e.getValue().getWavePointCost() <= finalRemainingBudget)
+                .collect(Collectors.toList());
 
             if (affordable.isEmpty()) {
                 break;
@@ -130,8 +134,8 @@ public class Wave {
             remainingBudget -= cost;
 
             Console.showMessage(String.format(
-                    "Zombie %s spawned at wave %d in lane %d which costed %d.\n",
-                    zombie.getName(), waveNumber, (int) zombie.getY(), cost));
+                "Zombie %s spawned at wave %d in lane %d which costed %d.\n",
+                zombie.getName(), waveNumber, (int) zombie.getY(), cost));
         }
     }
 
@@ -178,6 +182,7 @@ public class Wave {
         if (isAncientEgyptFlagWave(ctx)) {
             int colOffset = random.nextInt(4) + 1;
             col -= colOffset;
+            zombie.setEnteredViaSandstorm(true);
         }
 
         zombie.setX(col);
@@ -186,8 +191,8 @@ public class Wave {
 
     private boolean isAncientEgyptFlagWave(GameContext ctx) {
         return isLastWave
-                && ctx.getSeason() != null
-                && ctx.getSeason().getName().equalsIgnoreCase("Ancient Egypt");
+            && ctx.getSeason() != null
+            && ctx.getSeason().getName().equalsIgnoreCase("Ancient Egypt");
     }
 
     public boolean isThresholdReached() {
@@ -195,12 +200,30 @@ public class Wave {
             return false;
         }
 
-        int currentTotalHp = spawnedZombies.stream()
-                .filter(z -> !z.isDead())
-                .mapToInt(Zombie::getHp)
-                .sum();
+        return currentHpRatio() <= THRESHOLD_HP_RATIO;
+    }
 
-        return ((double) currentTotalHp / initialTotalHp) <= THRESHOLD_HP_RATIO;
+
+    public float getProgress() {
+        if (!started || initialTotalHp <= 0) {
+            return 0f;
+        }
+
+        if (spawnedZombies.isEmpty()) {
+            // هیچ زامبی‌ای برای این بودجه ساخته نشد؛ موج را کامل در نظر می‌گیریم.
+            return 1f;
+        }
+
+        return (float) Math.min(1.0, Math.max(0.0, 1.0 - currentHpRatio()));
+    }
+
+    private double currentHpRatio() {
+        int currentTotalHp = spawnedZombies.stream()
+            .filter(z -> !z.isDead())
+            .mapToInt(Zombie::getHp)
+            .sum();
+
+        return (double) currentTotalHp / initialTotalHp;
     }
 
     private boolean isZombotanyZombie(Zombie zombie) {

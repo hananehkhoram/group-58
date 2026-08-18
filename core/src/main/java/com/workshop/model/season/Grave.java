@@ -46,4 +46,8 @@ public class Grave {
     public int getCol() {
         return col;
     }
+
+    public GraveType getType() {
+        return type;
+    }
 }

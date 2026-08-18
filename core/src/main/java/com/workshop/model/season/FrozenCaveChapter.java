@@ -92,6 +92,8 @@ public class FrozenCaveChapter extends Season {
         Console.simplePrint("Frozen Caves started: Ice sliders and frozen zombies placed!\n");
     }
     private void applyIcyWindToRow(GameContext ctx, int row) {
+        ctx.announceWindRow(row);
+
         Plant[][] grid = ctx.getPlantGrid();
         for (int col = 0; col < ctx.getLevel().getColumns(); col++) {
             Plant p = grid[row][col];
