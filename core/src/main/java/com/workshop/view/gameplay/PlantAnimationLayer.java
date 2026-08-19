@@ -87,6 +87,7 @@ public final class PlantAnimationLayer extends Group {
                     getCellCenterX(column),
                     getCellCenterY(row)
                 );
+                actor.setZIndex(row);
             }
         }
 

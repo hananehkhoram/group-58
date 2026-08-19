@@ -31,7 +31,7 @@ public final class GraveActor extends Actor {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         String pamPath = GraveAnimationResolver.getPamPath(grave.getType());
-        String clip = GraveAnimationResolver.getClip(grave.getType());
+        String clip = GraveAnimationResolver.getClip(grave.getHp(), grave.getMaxHp());
 
         if (pamPath == null || clip == null) {
             return;

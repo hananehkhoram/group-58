@@ -129,7 +129,7 @@ public final class ZombieActor extends Actor {
             return;
         }
 
-        if (zombie.isInitialFrozenBlock()) {
+        if (zombie.isInitialFrozenBlock() || zombie.isIced()) {
             drawIceBlock(batch, parentAlpha);
             return;
         }
@@ -211,7 +211,8 @@ public final class ZombieActor extends Actor {
 
         float alpha = resolveIceBlockAlpha(zombie.getIceHp()) * parentAlpha;
 
-        batch.setColor(1f, 1f, 1f, alpha);
+        float flash = hitFlash.getIntensity();
+        batch.setColor(1f + flash, 1f + flash, 1f + flash, alpha);
 
         pamPlayer.draw(
             batch,

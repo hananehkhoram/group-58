@@ -158,7 +158,8 @@ public final class PlantActor extends Actor {
         float alpha,
         float restoreAlpha
     ) {
-        batch.setColor(1f, 1f, 1f, alpha);
+        float flash = hitFlash.getIntensity();
+        batch.setColor(1f + flash, 1f + flash, 1f + flash, alpha);
 
         pamPlayer.draw(
             batch,
