@@ -152,12 +152,28 @@ public final class VaseAnimationLayer extends Group {
         String pamPath =
             resolvePamPath(vase);
 
-        Actor actor =
+        float cellHeight =
+            gridHeight
+                / gameContext
+                .getLevel()
+                .getRows();
+
+        float dropOffsetY =
+            cellHeight
+                * (row + 1.35f);
+
+        float dropDelay =
+            column * 0.06f
+                + row * 0.05f;
+
+        VaseActor actor =
             new VaseActor(
                 vase,
                 pamPlayer,
                 pamPath,
-                "idle"
+                "idle",
+                dropOffsetY,
+                dropDelay
             );
 
         actor.addListener(
@@ -172,6 +188,10 @@ public final class VaseAnimationLayer extends Group {
 
                     if (gameContext.isPaused()
                         || gameContext.isGameEnded()) {
+                        return;
+                    }
+
+                    if (!actor.hasLanded()) {
                         return;
                     }
 
@@ -262,18 +282,17 @@ public final class VaseAnimationLayer extends Group {
 
     private String resolvePamPath(Vase vase) {
 
-        if (vase.getContent() == VaseContent.PLANT) {
-            return PLANT_VASE_PAM;
+        switch (vase.getType()) {
+
+            case PLANT:
+                return PLANT_VASE_PAM;
+
+            case GARGANTUAR:
+                return GARGANTUAR_VASE_PAM;
+
+            case NORMAL:
+            default:
+                return NORMAL_VASE_PAM;
         }
-
-        if (vase.getContent() == VaseContent.ZOMBIE
-            && "Gargantuar".equalsIgnoreCase(
-            vase.getHiddenEntityName()
-        )) {
-
-            return GARGANTUAR_VASE_PAM;
-        }
-
-        return NORMAL_VASE_PAM;
     }
 }

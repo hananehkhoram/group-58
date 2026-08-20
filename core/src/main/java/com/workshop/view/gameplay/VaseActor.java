@@ -5,8 +5,8 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.workshop.controller.repository.Textures;
 import com.workshop.model.MiniGame.VaseGame.Vase;
+import com.badlogic.gdx.math.Interpolation;
 
 import java.util.List;
 
@@ -25,24 +25,65 @@ public final class VaseActor extends Actor {
 
     private float stateTime;
 
+    private float dropOffsetY;
+    private final float initialDropOffsetY;
+    private float dropDelay;
+    private float dropTime;
+
+    private static final float DROP_DURATION = 1f;
+
     public VaseActor(
         Vase vase,
         PamPlayer pamPlayer,
         String pamPath,
-        String preferredClip
+        String preferredClip,
+        float dropOffsetY,
+        float dropDelay
     ) {
         this.vase = vase;
         this.pamPlayer = pamPlayer;
         this.pamPath = pamPath;
         this.preferredClip = preferredClip;
+
+        this.initialDropOffsetY = dropOffsetY;
+        this.dropOffsetY = dropOffsetY;
+        this.dropDelay = dropDelay;
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
 
-        if (!vase.isBroken()) {
-            stateTime += delta;
+        if (vase.isBroken()) {
+            return;
+        }
+
+        stateTime += delta;
+
+        if (dropDelay > 0f) {
+            dropDelay -= delta;
+            return;
+        }
+
+        if (dropTime < DROP_DURATION) {
+            dropTime += delta;
+
+            float progress =
+                Math.min(
+                    dropTime / DROP_DURATION,
+                    1f
+                );
+
+            float eased =
+                Interpolation.bounceOut.apply(
+                    progress
+                );
+
+            dropOffsetY =
+                initialDropOffsetY
+                    * (1f - eased);
+        } else {
+            dropOffsetY = 0f;
         }
     }
 
@@ -88,7 +129,9 @@ public final class VaseActor extends Actor {
             getX() + getWidth() / 2f;
 
         float centerY =
-            getY() + getHeight() / 2f;
+            getY()
+                + getHeight() / 2f
+                + dropOffsetY;
 
         batch.flush();
 
@@ -181,5 +224,10 @@ public final class VaseActor extends Actor {
 
     public Vase getVase() {
         return vase;
+    }
+
+    public boolean hasLanded() {
+        return dropDelay <= 0f
+            && dropTime >= DROP_DURATION;
     }
 }
