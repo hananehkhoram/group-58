@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.workshop.controller.SpecialLevelManager.ConveyorBeltManager;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
 import com.workshop.model.mechanisms.GameEngine;
@@ -23,33 +24,25 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Toast;
+import com.workshop.view.gameplay.*;
 import pvz.skin.PvzSkin;
 import com.workshop.controller.repository.Audio;
 import com.workshop.controller.repository.Textures;
-import com.workshop.view.gameplay.GraveAnimationLayer;
-import com.workshop.view.gameplay.PlantAnimationLayer;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
-import com.workshop.view.gameplay.ZombieIntroLayer;
-import com.workshop.view.gameplay.ZombieAnimationLayer;
 import com.workshop.model.level.DialogueLine;
 
 import java.util.List;
-import com.workshop.view.gameplay.SunAnimationLayer;
+
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 
-import com.workshop.view.gameplay.PlantActor;
-import com.workshop.view.gameplay.PlantAnimationResolver;
-import com.workshop.view.gameplay.PlantAnimationSpec;
 import com.workshop.controller.MenuManager;
 import com.workshop.controller.commands.Planting;
 import com.workshop.model.plants.Plant;
 import com.workshop.view.widgets.PlantCardActor;
-import com.workshop.view.gameplay.VaseAnimationLayer;
 import com.workshop.model.level.LevelType;
-import com.workshop.view.gameplay.DroppedSeedLayer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -113,6 +106,8 @@ public class GamePlayScreen implements Screen {
     private int hoveredPlantRow = -1;
     private int hoveredPlantColumn = -1;
     private PlantActor mousePlantPreview;
+
+    private ConveyorBeltLayer conveyorBeltLayer;
 
     private final PlantAnimationResolver plantPreviewResolver =
         new PlantAnimationResolver();
@@ -514,7 +509,11 @@ public class GamePlayScreen implements Screen {
         // --- دیالوگ شروع مرحله (اختیاری) و بعد از آن، منوی آغاز مرحله ---
         List<DialogueLine> introDialogue = level.getIntroDialogue();
 
-        buildSeedBank(skin);
+        if (isConveyorLevel()) {
+            buildConveyorBelt();
+        } else {
+            buildSeedBank(skin);
+        }
         setupPlantingClick();
 
         if (introDialogue != null && !introDialogue.isEmpty()) {
@@ -565,6 +564,19 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(plantFoodAnimationLayer);
 
+    }
+    private boolean isConveyorLevel() {
+        return gameContext.getLevelManager() instanceof ConveyorBeltManager;
+    }
+
+    private void buildConveyorBelt() {
+        conveyorBeltLayer = new ConveyorBeltLayer(
+            (ConveyorBeltManager) gameContext.getLevelManager(),
+            worldHeight,
+            seedBankCards,
+            this::selectPlant
+        );
+        stage.addActor(conveyorBeltLayer);
     }
     private int currentPlantFoodCount() {
         com.workshop.model.user.User user = UserManager.getInstance().getCurrentUser();
@@ -1331,6 +1343,7 @@ public class GamePlayScreen implements Screen {
                 );
 
         if (!usingHeldSeed
+            && !isConveyorLevel()
             && gameContext.getSunAmount()
             < selectedPlantForPlacement
             .getSunCost()) {
@@ -1628,5 +1641,8 @@ public class GamePlayScreen implements Screen {
         shapeRenderer.dispose();
         pauseOverlay.dispose();
         winLoseOverlay.dispose();
+        if (conveyorBeltLayer != null) {
+            conveyorBeltLayer.dispose();
+        }
     }
 }

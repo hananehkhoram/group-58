@@ -245,4 +245,8 @@ public class Wave {
         spawnedZombies.clear();
         initialTotalHp = 0;
     }
+
+    public int getWaveDelay() {
+        return waveDelay;
+    }
 }

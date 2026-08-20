@@ -11,6 +11,7 @@ import com.workshop.model.level.Level;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.plants.TargetingMode;
 import com.workshop.model.projectile.TrajectoryType;
+import com.workshop.model.season.Grave;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.model.zombie.behavior.Behaviors;
 import com.workshop.model.zombie.behavior.LaserShooting;
@@ -111,6 +112,9 @@ public class GameEngine {
         }
 
         if (ctx.getCurrentWaveIndex() == 0) {
+            if (ctx.getTimeManager().getTotalTicks() < waves[0].getWaveDelay()) {
+                return;
+            }
             ctx.recordFirstWaveStart();
             spawnWave(waves[0]);
             return;
@@ -403,6 +407,32 @@ public class GameEngine {
         }
 
         checkZombieHit(p, it);
+
+        if (p.isActive()) {
+            checkGraveHit(p, it);
+        }
+    }
+
+    private void checkGraveHit(Projectile p, Iterator<Projectile> it) {
+        int row = p.getRow();
+        int col = (int) Math.floor(p.getX());
+
+        if (row < 0 || row >= ctx.getLevel().getRows()
+            || col < 0 || col >= ctx.getLevel().getColumns()) {
+            return;
+        }
+
+        Grave grave = ctx.getGraveGrid()[row][col];
+        if (grave == null) {
+            return;
+        }
+
+        grave.takeDamage(p.getDamage(), ctx);
+
+        if (p.getTrajectory() != TrajectoryType.PIERCING) {
+            p.deactivate();
+            it.remove();
+        }
     }
 
     private boolean checkPlantObstacle(Projectile p) {

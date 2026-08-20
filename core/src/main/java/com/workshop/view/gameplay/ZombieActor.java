@@ -52,8 +52,9 @@ public final class ZombieActor extends Actor {
         PamPlayer pamPlayer
     ) {
         this.zombie = zombie;
-        this.hitFlash =
-            new HitFlashEffect(zombie::getHp);
+        this.hitFlash = new HitFlashEffect(() ->
+            zombie.getHp() + (int) zombie.getIceHp()
+        );
         this.animationSpec = animationSpec;
         this.pamPlayer = pamPlayer;
     }

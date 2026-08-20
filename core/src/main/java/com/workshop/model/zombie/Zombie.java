@@ -76,7 +76,7 @@ public class Zombie implements Damageable {
             return;
         }
 
-        if (initialFrozenBlock) {
+        if (initialFrozenBlock || isIced) {
             return;
         }
 
@@ -97,7 +97,7 @@ public class Zombie implements Damageable {
 
         if (!isEating && !airborne) {
             double effectiveSpeed = speed;
-            if (isIced) effectiveSpeed *= 0.5;
+            //if (isIced) effectiveSpeed *= 0.5;
             x += movingBackward ? effectiveSpeed * deltaTime : -effectiveSpeed * deltaTime;
         }
     }

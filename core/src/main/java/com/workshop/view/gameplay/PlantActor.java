@@ -53,8 +53,11 @@ public final class PlantActor extends Actor {
         PamPlayer pamPlayer
     ) {
         this.plant = plant;
-        this.hitFlash =
-            new HitFlashEffect(plant::getHp);
+        this.hitFlash = new HitFlashEffect(() ->
+            plant.getHp()
+                + (int) plant.getIceHp()
+                + (int) plant.getOctopusHp()
+        );
         this.animationSpec = animationSpec;
         this.pamPlayer = pamPlayer;
     }
@@ -79,37 +82,28 @@ public final class PlantActor extends Actor {
         }
 
         String clip = animationSpec.getClip(currentState);
-
         if (clip == null) {
             clip = animationSpec.getIdleClip();
         }
+        final String drawClip = clip;
 
-        if (clip != null) {
-            // اگه اکتورِ قبلی توی همین فریم رنگِ batch رو نیمه‌شفاف گذاشته
-            // باشه (مثلاً پوششِ ساحل پست)، اینجا صریحاً برمی‌گردونیمش به
-            // حالت عادی تا روی این گیاه اثر نذاره.
-            float flash = hitFlash.getIntensity();
-            batch.setColor(1f + flash, 1f + flash, 1f + flash, parentAlpha);
-
-            pamPlayer.draw(
-                batch,
-                animationSpec.getPamPath(),
-                clip,
-                stateTime,
-                getX(),
-                getY(),
-                true
-            );
+        if (drawClip != null) {
+            hitFlash.drawWithFlash(batch, parentAlpha, () -> {
+                pamPlayer.draw(
+                    batch,
+                    animationSpec.getPamPath(),
+                    drawClip,
+                    stateTime,
+                    getX(),
+                    getY(),
+                    true
+                );
+            });
         }
 
         if (plant.isIced()) {
-            // یخ‌زدگیِ کامل: گیاه درون بلوک یخ نشون داده می‌شه (بلوک روی
-            // خودِ گیاه رسم می‌شه، نه به‌جاش). مرحله‌ی آسیب با شفافیت
-            // شبیه‌سازی می‌شه، نه تعویض کلیپ.
             drawIceBlock(batch, parentAlpha);
         } else if (plant.getFreezeLevel() > 0) {
-            // سرمازدگیِ جزئی (هنوز کامل یخ نزده): یه لایه‌ی یخِ سبک روش،
-            // با شفافیتِ متناسب با شدتِ سرما.
             drawChillOverlay(batch, parentAlpha);
         }
     }
@@ -158,19 +152,17 @@ public final class PlantActor extends Actor {
         float alpha,
         float restoreAlpha
     ) {
-        float flash = hitFlash.getIntensity();
-        batch.setColor(1f + flash, 1f + flash, 1f + flash, alpha);
-
-        pamPlayer.draw(
-            batch,
-            pamPath,
-            clip,
-            frostStateTime,
-            getX(),
-            getY(),
-            true
-        );
-
+        hitFlash.drawWithFlash(batch, alpha, () -> {
+            pamPlayer.draw(
+                batch,
+                pamPath,
+                clip,
+                frostStateTime,
+                getX(),
+                getY(),
+                true
+            );
+        });
         batch.setColor(1f, 1f, 1f, restoreAlpha);
     }
 

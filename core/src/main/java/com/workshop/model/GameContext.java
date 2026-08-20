@@ -33,7 +33,7 @@ public class GameContext {
     private List<Zombie> activeZombies = new ArrayList<>();//zombies to spawn
     private List<Zombie> aliveZombies = new ArrayList<>();//زامبیای زنده رو زمین
     private final Map<String, Long> plantCooldowns = new HashMap<>();
-    private int sunAmount = 0;
+    private int sunAmount = 50;
     private int currentWaveIndex = 0;
     private boolean gameEnded = false;
     private boolean playerWon = false;
