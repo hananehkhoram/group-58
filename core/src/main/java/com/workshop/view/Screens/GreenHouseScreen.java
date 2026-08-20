@@ -28,7 +28,6 @@ public class GreenHouseScreen implements Screen {
         void onBack();
     }
 
-    // TODO: با مقادیر واقعی پروژه (همون‌جایی که PlantCardActor از آن TextureBank می‌گیرد) عوض کن.
     private static final String PAM_ASSETS_PATH = "assets";
 
     private static final float VIRTUAL_WIDTH = 1024f;
@@ -47,8 +46,6 @@ public class GreenHouseScreen implements Screen {
     private TextureBank textureBank;
     private PamPlayer pamPlayer;
 
-    // این مختصات الان بر حسب پیکسل مجازی صحنه هستن (0..VIRTUAL_WIDTH, 0..VIRTUAL_HEIGHT)
-    // نه پیکسل واقعی پنجره - چون FitViewport همیشه این بازه رو نگه می‌داره، دیگه با ریسایز/فول‌اسکرین به‌هم نمی‌ریزن.
     private static final float[][] SLOT_OFFSET_X = {
         {80, 280, 480, 680},
         {80, 280, 480, 680},

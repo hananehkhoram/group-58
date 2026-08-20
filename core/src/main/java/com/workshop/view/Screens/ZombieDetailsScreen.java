@@ -20,10 +20,6 @@ import com.workshop.model.zombie.Zombie;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.skin.PvzSkin;
 
-/**
- * Details screen for a single zombie showing stats and animations.
- * Refactored to use BaseScreen and ScreenResourceManager for consistent code patterns.
- */
 public class ZombieDetailsScreen extends BaseScreen {
 
     public interface BackListener {
@@ -70,11 +66,9 @@ public class ZombieDetailsScreen extends BaseScreen {
 
         float scale = getScaleFactor();
 
-        // Header with back button
         Table topBar = buildTopBar(scale);
         root.add(topBar).fillX().row();
 
-        // Content area: animation + stats
         Table contentArea = new Table();
         Table leftCol = buildLeftColumn(scale);
         Table rightCol = buildRightColumn(scale);
@@ -204,9 +198,6 @@ public class ZombieDetailsScreen extends BaseScreen {
         return rightCol;
     }
 
-    /**
-     * Creates a Table that renders the zombie animation using ScreenResourceManager.
-     */
     private Actor createZombiePamActor(float scale) {
         return new Table() {
             @Override
