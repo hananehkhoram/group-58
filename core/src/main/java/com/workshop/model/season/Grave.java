@@ -6,7 +6,8 @@ import com.workshop.model.user.UserManager;
 public class Grave {
     public enum GraveType { NORMAL, HAS_SUN, HAS_PLANT_FOOD }
 
-    private int hp = 700;
+    private static final int MAX_HP = 700;
+    private int hp = MAX_HP;
     private GraveType type;
     private int row, col;
 
@@ -20,7 +21,7 @@ public class Grave {
         if (type.equals(GraveType.HAS_SUN))
             ctx.addSun(50);
         else if (type.equals(GraveType.HAS_PLANT_FOOD))
-            UserManager.getInstance().addPlantFood(1);
+            ctx.addPlantFoodDrop(new com.workshop.model.mechanisms.PlantFoodDrop(this.col, this.row));
 
         ctx.removeGrave(this.row,this.col);
     }
@@ -54,4 +55,9 @@ public class Grave {
     public int getHp() {
         return hp;
     }
+    public int getMaxHp() {
+        return MAX_HP;
+    }
+
+
 }

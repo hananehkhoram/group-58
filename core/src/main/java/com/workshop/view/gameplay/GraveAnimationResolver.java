@@ -2,15 +2,14 @@ package com.workshop.view.gameplay;
 
 import com.workshop.model.season.Grave;
 
-/**
- * PAM paths supplied directly (looked up via the PvZ Asset Browser / RESOURCES.json).
- * Clip: confirmed at runtime that gravestone PAMs expose
- * [undamaged, damage1, damage2, damage3, damage4] — a freshly-placed grave isn't
- * damaged yet, so "undamaged" is what should render by default.
- */
+
 final class GraveAnimationResolver {
 
-    private static final String CLIP = "undamaged";
+    private static final String CLIP_UNDAMAGED = "undamaged";
+    private static final String CLIP_DAMAGE_1 = "damage1";
+    private static final String CLIP_DAMAGE_2 = "damage2";
+    private static final String CLIP_DAMAGE_3 = "damage3";
+    private static final String CLIP_DAMAGE_4 = "damage4";
 
     private static final String NORMAL_PAM =
         "768/INITIAL/GRAVESTONES/EGYPT_HIEROGLYPH/EGYPT_HIEROGLYPH.PAM";
@@ -29,7 +28,17 @@ final class GraveAnimationResolver {
         }
     }
 
-    static String getClip(Grave.GraveType type) {
-        return CLIP;
+    static String getClip(int currentHp, int maxHp) {
+        if (maxHp <= 0) {
+            return CLIP_UNDAMAGED;
+        }
+
+        float fraction = (float) currentHp / maxHp;
+
+        if (fraction > 0.8f) return CLIP_UNDAMAGED;
+        if (fraction > 0.6f) return CLIP_DAMAGE_1;
+        if (fraction > 0.4f) return CLIP_DAMAGE_2;
+        if (fraction > 0.2f) return CLIP_DAMAGE_3;
+        return CLIP_DAMAGE_4;
     }
 }

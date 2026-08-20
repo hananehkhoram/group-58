@@ -287,6 +287,17 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(graveAnimationLayer);
 
+        com.workshop.view.gameplay.SlipperyTileLayer slipperyTileLayer =
+            new com.workshop.view.gameplay.SlipperyTileLayer(
+                gameContext,
+                getGridX(),
+                getGridY(),
+                getGridWidth(),
+                getGridHeight()
+            );
+
+        stage.addActor(slipperyTileLayer);
+
         com.workshop.view.gameplay.WaterLayer waterLayer =
             new com.workshop.view.gameplay.WaterLayer(
                 gameContext,
@@ -541,6 +552,18 @@ public class GamePlayScreen implements Screen {
         }
 
         stage.addActor(sunAnimationLayer);
+
+        com.workshop.view.gameplay.PlantFoodAnimationLayer plantFoodAnimationLayer =
+            new com.workshop.view.gameplay.PlantFoodAnimationLayer(
+                gameContext,
+                plantFoodCounter,
+                getGridX(),
+                getGridY(),
+                getGridWidth(),
+                getGridHeight()
+            );
+
+        stage.addActor(plantFoodAnimationLayer);
 
     }
     private int currentPlantFoodCount() {

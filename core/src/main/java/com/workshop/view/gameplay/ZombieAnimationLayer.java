@@ -83,6 +83,7 @@ public final class ZombieAnimationLayer extends Group {
                 getZombieX(zombie),
                 getRowCenterY(zombie.getRow()) + 10f
             );
+            actor.setZIndex(zombie.getRow());
         }
 
         removeMissingZombies(activeZombies);

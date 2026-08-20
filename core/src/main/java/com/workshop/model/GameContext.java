@@ -10,9 +10,7 @@ import com.workshop.controller.repository.factory.ZombieFactory;
 import com.workshop.model.MiniGame.Beghouled.BeghouledManager;
 import com.workshop.model.level.Level;
 import com.workshop.model.level.LevelType;
-import com.workshop.model.mechanisms.GameEngine;
-import com.workshop.model.mechanisms.LootItem;
-import com.workshop.model.mechanisms.SunManager;
+import com.workshop.model.mechanisms.*;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.plants.PlantFamily;
 import com.workshop.model.projectile.Projectile;
@@ -22,7 +20,6 @@ import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.view.Console;
-import com.workshop.model.mechanisms.SunType;
 
 import java.util.*;
 
@@ -52,6 +49,8 @@ public class GameContext {
     private int totalSunProducedInLevel = 0;
     private int totalLostPlants = 0;
     private int totalZombiesKilledInLevel = 0;
+
+    private final List<PlantFoodDrop> activePlantFoodDrops = new ArrayList<>();
 
     private DataManager dm;
     private PlantFactory plantFactory;
@@ -574,6 +573,24 @@ public class GameContext {
         if (loot != null) {
             activeLoots.add(loot);
         }
+    }
+    public List<PlantFoodDrop> getActivePlantFoodDrops() {
+        return activePlantFoodDrops;
+    }
+
+    public void addPlantFoodDrop(PlantFoodDrop drop) {
+        if (drop != null) {
+            activePlantFoodDrops.add(drop);
+        }
+    }
+
+    public boolean collectPlantFoodDrop(PlantFoodDrop drop) {
+        if (drop == null || !activePlantFoodDrops.remove(drop)) {
+            return false;
+        }
+
+        com.workshop.model.user.UserManager.getInstance().addPlantFood(1);
+        return true;
     }
     public void clearLoots() {
         activeLoots.clear();

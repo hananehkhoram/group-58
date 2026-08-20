@@ -80,6 +80,7 @@ public final class GraveAnimationLayer extends Group {
                     getCellCenterX(column),
                     getCellCenterY(row)
                 );
+                actor.setZIndex(row);
             }
         }
 
