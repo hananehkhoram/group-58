@@ -14,6 +14,7 @@ import com.workshop.model.season.miniGameSeason.IzombieSeason;
 import com.workshop.model.season.miniGameSeason.BeghouledSeason;
 import com.workshop.model.season.miniGameSeason.VaseSeason;
 import com.workshop.model.season.miniGameSeason.WallnutsSeason;
+import com.workshop.model.MiniGame.VaseGame.VaseType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -353,7 +354,7 @@ public class LevelFactory {
         }
         int zombieCount = 8 + (levelNumber * 2);
         int gargantuarCount = 1 + (levelNumber / 2);
-        int emptyCount = 3;
+        int emptyCount = 0;
 
         if (zombieCount + gargantuarCount > 20) {
             zombieCount = 17;
@@ -368,22 +369,68 @@ public class LevelFactory {
         int peashooterCount = remainingForPlants - squashCount - melonCount; // بقیه نخودسبز
 
         for (int i = 0; i < zombieCount; i++) {
-            vasePool.add(new Vase(VaseContent.ZOMBIE, "Zombie"));
+            vasePool.add(
+                new Vase(
+                    VaseContent.ZOMBIE,
+                    "Zombie",
+                    VaseType.NORMAL
+                )
+            );
         }
+
         for (int i = 0; i < gargantuarCount; i++) {
-            vasePool.add(new Vase(VaseContent.ZOMBIE, "Gargantuar"));
+            vasePool.add(
+                new Vase(
+                    VaseContent.ZOMBIE,
+                    "Gargantuar",
+                    VaseType.GARGANTUAR
+                )
+            );
         }
+
         for (int i = 0; i < emptyCount; i++) {
-            vasePool.add(new Vase(VaseContent.EMPTY, null));
+            vasePool.add(
+                new Vase(
+                    VaseContent.EMPTY,
+                    null,
+                    VaseType.NORMAL
+                )
+            );
         }
+
         for (int i = 0; i < peashooterCount; i++) {
-            vasePool.add(new Vase(VaseContent.PLANT, "Peashooter"));
+            VaseType type =
+                i % 2 == 0
+                    ? VaseType.NORMAL
+                    : VaseType.PLANT;
+
+            vasePool.add(
+                new Vase(
+                    VaseContent.PLANT,
+                    "Peashooter",
+                    type
+                )
+            );
         }
+
         for (int i = 0; i < squashCount; i++) {
-            vasePool.add(new Vase(VaseContent.PLANT, "Squash"));
+            vasePool.add(
+                new Vase(
+                    VaseContent.PLANT,
+                    "Squash",
+                    VaseType.NORMAL
+                )
+            );
         }
+
         for (int i = 0; i < melonCount; i++) {
-            vasePool.add(new Vase(VaseContent.PLANT, "Winter Melon"));
+            vasePool.add(
+                new Vase(
+                    VaseContent.PLANT,
+                    "Winter Melon",
+                    VaseType.PLANT
+                )
+            );
         }
 
 
