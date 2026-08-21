@@ -56,14 +56,14 @@ public class GreenHouseScreen implements Screen {
     private CurrencyHeader currencyHeader;
 
     private static final float[][] SLOT_OFFSET_X = {
-        {80, 280, 480, 680},
-        {80, 280, 480, 680},
-        {80, 280, 480, 680}
+        {315, 435, 555, 675},
+        {315, 435, 555, 675},
+        {315, 435, 555, 675}
     };
     private static final float[][] SLOT_OFFSET_Y = {
-        {380, 380, 380, 380},
-        {220, 220, 220, 220},
-        {60, 60, 60, 60}
+        {355, 355, 355, 355},
+        {225, 225, 225, 225},
+        {95, 95, 95, 95}
     };
 
     public GreenHouseScreen(GameContext ctx, Listener listener) {
@@ -80,8 +80,12 @@ public class GreenHouseScreen implements Screen {
         background = new Texture(Gdx.files.internal("IMAGES/Menus/GreenHouse/greenhouse_bg.png"));
 
         FileHandle assetsFolder = Gdx.files.internal("assets");
-        textureBank = new TextureBank("768", assetsFolder);
-        pamPlayer = new PamPlayer(textureBank, Gdx.files.internal(PAM_ASSETS_PATH));
+        if (CollectionScreen.textureBank == null || CollectionScreen.pamPlayer == null) {
+            CollectionScreen.textureBank = new TextureBank("768", assetsFolder);
+            CollectionScreen.pamPlayer = new PamPlayer(CollectionScreen.textureBank, Gdx.files.internal(PAM_ASSETS_PATH));
+        }
+        textureBank = CollectionScreen.textureBank;
+        pamPlayer = CollectionScreen.pamPlayer;
 
         stage = new Stage(new FitViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
         potActors = new PotActor[GreenHouse.ROWS][GreenHouse.COLS];
@@ -96,7 +100,7 @@ public class GreenHouseScreen implements Screen {
         stage.addActor(currencyHeader);
 
         PotActor.Listener potListener = new PotActor.Listener() {
-            @Override public void onBuy(int x, int y) { handleResult(greenHouseMenu.buyPot(x, y), x, y); }
+            @Override public void onBuy(int x, int y) { showStoreRedirectDialog(); }
             @Override public void onPlant(int x, int y) { handleResult(greenHouseMenu.plantPot(x, y), x, y); }
             @Override public void onFasterGrow(int x, int y) { handleResult(greenHouseMenu.growPlant(x, y), x, y); }
             @Override public void onCollect(int x, int y) {
@@ -117,8 +121,9 @@ public class GreenHouseScreen implements Screen {
             }
         }
 
-        TextButton backButton = new TextButton("Back", skin);
-        backButton.setPosition(20, VIRTUAL_HEIGHT - 56);
+        TextButton backButton = new TextButton("Back", skin, "green_small");
+        backButton.setPosition(55, VIRTUAL_HEIGHT - 65);
+        backButton.setSize(100, 40);
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -172,6 +177,32 @@ public class GreenHouseScreen implements Screen {
         return new Label(text, skin);
     }
 
+    private void showStoreRedirectDialog() {
+        Table panel = buildPanel();
+
+        Label titleLbl = createSafeLabel("Locked Slot!", "big");
+        panel.add(titleLbl).padBottom(15).row();
+
+        Label messageLbl = createSafeLabel("You need to purchase this pot slot from the Store first!", "default");
+        messageLbl.setWrap(true);
+        messageLbl.setAlignment(Align.center);
+        panel.add(messageLbl).width(320).padBottom(20).row();
+
+        TextButton okBtn = new TextButton("OK", skin, "green_small");
+
+        Table overlayRoot = buildOverlayRoot(panel);
+
+        okBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                overlayRoot.remove();
+            }
+        });
+
+        panel.add(okBtn).width(120).height(45);
+        stage.addActor(overlayRoot);
+    }
+
     private void showRewardDialog(String rewardText) {
         Table panel = buildPanel();
 
@@ -202,6 +233,15 @@ public class GreenHouseScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        for (int i = 0; i < GreenHouse.ROWS; i++) {
+            for (int j = 0; j < GreenHouse.COLS; j++) {
+                if (potActors[i][j] != null) {
+                    potActors[i][j].update(delta);
+                }
+            }
+        }
+
         stage.act(delta);
         stage.draw();
     }
@@ -219,7 +259,6 @@ public class GreenHouseScreen implements Screen {
     public void dispose() {
         stage.dispose();
         background.dispose();
-        if (textureBank != null) textureBank.dispose();
         if (overlayTexture != null) overlayTexture.dispose();
         if (panelTexture != null) panelTexture.dispose();
     }

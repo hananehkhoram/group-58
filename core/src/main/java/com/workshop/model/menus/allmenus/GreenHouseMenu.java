@@ -92,7 +92,6 @@ public class GreenHouseMenu extends BaseMenu {
             pot.setMarigold(false);
             pot.plant(plant);
         }
-//        um.saveToFile();
         DataManager.getInstance().saveUser();
         return "Pot successfully planted.";
     }
@@ -122,7 +121,6 @@ public class GreenHouseMenu extends BaseMenu {
                 result = ("Harvested " + plantName + "! A stored boost has been activated for your next match.");
             }
         }
-//        um.saveToFile();
         DataManager.getInstance().saveUser();
         pot.setEmpty(true);
         pot.setPlantType(null);

@@ -12,7 +12,7 @@ public class GreenHouse {
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLS; j++) {
                 pots[i][j] = new Pot();
-                pots[i][j].setLocked(i != 1); // ردیف وسط از اول باز است
+                pots[i][j].setLocked(i != 1);
             }
         }
     }
