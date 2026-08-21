@@ -18,6 +18,7 @@ import com.workshop.model.GreenHouseData.GreenHouse;
 import com.workshop.model.GreenHouseData.Pot;
 import com.workshop.model.menus.allmenus.GreenHouseMenu;
 import com.workshop.model.user.UserManager;
+import com.workshop.view.Toast;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 import pvz.skin.PvzSkin;
@@ -123,15 +124,7 @@ public class GreenHouseScreen implements Screen {
     }
 
     private void showRewardDialog(String rewardText) {
-        Dialog dialog = new Dialog("Prize collected!", skin) {
-            @Override
-            protected void result(Object object) {
-                hide();
-            }
-        };
-        dialog.text(rewardText);
-        dialog.button("okay", true);
-        dialog.show(stage);
+        Toast.showSuccess(stage, skin, rewardText);
     }
 
     @Override
