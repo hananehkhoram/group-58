@@ -56,14 +56,14 @@ public class GreenHouseScreen implements Screen {
     private CurrencyHeader currencyHeader;
 
     private static final float[][] SLOT_OFFSET_X = {
-        {315, 435, 555, 675},
-        {315, 435, 555, 675},
-        {315, 435, 555, 675}
+        {312, 422, 532, 642},
+        {312, 422, 532, 642},
+        {312, 422, 532, 642}
     };
     private static final float[][] SLOT_OFFSET_Y = {
-        {355, 355, 355, 355},
-        {225, 225, 225, 225},
-        {95, 95, 95, 95}
+        {330, 330, 330, 330},
+        {205, 205, 205, 205},
+        {80, 80, 80, 80}
     };
 
     public GreenHouseScreen(GameContext ctx, Listener listener) {

@@ -59,15 +59,15 @@ public class PotActor extends Group {
         setSize(90, 100);
 
         timeLabel = new Label("", skin);
-        timeLabel.setPosition(0, 28);
+        timeLabel.setPosition(0, -5);
         timeLabel.setWidth(90);
         timeLabel.setAlignment(Align.center);
-        timeLabel.setFontScale(0.75f);
+        timeLabel.setFontScale(0.70f);
         addActor(timeLabel);
 
         actionButton = new TextButton("", skin, "green_small");
         actionButton.setSize(75, 24);
-        actionButton.setPosition(7.5f, 0);
+        actionButton.setPosition(7.5f, -32);
         actionButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -130,34 +130,31 @@ public class PotActor extends Group {
         if (textureBank != null) textureBank.update();
 
         float drawX = getX() + getWidth() / 2f;
-        float drawY = getY() + 50f;
+        float drawY = getY() - 5f;
 
-        // ۱. حالت قفل یا در حال باز شدن قفل
         if (pot.isLocked() || isUnlockingAnim) {
             String clip = isUnlockingAnim ? "open" : "idle";
             float time = isUnlockingAnim ? unlockAnimTime : animTime;
-            renderPamScaled(batch, LOCK_PAM, clip, time, drawX, drawY, 0.25f);
+            renderPamScaled(batch, LOCK_PAM, clip, time, drawX, drawY + 15f, 0.35f);
             return;
         }
 
-        // ۲. رندر گلدان (در صورت آنلاک بودن)
         String potClip = (!pot.isEmpty() && !pot.isPlantReady()) ? "boost" : "idle";
-        renderPamScaled(batch, POT_PAM, potClip, animTime, drawX, drawY, 0.22f);
+        renderPamScaled(batch, POT_PAM, potClip, animTime, drawX, drawY, 0.38f);
 
-        // ۳. رندر جوانه یا گیاه بالغ
         if (!pot.isEmpty()) {
+            float plantX = drawX - 18f;
+
             if (!pot.isPlantReady()) {
-                // رندر جوانه SPROUT
-                renderPamScaled(batch, SPROUT_PAM, "idle", animTime, drawX, drawY + 8f, 0.20f);
+                renderPamScaled(batch, SPROUT_PAM, "idle", animTime, plantX, drawY + 25f, 0.35f);
             } else {
-                // رندر گیاه اصلی
                 try {
-                    renderPamScaled(batch, plantPamPath, "idle", animTime, drawX, drawY + 10f, 0.18f);
+                    renderPamScaled(batch, plantPamPath, "idle", animTime, plantX, drawY + 30f, 0.32f);
                 } catch (Exception e) {
                     TextureRegion reg = Textures.regionOrNull(fallbackRegionName());
                     if (reg != null) {
                         batch.setColor(Color.WHITE);
-                        batch.draw(reg, drawX - 20, drawY, 40, 40);
+                        batch.draw(reg, plantX - 25, drawY + 15, 50, 50);
                     }
                 }
             }
