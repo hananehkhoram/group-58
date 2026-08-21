@@ -22,6 +22,9 @@ public final class PlantActor extends Actor {
         "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_PLANT/FROSTBITE_ICE_BLOCK_PLANT.PAM";
     private static final String ICE_BLOCK_PREFERRED_CLIP = "idle";
 
+    private boolean wasIced;
+    private int lastFreezeLevel;
+
     private static final String CHILL_OVERLAY_PAM =
         "768/FULL/EFFECTS/FROSTBITE_CHILL_PLANT/FROSTBITE_CHILL_PLANT.PAM";
     private static final String CHILL_OVERLAY_PREFERRED_CLIP = "idle";
@@ -66,12 +69,16 @@ public final class PlantActor extends Actor {
     public void act(float delta) {
         super.act(delta);
         hitFlash.update(delta);
-
-        // گیاهِ کاملاً یخ‌زده دیگه انیمیشن/عمل نداره؛ فقط بلوک یخ روش می‌مونه.
-        if (!plant.isIced()) {
+        boolean iced = plant.isIced();
+        int freezeLevel = plant.getFreezeLevel();
+        if ((iced && !wasIced) || freezeLevel != lastFreezeLevel) {
+            frostStateTime = 0f;
+        }
+        wasIced = iced;
+        lastFreezeLevel = freezeLevel;
+        if (!iced) {
             stateTime += delta;
         }
-
         frostStateTime += delta;
     }
 
@@ -123,7 +130,7 @@ public final class PlantActor extends Actor {
         }
 
         float alpha = resolveIceBlockAlpha(plant.getIceHp()) * parentAlpha;
-        drawWithAlpha(batch, ICE_BLOCK_PAM, resolvedIceBlockClip, alpha, parentAlpha);
+        drawWithAlpha(batch, ICE_BLOCK_PAM, resolvedIceBlockClip, alpha, parentAlpha,false);
     }
 
     private void drawChillOverlay(Batch batch, float parentAlpha) {
@@ -142,7 +149,7 @@ public final class PlantActor extends Actor {
 
         // freezeLevel ۱ یا ۲: هرچی نزدیک‌تر به یخ‌زدگیِ کامل (۳)، توپرتر.
         float alpha = MathUtils.clamp(plant.getFreezeLevel() / 3f, 0.3f, 0.8f) * parentAlpha;
-        drawWithAlpha(batch, CHILL_OVERLAY_PAM, resolvedChillClip, alpha, parentAlpha);
+        drawWithAlpha(batch, CHILL_OVERLAY_PAM, resolvedChillClip, alpha, parentAlpha,false);
     }
 
     private void drawWithAlpha(
@@ -150,7 +157,8 @@ public final class PlantActor extends Actor {
         String pamPath,
         String clip,
         float alpha,
-        float restoreAlpha
+        float restoreAlpha,
+        boolean loop
     ) {
         hitFlash.drawWithFlash(batch, alpha, () -> {
             pamPlayer.draw(
@@ -160,7 +168,7 @@ public final class PlantActor extends Actor {
                 frostStateTime,
                 getX(),
                 getY(),
-                true
+                loop
             );
         });
         batch.setColor(1f, 1f, 1f, restoreAlpha);

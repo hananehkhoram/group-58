@@ -345,6 +345,15 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(plantAnimationLayer);
 
+        stage.addActor(new LawnMowerLayer(
+            gameContext,
+            gameEngine,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
         ZombieAnimationLayer zombieAnimationLayer =
             new ZombieAnimationLayer(
                 gameContext,
