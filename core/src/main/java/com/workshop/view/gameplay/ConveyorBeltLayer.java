@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.workshop.controller.SpecialLevelManager.ConveyorBeltManager;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.plants.Plant;
-import com.workshop.view.widgets.PlantCardActor;
+import com.workshop.view.Screens.PlantCardActor;
 import pvz.skin.PvzSkin;
 
 import java.util.ArrayList;
