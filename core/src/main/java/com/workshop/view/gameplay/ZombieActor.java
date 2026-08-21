@@ -143,14 +143,23 @@ public final class ZombieActor extends Actor {
             parentAlpha
         );
 
-        ScreenResourceManager.drawZombieAnimation(
-            batch,
-            pamPlayer,
-            zombie.getName(),
-            stateTime,
-            getX(),
-            getY()
-        );
+        String clip = animationSpec.getClip(currentState);
+        if (clip == null) {
+            clip = animationSpec.getIdleClip();
+        }
+
+        try {
+            pamPlayer.draw(
+                batch,
+                animationSpec.getPamPath(),
+                clip,
+                stateTime,
+                getX(),
+                getY(),
+                true
+            );
+        } catch (Throwable ignored) {
+        }
 
         if (zombie.isEnteredViaSandstorm()) {
             if (!sandstormClipResolved) {

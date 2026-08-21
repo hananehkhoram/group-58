@@ -23,7 +23,6 @@ import com.workshop.model.GreenHouseData.GreenHouse;
 import com.workshop.model.GreenHouseData.Pot;
 import com.workshop.model.menus.allmenus.GreenHouseMenu;
 import com.workshop.model.user.UserManager;
-import com.workshop.view.Toast;
 import com.workshop.view.components.CurrencyHeader;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
@@ -61,10 +60,12 @@ public class GreenHouseScreen implements Screen {
         {312, 422, 532, 642},
         {312, 422, 532, 642}
     };
+
+    // Y offsets updated slightly for optimal spacing between wooden tiles
     private static final float[][] SLOT_OFFSET_Y = {
-        {330, 330, 330, 330},
-        {205, 205, 205, 205},
-        {80, 80, 80, 80}
+        {340, 340, 340, 340},
+        {215, 215, 215, 215},
+        {90, 90, 90, 90}
     };
 
     public GreenHouseScreen(GameContext ctx, Listener listener) {
