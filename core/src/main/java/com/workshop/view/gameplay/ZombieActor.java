@@ -1,11 +1,11 @@
 package com.workshop.view.gameplay;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.workshop.model.zombie.Zombie;
+import com.workshop.view.Screens.ScreenResourceManager;
 
 import java.util.List;
 
@@ -25,8 +25,6 @@ public final class ZombieActor extends Actor {
         "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_ZOMBIE/FROSTBITE_ICE_BLOCK_ZOMBIE.PAM";
     private static final String ICE_BLOCK_PREFERRED_CLIP = "idle";
 
-    // iceHp شروعش برای بلوک یخِ ابتدایی، ۶۰۰ است (رجوع کنید به
-    // Zombie.setAsInitialFrozenBlock()).
     private static final double INITIAL_ICE_HP = 600.0;
 
     private String resolvedSandstormClip;
@@ -135,18 +133,6 @@ public final class ZombieActor extends Actor {
             return;
         }
 
-        String clip =
-            animationSpec.getClip(currentState);
-
-        if (clip == null) {
-            clip = animationSpec.getIdleClip();
-        }
-
-        if (clip == null) {
-            return;
-        }
-
-
         float dangerTint = resolveDangerTint(zombie.getX());
         float flash = hitFlash.getIntensity();
 
@@ -157,14 +143,13 @@ public final class ZombieActor extends Actor {
             parentAlpha
         );
 
-        pamPlayer.draw(
+        ScreenResourceManager.drawZombieAnimation(
             batch,
-            animationSpec.getPamPath(),
-            clip,
+            pamPlayer,
+            zombie.getName(),
             stateTime,
             getX(),
-            getY(),
-            true
+            getY()
         );
 
         if (zombie.isEnteredViaSandstorm()) {
@@ -174,18 +159,22 @@ public final class ZombieActor extends Actor {
             }
 
             if (resolvedSandstormClip != null) {
-                pamPlayer.draw(
-                    batch,
-                    SANDSTORM_TOP_PAM,
-                    resolvedSandstormClip,
-                    sandstormEffectTime,
-                    getX(),
-                    getY(),
-                    false
-                );
+                try {
+                    pamPlayer.draw(
+                        batch,
+                        SANDSTORM_TOP_PAM,
+                        resolvedSandstormClip,
+                        sandstormEffectTime,
+                        getX(),
+                        getY(),
+                        false
+                    );
+                } catch (Throwable ignored) {
+                }
             }
         }
     }
+
     private float resolveDangerTint(double zombieX) {
         if (zombieX >= DANGER_ZONE_X) {
             return 0f;
@@ -215,15 +204,18 @@ public final class ZombieActor extends Actor {
         float flash = hitFlash.getIntensity();
         batch.setColor(1f + flash, 1f + flash, 1f + flash, alpha);
 
-        pamPlayer.draw(
-            batch,
-            ICE_BLOCK_PAM,
-            resolvedIceBlockClip,
-            stateTime,
-            getX() + 33f,
-            getY(),
-            true
-        );
+        try {
+            pamPlayer.draw(
+                batch,
+                ICE_BLOCK_PAM,
+                resolvedIceBlockClip,
+                stateTime,
+                getX() + 33f,
+                getY(),
+                true
+            );
+        } catch (Throwable ignored) {
+        }
 
         batch.setColor(1f, 1f, 1f, parentAlpha);
     }
@@ -252,11 +244,6 @@ public final class ZombieActor extends Actor {
         }
     }
 
-    /**
-     * شفافیتِ بلوک رو متناسب با آسیبِ باقی‌مونده حساب می‌کنه: سالم
-     * (iceHp کامل) کاملاً توپر، نزدیک شکستن (iceHp نزدیک صفر) خیلی
-     * کم‌رنگ (ولی نه کاملاً محو، تا معلوم باشه هنوز از بین نرفته).
-     */
     private float resolveIceBlockAlpha(double iceHp) {
         float fraction = MathUtils.clamp(
             (float) (iceHp / INITIAL_ICE_HP),

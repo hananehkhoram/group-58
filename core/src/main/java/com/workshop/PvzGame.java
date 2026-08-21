@@ -127,6 +127,11 @@ public class PvzGame extends Game {
             public void onGreenHouse() {
                 showGreenHouse();
             }
+            @Override
+            public void onShop() {
+                showShop();
+            }
+
 
             @Override
             public void onLogout() {
@@ -168,6 +173,14 @@ public class PvzGame extends Game {
             @Override
             public void onNavigateToScreen(Screen screen) {
                 setScreen(screen);
+            }
+        }));
+    }
+    public void showShop() {
+        setScreen(new ShopScreen(null, new ShopScreen.Listener() {
+            @Override
+            public void onBack() {
+                showMain();
             }
         }));
     }

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -30,6 +31,8 @@ import com.workshop.model.user.UserManager;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.view.Toast;
 import com.workshop.view.components.CurrencyHeader;
+import com.workshop.view.gameplay.ZombieAnimationResolver;
+import com.workshop.view.gameplay.ZombieAnimationSpec;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 import pvz.skin.PvzSkin;
@@ -48,6 +51,7 @@ public class CollectionScreen implements Screen {
     private static final float BASE_HEIGHT = 720f;
     public static TextureBank textureBank;
     public static PamPlayer pamPlayer;
+    private static ZombieAnimationResolver zombieAnimationResolver;
     private final GameContext ctx;
     private final Stage stage;
     private final Skin skin;
@@ -83,12 +87,15 @@ public class CollectionScreen implements Screen {
             textureBank = new TextureBank("768", assetsFolder);
             pamPlayer = new PamPlayer(textureBank, assetsFolder);
         }
+        if (zombieAnimationResolver == null) {
+            zombieAnimationResolver = new ZombieAnimationResolver();
+        }
     }
 
     private float getScaleFactor() {
         float scaleX = (float) Gdx.graphics.getWidth() / BASE_WIDTH;
         float scaleY = (float) Gdx.graphics.getHeight() / BASE_HEIGHT;
-        return Math.max(0.8f, Math.min(scaleX, scaleY)) * 1.2f;
+        return Math.max(0.8f, Math.min(scaleX, scaleY)) * 1.0f;
     }
 
     private void buildUI() {
@@ -268,9 +275,8 @@ public class CollectionScreen implements Screen {
                 super.draw(batch, parentAlpha);
                 textureBank.update();
 
-                // 1. Render Plant Animation
                 if (!isUnlocked) {
-                    batch.setColor(0.35f, 0.35f, 0.35f, 0.85f); // Dark tint for locked plant
+                    batch.setColor(0.35f, 0.35f, 0.35f, 0.85f);
                 } else {
                     batch.setColor(Color.WHITE);
                 }
@@ -280,8 +286,10 @@ public class CollectionScreen implements Screen {
                 if (folderName.equalsIgnoreCase("PRIMALPOTATOMINE")) {
                     folderName = "PRIMAL_POTATOMINE";
                 }
-                float drawX = getX() + getWidth() / 2f;
-                float drawY = getY() + 12f * scale;
+
+                Vector2 stagePos = localToStageCoordinates(new Vector2(0, 0));
+                float drawX = stagePos.x + getWidth() / 2f;
+                float drawY = stagePos.y + 12f * scale;
 
                 String pamPath = "PLANT/" + folderName + "/" + folderName + ".PAM";
                 if (!pamPath.equals("PLANT/CATTAILMINT/CATTAILMINT.PAM") && !pamPath.equals("PLANT/CATTAIL/CATTAIL.PAM")) {
@@ -301,7 +309,6 @@ public class CollectionScreen implements Screen {
                         preferredClips.add("stage1_spawn");
                     }
 
-                    // Fallback animation clips if the specific one fails
                     String[] defaultClips = {"idle", "idle_stage1", "intro", "animation", "anim", "attack", "idle1_1", "stage1_spawn"};
                     for (String c : defaultClips) {
                         if (!preferredClips.contains(c)) {
@@ -421,7 +428,7 @@ public class CollectionScreen implements Screen {
         List<Zombie> allZombies = new ArrayList<>(DataManager.getInstance().zombies.getZombieDataMap().values());
         List<Zombie> seenZombies = currentUser != null ? currentUser.getSeenZombies() : new ArrayList<>();
 
-        int maxCols = 9;
+        int maxCols = 6;
         int col = 0;
         float scale = getScaleFactor();
 
@@ -430,7 +437,7 @@ public class CollectionScreen implements Screen {
                 .anyMatch(z -> z.getName().equalsIgnoreCase(zombie.getName()));
 
             Table card = createZombieCard(zombie, isSeen, scale);
-            gridTable.add(card).size(125 * scale, 175 * scale).pad(6 * scale);
+            gridTable.add(card).size(160 * scale, 210 * scale).pad(8 * scale);
 
             col++;
             if (col % maxCols == 0) gridTable.row();
@@ -448,47 +455,38 @@ public class CollectionScreen implements Screen {
         }
 
         if (isSeen) {
+            String seasonName = null;
+            ZombieAnimationSpec spec = zombieAnimationResolver.resolve(zombie, seasonName);
+
             Table pamContainer = new Table() {
                 @Override
                 public void draw(com.badlogic.gdx.graphics.g2d.Batch batch, float parentAlpha) {
                     super.draw(batch, parentAlpha);
+                    if (spec == null) return;
+
+                    String pamPath = spec.getPamPath();
+                    String idleClip = spec.getIdleClip();
+                    if (pamPath == null || idleClip == null) return;
+
                     textureBank.update();
 
-                    String rawName = zombie.getName().toUpperCase();
-                    String folderName = rawName.replace(" ", "");
+                    Vector2 stagePos = localToStageCoordinates(new Vector2(0, 0));
+                    float drawX = stagePos.x + getWidth() / 2f;
+                    float drawY = stagePos.y + 15f * scale;
 
-                    float drawX = getX() + getWidth() / 2f;
-                    float drawY = getY() + 10f * scale;
-
-                    boolean drawn = false;
-                    String[] possiblePaths = {
-                        "768/INITIAL/ZOMBIE/" + folderName + "/" + folderName + ".PAM",
-                        "768/INITIAL/ZOMBIE/" + rawName.replace(" ", "_") + "/" + rawName.replace(" ", "_") + ".PAM"
-                    };
-
-                    for (String pamPath : possiblePaths) {
-                        try {
-                            pamPlayer.draw(batch, pamPath, "idle", stateTime, drawX, drawY, true);
-                            drawn = true;
-                            break;
-                        } catch (Exception ignored) {
-                        }
-                    }
-
-                    if (!drawn) {
-                        TextureRegion reg = Textures.regionOrNull("ZOMBIE_" + rawName.replace(" ", "_"));
-                        if (reg != null) {
-                            batch.draw(reg, drawX - 25 * scale, drawY, 55 * scale, 55 * scale);
-                        }
+                    try {
+                        pamPlayer.draw(batch, pamPath, idleClip, stateTime, drawX, drawY, true);
+                    } catch (Exception ignored) {
                     }
                 }
             };
-            card.add(pamContainer).size(55 * scale, 55 * scale).padTop(10 * scale).row();
+
+            card.add(pamContainer).size(140 * scale, 135 * scale).padTop(10 * scale).row();
 
             Label nameLbl = createSafeLabel(zombie.getName(), "default");
             nameLbl.setWrap(true);
             nameLbl.setAlignment(Align.center);
-            card.add(nameLbl).width(115 * scale).height(34 * scale).center().padTop(4 * scale).row();
+            card.add(nameLbl).width(140 * scale).height(35 * scale).center().padBottom(8 * scale).row();
 
             card.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
             card.addListener(new ClickListener() {
@@ -498,6 +496,7 @@ public class CollectionScreen implements Screen {
                         listener.onNavigateToScreen(new ZombieDetailsScreen(
                             zombie,
                             pamPlayer,
+                            textureBank,
                             () -> listener.onNavigateToScreen(CollectionScreen.this)
                         ));
                     } else {

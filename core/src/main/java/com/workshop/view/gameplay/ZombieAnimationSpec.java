@@ -16,6 +16,12 @@ public final class ZombieAnimationSpec {
     }
 
     public String getPamPath() {
+        if (pamPath != null) {
+            String clean = pamPath.toUpperCase().trim().replace("ZOMBIE_", "").replace("_ZOMBIE", "").replace("ZOMBIE", "").replace(" ", "");
+            if (clean.equals("RA")) {
+                return "768/INITIAL/ZOMBIE/ZOMBIE_EGYPT_RA/ZOMBIE_EGYPT_RA.PAM";
+            }
+        }
         return pamPath;
     }
 
