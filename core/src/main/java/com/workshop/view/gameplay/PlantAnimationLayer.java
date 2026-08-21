@@ -105,7 +105,8 @@ public final class PlantAnimationLayer extends Group {
         return new PlantActor(
             plant,
             spec,
-            pamPlayer
+            pamPlayer,
+            getCellHeight()
         );
     }
 
@@ -123,6 +124,10 @@ public final class PlantAnimationLayer extends Group {
             entry.getValue().remove();
             iterator.remove();
         }
+    }
+
+    private float getCellHeight() {
+        return gridHeight / gameContext.getLevel().getRows();
     }
 
     private float getCellCenterX(int column) {

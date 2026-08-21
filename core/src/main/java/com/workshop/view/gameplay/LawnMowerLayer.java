@@ -1,6 +1,8 @@
 package com.workshop.view.gameplay;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.workshop.controller.repository.Textures;
@@ -70,7 +72,7 @@ public final class LawnMowerLayer extends Group {
 
             MowerActor actor = actors.get(mower);
             if (actor == null) {
-                actor = new MowerActor(mower, resolvePamPath());
+                actor = new MowerActor(mower, resolvePamPath(), getCellHeight());
                 actors.put(mower, actor);
                 addActor(actor);
             }
@@ -101,6 +103,10 @@ public final class LawnMowerLayer extends Group {
         }
     }
 
+    private float getCellHeight() {
+        return gridHeight / gameContext.getLevel().getRows();
+    }
+
     private float toStageX(double tileX) {
         float cellWidth = gridWidth / gameContext.getLevel().getColumns();
         return gridX + (float) tileX * cellWidth - cellWidth * 0.55f;
@@ -117,13 +123,21 @@ public final class LawnMowerLayer extends Group {
     private final class MowerActor extends Actor {
         private final LawnMower mower;
         private final String pamPath;
+        private final float cellHeight;
         private String idleClip;
         private String runClip;
         private float stateTime;
 
-        MowerActor(LawnMower mower, String pamPath) {
+        // ماشین‌چمن‌زن معمولاً کوتاه‌تر از یه خونه‌ی کامل گرید هست.
+        // اگه هنوز بزرگ/کوچیک بود، همینو دستی تیون کن.
+        private static final float TARGET_HEIGHT_TO_CELL_RATIO = 0.85f;
+
+        private Float resolvedScale;
+
+        MowerActor(LawnMower mower, String pamPath, float cellHeight) {
             this.mower = mower;
             this.pamPath = pamPath;
+            this.cellHeight = cellHeight;
 
             List<String> clips = pamPlayer.clips(pamPath);
             idleClip = pick(clips, "idle", "animation");
@@ -149,6 +163,23 @@ public final class LawnMowerLayer extends Group {
             return null;
         }
 
+        private float getScale(String clip) {
+            if (resolvedScale != null) {
+                return resolvedScale;
+            }
+
+            Rectangle bounds = pamPlayer.bounds(pamPath, clip);
+
+            if (bounds == null || bounds.height <= 0f) {
+                return 1f;
+            }
+
+            resolvedScale =
+                (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO) / bounds.height;
+
+            return resolvedScale;
+        }
+
         @Override
         public void act(float delta) {
             super.act(delta);
@@ -163,15 +194,30 @@ public final class LawnMowerLayer extends Group {
             }
 
             batch.setColor(1f, 1f, 1f, parentAlpha);
-            pamPlayer.draw(
-                batch,
-                pamPath,
-                clip,
-                stateTime,
-                getX(),
-                getY(),
-                true
-            );
+
+            float scale = getScale(clip);
+
+            Matrix4 oldTransform = batch.getTransformMatrix().cpy();
+            Matrix4 transform = new Matrix4(oldTransform);
+            transform.translate(getX(), getY(), 0);
+            transform.scale(scale, scale, 1f);
+            transform.translate(-getX(), -getY(), 0);
+            batch.setTransformMatrix(transform);
+
+            try {
+                pamPlayer.draw(
+                    batch,
+                    pamPath,
+                    clip,
+                    stateTime,
+                    getX(),
+                    getY(),
+                    true
+                );
+            } catch (Throwable ignored) {
+            }
+
+            batch.setTransformMatrix(oldTransform);
         }
     }
 }

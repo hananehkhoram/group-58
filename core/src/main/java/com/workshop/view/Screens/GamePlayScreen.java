@@ -525,12 +525,12 @@ public class GamePlayScreen implements Screen {
             dialogueBlocking = true;
 
 
-        Toast.showMission(
-            stage,
-            skin,
-            com.workshop.model.level.LevelObjectives.describe(level),
-            INTRO_WAIT + INTRO_DURATION
-        );
+            Toast.showMission(
+                stage,
+                skin,
+                com.workshop.model.level.LevelObjectives.describe(level),
+                INTRO_WAIT + INTRO_DURATION
+            );
             new DialogueOverlay(
                 stage,
                 skin,
@@ -575,7 +575,7 @@ public class GamePlayScreen implements Screen {
     }
 
     private void buildConveyorBelt() {
-         conveyorBeltLayer = new ConveyorBeltLayer(
+        conveyorBeltLayer = new ConveyorBeltLayer(
             (ConveyorBeltManager) gameContext.getLevelManager(),
             worldHeight,
             seedBankCards,
@@ -763,15 +763,10 @@ public class GamePlayScreen implements Screen {
         seedBankTable.padLeft(110f);
         seedBankTable.padTop(20f);
 
-        // مستطیل بزرگ پشت کارت‌ها
+        // مستطیل بزرگ پشت کارت‌ها: خودِ بنرِ راه‌راهِ leftBackground از قبل
+        // به‌عنوان بک‌گراند این ستون کار می‌کنه، پس اینجا فقط چیدمانه.
         Table seedBankPanel = new Table();
         seedBankPanel.top();
-
-        if (skin.has("SeedPacketBorder", Drawable.class)) {
-            seedBankPanel.setBackground(
-                skin.getDrawable("SeedPacketBorder")
-            );
-        }
 
         Table cardsTable = new Table();
         cardsTable.top();
@@ -1260,7 +1255,8 @@ public class GamePlayScreen implements Screen {
         mousePlantPreview = new PlantActor(
             plant,
             spec,
-            Textures.getPamPlayer()
+            Textures.getPamPlayer(),
+            getCellHeight()
         );
 
         mousePlantPreview.setTouchable(

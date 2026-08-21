@@ -1,13 +1,18 @@
 package com.workshop.view.Screens;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.plants.Plant;
 import pvz.libpvz.pam.PamPlayer;
@@ -34,6 +39,9 @@ public class PlantCardActor extends Table {
 
     private OnClick onClick;
 
+    private static NinePatchDrawable cardBackground;
+    private static NinePatchDrawable cardBackgroundFocused;
+
     public PlantCardActor(Plant plant, PamPlayer pamPlayer, TextureBank textureBank, Skin skin, Mode mode) {
         this.plant = plant;
         this.pamPlayer = pamPlayer;
@@ -49,18 +57,60 @@ public class PlantCardActor extends Table {
         this.animTime += delta;
     }
 
+    private static NinePatchDrawable buildRoundedBackground(Color fill, Color border) {
+        int size = 32;
+        int radius = 8;
+
+        Pixmap pixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
+        pixmap.setColor(0f, 0f, 0f, 0f);
+        pixmap.fill();
+
+        pixmap.setColor(border);
+        fillRoundedRect(pixmap, 0, 0, size, size, radius);
+
+        pixmap.setColor(fill);
+        fillRoundedRect(pixmap, 2, 2, size - 4, size - 4, radius - 2);
+
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+
+        NinePatch patch = new NinePatch(texture, radius, radius, radius, radius);
+        return new NinePatchDrawable(patch);
+    }
+
+    private static void fillRoundedRect(Pixmap pixmap, int x, int y, int w, int h, int r) {
+        pixmap.fillRectangle(x + r, y, w - 2 * r, h);
+        pixmap.fillRectangle(x, y + r, w, h - 2 * r);
+        pixmap.fillCircle(x + r, y + r, r);
+        pixmap.fillCircle(x + w - r - 1, y + r, r);
+        pixmap.fillCircle(x + r, y + h - r - 1, r);
+        pixmap.fillCircle(x + w - r - 1, y + h - r - 1, r);
+    }
+
+    private static NinePatchDrawable getCardBackground() {
+        if (cardBackground == null) {
+            cardBackground = buildRoundedBackground(
+                new Color(0.22f, 0.16f, 0.08f, 0.55f),
+                new Color(0.85f, 0.72f, 0.4f, 0.85f)
+            );
+        }
+        return cardBackground;
+    }
+
+    private static NinePatchDrawable getCardBackgroundFocused() {
+        if (cardBackgroundFocused == null) {
+            cardBackgroundFocused = buildRoundedBackground(
+                new Color(0.3f, 0.45f, 0.14f, 0.75f),
+                new Color(0.55f, 1f, 0.45f, 1f)
+            );
+        }
+        return cardBackgroundFocused;
+    }
+
     public void rebuildUI() {
         clearChildren();
         clearListeners();
-        top();
-
-        if (mode == Mode.GRID) {
-            if (skin.has("SeedPacketBorder", Drawable.class)) {
-                setBackground(skin.getDrawable("SeedPacketBorder"));
-            } else if (skin.has("PlantAlmanacBorder", Drawable.class)) {
-                setBackground(skin.getDrawable("PlantAlmanacBorder"));
-            }
-        }
+        align(Align.center);
 
         Table pamContainer = new Table() {
             @Override
@@ -68,14 +118,12 @@ public class PlantCardActor extends Table {
                 super.draw(batch, parentAlpha);
                 if (textureBank != null) textureBank.update();
 
-                float drawX = getX() + getWidth() / 2f;
-                float drawY = getY() + (mode == Mode.SLOT ? 2f : 6f);
+                float centerX = getX() + getWidth() / 2f;
+                float centerY = getY() + getHeight() / 2f;
+                float drawX = centerX + (mode == Mode.SLOT ? 0f : 15f) + 100;
+                float drawY = centerY + (mode == Mode.SLOT ? -10f : -20f);
 
-                if (isSelected) {
-                    batch.setColor(0.3f, 0.3f, 0.3f, 0.6f);
-                } else {
-                    batch.setColor(Color.WHITE);
-                }
+                batch.setColor(Color.WHITE);
 
                 String rawName = plant.getName().toUpperCase().replace(" ", "").replace("-", "");
                 if (rawName.equalsIgnoreCase("PRIMALPOTATOMINE")) rawName = "PRIMAL_POTATOMINE";
@@ -96,7 +144,7 @@ public class PlantCardActor extends Table {
                 if (!drawn) {
                     try {
                         TextureRegion reg = Textures.regionOrNull("PLANT_" + plant.getName().toUpperCase().replace(" ", "_"));
-                        if (reg != null) batch.draw(reg, drawX - 25, drawY, 50, 50);
+                        if (reg != null) batch.draw(reg, getX() - 25, getY() - 25, 50, 50);
                     } catch (Exception ignored) {
                     }
                 }
@@ -105,80 +153,38 @@ public class PlantCardActor extends Table {
             }
         };
 
+        NinePatchDrawable background = isFocused ? getCardBackgroundFocused() : getCardBackground();
+        setBackground(background);
+
         if (mode == Mode.GRID) {
 
-            add(pamContainer)
-                .size(90f, 65f)
-                .padTop(4f)
-                .row();
-
             Table footerTable = new Table();
+            footerTable.align(Align.center);
 
-            Label lvlLbl = createSafeLabel(
-                "LVL " + plant.getLevel(),
-                "big"
-            );
+            Label lvlLbl = createSafeLabel("LVL " + plant.getLevel(), "big");
             lvlLbl.setFontScale(0.32f);
 
-            footerTable.add(lvlLbl)
-                .left()
-                .expandX();
+            footerTable.add(lvlLbl).left().expandX();
+            footerTable.add(buildSunCostGroup()).right();
 
-            Label sunLbl = createSafeLabel(
-                String.valueOf(plant.getSunCost()),
-                "big"
-            );
-
-            sunLbl.setFontScale(0.45f);
-            sunLbl.setColor(Color.WHITE);
-
-            footerTable.add(sunLbl).right();
-
-            add(footerTable)
-                .fillX()
-                .padLeft(6f)
-                .padRight(6f)
-                .padBottom(4f)
-                .row();
+            // در حالت گرید، به کانتینر گیاه ارتفاع و عرض کافی می‌دهیم تا گیاه را در وسط نگه دارد.
+            add(pamContainer).size(90f, 65f).center().row();
+            add(footerTable).fillX().padLeft(6f).padRight(6f).padBottom(4f).row();
 
         } else {
 
             Table slotRow = new Table();
+            slotRow.align(Align.center);
 
-            slotRow.add(pamContainer)
-                .size(62f, 58f)
-                .left();
-
-            Label sunLbl = createSafeLabel(
-                String.valueOf(plant.getSunCost()),
-                "big"
-            );
-
-            sunLbl.setFontScale(0.58f);
-            sunLbl.setColor(Color.WHITE);
-
-            slotRow.add(sunLbl)
-                .width(36f)
-                .right()
-                .padRight(4f);
-
-            slotRow.add(pamContainer)
-                .size(62f, 58f)
-                .left();
-
+            slotRow.add(pamContainer).size(62f, 58f).center();
             slotRow.add().expandX();
+            slotRow.add(buildSunCostGroup()).right();
 
-            slotRow.add(sunLbl)
-                .right();
-
-            add(slotRow)
-                .size(250f, 58f);
+            add(slotRow).size(250f, 58f).center();
         }
 
         if (isBoosted) {
-            setColor(1f, 0.9f, 0.4f, 1f);
-        } else if (isFocused) {
-            setColor(0.5f, 1f, 0.5f, 1f);
+            setColor(1f, 0.85f, 0.35f, 1f);
         } else {
             setColor(Color.WHITE);
         }
@@ -188,7 +194,38 @@ public class PlantCardActor extends Table {
             public void clicked(InputEvent event, float x, float y) {
                 if (onClick != null) onClick.clicked(PlantCardActor.this);
             }
+
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
+                if (pointer == -1) {
+                    setBackground(getCardBackgroundFocused());
+                }
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor toActor) {
+                if (pointer == -1 && !isFocused) {
+                    setBackground(getCardBackground());
+                }
+            }
         });
+    }
+
+    private Table buildSunCostGroup() {
+        Table group = new Table();
+
+        if (skin.has("image_ui_hud_ingame_sun", Drawable.class)) {
+            Image sunIcon = new Image(skin.getDrawable("image_ui_hud_ingame_sun"));
+            group.add(sunIcon).size(mode == Mode.SLOT ? 22f : 18f).padRight(2f);
+        }
+
+        Label sunLbl = createSafeLabel(String.valueOf(plant.getSunCost()), "big");
+        sunLbl.setFontScale(mode == Mode.SLOT ? 0.5f : 0.4f);
+        sunLbl.setColor(1f, 0.92f, 0.55f, 1f);
+
+        group.add(sunLbl);
+
+        return group;
     }
 
     public Plant getPlant() { return plant; }
@@ -200,5 +237,4 @@ public class PlantCardActor extends Table {
     private Label createSafeLabel(String text, String styleName) {
         return skin.has(styleName, Label.LabelStyle.class) ? new Label(text, skin, styleName) : new Label(text, skin);
     }
-
 }

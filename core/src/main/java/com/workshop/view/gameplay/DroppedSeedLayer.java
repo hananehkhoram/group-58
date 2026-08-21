@@ -137,20 +137,6 @@ public final class DroppedSeedLayer extends Group {
             return;
         }
 
-        PlantActor plantActor =
-            new PlantActor(
-                plant,
-                spec,
-                Textures.getPamPlayer()
-            );
-
-        plantActor.setTouchable(
-            Touchable.disabled
-        );
-
-        Group wrapper =
-            new Group();
-
         float cellWidth =
             gridWidth
                 / gameContext
@@ -162,6 +148,21 @@ public final class DroppedSeedLayer extends Group {
                 / gameContext
                 .getLevel()
                 .getRows();
+
+        PlantActor plantActor =
+            new PlantActor(
+                plant,
+                spec,
+                Textures.getPamPlayer(),
+                cellHeight
+            );
+
+        plantActor.setTouchable(
+            Touchable.disabled
+        );
+
+        Group wrapper =
+            new Group();
 
         float x =
             gridX
