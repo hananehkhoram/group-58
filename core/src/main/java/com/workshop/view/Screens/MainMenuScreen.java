@@ -35,6 +35,7 @@ public class MainMenuScreen implements Screen {
         void onLogout();
         void onCollection();
         void onGreenHouse();
+        void onShop();
     }
 
     private final Stage stage;
@@ -101,6 +102,8 @@ public class MainMenuScreen implements Screen {
         Actor profileButton = buildProfileButton();
         Actor collectionButton = buildCollectionButton();
         Actor greenHouseButton = buildGreenHouseButton();
+        Actor shopButton = buildShopButton();
+
 
 
         boolean hasUnreadNews = currentUser != null
@@ -122,6 +125,7 @@ public class MainMenuScreen implements Screen {
         iconRow.add(collectionButton).size(75, 72);
         iconRow.add(greenHouseButton).size(75, 72);
         iconRow.add(newsButton);
+        iconRow.add(shopButton).size(75, 72);
         panel.add(iconRow).padBottom(10).row();
 
 
@@ -235,6 +239,31 @@ public class MainMenuScreen implements Screen {
         stack.add(dotHolder);
 
         return stack;
+    }
+    private Actor buildShopButton() {
+        TextureRegion iconRegion = Textures.regionOrNull("IMAGE_UI_MAINMENU_MM_SHOP");
+
+        if (iconRegion != null) {
+            ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
+            style.imageUp = new TextureRegionDrawable(iconRegion);
+            ImageButton iconButton = new ImageButton(style);
+            iconButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    if (listener != null) listener.onShop();
+                }
+            });
+            return iconButton;
+        }
+
+        TextButton shopButton = new TextButton("Shop", skin, "green_small");
+        shopButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (listener != null) listener.onShop();
+            }
+        });
+        return shopButton;
     }
 
     private Actor buildNewsIconOrFallback() {

@@ -171,6 +171,34 @@ public class ShopMenu extends BaseMenu {
         return null;
     }
 
+    /** بدون کم کردن پول یا تغییر وضعیت، بررسی می‌کند آیا این خرید مجاز است یا نه. */
+    public String canPurchase(int id, int count) {
+        if (count <= 0) {
+            return "Invalid count.";
+        }
+
+        if (id == 0) {
+            DailyOffer offer = currentUser.getLastDailyOffer();
+            if (offer == null) return "No daily offer available today.";
+            if (offer.isPurchased()) return "You have already purchased today's daily offer!";
+            if (count > 1) return "You can only buy 1 pack of the daily offer per day.";
+            if (currentUser.getCoins() < offer.getPrice()) return "Not enough coins!";
+            return null;
+        }
+
+        ItemType item = shop.getItemById(id);
+        if (item == null) return "Invalid id.";
+
+        String stockError = checkStockLimit(item, count);
+        if (stockError != null) return stockError;
+
+        int totalCost = item.getPrice() * count;
+        if (item.getCurrency() == Currency.COIN && currentUser.getCoins() < totalCost) return "Not enough coins!";
+        if (item.getCurrency() == Currency.GEM && currentUser.getGems() < totalCost) return "Not enough gems!";
+
+        return null;
+    }
+
     public String buyDailyOffer(int count){
         DailyOffer offer = currentUser.getLastDailyOffer();
         if (offer == null) {

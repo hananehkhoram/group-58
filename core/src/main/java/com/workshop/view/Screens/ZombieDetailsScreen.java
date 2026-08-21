@@ -17,13 +17,12 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import com.workshop.model.zombie.Zombie;
+import com.workshop.view.gameplay.ZombieAnimationResolver;
+import com.workshop.view.gameplay.ZombieAnimationSpec;
 import pvz.libpvz.pam.PamPlayer;
+import pvz.libpvz.textures.TextureBank;
 import pvz.skin.PvzSkin;
 
-/**
- * Details screen for a single zombie showing stats and animations.
- * Refactored to use BaseScreen and ScreenResourceManager for consistent code patterns.
- */
 public class ZombieDetailsScreen extends BaseScreen {
 
     public interface BackListener {
@@ -34,21 +33,43 @@ public class ZombieDetailsScreen extends BaseScreen {
     private static final float BASE_HEIGHT = 720f;
     private static final Color BG_COLOR = Color.valueOf("0d1b3e");
 
+    // shared across every screen instance - scanning the assets folder once
+    // is the whole point of ZombieAnimationResolver, no need to rebuild it per screen.
+    private static ZombieAnimationResolver animationResolver;
+
     private final Stage stage;
     private final Zombie zombie;
     private final BackListener backListener;
     private final PamPlayer pamPlayer;
+    private final TextureBank textureBank;
+    private final ZombieAnimationSpec animationSpec;
 
     private float stateTime = 0f;
     private Image bg;
 
-    public ZombieDetailsScreen(Zombie zombie, PamPlayer pamPlayer, BackListener backListener) {
+    public ZombieDetailsScreen(Zombie zombie, PamPlayer pamPlayer, TextureBank textureBank, BackListener backListener) {
+        this(zombie, pamPlayer, textureBank, backListener, null);
+    }
+
+    /**
+     * @param seasonName used only to pick the right reskin for "basic" zombies
+     *                    (see {@link ZombieAnimationResolver#resolve(Zombie, String)}) -
+     *                    pass the current level's season here if the caller has one;
+     *                    null falls back to the Egypt basic zombie.
+     */
+    public ZombieDetailsScreen(Zombie zombie, PamPlayer pamPlayer, TextureBank textureBank, BackListener backListener, String seasonName) {
         super(PvzSkin.get());
 
         this.zombie = zombie;
         this.pamPlayer = pamPlayer;
+        this.textureBank = textureBank;
         this.backListener = backListener;
         this.stage = new Stage(new ScreenViewport());
+
+        if (animationResolver == null) {
+            animationResolver = new ZombieAnimationResolver();
+        }
+        this.animationSpec = animationResolver.resolve(zombie, seasonName);
 
         buildUI();
     }
@@ -59,7 +80,6 @@ public class ZombieDetailsScreen extends BaseScreen {
         Table root = new Table();
         root.setFillParent(true);
 
-        // Background
         generatedBgTexture = createSolidColorTexture(BG_COLOR.r, BG_COLOR.g, BG_COLOR.b, BG_COLOR.a);
         generatedBgTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         bg = new Image(new TextureRegionDrawable(new TextureRegion(generatedBgTexture)));
@@ -70,16 +90,14 @@ public class ZombieDetailsScreen extends BaseScreen {
 
         float scale = getScaleFactor();
 
-        // Header with back button
         Table topBar = buildTopBar(scale);
         root.add(topBar).fillX().row();
 
-        // Content area: animation + stats
         Table contentArea = new Table();
         Table leftCol = buildLeftColumn(scale);
         Table rightCol = buildRightColumn(scale);
 
-        contentArea.add(leftCol).padRight(50 * scale).top();
+        contentArea.add(leftCol).padRight(30 * scale).top();
         contentArea.add(rightCol).top().expandX().fillX().row();
 
         root.add(contentArea).expand().center().padTop(10 * scale).row();
@@ -117,13 +135,12 @@ public class ZombieDetailsScreen extends BaseScreen {
             zombieStack.add(t);
         }
 
-        // Zombie animation
         Actor zombiePamActor = createZombiePamActor(scale);
         Table animWrapper = new Table();
-        animWrapper.add(zombiePamActor).size(180 * scale, 180 * scale).center();
+        animWrapper.add(zombiePamActor).expand().fill();
         zombieStack.add(animWrapper);
 
-        leftCol.add(zombieStack).size(240 * scale, 240 * scale).padBottom(15 * scale).row();
+        leftCol.add(zombieStack).size(320 * scale, 380 * scale).padBottom(15 * scale).row();
 
         return leftCol;
     }
@@ -205,20 +222,30 @@ public class ZombieDetailsScreen extends BaseScreen {
     }
 
     /**
-     * Creates a Table that renders the zombie animation using ScreenResourceManager.
+     * Draws the zombie's idle animation using whatever {@link ZombieAnimationResolver}
+     * found for it - no more path-guessing here. If nothing was resolved (missing
+     * assets, unrecognized name, etc.) this silently draws nothing rather than
+     * crash, same "best effort" spirit as the rest of the PAM-drawing code in this project.
      */
     private Actor createZombiePamActor(float scale) {
-        return new Table() {
+        return new Actor() {
             @Override
             public void draw(Batch batch, float parentAlpha) {
-                super.draw(batch, parentAlpha);
+                if (animationSpec == null) return;
 
-                float drawX = getX() + getWidth() / 2f;
-                float drawY = getY() + 20f * scale;
+                String pamPath = animationSpec.getPamPath();
+                String idleClip = animationSpec.getIdleClip();
+                if (pamPath == null || idleClip == null) return;
 
-                ScreenResourceManager.drawZombieAnimation(
-                    batch, pamPlayer, zombie.getName(), stateTime, drawX, drawY
-                );
+                if (textureBank != null) textureBank.update();
+
+                float drawX = getX() + (getWidth() / 2f) + (10f * scale);
+                float drawY = getY() + (getHeight() * 0.2f);
+
+                try {
+                    pamPlayer.draw(batch, pamPath, idleClip, stateTime, drawX, drawY, true);
+                } catch (Exception ignored) {
+                }
             }
         };
     }

@@ -41,7 +41,7 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.workshop.controller.MenuManager;
 import com.workshop.controller.commands.Planting;
 import com.workshop.model.plants.Plant;
-import com.workshop.view.widgets.PlantCardActor;
+import com.workshop.view.Screens.PlantCardActor;
 import com.workshop.model.level.LevelType;
 
 import java.util.ArrayList;
@@ -107,8 +107,6 @@ public class GamePlayScreen implements Screen {
     private int hoveredPlantColumn = -1;
     private PlantActor mousePlantPreview;
 
-    private ConveyorBeltLayer conveyorBeltLayer;
-
     private final PlantAnimationResolver plantPreviewResolver =
         new PlantAnimationResolver();
 
@@ -123,6 +121,8 @@ public class GamePlayScreen implements Screen {
 
     private boolean dialogueBlocking = false;
     private boolean endDialogueShown = false;
+
+    private ConveyorBeltLayer conveyorBeltLayer;
 
     //===========================TEST=============================
 
@@ -518,11 +518,7 @@ public class GamePlayScreen implements Screen {
         // --- دیالوگ شروع مرحله (اختیاری) و بعد از آن، منوی آغاز مرحله ---
         List<DialogueLine> introDialogue = level.getIntroDialogue();
 
-        if (isConveyorLevel()) {
-            buildConveyorBelt();
-        } else {
-            buildSeedBank(skin);
-        }
+        buildSeedBank(skin);
         setupPlantingClick();
 
         if (introDialogue != null && !introDialogue.isEmpty()) {
@@ -579,7 +575,7 @@ public class GamePlayScreen implements Screen {
     }
 
     private void buildConveyorBelt() {
-        conveyorBeltLayer = new ConveyorBeltLayer(
+         conveyorBeltLayer = new ConveyorBeltLayer(
             (ConveyorBeltManager) gameContext.getLevelManager(),
             worldHeight,
             seedBankCards,

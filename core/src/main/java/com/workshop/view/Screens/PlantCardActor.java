@@ -1,4 +1,4 @@
-package com.workshop.view.widgets;
+package com.workshop.view.Screens;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
