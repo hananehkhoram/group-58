@@ -41,6 +41,16 @@ public class Zombie implements Damageable {
 
     private boolean isEating = false;
     private boolean movingBackward = false;
+    private boolean ashed;
+    private boolean ashFinished;
+    private int maxHp;
+    private boolean lostArm;
+    private boolean lostHead;
+    private boolean deathAnimFinished;
+    private boolean pendingArmorPop;
+    private boolean pendingArmDrop;
+    private boolean pendingHeadDrop;
+    private int lastArmorStage = -1;
 
     public Zombie() {
         this.effects = new ArrayList<>();
@@ -55,6 +65,7 @@ public class Zombie implements Damageable {
         this.speed = speed;
         this.wavePointCost = wavePointCost;
         this.weight = weight;
+        this.maxHp = hp;
         this.behaviors = ZombieActivator.buildBehaviors(this);
         this.effects = new  ArrayList<>();
     }
@@ -71,7 +82,7 @@ public class Zombie implements Damageable {
 
     public void update(GameContext ctx, double deltaTime) {
         if (isDead()) {
-            if (random.nextInt(100) < 5) {
+            if (!ashed && random.nextInt(100) < 5) {
                 ctx.addLoot(new LootItem(LootItem.LootType.SEED, (int) getX(), getRow()));}
             return;
         }
@@ -156,20 +167,50 @@ public class Zombie implements Damageable {
         Armor primary = getArmor();
         if (primary != null && !primary.isDestroyed()) {
             remaining = primary.absorb(remaining);
+            if (primary.isDestroyed()) {
+                pendingArmorPop = true;
+            }
             if (remaining <= 0) return;
         }
 
         Armor secondary = getSecondaryArmor();
         if (secondary != null && !secondary.isDestroyed()) {
             remaining = secondary.absorb(remaining);
+            if (secondary.isDestroyed()) {
+                pendingArmorPop = true;
+            }
             if (remaining <= 0) return;
         }
 
         hp -= remaining;
+        noteBodyInjury();
         if (hp <= 0){
             Console.showMessage("Zombie of type "+this.getName() +
                 " is dead at " + this.getX() + ", " + this.getY());
         }
+    }
+
+    public void takeExplosionDamage(double damage) {
+        boolean wasAlive = !isDead();
+        takeDamage(damage);
+        if (wasAlive && isDead()) {
+            ashed = true;
+            ashFinished = false;
+            pendingHeadDrop = false;
+            pendingArmDrop = false;
+        }
+    }
+
+    public boolean isAshed() {
+        return ashed;
+    }
+
+    public boolean isAshFinished() {
+        return ashFinished;
+    }
+
+    public void markAshFinished() {
+        ashFinished = true;
     }
 
     public Armor getArmor() {
@@ -218,6 +259,97 @@ public class Zombie implements Damageable {
     @Override
     public void takeArmorPiercingDamage(int amount) {
         hp -= amount;
+        noteBodyInjury();
+    }
+
+    private void noteBodyInjury() {
+        if (maxHp <= 0) {
+            maxHp = Math.max(hp, 1);
+        }
+        if (!lostArm && hp > 0 && hp <= maxHp / 2) {
+            lostArm = true;
+            pendingArmDrop = true;
+        }
+        if (!lostHead && hp <= 0 && !ashed) {
+            lostHead = true;
+            pendingHeadDrop = true;
+        }
+    }
+
+    public boolean consumeArmorPop() {
+        if (!pendingArmorPop) {
+            return false;
+        }
+        pendingArmorPop = false;
+        return true;
+    }
+
+    public boolean consumeArmDrop() {
+        if (!pendingArmDrop) {
+            return false;
+        }
+        pendingArmDrop = false;
+        return true;
+    }
+
+    public boolean consumeHeadDrop() {
+        if (!pendingHeadDrop) {
+            return false;
+        }
+        pendingHeadDrop = false;
+        return true;
+    }
+
+    public boolean hasLostArm() {
+        return lostArm;
+    }
+
+    public boolean hasLostHead() {
+        return lostHead;
+    }
+
+    public boolean isDeathAnimFinished() {
+        return deathAnimFinished;
+    }
+
+    public void markDeathAnimFinished() {
+        deathAnimFinished = true;
+    }
+
+    public int getMaxHp() {
+        return maxHp > 0 ? maxHp : Math.max(hp, 1);
+    }
+
+    public int getArmorDamageStage() {
+        Armor armor = getArmor();
+        if (armor == null || armor.isDestroyed()) {
+            return -1;
+        }
+        float fraction = (float) armor.getArmorHP() / Math.max(1, armor.getArmorType().baseHealth);
+        if (fraction > 0.66f) {
+            return 0;
+        }
+        if (fraction > 0.33f) {
+            return 1;
+        }
+        return 2;
+    }
+
+    public boolean consumeArmorStageChange() {
+        int stage = getArmorDamageStage();
+        if (stage < 0) {
+            lastArmorStage = stage;
+            return false;
+        }
+        if (lastArmorStage < 0) {
+            lastArmorStage = stage;
+            return false;
+        }
+        if (stage != lastArmorStage) {
+            lastArmorStage = stage;
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -302,7 +434,16 @@ public class Zombie implements Damageable {
     public void setSpawnTick(long spawnTick) {this.spawnTick = spawnTick;}
     public void setId(String id) { this.id = id; }
     public void setName(String name) { this.name = name; }
-    public void setHp(int hp) { this.hp = hp; }
+    public void setHp(int hp) {
+        this.hp = hp;
+        if (maxHp <= 0) {
+            this.maxHp = hp;
+        }
+    }
+
+    public void setMaxHp(int maxHp) {
+        this.maxHp = maxHp;
+    }
     public void setEatDps(double eatDps) { this.eatDps = eatDps; }
     public void setSpeed(double speed) { this.speed = speed; }
     public void setWavePointCost(int wpc) { this.wavePointCost = wpc; }

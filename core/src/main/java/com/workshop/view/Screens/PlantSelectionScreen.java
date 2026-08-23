@@ -131,7 +131,10 @@ public class PlantSelectionScreen implements Screen {
         leftSidebar.add(sidebarTitle).padBottom(2).row();
 
         sidebarSlotsTable = new Table();
-        leftSidebar.add(sidebarSlotsTable).expandY().top().padTop(2).row();
+        ScrollPane slotScroll = new ScrollPane(sidebarSlotsTable, skin);
+        slotScroll.setFadeScrollBars(false);
+        slotScroll.setScrollingDisabled(true, false);
+        leftSidebar.add(slotScroll).growY().top().padTop(2).row();
         bodyTable.add(leftSidebar).width(140).growY().padRight(4);
 
         Table mainArea = new Table();
@@ -144,13 +147,16 @@ public class PlantSelectionScreen implements Screen {
 
         detailPanel = new Table();
         detailPanel.setBackground(getFallbackCardBackground());
-        mainArea.add(detailPanel).fillX().height(260).padBottom(4).row();
+        mainArea.add(detailPanel).fillX().height(200).padBottom(4).row();
 
         availableGrid = new Table();
         availableGrid.defaults().pad(3);
         ScrollPane scrollPane = new ScrollPane(availableGrid, skin);
         scrollPane.setFadeScrollBars(false);
         mainArea.add(scrollPane).grow().row();
+
+        bodyTable.add(mainArea).grow();
+        root.add(bodyTable).grow();
 
         TextButton letsRockBtn = new TextButton("LET'S ROCK!", skin, "purple");
         letsRockBtn.addListener(new ChangeListener() {
@@ -164,10 +170,14 @@ public class PlantSelectionScreen implements Screen {
                 }
             }
         });
-        mainArea.add(letsRockBtn).width(180).height(40).right().padTop(2);
 
-        bodyTable.add(mainArea).grow();
-        root.add(bodyTable).grow();
+        Table startBar = new Table();
+        startBar.setFillParent(true);
+        startBar.bottom().right();
+        startBar.padRight(24).padBottom(18);
+        startBar.add(letsRockBtn).width(200).height(52);
+        startBar.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.childrenOnly);
+        stage.addActor(startBar);
     }
 
     private Drawable createWhiteDrawable(Color color) {

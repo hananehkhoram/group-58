@@ -225,6 +225,12 @@ public class GameEngine {
             }
 
             if (zombie.isDead()) {
+                if (zombie.isAshed() && !zombie.isAshFinished()) {
+                    continue;
+                }
+                if (!zombie.isAshed() && !zombie.isDeathAnimFinished()) {
+                    continue;
+                }
 
                 for (
                     Behaviors behavior

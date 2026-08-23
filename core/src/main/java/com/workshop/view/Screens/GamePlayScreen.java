@@ -96,6 +96,9 @@ public class GamePlayScreen implements Screen {
 
     private float postIntroTime = 0f;
     private boolean gameplayStarted = false;
+    private float shakeTime = 0f;
+    private float shakeDuration = 0f;
+    private float shakeIntensity = 0f;
 
     private static final float MISSION_DISPLAY_TIME = 6f;
     private float screenElapsedTime = 0f;
@@ -365,6 +368,22 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(zombieAnimationLayer);
 
+        stage.addActor(new ExplosionFxLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
+        stage.addActor(new ZombieGibLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
         com.workshop.view.gameplay.ChillWindLayer chillWindLayer =
             new com.workshop.view.gameplay.ChillWindLayer(
                 gameContext,
@@ -518,7 +537,11 @@ public class GamePlayScreen implements Screen {
         // --- دیالوگ شروع مرحله (اختیاری) و بعد از آن، منوی آغاز مرحله ---
         List<DialogueLine> introDialogue = level.getIntroDialogue();
 
-        buildSeedBank(skin);
+        if (isConveyorLevel()) {
+            buildConveyorBelt();
+        } else {
+            buildSeedBank(skin);
+        }
         setupPlantingClick();
 
         if (introDialogue != null && !introDialogue.isEmpty()) {
@@ -1132,6 +1155,38 @@ public class GamePlayScreen implements Screen {
         }
     }
 
+    private void applyScreenShake(float delta) {
+        if (!introFinished || pauseOverlay.isVisible() || winLoseOverlay.isVisible()) {
+            return;
+        }
+
+        com.workshop.model.mechanisms.ScreenShake request;
+        while ((request = gameContext.pollScreenShake()) != null) {
+            float remaining = Math.max(0f, shakeDuration - shakeTime) * shakeIntensity;
+            if (request.intensity >= remaining) {
+                shakeIntensity = request.intensity;
+                shakeDuration = request.duration;
+                shakeTime = 0f;
+            }
+        }
+
+        if (shakeTime >= shakeDuration) {
+            worldCamera.position.set(gameplayCameraX, cameraY, 0f);
+            worldCamera.update();
+            return;
+        }
+
+        shakeTime += delta;
+        float falloff = MathUtils.clamp(1f - shakeTime / shakeDuration, 0f, 1f);
+        float mag = shakeIntensity * falloff * falloff;
+        worldCamera.position.set(
+            gameplayCameraX + MathUtils.random(-mag, mag),
+            cameraY + MathUtils.random(-mag * 0.55f, mag * 0.55f),
+            0f
+        );
+        worldCamera.update();
+    }
+
     private void updateGameplayStartDelay(float delta) {
         if (!introFinished || gameplayStarted) {
             return;
@@ -1496,6 +1551,7 @@ public class GamePlayScreen implements Screen {
 
         updateIntroCamera(delta);
         updateGameplayStartDelay(delta);
+        applyScreenShake(delta);
 
         if (gameplayStarted
             && !pauseOverlay.isVisible()

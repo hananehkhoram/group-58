@@ -15,7 +15,9 @@ import pvz.libpvz.pam.PamPlayer;
 public final class ZombieActor extends Actor {
 
     private final Zombie zombie;
-    private final ZombieAnimationSpec animationSpec;
+    private ZombieAnimationSpec animationSpec;
+    private final ZombieAnimationResolver resolver;
+    private final String seasonName;
     private final PamPlayer pamPlayer;
     private final float cellHeight;
     private static final double DANGER_ZONE_X = 1.5;
@@ -50,10 +52,17 @@ public final class ZombieActor extends Actor {
         ZombieAnimationState.IDLE;
 
     private float stateTime;
+    private String resolvedAshClip;
+    private boolean ashClipResolved;
+    private static final float ASH_DURATION = 1.25f;
+    private static final float DIE_DURATION = 1.45f;
+    private boolean wearingArmor;
 
     public ZombieActor(
         Zombie zombie,
         ZombieAnimationSpec animationSpec,
+        ZombieAnimationResolver resolver,
+        String seasonName,
         PamPlayer pamPlayer,
         float cellHeight
     ) {
@@ -62,8 +71,11 @@ public final class ZombieActor extends Actor {
             zombie.getHp() + (int) zombie.getIceHp()
         );
         this.animationSpec = animationSpec;
+        this.resolver = resolver;
+        this.seasonName = seasonName;
         this.pamPlayer = pamPlayer;
         this.cellHeight = cellHeight;
+        this.wearingArmor = hasLiveArmor();
     }
 
     private float getScale() {
@@ -130,6 +142,32 @@ public final class ZombieActor extends Actor {
             }
         }
 
+        refreshArmorSpec();
+
+        if (zombie.isDead() && !zombie.isAshed()) {
+            if (currentState != ZombieAnimationState.DIE) {
+                currentState = ZombieAnimationState.DIE;
+                stateTime = 0f;
+            }
+            stateTime += delta;
+            if (!zombie.isDeathAnimFinished() && stateTime >= DIE_DURATION) {
+                zombie.markDeathAnimFinished();
+            }
+            return;
+        }
+
+        if (zombie.isAshed()) {
+            if (currentState != ZombieAnimationState.ASH) {
+                currentState = ZombieAnimationState.ASH;
+                stateTime = 0f;
+            }
+            stateTime += delta;
+            if (!zombie.isAshFinished() && stateTime >= ASH_DURATION) {
+                zombie.markAshFinished();
+            }
+            return;
+        }
+
         if (zombie.isInitialFrozenBlock()) {
             return;
         }
@@ -186,6 +224,11 @@ public final class ZombieActor extends Actor {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         if (zombie.isDead()) {
+            if (zombie.isAshed() && !zombie.isAshFinished()) {
+                drawAsh(batch, parentAlpha);
+            } else if (!zombie.isAshed() && !zombie.isDeathAnimFinished()) {
+                drawDie(batch, parentAlpha);
+            }
             return;
         }
 
@@ -197,10 +240,11 @@ public final class ZombieActor extends Actor {
         float dangerTint = resolveDangerTint(zombie.getX());
         float flash = hitFlash.getIntensity();
 
+        float[] armorTint = resolveArmorTint();
         batch.setColor(
-            1f + flash,
-            1f - dangerTint + flash,
-            1f - dangerTint + flash,
+            armorTint[0] + flash,
+            armorTint[1] - dangerTint + flash,
+            armorTint[2] - dangerTint + flash,
             parentAlpha
         );
 
@@ -237,6 +281,116 @@ public final class ZombieActor extends Actor {
                     false
                 );
             }
+        }
+    }
+
+    private void refreshArmorSpec() {
+        boolean armored = hasLiveArmor();
+        if (armored == wearingArmor) {
+            return;
+        }
+        wearingArmor = armored;
+        ZombieAnimationSpec next = resolver.resolve(zombie, seasonName);
+        if (next != null) {
+            animationSpec = next;
+            resolvedScale = null;
+        }
+    }
+
+    private boolean hasLiveArmor() {
+        return zombie.getArmor() != null && !zombie.getArmor().isDestroyed();
+    }
+
+    private float[] resolveArmorTint() {
+        int stage = zombie.getArmorDamageStage();
+        if (stage <= 0) {
+            return new float[] {1f, 1f, 1f};
+        }
+        if (stage == 1) {
+            return new float[] {1f, 0.82f, 0.62f};
+        }
+        return new float[] {0.72f, 0.68f, 0.64f};
+    }
+
+    private void drawDie(Batch batch, float parentAlpha) {
+        batch.setColor(1f, 1f, 1f, parentAlpha);
+        String clip = animationSpec.getClip(ZombieAnimationState.DIE);
+        if (clip == null) {
+            clip = animationSpec.getIdleClip();
+        }
+        if (clip == null) {
+            zombie.markDeathAnimFinished();
+            return;
+        }
+        drawScaled(
+            batch,
+            animationSpec.getPamPath(),
+            clip,
+            stateTime,
+            getX(),
+            getY(),
+            false
+        );
+    }
+
+    private void drawAsh(Batch batch, float parentAlpha) {
+        if (!ashClipResolved) {
+            resolveAshClip();
+            ashClipResolved = true;
+        }
+
+        if (resolvedAshClip == null) {
+            zombie.markAshFinished();
+            return;
+        }
+
+        batch.setColor(1f, 1f, 1f, parentAlpha);
+        drawScaled(
+            batch,
+            resolveAshPamPath(),
+            resolvedAshClip,
+            stateTime,
+            getX(),
+            getY(),
+            false
+        );
+    }
+
+    private String resolveAshPamPath() {
+        if (animationSpec.hasClip(ZombieAnimationState.ASH)) {
+            return animationSpec.getPamPath();
+        }
+        String ashPam = animationSpec.getAshPamPath();
+        return ashPam != null ? ashPam : animationSpec.getPamPath();
+    }
+
+    private void resolveAshClip() {
+        if (animationSpec.hasClip(ZombieAnimationState.ASH)) {
+            resolvedAshClip = animationSpec.getClip(ZombieAnimationState.ASH);
+            return;
+        }
+
+        String ashPam = resolveAshPamPath();
+        List<String> clips = pamPlayer.clips(ashPam);
+        if (clips == null || clips.isEmpty()) {
+            Gdx.app.error("ZombieActor", "No ash clips found for: " + ashPam);
+            return;
+        }
+
+        for (String clip : clips) {
+            String normalized = clip.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
+            if (normalized.endsWith("ASH")) {
+                resolvedAshClip = clip;
+                return;
+            }
+        }
+
+        if (clips.contains("animation")) {
+            resolvedAshClip = "animation";
+        } else if (clips.contains("idle")) {
+            resolvedAshClip = "idle";
+        } else {
+            resolvedAshClip = clips.get(0);
         }
     }
 

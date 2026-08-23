@@ -1,6 +1,7 @@
 package com.workshop.model.plants.plantAbilities;
 
 import com.workshop.model.GameContext;
+import com.workshop.model.mechanisms.ExplosionFx;
 import com.workshop.model.mechanisms.GameEngine;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.plants.TargetingMode;
@@ -23,7 +24,7 @@ public class Explosive implements BaseAbility {
             List<Zombie> targets = engine.findTargets(r, c, TargetingMode.NONE);
             if (targets != null && !targets.isEmpty()) {
                 for (Zombie target : targets) {
-                    target.takeDamage(damage);
+                    target.takeExplosionDamage(damage);
                 }
             }
         }
@@ -75,7 +76,34 @@ public class Explosive implements BaseAbility {
 
     private void applyAreaDamageAndRemove(List<int[]> tiles, int damage, Plant plant, GameEngine engine) {
         applyDamageToTiles(damage, tiles, engine);
+        spawnExplosion(plant, engine.getCtx());
         engine.removePlant(plant.getRow(), plant.getCol());
+    }
+
+    private void spawnExplosion(Plant plant, GameContext ctx) {
+        ExplosionFx.Kind kind = kindFor(plant);
+        if (kind != null) {
+            ctx.spawnExplosion(plant.getRow(), plant.getCol(), kind);
+        }
+    }
+
+    private ExplosionFx.Kind kindFor(Plant plant) {
+        String type = plant.getAbilityParams() == null
+            ? ""
+            : plant.getAbilityParams().getOrDefault("explosiveType", "");
+        String name = plant.getName() == null ? "" : plant.getName().toLowerCase();
+
+        return switch (type) {
+            case "TIMED_MINE" -> ExplosionFx.Kind.POTATO;
+            case "TIMED_MINE_AOE" -> ExplosionFx.Kind.PRIMAL_POTATO;
+            case "INSTANT_AOE" -> name.contains("cherry")
+                ? ExplosionFx.Kind.CHERRY
+                : ExplosionFx.Kind.GENERIC;
+            case "INSTANT_AOE_SHRAPNEL" -> ExplosionFx.Kind.GRAPESHOT;
+            case "LANE_FIRE" -> ExplosionFx.Kind.JALAPENO;
+            case "BOARD_WIDE" -> ExplosionFx.Kind.DOOM;
+            default -> null;
+        };
     }
 
     private void executeCrush(int damage, Plant plant, GameEngine engine) {
@@ -114,6 +142,7 @@ public class Explosive implements BaseAbility {
 
         List<int[]> areaTiles = get3x3Tiles(pRow, pCol, ctx);
         applyDamageToTiles(damage, areaTiles, engine);
+        spawnExplosion(plant, ctx);
 
         int maxRows = ctx.getLevel().getRows();
         for (int r = pRow - 1; r <= pRow + 1; r++) {

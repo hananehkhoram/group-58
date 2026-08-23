@@ -20,6 +20,9 @@ public final class ZombieAnimationResolver {
     private final Map<String, String> pamPaths =
         new HashMap<>();
 
+    private final Map<String, String> ashPamPaths =
+        new HashMap<>();
+
     private final Map<String, ZombieAnimationSpec> resolvedSpecs =
         new HashMap<>();
 
@@ -126,6 +129,21 @@ public final class ZombieAnimationResolver {
             );
         }
 
+        String dieClip = findClip(clips, "die");
+        if (dieClip == null) {
+            dieClip = findClip(clips, "death");
+        }
+        if (dieClip != null) {
+            spec.setClip(ZombieAnimationState.DIE, dieClip);
+        }
+
+        String ashClip = findClipEndingWith(clips, "ash");
+        if (ashClip != null) {
+            spec.setClip(ZombieAnimationState.ASH, ashClip);
+        }
+
+        spec.setAshPamPath(resolveAshPam(pamName));
+
         Gdx.app.log(
             "ZombieAnimationResolver",
             pamName
@@ -154,7 +172,16 @@ public final class ZombieAnimationResolver {
             return "";
         }
 
+        if (isNewspaper(zombie)) {
+            String armoredPam = resolveArmoredPam(zombie);
+            return armoredPam != null ? armoredPam : "ZOMBIE_MODERN_NEWSPAPER";
+        }
+
         if (isBasicZombie(zombieName)) {
+            String armoredPam = resolveArmoredPam(zombie);
+            if (armoredPam != null) {
+                return armoredPam;
+            }
             return getBasicZombiePam(seasonName);
         }
 
@@ -165,6 +192,27 @@ public final class ZombieAnimationResolver {
         }
 
         return zombieName;
+    }
+
+    private String resolveArmoredPam(Zombie zombie) {
+        var armor = zombie.getArmor();
+        if (armor == null || armor.isDestroyed()) {
+            return null;
+        }
+        return switch (armor.getArmorType()) {
+            case CONE -> "LNY_CONEHEAD_ZOMBIE";
+            case BUCKET -> "LNY_BUCKETHEAD_ZOMBIE";
+            case NEWSPAPER -> "ZOMBIE_MODERN_NEWSPAPER";
+            default -> null;
+        };
+    }
+
+    private boolean isNewspaper(Zombie zombie) {
+        String name = zombie.getName();
+        String id = zombie.getId();
+        return "News Paper".equalsIgnoreCase(name)
+            || "Newspaper".equalsIgnoreCase(name)
+            || "ZombieNewspaper".equalsIgnoreCase(id);
     }
 
     private boolean isBasicZombie(String zombieName) {
@@ -220,11 +268,60 @@ public final class ZombieAnimationResolver {
             String fileName =
                 child.nameWithoutExtension();
 
-            pamPaths.putIfAbsent(
-                normalize(fileName),
-                childPath
-            );
+            String normalizedName = normalize(fileName);
+            pamPaths.putIfAbsent(normalizedName, childPath);
+
+            if (normalizedName.endsWith("ASH")
+                && !normalizedName.endsWith("SPLASH")
+                && !normalizedName.equals("SQUASH")) {
+                ashPamPaths.putIfAbsent(normalizedName, childPath);
+            }
         }
+    }
+
+    public String resolveAshPam(Zombie zombie) {
+        if (zombie == null) {
+            return fallbackAshPam();
+        }
+        return resolveAshPam(resolvePamName(zombie, null));
+    }
+
+    private String resolveAshPam(String pamName) {
+        String key = normalize(pamName);
+        String bestPath = fallbackAshPam();
+        int bestScore = 0;
+
+        String generic = ashPamPaths.get("ZOMBIEASH");
+        if (generic != null) {
+            bestPath = generic;
+        }
+
+        for (Map.Entry<String, String> entry : ashPamPaths.entrySet()) {
+            String ashKey = entry.getKey();
+            String core = ashKey;
+            if (core.startsWith("ZOMBIE")) {
+                core = core.substring("ZOMBIE".length());
+            }
+            if (core.endsWith("ASH")) {
+                core = core.substring(0, core.length() - 3);
+            }
+            if (core.isEmpty() || core.length() < 3) {
+                continue;
+            }
+            if ((key.contains(core) || core.contains(key)) && core.length() > bestScore) {
+                bestScore = core.length();
+                bestPath = entry.getValue();
+            }
+        }
+
+        return bestPath;
+    }
+
+    private String fallbackAshPam() {
+        String generic = ashPamPaths.get("ZOMBIEASH");
+        return generic != null
+            ? generic
+            : "768/INITIAL/EFFECTS/ZOMBIE_ASH/ZOMBIE_ASH.PAM";
     }
 
     private String findPamPath(String pamName) {
@@ -383,6 +480,24 @@ public final class ZombieAnimationResolver {
         }
 
         return null;
+    }
+
+    private String findClipEndingWith(
+        List<String> clips,
+        String suffix
+    ) {
+        if (clips == null) {
+            return null;
+        }
+
+        String normalizedSuffix = normalize(suffix);
+        String found = null;
+        for (String clip : clips) {
+            if (normalize(clip).endsWith(normalizedSuffix)) {
+                found = clip;
+            }
+        }
+        return found;
     }
 
     private String normalize(String name) {

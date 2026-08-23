@@ -91,6 +91,39 @@ public class GameContext {
     public String pollSoundCue() {
         return pendingSoundCues.pollFirst();
     }
+
+    private final Deque<ExplosionFx> pendingExplosions = new ArrayDeque<>();
+    private final Deque<ScreenShake> pendingShakes = new ArrayDeque<>();
+
+    public void spawnExplosion(int row, int col, ExplosionFx.Kind kind) {
+        if (kind == null) {
+            return;
+        }
+        pendingExplosions.addLast(new ExplosionFx(row, col, kind));
+        shakeScreen(kind.shakeIntensity, kind.shakeDuration);
+    }
+
+    public ExplosionFx pollExplosion() {
+        return pendingExplosions.pollFirst();
+    }
+
+    public void shakeScreen(float intensity, float duration) {
+        pendingShakes.addLast(new ScreenShake(intensity, duration));
+    }
+
+    public ScreenShake pollScreenShake() {
+        return pendingShakes.pollFirst();
+    }
+
+    private final Deque<ZombiePartFx> pendingZombieParts = new ArrayDeque<>();
+
+    public void dropZombiePart(int row, double x, ZombiePartFx.Kind kind) {
+        pendingZombieParts.addLast(new ZombiePartFx(row, x, kind));
+    }
+
+    public ZombiePartFx pollZombiePart() {
+        return pendingZombieParts.pollFirst();
+    }
     private boolean isSetupPhase = false;
     private LevelManager levelManager;
     private boolean activeWaveInProgress = false;

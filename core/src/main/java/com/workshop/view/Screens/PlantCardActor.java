@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -20,7 +21,7 @@ import pvz.libpvz.textures.TextureBank;
 
 public class PlantCardActor extends Table {
 
-    public enum Mode { GRID, SLOT }
+    public enum Mode { GRID, SLOT, CONVEYOR }
 
     public interface OnClick {
         void clicked(PlantCardActor card);
@@ -120,25 +121,17 @@ public class PlantCardActor extends Table {
 
                 float centerX = getX() + getWidth() / 2f;
                 float centerY = getY() + getHeight() / 2f;
-                float drawX = centerX + (mode == Mode.SLOT ? 0f : 15f) + 100;
-                float drawY = centerY + (mode == Mode.SLOT ? -10f : -20f);
-
                 batch.setColor(Color.WHITE);
 
-                String rawName = plant.getName().toUpperCase().replace(" ", "").replace("-", "");
-                if (rawName.equalsIgnoreCase("PRIMALPOTATOMINE")) rawName = "PRIMAL_POTATOMINE";
-
-                String pamPath = "PLANT/" + rawName + "/" + rawName + ".PAM";
-                String[] clips = {"idle", "idle_stage1", "intro", "animation", "anim", "attack", "idle1_1", "stage1_spawn"};
-                boolean drawn = false;
-
-                for (String clip : clips) {
-                    try {
-                        pamPlayer.draw(batch, pamPath, clip, animTime, drawX, drawY, true);
-                        drawn = true;
-                        break;
-                    } catch (Exception ignored) {
-                    }
+                boolean drawn;
+                if (mode == Mode.CONVEYOR) {
+                    // نقاله کارت را کلیپ می‌کند؛ PAM را وسط و کوچک می‌کشیم
+                    // تا مثل seed bank با آفست +100 از کادر بیرون نرود.
+                    drawn = drawPlantPam(batch, centerX, centerY, 0.28f);
+                } else {
+                    float drawX = centerX + (mode == Mode.SLOT ? 0f : 15f) + 100;
+                    float drawY = centerY + (mode == Mode.SLOT ? -10f : -20f);
+                    drawn = drawPlantPam(batch, drawX, drawY, 1f);
                 }
 
                 if (!drawn) {
@@ -156,7 +149,9 @@ public class PlantCardActor extends Table {
         NinePatchDrawable background = isFocused ? getCardBackgroundFocused() : getCardBackground();
         setBackground(background);
 
-        if (mode == Mode.GRID) {
+        if (mode == Mode.CONVEYOR) {
+            add(pamContainer).grow();
+        } else if (mode == Mode.GRID) {
 
             Table footerTable = new Table();
             footerTable.align(Align.center);
@@ -209,6 +204,38 @@ public class PlantCardActor extends Table {
                 }
             }
         });
+    }
+
+    private boolean drawPlantPam(Batch batch, float x, float y, float scale) {
+        String rawName = plant.getName().toUpperCase().replace(" ", "").replace("-", "");
+        if (rawName.equalsIgnoreCase("PRIMALPOTATOMINE")) {
+            rawName = "PRIMAL_POTATOMINE";
+        }
+
+        String pamPath = "PLANT/" + rawName + "/" + rawName + ".PAM";
+        String[] clips = {"idle", "idle_stage1", "intro", "animation", "anim", "attack", "idle1_1", "stage1_spawn"};
+
+        Matrix4 oldTransform = batch.getTransformMatrix().cpy();
+        if (scale != 1f) {
+            Matrix4 transform = new Matrix4(oldTransform);
+            transform.translate(x, y, 0);
+            transform.scale(scale, scale, 1f);
+            transform.translate(-x, -y, 0);
+            batch.setTransformMatrix(transform);
+        }
+
+        boolean drawn = false;
+        for (String clip : clips) {
+            try {
+                pamPlayer.draw(batch, pamPath, clip, animTime, x, y, true);
+                drawn = true;
+                break;
+            } catch (Exception ignored) {
+            }
+        }
+
+        batch.setTransformMatrix(oldTransform);
+        return drawn;
     }
 
     private Table buildSunCostGroup() {
