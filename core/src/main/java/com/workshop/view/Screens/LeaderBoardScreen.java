@@ -21,6 +21,8 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.workshop.PvzGame;
 import com.workshop.controller.repository.DataManager;
 import com.workshop.model.user.User;
+import com.workshop.net.GameClient;
+import com.workshop.net.UserSnapshot;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -76,7 +78,7 @@ public class LeaderBoardScreen implements Screen {
         addHeader(header, "Minigames", SortColumn.MINIGAMES, 120);
         addHeader(header, "Daily", SortColumn.DAILY_QUESTS, 110);
         addHeader(header, "Other", SortColumn.OTHER_QUESTS, 110);
-        addHeader(header, "Mew Point", SortColumn.SCORE, 130);
+        addHeader(header, "My Point", SortColumn.SCORE, 130);
 
         root.add(header).padBottom(5).row();
 
@@ -168,7 +170,7 @@ public class LeaderBoardScreen implements Screen {
         setHeaderText(SortColumn.MINIGAMES, "Minigames");
         setHeaderText(SortColumn.DAILY_QUESTS, "Daily");
         setHeaderText(SortColumn.OTHER_QUESTS, "Other");
-        setHeaderText(SortColumn.SCORE, "Mew Point");
+        setHeaderText(SortColumn.SCORE, "My Point");
 
         TextButton activeButton = headerButtons.get(sortColumn);
         if (activeButton == null) {
@@ -193,12 +195,7 @@ public class LeaderBoardScreen implements Screen {
 
         rowsTable.clearChildren();
 
-        List<User> users = new ArrayList<>(
-            DataManager.getInstance()
-                .users
-                .getUserMap()
-                .values()
-        );
+        List<User> users = loadUsers();
 
         users.sort(getComparator());
 
@@ -260,7 +257,7 @@ public class LeaderBoardScreen implements Screen {
             case SCORE:
             default:
                 comparator = Comparator
-                    .comparingInt(User::getMaxMewPoint)
+                    .comparingInt(LeaderBoardScreen::networkBonusOrHidden)
                     .thenComparing(
                         User::getUsername,
                         String.CASE_INSENSITIVE_ORDER
@@ -285,9 +282,39 @@ public class LeaderBoardScreen implements Screen {
         addCell(String.valueOf(user.getMinigamesCompleted()), 120);
         addCell(String.valueOf(user.getDailyQuestsCompletedCount()), 110);
         addCell(String.valueOf(user.getOtherQuestsCompletedCount()), 110);
-        addCell(String.valueOf(user.getMaxMewPoint()), 130);
+        addCell(formatMyPoint(user), 130);
 
         rowsTable.row();
+    }
+
+    private List<User> loadUsers() {
+        GameClient client = GameClient.get();
+        if (client.isConnected()) {
+            List<User> fromServer = new ArrayList<>();
+            for (UserSnapshot snap : client.getLeaderboard()) {
+                User user = new User();
+                user.setUsername(snap.username);
+                snap.applyTo(user);
+                fromServer.add(user);
+            }
+            if (!fromServer.isEmpty()) {
+                return fromServer;
+            }
+        }
+        return new ArrayList<>(
+            DataManager.getInstance()
+                .users
+                .getUserMap()
+                .values()
+        );
+    }
+
+    private static int networkBonusOrHidden(User user) {
+        return user.hasNetworkBonusScore() ? user.getMaxMewPoint() : -1;
+    }
+
+    private static String formatMyPoint(User user) {
+        return user.hasNetworkBonusScore() ? String.valueOf(user.getMaxMewPoint()) : "-";
     }
 
     private void addCell(String text, float width) {

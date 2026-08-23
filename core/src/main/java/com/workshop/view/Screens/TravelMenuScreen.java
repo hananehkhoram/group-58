@@ -8,20 +8,17 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.workshop.PvzGame;
+import com.workshop.model.season.Season;
 import com.workshop.model.user.User;
 import com.workshop.view.components.CurrencyHeader;
 import pvz.skin.PvzSkin;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class TravelMenuScreen implements Screen {
 
@@ -30,16 +27,40 @@ public class TravelMenuScreen implements Screen {
     private final Image background;
     private CurrencyHeader currencyHeader;
 
-    public TravelMenuScreen(PvzGame game, User user) {
+    private static final float MAP_WIDTH = 1280f;
+    private static final float MAP_HEIGHT = 720f;
+
+    private LevelNodeActor.Listener listener;
+
+    public TravelMenuScreen(PvzGame game, User user, Season season) {
+
+        listener = new LevelNodeActor.Listener() {
+            @Override
+            public void onEnterMiniGame(int miniGameId, int levelId, String levelName) {
+
+                if(miniGameId == 1){
+
+                    game.showVaseBreaker();
+
+                }
+                else if(miniGameId == 2){
+
+                    game.showWallnutBowling();
+
+                }
+
+            }
+        };
+
         Skin skin = PvzSkin.get();
-        stage = new Stage(new ScreenViewport());
+        stage = new Stage(new FitViewport(1280,720));
 
         backgroundTexture = new Texture(
             Gdx.files.internal("IMAGES/Menus/travel/travelBackground.png")
         );
 
         background = new Image(backgroundTexture);
-        background.setScaling(Scaling.fill);
+        background.setScaling(Scaling.stretch);
         background.setBounds(
             0,
             0,
@@ -92,72 +113,104 @@ public class TravelMenuScreen implements Screen {
             }
         });
 
-        TextButton vaseBreakerButton =
-            new TextButton("Vase Breaker", skin, "purple");
+        int columns = 1;
+        int rows = 1;
 
-        TextButton wallnutBowlingButton =
-            new TextButton("Wallnut Bowling", skin, "purple");
+        float startX = -15;
+        float startY = 200;
 
-        TextButton zombotanyButton =
-            new TextButton("Zombotany", skin, "purple");
+        float gapX = 50;
+        float gapY = 100;
 
-        TextButton iZombieButton =
-            new TextButton("I, Zombie", skin, "purple");
+        float distance = 250;
 
-        TextButton beghouledButton =
-            new TextButton("Beghouled", skin, "purple");
+        for (int j = 0; j < 5; j++){
 
-        vaseBreakerButton.addListener(
-            new ChangeListener() {
-                @Override
-                public void changed(
-                    ChangeEvent event,
-                    Actor actor
-                ) {
-                    game.showVaseBreaker();
+            for(int i = 0; i < 3; i++){
+
+                System.out.println("row: " + j + " level: " + (i + 1));
+
+                int miniGameLevel = i + 1;
+
+                int miniGameId = 0;
+
+                if (j == 0) {
+                    miniGameId = 1; // Vase
                 }
-            }
-        );
-
-        wallnutBowlingButton.addListener(
-            new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    game.showWallnutBowling();
+                else if (j == 1) {
+                    miniGameId = 2; // Wallnuts
                 }
+                else if (j == 2) {
+                    miniGameId = 3; // Izombie
+                }
+                else if (j == 3) {
+                    miniGameId = 4; // Beghouled
+                }
+                else if (j == 4) {
+                    miniGameId = 5; // Zombotany
+                }
+
+                String levelName = "";
+
+                if (miniGameId == 1) {
+                    levelName = "Vase - Day " + (i + 1);
+                }
+                else if (miniGameId == 2) {
+                    levelName = "Wallnuts - Day " + (i + 1);
+                }
+                else if (miniGameId == 3) {
+                    levelName = "Izombie - Day " + (i + 1);
+                }
+                else if (miniGameId == 4) {
+                    levelName = "Beghouled - Day " + (i + 1);
+                }
+                else if (miniGameId == 5) {
+                    levelName = "Zombotany - Day " + (i + 1);
+                }
+
+
+                LevelNodeActor node =
+                    new LevelNodeActor(
+                        miniGameId,
+                        i + 1,
+                        levelName,
+                        listener
+                    );
+
+                int col = columns + i;
+                int row = rows;
+
+                float x = startX + col * gapX;
+                float y = startY - row * gapY;
+
+
+                float scaleX =
+                    stage.getViewport().getWorldWidth() / MAP_WIDTH;
+
+                float scaleY =
+                    stage.getViewport().getWorldHeight() / MAP_HEIGHT;
+
+                node.setSize(35.4f, 23.28f);
+
+                node.setPosition(
+                    x * scaleX,
+                    y * scaleY +10
+                );
+
+
+                stage.addActor(node);
+
+                System.out.println(
+                    "button " + (j * 3 + i + 1) +
+                        " x=" + node.getX() +
+                        " y=" + node.getY() +
+                        " w=" + node.getWidth() +
+                        " h=" + node.getHeight()
+                );
             }
-        );
 
-        Table miniGameRow = new Table();
-
-        miniGameRow.add(vaseBreakerButton)
-            .width(170)
-            .padRight(15);
-
-        miniGameRow.add(wallnutBowlingButton)
-            .width(170)
-            .padRight(15);
-
-        miniGameRow.add(zombotanyButton)
-            .width(170)
-            .padRight(15);
-
-        miniGameRow.add(iZombieButton)
-            .width(170)
-            .padRight(15);
-
-        miniGameRow.add(beghouledButton)
-            .width(170);
-
-        Table miniGameContainer = new Table();
-        miniGameContainer.setFillParent(true);
-
-        miniGameContainer.bottom();
-        miniGameContainer.padBottom(70);
-
-        miniGameContainer.add(miniGameRow);
-
-        stage.addActor(miniGameContainer);
+            startX += distance;
+        }
 
         Table topLeft = new Table();
         topLeft.setFillParent(true);

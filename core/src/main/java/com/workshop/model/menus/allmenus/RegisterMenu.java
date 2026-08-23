@@ -6,6 +6,8 @@ import com.workshop.model.menus.BaseMenu;
 import com.workshop.model.menus.MenuType;
 import com.workshop.model.user.SecurityQuestions;
 import com.workshop.model.user.UserManager;
+import com.workshop.net.GameClient;
+import com.workshop.net.NetResponse;
 
 public class RegisterMenu extends BaseMenu {
     private UserManager um;
@@ -30,6 +32,16 @@ public class RegisterMenu extends BaseMenu {
         if (!um.isEmailValid(email)) return "Invalid email format.";
         if (!gender.equalsIgnoreCase("female") && !gender.equalsIgnoreCase("male"))
             return "Invalid gender type.";
+
+        GameClient client = GameClient.get();
+        if (client.isConnected()) {
+            NetResponse response = client.register(username, password, nickName, email, gender);
+            if (!response.ok) {
+                return response.message;
+            }
+        } else if (um.doesUserExist(username)) {
+            return "Username already exists.";
+        }
 
         um.register(username,password,nickName,email,gender);
 

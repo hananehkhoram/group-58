@@ -17,13 +17,12 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import com.workshop.model.zombie.Zombie;
+import com.workshop.view.gameplay.ZombieAnimationResolver;
+import com.workshop.view.gameplay.ZombieAnimationSpec;
 import pvz.libpvz.pam.PamPlayer;
+import pvz.libpvz.textures.TextureBank;
 import pvz.skin.PvzSkin;
 
-/**
- * Details screen for a single zombie showing stats and animations.
- * Refactored to use BaseScreen and ScreenResourceManager for consistent code patterns.
- */
 public class ZombieDetailsScreen extends BaseScreen {
 
     public interface BackListener {
@@ -33,24 +32,57 @@ public class ZombieDetailsScreen extends BaseScreen {
     private static final float BASE_WIDTH = 1280f;
     private static final float BASE_HEIGHT = 720f;
     private static final Color BG_COLOR = Color.valueOf("0d1b3e");
+    private static final Color STAT_BOX_BG_COLOR = Color.valueOf("2f6c2f"); // رنگ کارت ویژگی‌ها
+
+    private static ZombieAnimationResolver animationResolver;
 
     private final Stage stage;
     private final Zombie zombie;
     private final BackListener backListener;
     private final PamPlayer pamPlayer;
+    private final TextureBank textureBank;
+    private final ZombieAnimationSpec animationSpec;
 
     private float stateTime = 0f;
     private Image bg;
+    private Texture generatedBgTexture;
+    private Drawable cardBgDrawable;
+    private Drawable zombieDisplayBg; // پس‌زمینه نمایش زامبی
 
-    public ZombieDetailsScreen(Zombie zombie, PamPlayer pamPlayer, BackListener backListener) {
+    public ZombieDetailsScreen(Zombie zombie, PamPlayer pamPlayer, TextureBank textureBank, BackListener backListener) {
+        this(zombie, pamPlayer, textureBank, backListener, null);
+    }
+
+    public ZombieDetailsScreen(Zombie zombie, PamPlayer pamPlayer, TextureBank textureBank, BackListener backListener, String seasonName) {
         super(PvzSkin.get());
 
         this.zombie = zombie;
         this.pamPlayer = pamPlayer;
+        this.textureBank = textureBank;
         this.backListener = backListener;
         this.stage = new Stage(new ScreenViewport());
 
+        if (animationResolver == null) {
+            animationResolver = new ZombieAnimationResolver();
+        }
+        this.animationSpec = animationResolver.resolve(zombie, seasonName);
+
+        this.cardBgDrawable = createSolidColorDrawable(STAT_BOX_BG_COLOR);
+        this.zombieDisplayBg = loadZombieDisplayBackgroundDrawable();
+
         buildUI();
+    }
+
+    private Drawable loadZombieDisplayBackgroundDrawable() {
+        String fullPath = "IMAGES/Menus/Collection/bg.png";
+        try {
+            if (Gdx.files.internal(fullPath).exists()) {
+                Texture tex = new Texture(Gdx.files.internal(fullPath));
+                tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+                return new TextureRegionDrawable(new TextureRegion(tex));
+            }
+        } catch (Exception ignored) {}
+        return createSolidColorDrawable(Color.valueOf("4a3319")); // پشتیبان (قهوه‌ای)
     }
 
     private void buildUI() {
@@ -59,7 +91,6 @@ public class ZombieDetailsScreen extends BaseScreen {
         Table root = new Table();
         root.setFillParent(true);
 
-        // Background
         generatedBgTexture = createSolidColorTexture(BG_COLOR.r, BG_COLOR.g, BG_COLOR.b, BG_COLOR.a);
         generatedBgTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         bg = new Image(new TextureRegionDrawable(new TextureRegion(generatedBgTexture)));
@@ -70,16 +101,14 @@ public class ZombieDetailsScreen extends BaseScreen {
 
         float scale = getScaleFactor();
 
-        // Header with back button
         Table topBar = buildTopBar(scale);
         root.add(topBar).fillX().row();
 
-        // Content area: animation + stats
         Table contentArea = new Table();
         Table leftCol = buildLeftColumn(scale);
         Table rightCol = buildRightColumn(scale);
 
-        contentArea.add(leftCol).padRight(50 * scale).top();
+        contentArea.add(leftCol).padRight(30 * scale).top();
         contentArea.add(rightCol).top().expandX().fillX().row();
 
         root.add(contentArea).expand().center().padTop(10 * scale).row();
@@ -108,22 +137,17 @@ public class ZombieDetailsScreen extends BaseScreen {
         Table leftCol = new Table();
 
         Stack zombieStack = new Stack();
-        Drawable woodBg = getStatIconDrawable("wood_bg");
-        if (woodBg != null) {
-            zombieStack.add(new Image(woodBg));
-        } else {
-            Table t = new Table();
-            t.setBackground(createWhiteDrawable(Color.valueOf("4a3319")));
-            zombieStack.add(t);
-        }
 
-        // Zombie animation
+        Table bgWrapper = new Table();
+        bgWrapper.setBackground(zombieDisplayBg); // استفاده از تصویر پس‌زمینه جدید
+        zombieStack.add(bgWrapper);
+
         Actor zombiePamActor = createZombiePamActor(scale);
         Table animWrapper = new Table();
-        animWrapper.add(zombiePamActor).size(180 * scale, 180 * scale).center();
+        animWrapper.add(zombiePamActor).expand().fill();
         zombieStack.add(animWrapper);
 
-        leftCol.add(zombieStack).size(240 * scale, 240 * scale).padBottom(15 * scale).row();
+        leftCol.add(zombieStack).size(320 * scale, 380 * scale).padBottom(15 * scale).row();
 
         return leftCol;
     }
@@ -140,7 +164,16 @@ public class ZombieDetailsScreen extends BaseScreen {
         return null;
     }
 
-    private Drawable createWhiteDrawable(Color color) {
+    public Texture createSolidColorTexture(float r, float g, float b, float a) {
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(r, g, b, a);
+        pixmap.fill();
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return texture;
+    }
+
+    private Drawable createSolidColorDrawable(Color color) {
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(color);
         pixmap.fill();
@@ -152,7 +185,7 @@ public class ZombieDetailsScreen extends BaseScreen {
 
     private Table createStatBox(Drawable icon, String labelText, String valueText, float scale) {
         Table box = new Table();
-        box.setBackground(createWhiteDrawable(Color.valueOf("2f6c2f")));
+        box.setBackground(cardBgDrawable); // استفاده از رنگ کارت (سبز)
 
         if (icon != null) {
             box.add(new Image(icon)).size(32 * scale, 32 * scale).pad(6 * scale);
@@ -204,21 +237,25 @@ public class ZombieDetailsScreen extends BaseScreen {
         return rightCol;
     }
 
-    /**
-     * Creates a Table that renders the zombie animation using ScreenResourceManager.
-     */
     private Actor createZombiePamActor(float scale) {
-        return new Table() {
+        return new Actor() {
             @Override
             public void draw(Batch batch, float parentAlpha) {
-                super.draw(batch, parentAlpha);
+                if (animationSpec == null) return;
 
-                float drawX = getX() + getWidth() / 2f;
-                float drawY = getY() + 20f * scale;
+                String pamPath = animationSpec.getPamPath();
+                String idleClip = animationSpec.getIdleClip();
+                if (pamPath == null || idleClip == null) return;
 
-                ScreenResourceManager.drawZombieAnimation(
-                    batch, pamPlayer, zombie.getName(), stateTime, drawX, drawY
-                );
+                if (textureBank != null) textureBank.update();
+
+                float drawX = getX() + (getWidth() / 2f) + (10f * scale);
+                float drawY = getY() + (getHeight() * 0.2f);
+
+                try {
+                    pamPlayer.draw(batch, pamPath, idleClip, stateTime, drawX, drawY, true);
+                } catch (Exception ignored) {
+                }
             }
         };
     }
@@ -255,6 +292,9 @@ public class ZombieDetailsScreen extends BaseScreen {
     @Override
     public void dispose() {
         stage.dispose();
+        if (generatedBgTexture != null) {
+            generatedBgTexture.dispose();
+        }
         super.dispose();
     }
 }

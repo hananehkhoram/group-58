@@ -3,15 +3,13 @@ package com.workshop.view.Screens;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.GreenHouseData.Pot;
@@ -27,6 +25,10 @@ public class PotActor extends Group {
         void onFasterGrow(int x, int y);
     }
 
+    private static final String LOCK_PAM = "768/INITIAL/UI/CHOOSER/SLOT_LOCK_SMALL/SLOT_LOCK_SMALL.PAM";
+    private static final String POT_PAM = "768/INITIAL/ZEN_GARDEN/GROWING_PLANT_SLOT/GROWING_PLANT_SLOT.PAM";
+    private static final String SPROUT_PAM = "768/INITIAL/ZEN_GARDEN/PLANT_ANIMATIONS/SPROUT/SPROUT.PAM";
+
     private final int gx, gy;
     private final Pot pot;
     private final PamPlayer pamPlayer;
@@ -34,14 +36,15 @@ public class PotActor extends Group {
     private final Skin skin;
     private final Listener listener;
 
-    private final Image potImage;
-    private final Widget plantWidget;
     private final Label timeLabel;
     private final TextButton actionButton;
 
     private float animTime = 0f;
-    private boolean hasPlantToDraw = false;
-    private String pamPath = "";
+    private String plantPamPath = "";
+
+    private boolean isUnlockingAnim = false;
+    private float unlockAnimTime = 0f;
+    private static final float UNLOCK_ANIM_DURATION = 0.6f;
 
     public PotActor(int gx, int gy, Pot pot, PamPlayer pamPlayer, TextureBank textureBank,
                     Skin skin, Listener listener) {
@@ -53,44 +56,18 @@ public class PotActor extends Group {
         this.skin = skin;
         this.listener = listener;
 
-        setSize(120, 140);
-
-        potImage = new Image();
-        potImage.setSize(120, 60);
-        addActor(potImage);
-
-        plantWidget = new Widget() {
-            @Override
-            public void draw(Batch batch, float parentAlpha) {
-                super.draw(batch, parentAlpha);
-                if (!hasPlantToDraw) return;
-                if (textureBank != null) textureBank.update();
-
-                float drawX = getX() + getWidth() / 2f;
-                float drawY = getY() + 6f;
-
-                batch.setColor(Color.WHITE);
-                try {
-                    pamPlayer.draw(batch, pamPath, "idle", animTime, drawX, drawY, true);
-                } catch (Exception e) {
-                    TextureRegion reg = Textures.regionOrNull(fallbackRegionName());
-                    if (reg != null) batch.draw(reg, drawX - 25, drawY, 50, 50);
-                }
-            }
-        };
-        plantWidget.setSize(90, 90);
-        plantWidget.setPosition(15, 40);
-        addActor(plantWidget);
+        setSize(90, 100);
 
         timeLabel = new Label("", skin);
-        timeLabel.setPosition(0, 110);
-        timeLabel.setWidth(120);
+        timeLabel.setPosition(0, -5);
+        timeLabel.setWidth(90);
         timeLabel.setAlignment(Align.center);
+        timeLabel.setFontScale(0.70f);
         addActor(timeLabel);
 
-        actionButton = new TextButton("", skin);
-        actionButton.setSize(90, 30);
-        actionButton.setPosition(15, -5);
+        actionButton = new TextButton("", skin, "green_small");
+        actionButton.setSize(75, 24);
+        actionButton.setPosition(7.5f, -32);
         actionButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -103,10 +80,21 @@ public class PotActor extends Group {
     }
 
     private void handleClick() {
-        if (pot.isLocked()) listener.onBuy(gx, gy);
-        else if (pot.isEmpty()) listener.onPlant(gx, gy);
-        else if (pot.isPlantReady()) listener.onCollect(gx, gy);
-        else listener.onFasterGrow(gx, gy);
+        if (pot.isLocked()) {
+            isUnlockingAnim = true;
+            unlockAnimTime = 0f;
+            listener.onBuy(gx, gy);
+        } else if (pot.isEmpty()) {
+            listener.onPlant(gx, gy);
+        } else if (pot.isPlantReady()) {
+            listener.onCollect(gx, gy);
+        } else {
+            listener.onFasterGrow(gx, gy);
+        }
+    }
+
+    public void update(float delta) {
+        act(delta);
     }
 
     @Override
@@ -114,35 +102,89 @@ public class PotActor extends Group {
         super.act(delta);
 
         if (!pot.isLocked() && !pot.isEmpty() && !pot.isPlantReady()) {
-            double remaining = pot.getRemainingPlantedTime() - delta;
-            if (remaining <= 0) {
+            double remainingHours = pot.getRemainingPlantedTime() - (delta / 3600.0);
+            if (remainingHours <= 0) {
                 pot.setRemainingPlantedTime(0);
                 pot.setPlantReady(true);
                 refresh();
             } else {
-                pot.setRemainingPlantedTime(remaining);
-                timeLabel.setText(formatTime(remaining));
+                pot.setRemainingPlantedTime(remainingHours);
+                timeLabel.setText(formatTime(remainingHours * 3600.0));
             }
         }
 
-        if (hasPlantToDraw) {
-            animTime += delta;
+        animTime += delta;
+
+        if (isUnlockingAnim) {
+            unlockAnimTime += delta;
+            if (unlockAnimTime >= UNLOCK_ANIM_DURATION) {
+                isUnlockingAnim = false;
+            }
         }
     }
 
-    /** بعد از plant/collect/buy از بیرون صدا زده می‌شود تا ظاهر گلدون به‌روز شود. */
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        super.draw(batch, parentAlpha);
+
+        if (textureBank != null) textureBank.update();
+
+        float drawX = getX() + getWidth() / 2f;
+        float drawY = getY() - 5f;
+
+        if (pot.isLocked() || isUnlockingAnim) {
+            String clip = isUnlockingAnim ? "open" : "idle";
+            float time = isUnlockingAnim ? unlockAnimTime : animTime;
+            renderPamScaled(batch, LOCK_PAM, clip, time, drawX, drawY + 15f, 0.35f);
+            return;
+        }
+
+        String potClip = (!pot.isEmpty() && !pot.isPlantReady()) ? "boost" : "idle";
+        renderPamScaled(batch, POT_PAM, potClip, animTime, drawX, drawY, 0.38f);
+
+        if (!pot.isEmpty()) {
+            float plantX = drawX - 18f;
+
+            if (!pot.isPlantReady()) {
+                renderPamScaled(batch, SPROUT_PAM, "idle", animTime, plantX, drawY + 25f, 0.35f);
+            } else {
+                try {
+                    renderPamScaled(batch, plantPamPath, "idle", animTime, plantX, drawY + 30f, 0.32f);
+                } catch (Exception e) {
+                    TextureRegion reg = Textures.regionOrNull(fallbackRegionName());
+                    if (reg != null) {
+                        batch.setColor(Color.WHITE);
+                        batch.draw(reg, plantX - 25, drawY + 15, 50, 50);
+                    }
+                }
+            }
+        }
+    }
+
+    private void renderPamScaled(Batch batch, String path, String clip, float time, float x, float y, float scale) {
+        Matrix4 oldTransform = batch.getTransformMatrix().cpy();
+        Matrix4 transform = new Matrix4(oldTransform);
+
+        transform.translate(x, y, 0);
+        transform.scale(scale, scale, 1f);
+        transform.translate(-x, -y, 0);
+        batch.setTransformMatrix(transform);
+
+        try {
+            pamPlayer.draw(batch, path, clip, time, x, y, true);
+        } catch (Exception ignored) {}
+
+        batch.setTransformMatrix(oldTransform);
+    }
+
     public void refresh() {
         if (pot.isLocked()) {
-            setRegion(potImage, "IMAGE_UI_GREENHOUSE_POT_LOCKED");
-            hasPlantToDraw = false;
             timeLabel.setText("");
             actionButton.setText("Buy");
             return;
         }
-        setRegion(potImage, "IMAGE_UI_GREENHOUSE_POT_OPEN");
 
         if (pot.isEmpty()) {
-            hasPlantToDraw = false;
             timeLabel.setText("");
             actionButton.setText("Plant");
             return;
@@ -152,16 +194,16 @@ public class PotActor extends Group {
             ? "Marigold" : pot.getPlantType().getName();
         String rawName = plantName.toUpperCase().replace(" ", "").replace("-", "");
         if (rawName.equalsIgnoreCase("PRIMALPOTATOMINE")) rawName = "PRIMAL_POTATOMINE";
-        pamPath = "PLANT/" + rawName + "/" + rawName + ".PAM";
-        hasPlantToDraw = true;
-        animTime = 0f;
+        plantPamPath = "PLANT/" + rawName + "/" + rawName + ".PAM";
 
         if (pot.isPlantReady()) {
             timeLabel.setText("Ready!");
+            timeLabel.setColor(Color.GREEN);
             actionButton.setText("Collect");
         } else {
             timeLabel.setText(formatTime(pot.getRemainingPlantedTime()));
-            actionButton.setText("Speed up (Gems)");
+            timeLabel.setColor(Color.WHITE);
+            actionButton.setText("Speed up");
         }
     }
 
@@ -169,13 +211,6 @@ public class PotActor extends Group {
         String plantName = (pot.isMarigold() || pot.getPlantType() == null)
             ? "Marigold" : pot.getPlantType().getName();
         return "PLANT_" + plantName.toUpperCase().replace(" ", "_");
-    }
-
-    private void setRegion(Image image, String regionName) {
-        TextureRegion r = Textures.regionOrNull(regionName);
-        if (r != null) {
-            image.setDrawable(new TextureRegionDrawable(r));
-        }
     }
 
     private String formatTime(double seconds) {

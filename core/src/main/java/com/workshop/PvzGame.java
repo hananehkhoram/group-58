@@ -11,6 +11,7 @@ import com.workshop.model.season.Grave;
 import com.workshop.model.season.Season;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
+import com.workshop.net.GameClient;
 import com.workshop.view.Screens.*;
 import com.badlogic.gdx.Screen;
 import com.workshop.model.GameContext;
@@ -29,6 +30,8 @@ public class PvzGame extends Game {
 
     private final MenuManager menuManager = new MenuManager(null);
 
+    private Season currentSeason;
+
     @Override
     public void setScreen(Screen screen) {
         super.setScreen(screen);
@@ -46,11 +49,19 @@ public class PvzGame extends Game {
 
     @Override
     public void create() {
+        GameClient.get().connect(GameClient.DEFAULT_HOST, GameClient.DEFAULT_PORT);
         DataManager.getInstance().loadUser();
 
         for (User u : UserManager.getInstance().users) {
             if (u.isStayedLogin()) {
                 UserManager.getInstance().login(u);
+                if (GameClient.get().isConnected()) {
+                    com.workshop.net.NetResponse response =
+                        GameClient.get().login(u.getUsername(), u.getPassword());
+                    if (response.ok) {
+                        com.workshop.net.UserSnapshot.fromWire(response.payload).applyTo(u);
+                    }
+                }
                 showMain();
                 return;
             }
@@ -128,9 +139,15 @@ public class PvzGame extends Game {
             public void onGreenHouse() {
                 showGreenHouse();
             }
+            @Override
+            public void onShop() {
+                showShop();
+            }
+
 
             @Override
             public void onLogout() {
+                GameClient.get().logout();
                 UserManager.getInstance().logOut();
                 showLogin();
             }
@@ -148,7 +165,8 @@ public class PvzGame extends Game {
     public void showTravelMenu() {
         setScreen(new TravelMenuScreen(
             this,
-            UserManager.getInstance().getCurrentUser()
+            UserManager.getInstance().getCurrentUser(),
+            currentSeason
         ));
     }
 
@@ -169,6 +187,14 @@ public class PvzGame extends Game {
             @Override
             public void onNavigateToScreen(Screen screen) {
                 setScreen(screen);
+            }
+        }));
+    }
+    public void showShop() {
+        setScreen(new ShopScreen(null, new ShopScreen.Listener() {
+            @Override
+            public void onBack() {
+                showMain();
             }
         }));
     }
@@ -244,6 +270,8 @@ public class PvzGame extends Game {
         setScreen(new GameScreen(new GameScreen.Listener() {
             @Override
             public void onEnterLevel(Season season, Level level) {
+
+                currentSeason = season;
                 menuManager.startBattle(level, season);
                 GameContext ctx = menuManager.getCtx();
 
@@ -351,6 +379,15 @@ public class PvzGame extends Game {
                 this::showTravelMenu
             )
         );
+    }
+
+    public void startLevel(Season season, Level level){
+
+        menuManager.startBattle(level, season);
+
+        GameContext ctx = menuManager.getCtx();
+
+        showPlantSelection(ctx);
     }
 
     @Override

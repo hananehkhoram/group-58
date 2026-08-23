@@ -1,9 +1,10 @@
 package com.workshop.view.gameplay;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.workshop.model.zombie.Zombie;
 
@@ -16,8 +17,14 @@ public final class ZombieActor extends Actor {
     private final Zombie zombie;
     private final ZombieAnimationSpec animationSpec;
     private final PamPlayer pamPlayer;
+    private final float cellHeight;
     private static final double DANGER_ZONE_X = 1.5;
     private static final float MAX_DANGER_TINT = 0.65f;
+
+
+    private static final float TARGET_HEIGHT_TO_CELL_RATIO = 1.6f;
+
+    private Float resolvedScale;
 
     private final HitFlashEffect hitFlash;
 
@@ -25,8 +32,6 @@ public final class ZombieActor extends Actor {
         "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_ZOMBIE/FROSTBITE_ICE_BLOCK_ZOMBIE.PAM";
     private static final String ICE_BLOCK_PREFERRED_CLIP = "idle";
 
-    // iceHp شروعش برای بلوک یخِ ابتدایی، ۶۰۰ است (رجوع کنید به
-    // Zombie.setAsInitialFrozenBlock()).
     private static final double INITIAL_ICE_HP = 600.0;
 
     private String resolvedSandstormClip;
@@ -49,13 +54,68 @@ public final class ZombieActor extends Actor {
     public ZombieActor(
         Zombie zombie,
         ZombieAnimationSpec animationSpec,
-        PamPlayer pamPlayer
+        PamPlayer pamPlayer,
+        float cellHeight
     ) {
         this.zombie = zombie;
-        this.hitFlash =
-            new HitFlashEffect(zombie::getHp);
+        this.hitFlash = new HitFlashEffect(() ->
+            zombie.getHp() + (int) zombie.getIceHp()
+        );
         this.animationSpec = animationSpec;
         this.pamPlayer = pamPlayer;
+        this.cellHeight = cellHeight;
+    }
+
+    private float getScale() {
+        if (resolvedScale != null) {
+            return resolvedScale;
+        }
+
+        String idleClip = animationSpec.getIdleClip();
+
+        if (idleClip == null) {
+            return 1f;
+        }
+
+        Rectangle bounds = pamPlayer.bounds(
+            animationSpec.getPamPath(),
+            idleClip
+        );
+
+        if (bounds == null || bounds.height <= 0f) {
+            return 1f;
+        }
+
+        resolvedScale =
+            (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO) / bounds.height;
+
+        return resolvedScale;
+    }
+
+    private void drawScaled(
+        Batch batch,
+        String pamPath,
+        String clip,
+        float time,
+        float x,
+        float y,
+        boolean loop
+    ) {
+        float scale = getScale();
+
+        Matrix4 oldTransform = batch.getTransformMatrix().cpy();
+        Matrix4 transform = new Matrix4(oldTransform);
+        transform.translate(x, y, 0);
+        transform.scale(scale, scale, 1f);
+        transform.translate(-x, -y, 0);
+        batch.setTransformMatrix(transform);
+
+        try {
+            pamPlayer.draw(batch, pamPath, clip, time, x, y, loop);
+        } catch (Throwable ignored) {
+        }
+
+        batch.setTransformMatrix(oldTransform);
     }
 
     @Override
@@ -134,18 +194,6 @@ public final class ZombieActor extends Actor {
             return;
         }
 
-        String clip =
-            animationSpec.getClip(currentState);
-
-        if (clip == null) {
-            clip = animationSpec.getIdleClip();
-        }
-
-        if (clip == null) {
-            return;
-        }
-
-
         float dangerTint = resolveDangerTint(zombie.getX());
         float flash = hitFlash.getIntensity();
 
@@ -156,7 +204,13 @@ public final class ZombieActor extends Actor {
             parentAlpha
         );
 
-        pamPlayer.draw(
+        String clip = animationSpec.getClip(currentState);
+
+        if (clip == null) {
+            clip = animationSpec.getIdleClip();
+        }
+
+        drawScaled(
             batch,
             animationSpec.getPamPath(),
             clip,
@@ -173,7 +227,7 @@ public final class ZombieActor extends Actor {
             }
 
             if (resolvedSandstormClip != null) {
-                pamPlayer.draw(
+                drawScaled(
                     batch,
                     SANDSTORM_TOP_PAM,
                     resolvedSandstormClip,
@@ -185,6 +239,7 @@ public final class ZombieActor extends Actor {
             }
         }
     }
+
     private float resolveDangerTint(double zombieX) {
         if (zombieX >= DANGER_ZONE_X) {
             return 0f;
@@ -214,7 +269,7 @@ public final class ZombieActor extends Actor {
         float flash = hitFlash.getIntensity();
         batch.setColor(1f + flash, 1f + flash, 1f + flash, alpha);
 
-        pamPlayer.draw(
+        drawScaled(
             batch,
             ICE_BLOCK_PAM,
             resolvedIceBlockClip,
@@ -251,11 +306,6 @@ public final class ZombieActor extends Actor {
         }
     }
 
-    /**
-     * شفافیتِ بلوک رو متناسب با آسیبِ باقی‌مونده حساب می‌کنه: سالم
-     * (iceHp کامل) کاملاً توپر، نزدیک شکستن (iceHp نزدیک صفر) خیلی
-     * کم‌رنگ (ولی نه کاملاً محو، تا معلوم باشه هنوز از بین نرفته).
-     */
     private float resolveIceBlockAlpha(double iceHp) {
         float fraction = MathUtils.clamp(
             (float) (iceHp / INITIAL_ICE_HP),

@@ -60,7 +60,7 @@ public final class ZombieAnimationResolver {
             return resolvedSpecs.get(key);
         }
 
-        String pamPath = findPamPath(key);
+        String pamPath = findPamPath(pamName);
 
         if (pamPath == null) {
             Gdx.app.error(
@@ -228,8 +228,14 @@ public final class ZombieAnimationResolver {
     }
 
     private String findPamPath(String pamName) {
-
         String key = normalize(pamName);
+
+        String cleanToken = key.replace("ZOMBIE", "").replace("EGYPT", "").replace("PIRATE", "");
+        if (cleanToken.equals("RA") || key.equals("ZOMBIERA") || key.equals("RAZOMBIE")) {
+            return "768/INITIAL/ZOMBIE/ZOMBIE_EGYPT_RA/ZOMBIE_EGYPT_RA.PAM";
+        } if (cleanToken.contains("BARRELROLLER")){
+            return "768/FULL/ZOMBIE/ZOMBIE_PIRATE_BARREL_PUSHER/ZOMBIE_PIRATE_BARREL_PUSHER.PAM";
+        }
 
         String exact = pamPaths.get(key);
 
@@ -279,16 +285,12 @@ public final class ZombieAnimationResolver {
         String wantedToken =
             requestedParts[requestedParts.length - 1];
 
-        // پاس اول: توکنِ کاملاً یکسان (مثلاً "SNORKELER" == "SNORKELER")
         String exactTokenMatch = findByToken(wantedToken, true);
 
         if (exactTokenMatch != null) {
             return exactTokenMatch;
         }
 
-        // پاس دوم، انعطاف‌پذیرتر: پیشوند/شامل‌بودن (مثلاً اسمِ مدلِ زامبی
-        // "Snorkel" ولی فایل واقعی‌ش "...SNORKELER.PAM" است — یکی زیرمجموعه‌ی
-        // دیگریه، دقیقاً یکی نیست).
         return findByToken(wantedToken, false);
     }
 
@@ -302,7 +304,6 @@ public final class ZombieAnimationResolver {
                     .replace('\\', '/')
                     .toUpperCase();
 
-            // فقط PAMهای واقعی بخش Zombie
             if (!path.contains("/ZOMBIE/")) {
                 continue;
             }
@@ -331,9 +332,9 @@ public final class ZombieAnimationResolver {
                 boolean matches = exact
                     ? token.equals(wantedToken)
                     : (wantedToken.length() >= 4
-                       && token.length() >= 4
-                       && (token.startsWith(wantedToken)
-                           || wantedToken.startsWith(token)));
+                    && token.length() >= 4
+                    && (token.startsWith(wantedToken)
+                    || wantedToken.startsWith(token)));
 
                 if (matches) {
 
@@ -383,7 +384,6 @@ public final class ZombieAnimationResolver {
 
         return null;
     }
-
 
     private String normalize(String name) {
         if (name == null) {

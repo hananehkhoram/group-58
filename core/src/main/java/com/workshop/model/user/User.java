@@ -21,6 +21,7 @@ public class User {
     protected int gamesPlayed;
     protected int numberOfPassedLevels;
     protected int maxMewPoint;
+    private boolean hasNetworkBonusScore;
     private Settings settings;
     private boolean stayedLogin;
 
@@ -70,6 +71,11 @@ public class User {
         this.greenHouse = new GreenHouse();
         this.unlockedLevels = new ArrayList<>();
         this.unlockLevel("Ancient Egypt - Day 1");
+        this.unlockLevel("Vase - Day 1");
+        this.unlockLevel("Wallnuts - Day 1");
+        this.unlockLevel("Izombie - Day 1");
+        this.unlockLevel("Beghouled - Day 1");
+        this.unlockLevel("Zombotany - Day 1");
         this.unlockedPlantTypes = new ArrayList<>();
         this.seenZombies = new ArrayList<>();
         unlockStarterPlants();
@@ -81,6 +87,11 @@ public class User {
         this.greenHouse = new GreenHouse();
         this.unlockedLevels = new ArrayList<>();
         this.unlockLevel("Ancient Egypt - Day 1");
+        this.unlockLevel("Vase - Day 1");
+        this.unlockLevel("Wallnuts - Day 1");
+        this.unlockLevel("Izombie - Day 1");
+        this.unlockLevel("Beghouled - Day 1");
+        this.unlockLevel("Zombotany - Day 1");
         this.unlockedPlantTypes = new ArrayList<>();
         this.seenZombies = new ArrayList<>();
         unlockStarterPlants();
@@ -299,7 +310,25 @@ public class User {
         }
     }
 
+    public void initializeMiniGameLevels() {
+
+        unlockLevel("Vase - Day 1");
+        unlockLevel("Wallnuts - Day 1");
+        unlockLevel("Izombie - Day 1");
+        unlockLevel("Beghouled - Day 1");
+        unlockLevel("Zombotany - Day 1");
+
+    }
+
     public void setMaxMewPoint(int maxMewPoint) {this.maxMewPoint = maxMewPoint;}
+
+    public boolean hasNetworkBonusScore() {
+        return hasNetworkBonusScore;
+    }
+
+    public void setHasNetworkBonusScore(boolean hasNetworkBonusScore) {
+        this.hasNetworkBonusScore = hasNetworkBonusScore;
+    }
 
     public void setUnlockedPlantTypes(List<Plant> unlockedPlantTypes) {
         this.unlockedPlantTypes = unlockedPlantTypes;

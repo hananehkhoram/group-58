@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.workshop.model.plants.Plant;
 
@@ -17,10 +19,21 @@ public final class PlantActor extends Actor {
     private final PlantAnimationSpec animationSpec;
     private final PamPlayer pamPlayer;
     private final HitFlashEffect hitFlash;
+    private final float cellHeight;
+
+    // گیاه‌ها معمولاً تقریباً هم‌قدِ یه خونه‌ی گرید هستن؛ این ضریب
+    // نسبتِ ارتفاعِ اسپرایتِ خامِ PAM به ارتفاعِ خونه‌ی گرید رو تعیین
+    // می‌کنه. اگه هنوز بزرگ/کوچیک بود، همینو دستی تیون کن.
+    private static final float TARGET_HEIGHT_TO_CELL_RATIO = 1.1f;
+
+    private Float resolvedScale;
 
     private static final String ICE_BLOCK_PAM =
         "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_PLANT/FROSTBITE_ICE_BLOCK_PLANT.PAM";
     private static final String ICE_BLOCK_PREFERRED_CLIP = "idle";
+
+    private boolean wasIced;
+    private int lastFreezeLevel;
 
     private static final String CHILL_OVERLAY_PAM =
         "768/FULL/EFFECTS/FROSTBITE_CHILL_PLANT/FROSTBITE_CHILL_PLANT.PAM";
@@ -50,25 +63,86 @@ public final class PlantActor extends Actor {
     public PlantActor(
         Plant plant,
         PlantAnimationSpec animationSpec,
-        PamPlayer pamPlayer
+        PamPlayer pamPlayer,
+        float cellHeight
     ) {
         this.plant = plant;
-        this.hitFlash =
-            new HitFlashEffect(plant::getHp);
+        this.hitFlash = new HitFlashEffect(() ->
+            plant.getHp()
+                + (int) plant.getIceHp()
+                + (int) plant.getOctopusHp()
+        );
         this.animationSpec = animationSpec;
         this.pamPlayer = pamPlayer;
+        this.cellHeight = cellHeight;
+    }
+
+    private float getScale() {
+        if (resolvedScale != null) {
+            return resolvedScale;
+        }
+
+        String idleClip = animationSpec.getIdleClip();
+
+        if (idleClip == null) {
+            return 1f;
+        }
+
+        Rectangle bounds = pamPlayer.bounds(
+            animationSpec.getPamPath(),
+            idleClip
+        );
+
+        if (bounds == null || bounds.height <= 0f) {
+            return 1f;
+        }
+
+        resolvedScale =
+            (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO) / bounds.height;
+
+        return resolvedScale;
+    }
+
+    private void drawScaled(
+        Batch batch,
+        String pamPath,
+        String clip,
+        float time,
+        float x,
+        float y,
+        boolean loop
+    ) {
+        float scale = getScale();
+
+        Matrix4 oldTransform = batch.getTransformMatrix().cpy();
+        Matrix4 transform = new Matrix4(oldTransform);
+        transform.translate(x, y, 0);
+        transform.scale(scale, scale, 1f);
+        transform.translate(-x, -y, 0);
+        batch.setTransformMatrix(transform);
+
+        try {
+            pamPlayer.draw(batch, pamPath, clip, time, x, y, loop);
+        } catch (Throwable ignored) {
+        }
+
+        batch.setTransformMatrix(oldTransform);
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
         hitFlash.update(delta);
-
-        // گیاهِ کاملاً یخ‌زده دیگه انیمیشن/عمل نداره؛ فقط بلوک یخ روش می‌مونه.
-        if (!plant.isIced()) {
+        boolean iced = plant.isIced();
+        int freezeLevel = plant.getFreezeLevel();
+        if ((iced && !wasIced) || freezeLevel != lastFreezeLevel) {
+            frostStateTime = 0f;
+        }
+        wasIced = iced;
+        lastFreezeLevel = freezeLevel;
+        if (!iced) {
             stateTime += delta;
         }
-
         frostStateTime += delta;
     }
 
@@ -79,37 +153,28 @@ public final class PlantActor extends Actor {
         }
 
         String clip = animationSpec.getClip(currentState);
-
         if (clip == null) {
             clip = animationSpec.getIdleClip();
         }
+        final String drawClip = clip;
 
-        if (clip != null) {
-            // اگه اکتورِ قبلی توی همین فریم رنگِ batch رو نیمه‌شفاف گذاشته
-            // باشه (مثلاً پوششِ ساحل پست)، اینجا صریحاً برمی‌گردونیمش به
-            // حالت عادی تا روی این گیاه اثر نذاره.
-            float flash = hitFlash.getIntensity();
-            batch.setColor(1f + flash, 1f + flash, 1f + flash, parentAlpha);
-
-            pamPlayer.draw(
-                batch,
-                animationSpec.getPamPath(),
-                clip,
-                stateTime,
-                getX(),
-                getY(),
-                true
-            );
+        if (drawClip != null) {
+            hitFlash.drawWithFlash(batch, parentAlpha, () -> {
+                drawScaled(
+                    batch,
+                    animationSpec.getPamPath(),
+                    drawClip,
+                    stateTime,
+                    getX(),
+                    getY(),
+                    true
+                );
+            });
         }
 
         if (plant.isIced()) {
-            // یخ‌زدگیِ کامل: گیاه درون بلوک یخ نشون داده می‌شه (بلوک روی
-            // خودِ گیاه رسم می‌شه، نه به‌جاش). مرحله‌ی آسیب با شفافیت
-            // شبیه‌سازی می‌شه، نه تعویض کلیپ.
             drawIceBlock(batch, parentAlpha);
         } else if (plant.getFreezeLevel() > 0) {
-            // سرمازدگیِ جزئی (هنوز کامل یخ نزده): یه لایه‌ی یخِ سبک روش،
-            // با شفافیتِ متناسب با شدتِ سرما.
             drawChillOverlay(batch, parentAlpha);
         }
     }
@@ -129,7 +194,7 @@ public final class PlantActor extends Actor {
         }
 
         float alpha = resolveIceBlockAlpha(plant.getIceHp()) * parentAlpha;
-        drawWithAlpha(batch, ICE_BLOCK_PAM, resolvedIceBlockClip, alpha, parentAlpha);
+        drawWithAlpha(batch, ICE_BLOCK_PAM, resolvedIceBlockClip, alpha, parentAlpha,false);
     }
 
     private void drawChillOverlay(Batch batch, float parentAlpha) {
@@ -148,7 +213,7 @@ public final class PlantActor extends Actor {
 
         // freezeLevel ۱ یا ۲: هرچی نزدیک‌تر به یخ‌زدگیِ کامل (۳)، توپرتر.
         float alpha = MathUtils.clamp(plant.getFreezeLevel() / 3f, 0.3f, 0.8f) * parentAlpha;
-        drawWithAlpha(batch, CHILL_OVERLAY_PAM, resolvedChillClip, alpha, parentAlpha);
+        drawWithAlpha(batch, CHILL_OVERLAY_PAM, resolvedChillClip, alpha, parentAlpha,false);
     }
 
     private void drawWithAlpha(
@@ -156,21 +221,20 @@ public final class PlantActor extends Actor {
         String pamPath,
         String clip,
         float alpha,
-        float restoreAlpha
+        float restoreAlpha,
+        boolean loop
     ) {
-        float flash = hitFlash.getIntensity();
-        batch.setColor(1f + flash, 1f + flash, 1f + flash, alpha);
-
-        pamPlayer.draw(
-            batch,
-            pamPath,
-            clip,
-            frostStateTime,
-            getX(),
-            getY(),
-            true
-        );
-
+        hitFlash.drawWithFlash(batch, alpha, () -> {
+            drawScaled(
+                batch,
+                pamPath,
+                clip,
+                frostStateTime,
+                getX(),
+                getY(),
+                loop
+            );
+        });
         batch.setColor(1f, 1f, 1f, restoreAlpha);
     }
 

@@ -68,6 +68,17 @@ public class ScoringManager {
             sb.append("Personal best remains: ").append(user.getMaxMewPoint());
         }
 
+        com.workshop.net.GameClient client = com.workshop.net.GameClient.get();
+        if (client.isConnected()) {
+            com.workshop.net.NetResponse submitted = client.submitBonusScore(total);
+            if (submitted.ok) {
+                user.setHasNetworkBonusScore(true);
+                if (submitted.payload != null && !submitted.payload.isBlank()) {
+                    com.workshop.net.UserSnapshot.fromWire(submitted.payload).applyTo(user);
+                }
+            }
+        }
+
         com.workshop.view.Console.showMessage(sb.toString());
     }
 

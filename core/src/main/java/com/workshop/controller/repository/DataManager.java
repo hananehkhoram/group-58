@@ -68,9 +68,23 @@ public class DataManager {
     }
 
     public void loadUser() {
+
         users.load(userPath);
-        List<User> loadedUsers = new ArrayList<>(users.getUserMap().values());
+
+        List<User> loadedUsers =
+            new ArrayList<>(users.getUserMap().values());
+
+
+        for(User user : loadedUsers){
+
+            user.initializeMiniGameLevels();
+
+        }
+
+
         UserManager.getInstance().updateUsers(loadedUsers);
+
+        saveUser();
     }
 
     public void saveUser() {
@@ -79,6 +93,11 @@ public class DataManager {
             users.getUserMap().put(u.getUsername(), u);
         }
         users.save();
+
+        User current = UserManager.getInstance().getCurrentUser();
+        if (current != null) {
+            com.workshop.net.GameClient.get().syncProfile(current);
+        }
     }
 
     public void initialize() {

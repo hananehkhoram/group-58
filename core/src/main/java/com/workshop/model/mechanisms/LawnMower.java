@@ -18,9 +18,6 @@ public class LawnMower {
     public LawnMower(int row) {
         this.row = row;
     }
-    public boolean checkTrigger(Zombie z) {
-        return z.getY() == row && Math.abs(z.getX() - x) < TRIGGER_X;
-    }
 
     public void advance(double deltaTicks) {
         if (!isActivated || !isAvailable) return;
@@ -51,11 +48,17 @@ public class LawnMower {
         return isAvailable;
     }
 
+    public boolean checkTrigger(Zombie z) {
+        return z.getY() == row && z.getX() <= x;
+    }
+
     public void trigger(Zombie z) {
         if (!isActivated || !isAvailable) return;
-        if (z.getHp() <= 0) return;
-        if (checkTrigger(z) && !z.isBoss()) {
-            z.setHp(0);
+        if (z.getHp() <= 0 || z.isBoss()) return;
+        if (!checkTrigger(z)) return;
+
+        z.setHp(0);
+        if (!killedZombies.contains(z)) {
             killedZombies.add(z);
         }
     }
@@ -66,5 +69,9 @@ public class LawnMower {
             mowers[r] = new LawnMower(r);
         }
         return mowers;
+    }
+
+    public double getX() {
+        return x;
     }
 }

@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.workshop.controller.SpecialLevelManager.ConveyorBeltManager;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
 import com.workshop.model.mechanisms.GameEngine;
@@ -23,31 +24,24 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Toast;
+import com.workshop.view.gameplay.*;
 import pvz.skin.PvzSkin;
 import com.workshop.controller.repository.Audio;
 import com.workshop.controller.repository.Textures;
-import com.workshop.view.gameplay.GraveAnimationLayer;
-import com.workshop.view.gameplay.PlantAnimationLayer;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
-import com.workshop.view.gameplay.ZombieIntroLayer;
-import com.workshop.view.gameplay.ZombieAnimationLayer;
 import com.workshop.model.level.DialogueLine;
 
 import java.util.List;
-import com.workshop.view.gameplay.SunAnimationLayer;
+
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 
-import com.workshop.view.gameplay.PlantActor;
-import com.workshop.view.gameplay.PlantAnimationResolver;
-import com.workshop.view.gameplay.PlantAnimationSpec;
 import com.workshop.controller.MenuManager;
 import com.workshop.controller.commands.Planting;
 import com.workshop.model.plants.Plant;
-import com.workshop.view.widgets.PlantCardActor;
-import com.workshop.view.gameplay.VaseAnimationLayer;
+import com.workshop.view.Screens.PlantCardActor;
 import com.workshop.model.level.LevelType;
 import com.workshop.view.gameplay.DroppedSeedLayer;
 import com.workshop.controller.SpecialLevelManager.ConveyorBeltManager;
@@ -130,6 +124,8 @@ public class GamePlayScreen implements Screen {
     private boolean dialogueBlocking = false;
     private boolean endDialogueShown = false;
     private String lastConveyorSignature = "";
+
+    private ConveyorBeltLayer conveyorBeltLayer;
 
     //===========================TEST=============================
 
@@ -352,6 +348,15 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(plantAnimationLayer);
 
+        stage.addActor(new LawnMowerLayer(
+            gameContext,
+            gameEngine,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
         ZombieAnimationLayer zombieAnimationLayer =
             new ZombieAnimationLayer(
                 gameContext,
@@ -523,12 +528,12 @@ public class GamePlayScreen implements Screen {
             dialogueBlocking = true;
 
 
-        Toast.showMission(
-            stage,
-            skin,
-            com.workshop.model.level.LevelObjectives.describe(level),
-            INTRO_WAIT + INTRO_DURATION
-        );
+            Toast.showMission(
+                stage,
+                skin,
+                com.workshop.model.level.LevelObjectives.describe(level),
+                INTRO_WAIT + INTRO_DURATION
+            );
             new DialogueOverlay(
                 stage,
                 skin,
@@ -567,6 +572,16 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(plantFoodAnimationLayer);
 
+    }
+
+    private void buildConveyorBelt() {
+        conveyorBeltLayer = new ConveyorBeltLayer(
+            (ConveyorBeltManager) gameContext.getLevelManager(),
+            worldHeight,
+            seedBankCards,
+            this::selectPlant
+        );
+        stage.addActor(conveyorBeltLayer);
     }
     private int currentPlantFoodCount() {
         com.workshop.model.user.User user = UserManager.getInstance().getCurrentUser();
@@ -748,15 +763,10 @@ public class GamePlayScreen implements Screen {
         seedBankTable.padLeft(110f);
         seedBankTable.padTop(20f);
 
-        // مستطیل بزرگ پشت کارت‌ها
+        // مستطیل بزرگ پشت کارت‌ها: خودِ بنرِ راه‌راهِ leftBackground از قبل
+        // به‌عنوان بک‌گراند این ستون کار می‌کنه، پس اینجا فقط چیدمانه.
         Table seedBankPanel = new Table();
         seedBankPanel.top();
-
-        if (skin.has("SeedPacketBorder", Drawable.class)) {
-            seedBankPanel.setBackground(
-                skin.getDrawable("SeedPacketBorder")
-            );
-        }
 
         Table cardsTable = new Table();
         cardsTable.top();
@@ -1253,7 +1263,8 @@ public class GamePlayScreen implements Screen {
         mousePlantPreview = new PlantActor(
             plant,
             spec,
-            Textures.getPamPlayer()
+            Textures.getPamPlayer(),
+            getCellHeight()
         );
 
         mousePlantPreview.setTouchable(
@@ -1345,6 +1356,7 @@ public class GamePlayScreen implements Screen {
                 instanceof ConveyorBeltManager;
 
         if (!usingHeldSeed
+            && !isConveyorLevel()
             && !conveyorLevel
             && gameContext.getSunAmount()
             < selectedPlantForPlacement.getSunCost()) {
@@ -1699,5 +1711,8 @@ public class GamePlayScreen implements Screen {
         shapeRenderer.dispose();
         pauseOverlay.dispose();
         winLoseOverlay.dispose();
+        if (conveyorBeltLayer != null) {
+            conveyorBeltLayer.dispose();
+        }
     }
 }
