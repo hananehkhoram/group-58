@@ -23,6 +23,7 @@ import com.workshop.view.Screens.LoginScreen;
 import com.workshop.view.Screens.RegisterScreen;
 import com.workshop.view.Screens.MainMenuScreen;
 import com.workshop.model.MiniGame.VaseGame.Vasecheccker;
+import com.workshop.model.MiniGame.WallnutsGame.WallnutBowlingGame;
 
 public class PvzGame extends Game {
 
@@ -322,6 +323,31 @@ public class PvzGame extends Game {
             new GamePlayScreen(
                 ctx,
                 this::showVaseBreaker,
+                this::showTravelMenu
+            )
+        );
+    }
+
+    public void showWallnutBowling() {
+        WallnutBowlingGame bowlingGame =
+            new WallnutBowlingGame();
+
+        bowlingGame.start(
+            menuManager,
+            1
+        );
+
+        GameContext ctx = bowlingGame.getCtx();
+
+        menuManager.setCtx(ctx);
+        menuManager.setGameEngine(
+            bowlingGame.getGameEngine()
+        );
+
+        setScreen(
+            new GamePlayScreen(
+                ctx,
+                this::showWallnutBowling,
                 this::showTravelMenu
             )
         );

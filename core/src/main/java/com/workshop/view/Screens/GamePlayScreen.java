@@ -50,6 +50,7 @@ import com.workshop.view.widgets.PlantCardActor;
 import com.workshop.view.gameplay.VaseAnimationLayer;
 import com.workshop.model.level.LevelType;
 import com.workshop.view.gameplay.DroppedSeedLayer;
+import com.workshop.controller.SpecialLevelManager.ConveyorBeltManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,6 +129,7 @@ public class GamePlayScreen implements Screen {
 
     private boolean dialogueBlocking = false;
     private boolean endDialogueShown = false;
+    private String lastConveyorSignature = "";
 
     //===========================TEST=============================
 
@@ -761,7 +763,7 @@ public class GamePlayScreen implements Screen {
 
         seedBankCards.clear();
 
-        for (Plant plant : gameContext.getActivePlants()) {
+        for (Plant plant : getAvailableSeedBankPlants()) {
 
             PlantCardActor card = new PlantCardActor(
                 plant,
@@ -793,6 +795,14 @@ public class GamePlayScreen implements Screen {
             .top();
 
         stage.addActor(seedBankTable);
+
+        if (gameContext.getLevelManager()
+            instanceof ConveyorBeltManager conveyorManager) {
+
+            lastConveyorSignature =
+                getConveyorSignature(conveyorManager);
+        }
+
     }
 
     private void selectPlant(PlantCardActor clickedCard) {
@@ -840,9 +850,9 @@ public class GamePlayScreen implements Screen {
 
             case "Wallnut Bowling":
                 return new BackgroundPaths(
-                    "IMAGES/Menus/GamePlay/WallnutBowlingLeft.png",
-                    "IMAGES/Menus/GamePlay/WallnutBowling.png",
-                    "IMAGES/Menus/GamePlay/WallnutBowlingRight.png"
+                    "IMAGES/Menus/MiniGame/WallnutBowlingLeft.png",
+                    "IMAGES/Menus/MiniGame/WallnutBowling.png",
+                    "IMAGES/Menus/MiniGame/WallnutBowlingRight.png"
                 );
 
             case "Vasebreaker":
@@ -1330,10 +1340,14 @@ public class GamePlayScreen implements Screen {
                         .getName()
                 );
 
+        boolean conveyorLevel =
+            gameContext.getLevelManager()
+                instanceof ConveyorBeltManager;
+
         if (!usingHeldSeed
+            && !conveyorLevel
             && gameContext.getSunAmount()
-            < selectedPlantForPlacement
-            .getSunCost()) {
+            < selectedPlantForPlacement.getSunCost()) {
 
             Toast.showError(
                 stage,
@@ -1467,6 +1481,62 @@ public class GamePlayScreen implements Screen {
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
+    private boolean isConveyorLevel() {
+        return gameContext.getLevelManager()
+            instanceof ConveyorBeltManager;
+    }
+
+    private List<Plant> getAvailableSeedBankPlants() {
+        if (gameContext.getLevelManager()
+            instanceof ConveyorBeltManager conveyorManager) {
+
+            return conveyorManager.getConveyorBelt();
+        }
+
+        return gameContext.getActivePlants();
+    }
+
+    private void rebuildSeedBank() {
+        if (seedBankTable != null) {
+            seedBankTable.remove();
+        }
+
+        buildSeedBank(PvzSkin.get());
+    }
+
+    private String getConveyorSignature(
+        ConveyorBeltManager manager
+    ) {
+        StringBuilder result = new StringBuilder();
+
+        for (Plant plant : manager.getConveyorBelt()) {
+            result.append(System.identityHashCode(plant))
+                .append(":")
+                .append(plant.getName())
+                .append("|");
+        }
+
+        return result.toString();
+    }
+
+    private void updateConveyorSeedBank() {
+        if (!(gameContext.getLevelManager()
+            instanceof ConveyorBeltManager conveyorManager)) {
+            return;
+        }
+
+        String newSignature =
+            getConveyorSignature(conveyorManager);
+
+        if (newSignature.equals(lastConveyorSignature)) {
+            return;
+        }
+
+        lastConveyorSignature = newSignature;
+
+        rebuildSeedBank();
+    }
+
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
@@ -1504,6 +1574,7 @@ public class GamePlayScreen implements Screen {
         updateHud();
         updatePlantMousePreview();
         updatePlantingHover();
+        updateConveyorSeedBank();
 
         for (PlantCardActor card : seedBankCards) {
             card.updateAnimation(delta);

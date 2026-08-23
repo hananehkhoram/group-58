@@ -119,6 +119,15 @@ public class TravelMenuScreen implements Screen {
             }
         );
 
+        wallnutBowlingButton.addListener(
+            new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    game.showWallnutBowling();
+                }
+            }
+        );
+
         Table miniGameRow = new Table();
 
         miniGameRow.add(vaseBreakerButton)
