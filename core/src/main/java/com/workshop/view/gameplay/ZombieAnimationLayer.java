@@ -105,7 +105,8 @@ public final class ZombieAnimationLayer extends Group {
         return new ZombieActor(
             zombie,
             spec,
-            pamPlayer
+            pamPlayer,
+            getCellHeight()
         );
     }
 
@@ -137,6 +138,10 @@ public final class ZombieAnimationLayer extends Group {
 
         return gridX
             + (float) zombie.getX() * cellWidth;
+    }
+
+    private float getCellHeight() {
+        return gridHeight / gameContext.getLevel().getRows();
     }
 
     private float getRowCenterY(int row) {

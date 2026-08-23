@@ -3,9 +3,10 @@ package com.workshop.view.gameplay;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.workshop.model.zombie.Zombie;
-import com.workshop.view.Screens.ScreenResourceManager;
 
 import java.util.List;
 
@@ -16,8 +17,14 @@ public final class ZombieActor extends Actor {
     private final Zombie zombie;
     private final ZombieAnimationSpec animationSpec;
     private final PamPlayer pamPlayer;
+    private final float cellHeight;
     private static final double DANGER_ZONE_X = 1.5;
     private static final float MAX_DANGER_TINT = 0.65f;
+
+
+    private static final float TARGET_HEIGHT_TO_CELL_RATIO = 1.6f;
+
+    private Float resolvedScale;
 
     private final HitFlashEffect hitFlash;
 
@@ -47,7 +54,8 @@ public final class ZombieActor extends Actor {
     public ZombieActor(
         Zombie zombie,
         ZombieAnimationSpec animationSpec,
-        PamPlayer pamPlayer
+        PamPlayer pamPlayer,
+        float cellHeight
     ) {
         this.zombie = zombie;
         this.hitFlash = new HitFlashEffect(() ->
@@ -55,6 +63,59 @@ public final class ZombieActor extends Actor {
         );
         this.animationSpec = animationSpec;
         this.pamPlayer = pamPlayer;
+        this.cellHeight = cellHeight;
+    }
+
+    private float getScale() {
+        if (resolvedScale != null) {
+            return resolvedScale;
+        }
+
+        String idleClip = animationSpec.getIdleClip();
+
+        if (idleClip == null) {
+            return 1f;
+        }
+
+        Rectangle bounds = pamPlayer.bounds(
+            animationSpec.getPamPath(),
+            idleClip
+        );
+
+        if (bounds == null || bounds.height <= 0f) {
+            return 1f;
+        }
+
+        resolvedScale =
+            (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO) / bounds.height;
+
+        return resolvedScale;
+    }
+
+    private void drawScaled(
+        Batch batch,
+        String pamPath,
+        String clip,
+        float time,
+        float x,
+        float y,
+        boolean loop
+    ) {
+        float scale = getScale();
+
+        Matrix4 oldTransform = batch.getTransformMatrix().cpy();
+        Matrix4 transform = new Matrix4(oldTransform);
+        transform.translate(x, y, 0);
+        transform.scale(scale, scale, 1f);
+        transform.translate(-x, -y, 0);
+        batch.setTransformMatrix(transform);
+
+        try {
+            pamPlayer.draw(batch, pamPath, clip, time, x, y, loop);
+        } catch (Throwable ignored) {
+        }
+
+        batch.setTransformMatrix(oldTransform);
     }
 
     @Override
@@ -143,13 +204,20 @@ public final class ZombieActor extends Actor {
             parentAlpha
         );
 
-        ScreenResourceManager.drawZombieAnimation(
+        String clip = animationSpec.getClip(currentState);
+
+        if (clip == null) {
+            clip = animationSpec.getIdleClip();
+        }
+
+        drawScaled(
             batch,
-            pamPlayer,
-            zombie.getName(),
+            animationSpec.getPamPath(),
+            clip,
             stateTime,
             getX(),
-            getY()
+            getY(),
+            true
         );
 
         if (zombie.isEnteredViaSandstorm()) {
@@ -159,18 +227,15 @@ public final class ZombieActor extends Actor {
             }
 
             if (resolvedSandstormClip != null) {
-                try {
-                    pamPlayer.draw(
-                        batch,
-                        SANDSTORM_TOP_PAM,
-                        resolvedSandstormClip,
-                        sandstormEffectTime,
-                        getX(),
-                        getY(),
-                        false
-                    );
-                } catch (Throwable ignored) {
-                }
+                drawScaled(
+                    batch,
+                    SANDSTORM_TOP_PAM,
+                    resolvedSandstormClip,
+                    sandstormEffectTime,
+                    getX(),
+                    getY(),
+                    false
+                );
             }
         }
     }
@@ -204,18 +269,15 @@ public final class ZombieActor extends Actor {
         float flash = hitFlash.getIntensity();
         batch.setColor(1f + flash, 1f + flash, 1f + flash, alpha);
 
-        try {
-            pamPlayer.draw(
-                batch,
-                ICE_BLOCK_PAM,
-                resolvedIceBlockClip,
-                stateTime,
-                getX() + 33f,
-                getY(),
-                true
-            );
-        } catch (Throwable ignored) {
-        }
+        drawScaled(
+            batch,
+            ICE_BLOCK_PAM,
+            resolvedIceBlockClip,
+            stateTime,
+            getX() + 33f,
+            getY(),
+            true
+        );
 
         batch.setColor(1f, 1f, 1f, parentAlpha);
     }

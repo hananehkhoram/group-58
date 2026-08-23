@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.workshop.model.plants.Plant;
 
@@ -17,6 +19,14 @@ public final class PlantActor extends Actor {
     private final PlantAnimationSpec animationSpec;
     private final PamPlayer pamPlayer;
     private final HitFlashEffect hitFlash;
+    private final float cellHeight;
+
+    // گیاه‌ها معمولاً تقریباً هم‌قدِ یه خونه‌ی گرید هستن؛ این ضریب
+    // نسبتِ ارتفاعِ اسپرایتِ خامِ PAM به ارتفاعِ خونه‌ی گرید رو تعیین
+    // می‌کنه. اگه هنوز بزرگ/کوچیک بود، همینو دستی تیون کن.
+    private static final float TARGET_HEIGHT_TO_CELL_RATIO = 1.1f;
+
+    private Float resolvedScale;
 
     private static final String ICE_BLOCK_PAM =
         "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_PLANT/FROSTBITE_ICE_BLOCK_PLANT.PAM";
@@ -53,7 +63,8 @@ public final class PlantActor extends Actor {
     public PlantActor(
         Plant plant,
         PlantAnimationSpec animationSpec,
-        PamPlayer pamPlayer
+        PamPlayer pamPlayer,
+        float cellHeight
     ) {
         this.plant = plant;
         this.hitFlash = new HitFlashEffect(() ->
@@ -63,6 +74,59 @@ public final class PlantActor extends Actor {
         );
         this.animationSpec = animationSpec;
         this.pamPlayer = pamPlayer;
+        this.cellHeight = cellHeight;
+    }
+
+    private float getScale() {
+        if (resolvedScale != null) {
+            return resolvedScale;
+        }
+
+        String idleClip = animationSpec.getIdleClip();
+
+        if (idleClip == null) {
+            return 1f;
+        }
+
+        Rectangle bounds = pamPlayer.bounds(
+            animationSpec.getPamPath(),
+            idleClip
+        );
+
+        if (bounds == null || bounds.height <= 0f) {
+            return 1f;
+        }
+
+        resolvedScale =
+            (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO) / bounds.height;
+
+        return resolvedScale;
+    }
+
+    private void drawScaled(
+        Batch batch,
+        String pamPath,
+        String clip,
+        float time,
+        float x,
+        float y,
+        boolean loop
+    ) {
+        float scale = getScale();
+
+        Matrix4 oldTransform = batch.getTransformMatrix().cpy();
+        Matrix4 transform = new Matrix4(oldTransform);
+        transform.translate(x, y, 0);
+        transform.scale(scale, scale, 1f);
+        transform.translate(-x, -y, 0);
+        batch.setTransformMatrix(transform);
+
+        try {
+            pamPlayer.draw(batch, pamPath, clip, time, x, y, loop);
+        } catch (Throwable ignored) {
+        }
+
+        batch.setTransformMatrix(oldTransform);
     }
 
     @Override
@@ -96,7 +160,7 @@ public final class PlantActor extends Actor {
 
         if (drawClip != null) {
             hitFlash.drawWithFlash(batch, parentAlpha, () -> {
-                pamPlayer.draw(
+                drawScaled(
                     batch,
                     animationSpec.getPamPath(),
                     drawClip,
@@ -161,7 +225,7 @@ public final class PlantActor extends Actor {
         boolean loop
     ) {
         hitFlash.drawWithFlash(batch, alpha, () -> {
-            pamPlayer.draw(
+            drawScaled(
                 batch,
                 pamPath,
                 clip,

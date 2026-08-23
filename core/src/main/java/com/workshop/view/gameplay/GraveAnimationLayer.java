@@ -71,7 +71,7 @@ public final class GraveAnimationLayer extends Group {
                 GraveActor actor = graveActors.get(grave);
 
                 if (actor == null) {
-                    actor = new GraveActor(grave, pamPlayer);
+                    actor = new GraveActor(grave, pamPlayer, getCellHeight());
                     graveActors.put(grave, actor);
                     addActor(actor);
                 }
@@ -101,6 +101,10 @@ public final class GraveAnimationLayer extends Group {
             entry.getValue().remove();
             iterator.remove();
         }
+    }
+
+    private float getCellHeight() {
+        return gridHeight / gameContext.getLevel().getRows();
     }
 
     private float getCellCenterX(int column) {

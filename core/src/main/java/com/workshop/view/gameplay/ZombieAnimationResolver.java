@@ -233,6 +233,8 @@ public final class ZombieAnimationResolver {
         String cleanToken = key.replace("ZOMBIE", "").replace("EGYPT", "").replace("PIRATE", "");
         if (cleanToken.equals("RA") || key.equals("ZOMBIERA") || key.equals("RAZOMBIE")) {
             return "768/INITIAL/ZOMBIE/ZOMBIE_EGYPT_RA/ZOMBIE_EGYPT_RA.PAM";
+        } if (cleanToken.contains("BARRELROLLER")){
+            return "768/FULL/ZOMBIE/ZOMBIE_PIRATE_BARREL_PUSHER/ZOMBIE_PIRATE_BARREL_PUSHER.PAM";
         }
 
         String exact = pamPaths.get(key);

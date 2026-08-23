@@ -32,9 +32,8 @@ public class ZombieDetailsScreen extends BaseScreen {
     private static final float BASE_WIDTH = 1280f;
     private static final float BASE_HEIGHT = 720f;
     private static final Color BG_COLOR = Color.valueOf("0d1b3e");
+    private static final Color STAT_BOX_BG_COLOR = Color.valueOf("2f6c2f"); // رنگ کارت ویژگی‌ها
 
-    // shared across every screen instance - scanning the assets folder once
-    // is the whole point of ZombieAnimationResolver, no need to rebuild it per screen.
     private static ZombieAnimationResolver animationResolver;
 
     private final Stage stage;
@@ -46,17 +45,14 @@ public class ZombieDetailsScreen extends BaseScreen {
 
     private float stateTime = 0f;
     private Image bg;
+    private Texture generatedBgTexture;
+    private Drawable cardBgDrawable;
+    private Drawable zombieDisplayBg; // پس‌زمینه نمایش زامبی
 
     public ZombieDetailsScreen(Zombie zombie, PamPlayer pamPlayer, TextureBank textureBank, BackListener backListener) {
         this(zombie, pamPlayer, textureBank, backListener, null);
     }
 
-    /**
-     * @param seasonName used only to pick the right reskin for "basic" zombies
-     *                    (see {@link ZombieAnimationResolver#resolve(Zombie, String)}) -
-     *                    pass the current level's season here if the caller has one;
-     *                    null falls back to the Egypt basic zombie.
-     */
     public ZombieDetailsScreen(Zombie zombie, PamPlayer pamPlayer, TextureBank textureBank, BackListener backListener, String seasonName) {
         super(PvzSkin.get());
 
@@ -71,7 +67,22 @@ public class ZombieDetailsScreen extends BaseScreen {
         }
         this.animationSpec = animationResolver.resolve(zombie, seasonName);
 
+        this.cardBgDrawable = createSolidColorDrawable(STAT_BOX_BG_COLOR);
+        this.zombieDisplayBg = loadZombieDisplayBackgroundDrawable();
+
         buildUI();
+    }
+
+    private Drawable loadZombieDisplayBackgroundDrawable() {
+        String fullPath = "IMAGES/Menus/Collection/bg.png";
+        try {
+            if (Gdx.files.internal(fullPath).exists()) {
+                Texture tex = new Texture(Gdx.files.internal(fullPath));
+                tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+                return new TextureRegionDrawable(new TextureRegion(tex));
+            }
+        } catch (Exception ignored) {}
+        return createSolidColorDrawable(Color.valueOf("4a3319")); // پشتیبان (قهوه‌ای)
     }
 
     private void buildUI() {
@@ -126,14 +137,10 @@ public class ZombieDetailsScreen extends BaseScreen {
         Table leftCol = new Table();
 
         Stack zombieStack = new Stack();
-        Drawable woodBg = getStatIconDrawable("wood_bg");
-        if (woodBg != null) {
-            zombieStack.add(new Image(woodBg));
-        } else {
-            Table t = new Table();
-            t.setBackground(createWhiteDrawable(Color.valueOf("4a3319")));
-            zombieStack.add(t);
-        }
+
+        Table bgWrapper = new Table();
+        bgWrapper.setBackground(zombieDisplayBg); // استفاده از تصویر پس‌زمینه جدید
+        zombieStack.add(bgWrapper);
 
         Actor zombiePamActor = createZombiePamActor(scale);
         Table animWrapper = new Table();
@@ -157,7 +164,16 @@ public class ZombieDetailsScreen extends BaseScreen {
         return null;
     }
 
-    private Drawable createWhiteDrawable(Color color) {
+    public Texture createSolidColorTexture(float r, float g, float b, float a) {
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(r, g, b, a);
+        pixmap.fill();
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return texture;
+    }
+
+    private Drawable createSolidColorDrawable(Color color) {
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(color);
         pixmap.fill();
@@ -169,7 +185,7 @@ public class ZombieDetailsScreen extends BaseScreen {
 
     private Table createStatBox(Drawable icon, String labelText, String valueText, float scale) {
         Table box = new Table();
-        box.setBackground(createWhiteDrawable(Color.valueOf("2f6c2f")));
+        box.setBackground(cardBgDrawable); // استفاده از رنگ کارت (سبز)
 
         if (icon != null) {
             box.add(new Image(icon)).size(32 * scale, 32 * scale).pad(6 * scale);
@@ -221,12 +237,6 @@ public class ZombieDetailsScreen extends BaseScreen {
         return rightCol;
     }
 
-    /**
-     * Draws the zombie's idle animation using whatever {@link ZombieAnimationResolver}
-     * found for it - no more path-guessing here. If nothing was resolved (missing
-     * assets, unrecognized name, etc.) this silently draws nothing rather than
-     * crash, same "best effort" spirit as the rest of the PAM-drawing code in this project.
-     */
     private Actor createZombiePamActor(float scale) {
         return new Actor() {
             @Override
@@ -282,6 +292,9 @@ public class ZombieDetailsScreen extends BaseScreen {
     @Override
     public void dispose() {
         stage.dispose();
+        if (generatedBgTexture != null) {
+            generatedBgTexture.dispose();
+        }
         super.dispose();
     }
 }
