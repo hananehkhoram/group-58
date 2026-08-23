@@ -11,6 +11,7 @@ import com.workshop.model.season.Grave;
 import com.workshop.model.season.Season;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
+import com.workshop.net.GameClient;
 import com.workshop.view.Screens.*;
 import com.badlogic.gdx.Screen;
 import com.workshop.model.GameContext;
@@ -45,11 +46,19 @@ public class PvzGame extends Game {
 
     @Override
     public void create() {
+        GameClient.get().connect(GameClient.DEFAULT_HOST, GameClient.DEFAULT_PORT);
         DataManager.getInstance().loadUser();
 
         for (User u : UserManager.getInstance().users) {
             if (u.isStayedLogin()) {
                 UserManager.getInstance().login(u);
+                if (GameClient.get().isConnected()) {
+                    com.workshop.net.NetResponse response =
+                        GameClient.get().login(u.getUsername(), u.getPassword());
+                    if (response.ok) {
+                        com.workshop.net.UserSnapshot.fromWire(response.payload).applyTo(u);
+                    }
+                }
                 showMain();
                 return;
             }
@@ -135,6 +144,7 @@ public class PvzGame extends Game {
 
             @Override
             public void onLogout() {
+                GameClient.get().logout();
                 UserManager.getInstance().logOut();
                 showLogin();
             }

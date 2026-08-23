@@ -79,6 +79,11 @@ public class DataManager {
             users.getUserMap().put(u.getUsername(), u);
         }
         users.save();
+
+        User current = UserManager.getInstance().getCurrentUser();
+        if (current != null) {
+            com.workshop.net.GameClient.get().syncProfile(current);
+        }
     }
 
     public void initialize() {

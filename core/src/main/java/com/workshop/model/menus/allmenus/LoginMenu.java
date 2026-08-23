@@ -6,6 +6,9 @@ import com.workshop.model.menus.BaseMenu;
 import com.workshop.model.menus.MenuType;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
+import com.workshop.net.GameClient;
+import com.workshop.net.NetResponse;
+import com.workshop.net.UserSnapshot;
 
 public class LoginMenu extends BaseMenu {
     private UserManager um;
@@ -23,18 +26,51 @@ public class LoginMenu extends BaseMenu {
     }
 
     public String login (String username,  String password,String stayLoggedIn){
-        if (!um.doesUserExist(username)) return "User does not exist!";
-        if (!um.isPasswordCorrect(password,username)) return "Incorrect password.";
-
-        User user = um.findUserByName(username);
-
-        um.login(user);
-        if (stayLoggedIn != null) {
-            user.setStayedLogin(true);
+        GameClient client = GameClient.get();
+        if (client.isConnected()) {
+            NetResponse response = client.login(username, password);
+            if (!response.ok) {
+                if (um.doesUserExist(username) && um.isPasswordCorrect(password, username)) {
+                    User local = um.findUserByName(username);
+                    NetResponse migrate = client.register(
+                        local.getUsername(),
+                        password,
+                        local.getNickName(),
+                        local.getEmail(),
+                        local.getGender() == null ? "male" : local.getGender().name().toLowerCase()
+                    );
+                    if (!migrate.ok && !migrate.isOffline()) {
+                        return response.message;
+                    }
+                    client.login(username, password);
+                    client.syncProfile(local);
+                    um.login(local);
+                } else {
+                    return response.message;
+                }
+            } else {
+                UserSnapshot snap = UserSnapshot.fromWire(response.payload);
+                User user = client.applyLoginSnapshot(snap);
+                applyStayLoggedIn(user, stayLoggedIn);
+                DataManager.getInstance().saveUser();
+                return "Logged in successfully.";
+            }
         } else {
-            user.setStayedLogin(false);
+            if (!um.doesUserExist(username)) return "User does not exist!";
+            if (!um.isPasswordCorrect(password, username)) return "Incorrect password.";
+            um.login(um.findUserByName(username));
         }
+
+        User user = um.getCurrentUser();
+        applyStayLoggedIn(user, stayLoggedIn);
         return "Logged in successfully.";
+    }
+
+    private void applyStayLoggedIn(User user, String stayLoggedIn) {
+        if (user == null) {
+            return;
+        }
+        user.setStayedLogin(stayLoggedIn != null);
     }
 
     public String answerSecurityQuestion(String answer){

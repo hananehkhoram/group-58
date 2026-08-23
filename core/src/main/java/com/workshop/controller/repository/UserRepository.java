@@ -173,7 +173,8 @@ public class UserRepository implements AssetRepository<User> {
             storedBoostsStr,
             String.valueOf(u.getGameSpeed()),
             String.valueOf(u.isGridEnabled()),
-            String.valueOf(u.isDebugMode())
+            String.valueOf(u.isDebugMode()),
+            String.valueOf(u.hasNetworkBonusScore())
         );
     }
 
@@ -314,6 +315,10 @@ public class UserRepository implements AssetRepository<User> {
 
         if (f.length > 34 && !f[34].isBlank()) {
             u.setDebugMode(Boolean.parseBoolean(f[34]));
+        }
+
+        if (f.length > 35 && !f[35].isBlank()) {
+            u.setHasNetworkBonusScore(Boolean.parseBoolean(f[35]));
         }
 
         return u;

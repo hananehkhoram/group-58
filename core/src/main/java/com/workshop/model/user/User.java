@@ -21,6 +21,7 @@ public class User {
     protected int gamesPlayed;
     protected int numberOfPassedLevels;
     protected int maxMewPoint;
+    private boolean hasNetworkBonusScore;
     private Settings settings;
     private boolean stayedLogin;
 
@@ -300,6 +301,14 @@ public class User {
     }
 
     public void setMaxMewPoint(int maxMewPoint) {this.maxMewPoint = maxMewPoint;}
+
+    public boolean hasNetworkBonusScore() {
+        return hasNetworkBonusScore;
+    }
+
+    public void setHasNetworkBonusScore(boolean hasNetworkBonusScore) {
+        this.hasNetworkBonusScore = hasNetworkBonusScore;
+    }
 
     public void setUnlockedPlantTypes(List<Plant> unlockedPlantTypes) {
         this.unlockedPlantTypes = unlockedPlantTypes;
