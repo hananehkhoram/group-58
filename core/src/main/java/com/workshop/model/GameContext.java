@@ -73,6 +73,20 @@ public class GameContext {
         return pendingWindRows.pollFirst();
     }
 
+    private boolean pendingSandstorm;
+
+    public void announceSandstorm() {
+        pendingSandstorm = true;
+    }
+
+    public boolean pollSandstorm() {
+        if (!pendingSandstorm) {
+            return false;
+        }
+        pendingSandstorm = false;
+        return true;
+    }
+
     public String pollAnnouncement() {
         return pendingAnnouncements.pollFirst();
     }
@@ -118,7 +132,26 @@ public class GameContext {
     private final Deque<ZombiePartFx> pendingZombieParts = new ArrayDeque<>();
 
     public void dropZombiePart(int row, double x, ZombiePartFx.Kind kind) {
-        pendingZombieParts.addLast(new ZombiePartFx(row, x, kind));
+        dropZombiePart(row, x, kind, null);
+    }
+
+    public void dropZombiePart(
+        int row,
+        double x,
+        ZombiePartFx.Kind kind,
+        com.workshop.model.zombie.behavior.ArmorType armorType
+    ) {
+        dropZombiePart(row, x, kind, armorType, null);
+    }
+
+    public void dropZombiePart(
+        int row,
+        double x,
+        ZombiePartFx.Kind kind,
+        com.workshop.model.zombie.behavior.ArmorType armorType,
+        com.workshop.model.zombie.Zombie zombie
+    ) {
+        pendingZombieParts.addLast(new ZombiePartFx(row, x, kind, armorType, zombie));
     }
 
     public ZombiePartFx pollZombiePart() {

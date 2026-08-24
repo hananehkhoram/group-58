@@ -41,7 +41,7 @@ public final class ZombieAnimationLayer extends Group {
         this.gridWidth = gridWidth;
         this.gridHeight = gridHeight;
 
-        resolver = new ZombieAnimationResolver();
+        resolver = ZombieAnimationResolver.shared();
         pamPlayer = Textures.getPamPlayer();
     }
 

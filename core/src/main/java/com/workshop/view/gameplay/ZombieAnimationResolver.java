@@ -26,6 +26,15 @@ public final class ZombieAnimationResolver {
     private final Map<String, ZombieAnimationSpec> resolvedSpecs =
         new HashMap<>();
 
+    private static ZombieAnimationResolver shared;
+
+    public static ZombieAnimationResolver shared() {
+        if (shared == null) {
+            shared = new ZombieAnimationResolver();
+        }
+        return shared;
+    }
+
     public ZombieAnimationResolver() {
         FileHandle root =
             Textures.assetsRoot().child(ZOMBIE_ROOT);
@@ -199,9 +208,8 @@ public final class ZombieAnimationResolver {
         if (armor == null || armor.isDestroyed()) {
             return null;
         }
+        // Cone/Bucket/Brick are drawn as a morphing overlay on the basic body.
         return switch (armor.getArmorType()) {
-            case CONE -> "LNY_CONEHEAD_ZOMBIE";
-            case BUCKET -> "LNY_BUCKETHEAD_ZOMBIE";
             case NEWSPAPER -> "ZOMBIE_MODERN_NEWSPAPER";
             default -> null;
         };

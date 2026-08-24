@@ -40,9 +40,11 @@ public final class ZombieActor extends Actor {
     private boolean sandstormClipResolved;
     private static final String SANDSTORM_TOP_PAM =
         "768/INITIAL/EFFECTS/SANDSTORM_TOP/SANDSTORM_TOP.PAM";
-    private static final float SANDSTORM_EFFECT_DURATION = 1.2f;
+    private static final float SANDSTORM_EFFECT_DURATION = 4.8f;
+    private static final float SANDSTORM_HEIGHT_TO_CELL_RATIO = 2.2f;
 
     private float sandstormEffectTime;
+    private Float sandstormScale;
     private static final float MIN_ICE_ALPHA = 0.25f;
 
     private String resolvedIceBlockClip;
@@ -113,8 +115,19 @@ public final class ZombieActor extends Actor {
         float y,
         boolean loop
     ) {
-        float scale = getScale();
+        drawScaled(batch, pamPath, clip, time, x, y, loop, getScale());
+    }
 
+    private void drawScaled(
+        Batch batch,
+        String pamPath,
+        String clip,
+        float time,
+        float x,
+        float y,
+        boolean loop,
+        float scale
+    ) {
         Matrix4 oldTransform = batch.getTransformMatrix().cpy();
         Matrix4 transform = new Matrix4(oldTransform);
         transform.translate(x, y, 0);
@@ -128,6 +141,30 @@ public final class ZombieActor extends Actor {
         }
 
         batch.setTransformMatrix(oldTransform);
+    }
+
+    private float getSandstormScale() {
+        if (sandstormScale != null) {
+            return sandstormScale;
+        }
+
+        if (resolvedSandstormClip == null) {
+            return 1f;
+        }
+
+        Rectangle bounds = pamPlayer.bounds(
+            SANDSTORM_TOP_PAM,
+            resolvedSandstormClip
+        );
+
+        if (bounds == null || bounds.height <= 0f) {
+            sandstormScale = 1f;
+            return sandstormScale;
+        }
+
+        sandstormScale =
+            (cellHeight * SANDSTORM_HEIGHT_TO_CELL_RATIO) / bounds.height;
+        return sandstormScale;
     }
 
     @Override
@@ -240,11 +277,10 @@ public final class ZombieActor extends Actor {
         float dangerTint = resolveDangerTint(zombie.getX());
         float flash = hitFlash.getIntensity();
 
-        float[] armorTint = resolveArmorTint();
         batch.setColor(
-            armorTint[0] + flash,
-            armorTint[1] - dangerTint + flash,
-            armorTint[2] - dangerTint + flash,
+            1f + flash,
+            1f - dangerTint + flash,
+            1f - dangerTint + flash,
             parentAlpha
         );
 
@@ -264,6 +300,15 @@ public final class ZombieActor extends Actor {
             true
         );
 
+        ZombieArmorLooks.draw(
+            batch,
+            zombie,
+            getX(),
+            getY(),
+            cellHeight,
+            parentAlpha
+        );
+
         if (zombie.isEnteredViaSandstorm()) {
             if (!sandstormClipResolved) {
                 resolveSandstormClip();
@@ -271,6 +316,7 @@ public final class ZombieActor extends Actor {
             }
 
             if (resolvedSandstormClip != null) {
+                batch.setColor(1f, 1f, 1f, parentAlpha);
                 drawScaled(
                     batch,
                     SANDSTORM_TOP_PAM,
@@ -278,7 +324,8 @@ public final class ZombieActor extends Actor {
                     sandstormEffectTime,
                     getX(),
                     getY(),
-                    false
+                    true,
+                    getSandstormScale()
                 );
             }
         }
@@ -299,17 +346,6 @@ public final class ZombieActor extends Actor {
 
     private boolean hasLiveArmor() {
         return zombie.getArmor() != null && !zombie.getArmor().isDestroyed();
-    }
-
-    private float[] resolveArmorTint() {
-        int stage = zombie.getArmorDamageStage();
-        if (stage <= 0) {
-            return new float[] {1f, 1f, 1f};
-        }
-        if (stage == 1) {
-            return new float[] {1f, 0.82f, 0.62f};
-        }
-        return new float[] {0.72f, 0.68f, 0.64f};
     }
 
     private void drawDie(Batch batch, float parentAlpha) {

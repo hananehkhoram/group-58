@@ -15,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.workshop.controller.SpecialLevelManager.ConveyorBeltManager;
+import com.workshop.controller.SpecialLevelManager.DeadLineManager;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
 import com.workshop.model.mechanisms.GameEngine;
@@ -232,6 +233,9 @@ public class GamePlayScreen implements Screen {
         rightBackground = new Image(rightTexture);
 
         buildBackground();
+        if(level.getLevelType().equals(LevelType.DEADLINE)){
+
+        }
 
         ZombieIntroLayer zombieIntroLayer =
             new ZombieIntroLayer();
@@ -394,6 +398,14 @@ public class GamePlayScreen implements Screen {
             );
 
         stage.addActor(chillWindLayer);
+
+        stage.addActor(new SandstormLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
 
         pauseOverlay = new PauseOverlay(
             stage,

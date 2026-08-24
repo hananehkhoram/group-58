@@ -47,9 +47,9 @@ public class Zombie implements Damageable {
     private boolean lostArm;
     private boolean lostHead;
     private boolean deathAnimFinished;
-    private boolean pendingArmorPop;
     private boolean pendingArmDrop;
     private boolean pendingHeadDrop;
+    private final java.util.ArrayDeque<ArmorType> pendingArmorPops = new java.util.ArrayDeque<>();
     private int lastArmorStage = -1;
 
     public Zombie() {
@@ -168,7 +168,7 @@ public class Zombie implements Damageable {
         if (primary != null && !primary.isDestroyed()) {
             remaining = primary.absorb(remaining);
             if (primary.isDestroyed()) {
-                pendingArmorPop = true;
+                pendingArmorPops.addLast(primary.getArmorType());
             }
             if (remaining <= 0) return;
         }
@@ -177,7 +177,7 @@ public class Zombie implements Damageable {
         if (secondary != null && !secondary.isDestroyed()) {
             remaining = secondary.absorb(remaining);
             if (secondary.isDestroyed()) {
-                pendingArmorPop = true;
+                pendingArmorPops.addLast(secondary.getArmorType());
             }
             if (remaining <= 0) return;
         }
@@ -276,12 +276,12 @@ public class Zombie implements Damageable {
         }
     }
 
+    public ArmorType pollArmorPop() {
+        return pendingArmorPops.pollFirst();
+    }
+
     public boolean consumeArmorPop() {
-        if (!pendingArmorPop) {
-            return false;
-        }
-        pendingArmorPop = false;
-        return true;
+        return pollArmorPop() != null;
     }
 
     public boolean consumeArmDrop() {

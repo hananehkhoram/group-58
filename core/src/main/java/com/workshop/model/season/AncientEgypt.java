@@ -17,6 +17,7 @@ public class AncientEgypt extends Season{
     public void onWaveStart(GameContext ctx, int waveNumber, boolean isLastWave) {
         if (!isLastWave) return;
         Console.simplePrint("A sandstorm is approaching!\n");
+        ctx.announceSandstorm();
     }
     public void onLevelStart(GameContext ctx) {
         int gravesToSpawn = 5;
