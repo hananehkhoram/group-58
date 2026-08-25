@@ -77,6 +77,9 @@ public class GameEngine {
         ctx.getSunManager().update(this);
         updateWave(deltaTime);
         updateZombies(deltaTime);
+        if (ctx.getSeason() != null) {
+            ctx.getSeason().onTick(ctx, deltaTime);
+        }
 
         if (ctx.isGameEnded()) {
             checkGameEnd();
@@ -181,6 +184,8 @@ public class GameEngine {
                 deltaTime
             );
 
+            despawnIfWalkedOffLawn(zombie);
+
             // ممکن است update باعث حذفش شده باشد
             if (!ctx.getAliveZombies().contains(zombie)) {
                 continue;
@@ -225,6 +230,12 @@ public class GameEngine {
             }
 
             if (zombie.isDead()) {
+                if (zombie.isAshed() && !zombie.isAshFinished()) {
+                    continue;
+                }
+                if (!zombie.isAshed() && !zombie.isDeathAnimFinished()) {
+                    continue;
+                }
 
                 for (
                     Behaviors behavior
@@ -598,8 +609,31 @@ public class GameEngine {
             && ctx.getCurrentWaveIndex()
             >= ctx.getLevel().getWaves().length);
 
-        if (allSpawned && ctx.getAliveZombies().isEmpty()) {
+        if (allSpawned && !hasRemainingEnemyZombies()) {
             ctx.triggerPlayerWin();
+        }
+    }
+
+    private boolean hasRemainingEnemyZombies() {
+        for (Zombie zombie : ctx.getAliveZombies()) {
+            if (zombie == null || zombie.isDead()) {
+                continue;
+            }
+            if (zombie.isInitialFrozenBlock()) {
+                continue;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void despawnIfWalkedOffLawn(Zombie zombie) {
+        if (zombie == null || zombie.isDead()) {
+            return;
+        }
+        double rightEdge = ctx.getLevel().getColumns() + 0.35;
+        if (zombie.isMovingBackward() && zombie.getX() >= rightEdge) {
+            zombie.takeArmorPiercingDamage(Math.max(1, zombie.getHp()));
         }
     }
 

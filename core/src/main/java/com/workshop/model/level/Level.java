@@ -183,5 +183,6 @@ public class Level {
     public void setLoseDialogue(List<DialogueLine> loseDialogue) {
         this.loseDialogue = loseDialogue != null ? loseDialogue : new ArrayList<>();
     }
+
 }
 

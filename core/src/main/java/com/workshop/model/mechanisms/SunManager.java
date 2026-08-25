@@ -131,9 +131,10 @@ public class SunManager {
     private void explodeRadioactive(int x, int y, GameEngine engine) {
         for (var z : engine.getCtx().getAliveZombies()) {
             if (Math.abs(z.getX() - x) <= 2 && Math.abs(z.getY() - y) <= 2) {
-                z.takeDamage(150);
+                z.takeExplosionDamage(150);
             }
         }
+        engine.getCtx().spawnExplosion(y, x, com.workshop.model.mechanisms.ExplosionFx.Kind.GENERIC);
         for (var p : engine.getCtx().getAlivePlants()) {
             if (Math.abs(p.getCol() - x) <= 1 && Math.abs(p.getRow() - y) <= 1) {
                 p.takeDamage(80);

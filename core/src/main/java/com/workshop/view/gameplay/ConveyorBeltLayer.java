@@ -166,7 +166,7 @@ public final class ConveyorBeltLayer extends Group implements Disposable {
             Textures.getPamPlayer(),
             Textures.getInstance(),
             skin,
-            PlantCardActor.Mode.GRID
+            PlantCardActor.Mode.CONVEYOR
         );
 
         card.setOnClick(onCardClick);

@@ -6,6 +6,7 @@ import java.util.Map;
 public final class ZombieAnimationSpec {
 
     private final String pamPath;
+    private String ashPamPath;
 
     private final Map<ZombieAnimationState, String> clips =
         new EnumMap<>(ZombieAnimationState.class);
@@ -49,5 +50,13 @@ public final class ZombieAnimationSpec {
 
     public boolean hasClip(ZombieAnimationState state) {
         return clips.containsKey(state);
+    }
+
+    public String getAshPamPath() {
+        return ashPamPath;
+    }
+
+    public void setAshPamPath(String ashPamPath) {
+        this.ashPamPath = ashPamPath;
     }
 }

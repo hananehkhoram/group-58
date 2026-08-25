@@ -37,6 +37,12 @@ public class Damage implements Behaviors {
             Plant target = ctx.getPlantGrid()[row][col];
             if (target != null && !target.isDead()) {
                 target.takeDamage(Integer.MAX_VALUE);
+                if ("Gargantuar".equalsIgnoreCase(zombie.getName())
+                    || "ZombieGargantuar".equals(zombie.getId())) {
+                    ctx.shakeScreen(18f, 0.45f);
+                } else {
+                    ctx.shakeScreen(8f, 0.22f);
+                }
                 onKill(zombie);
                 return;
             }

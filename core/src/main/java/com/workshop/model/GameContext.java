@@ -73,6 +73,20 @@ public class GameContext {
         return pendingWindRows.pollFirst();
     }
 
+    private boolean pendingSandstorm;
+
+    public void announceSandstorm() {
+        pendingSandstorm = true;
+    }
+
+    public boolean pollSandstorm() {
+        if (!pendingSandstorm) {
+            return false;
+        }
+        pendingSandstorm = false;
+        return true;
+    }
+
     public String pollAnnouncement() {
         return pendingAnnouncements.pollFirst();
     }
@@ -90,6 +104,58 @@ public class GameContext {
 
     public String pollSoundCue() {
         return pendingSoundCues.pollFirst();
+    }
+
+    private final Deque<ExplosionFx> pendingExplosions = new ArrayDeque<>();
+    private final Deque<ScreenShake> pendingShakes = new ArrayDeque<>();
+
+    public void spawnExplosion(int row, int col, ExplosionFx.Kind kind) {
+        if (kind == null) {
+            return;
+        }
+        pendingExplosions.addLast(new ExplosionFx(row, col, kind));
+        shakeScreen(kind.shakeIntensity, kind.shakeDuration);
+    }
+
+    public ExplosionFx pollExplosion() {
+        return pendingExplosions.pollFirst();
+    }
+
+    public void shakeScreen(float intensity, float duration) {
+        pendingShakes.addLast(new ScreenShake(intensity, duration));
+    }
+
+    public ScreenShake pollScreenShake() {
+        return pendingShakes.pollFirst();
+    }
+
+    private final Deque<ZombiePartFx> pendingZombieParts = new ArrayDeque<>();
+
+    public void dropZombiePart(int row, double x, ZombiePartFx.Kind kind) {
+        dropZombiePart(row, x, kind, null);
+    }
+
+    public void dropZombiePart(
+        int row,
+        double x,
+        ZombiePartFx.Kind kind,
+        com.workshop.model.zombie.behavior.ArmorType armorType
+    ) {
+        dropZombiePart(row, x, kind, armorType, null);
+    }
+
+    public void dropZombiePart(
+        int row,
+        double x,
+        ZombiePartFx.Kind kind,
+        com.workshop.model.zombie.behavior.ArmorType armorType,
+        com.workshop.model.zombie.Zombie zombie
+    ) {
+        pendingZombieParts.addLast(new ZombiePartFx(row, x, kind, armorType, zombie));
+    }
+
+    public ZombiePartFx pollZombiePart() {
+        return pendingZombieParts.pollFirst();
     }
     private boolean isSetupPhase = false;
     private LevelManager levelManager;

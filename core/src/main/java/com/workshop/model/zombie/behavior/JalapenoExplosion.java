@@ -36,7 +36,13 @@ public class JalapenoExplosion implements Behaviors {
                 + "."
         );
 
-        zombie.takeDamage(Integer.MAX_VALUE);
+        ctx.spawnExplosion(
+            zombie.getRow(),
+            (int) Math.round(zombie.getX()),
+            com.workshop.model.mechanisms.ExplosionFx.Kind.JALAPENO
+        );
+
+        zombie.takeExplosionDamage(Integer.MAX_VALUE);
     }
 
     private void destroyPlantsInRow(

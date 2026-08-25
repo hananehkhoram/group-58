@@ -7,6 +7,7 @@ import com.workshop.model.level.Level;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.plants.Tag;
 import com.workshop.model.zombie.Zombie;
+import com.workshop.model.zombie.behavior.Jumper;
 import com.workshop.view.Console;
 
 import java.util.List;
@@ -46,6 +47,45 @@ public class FrozenCaveChapter extends Season {
                     }
                 }
             }
+        }
+
+        slideZombiesOnIce(ctx);
+    }
+
+    private void slideZombiesOnIce(GameContext ctx) {
+        if (sliders == null) {
+            return;
+        }
+
+        int rows = ctx.getLevel().getRows();
+        int cols = ctx.getLevel().getColumns();
+
+        for (Zombie zombie : ctx.getAliveZombies()) {
+            if (zombie == null
+                || zombie.isDead()
+                || zombie.isIced()
+                || zombie.isInitialFrozenBlock()) {
+                continue;
+            }
+
+            Jumper jumper = zombie.getJumper();
+            if (jumper != null && !jumper.isLanded()) {
+                continue;
+            }
+
+            int col = (int) Math.floor(zombie.getX());
+            int row = zombie.getRow();
+            if (col < 0 || col >= cols || row < 0 || row >= rows) {
+                continue;
+            }
+
+            int nextRow = getSliderNextRow(row, col);
+            if (nextRow == row || nextRow < 0 || nextRow >= rows) {
+                continue;
+            }
+
+            zombie.setY(nextRow);
+            zombie.setEating(false);
         }
     }
 

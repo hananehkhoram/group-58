@@ -41,7 +41,7 @@ public final class ZombieAnimationLayer extends Group {
         this.gridWidth = gridWidth;
         this.gridHeight = gridHeight;
 
-        resolver = new ZombieAnimationResolver();
+        resolver = ZombieAnimationResolver.shared();
         pamPlayer = Textures.getPamPlayer();
     }
 
@@ -59,7 +59,13 @@ public final class ZombieAnimationLayer extends Group {
 
         for (Zombie zombie : gameContext.getAliveZombies()) {
 
-            if (zombie == null || zombie.isDead()) {
+            if (zombie == null) {
+                continue;
+            }
+
+            if (zombie.isDead()
+                && !((zombie.isAshed() && !zombie.isAshFinished())
+                || (!zombie.isAshed() && !zombie.isDeathAnimFinished()))) {
                 continue;
             }
 
@@ -105,6 +111,8 @@ public final class ZombieAnimationLayer extends Group {
         return new ZombieActor(
             zombie,
             spec,
+            resolver,
+            gameContext.getSeason().getName(),
             pamPlayer,
             getCellHeight()
         );

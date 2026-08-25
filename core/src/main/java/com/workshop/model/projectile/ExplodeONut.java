@@ -1,6 +1,7 @@
 package com.workshop.model.projectile;
 
 import com.workshop.model.GameContext;
+import com.workshop.model.mechanisms.ExplosionFx;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.view.Console;
@@ -36,9 +37,12 @@ public class ExplodeONut extends BowlingWallnut {
                         && Math.abs(zombie.getX() - x) <= 1.0;
 
                 if (isInsideExplosion) {
-                    zombie.takeDamage(damage);
+                    zombie.takeExplosionDamage(damage);
                 }
             }
+            context.spawnExplosion(row, (int) Math.round(x), ExplosionFx.Kind.GENERIC);
+        } else if (target instanceof Zombie zombieTarget) {
+            zombieTarget.takeExplosionDamage(damage);
         } else {
             target.takeDamage(damage);
         }

@@ -89,7 +89,8 @@ public class Wave {
         }
 
         if (isAncientEgyptFlagWave(ctx)) {
-            ctx.announce("A sandstorm sweeps is approaching!");
+            ctx.announce("A sandstorm is approaching!");
+            ctx.announceSandstorm();
         }
 
         Map<String, Zombie> pool = getAvailableZombiePool(ctx);
