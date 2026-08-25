@@ -304,6 +304,22 @@ public class GameContext {
             currentUser.setNumberOfPassedLevels(currentUser.getNumberOfPassedLevels() + 1);
 
             if (isMiniGameLevel()) {
+
+                List<Level> miniLevels = this.season.getLevels();
+
+                int index = miniLevels.indexOf(this.level);
+
+                if (index + 1 < miniLevels.size()) {
+
+                    currentUser.unlockLevel(
+                        miniLevels
+                            .get(index + 1)
+                            .getName()
+                    );
+                }
+            }
+
+            if (isMiniGameLevel()) {
                 currentUser.incrementMinigamesCompleted();
             }
 

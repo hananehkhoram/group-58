@@ -36,7 +36,7 @@ public final class ConveyorBeltLayer extends Group implements Disposable {
     private static final float BELT_INSET = 5f;
 
     /** سرعت حرکت گیاهان روی نوار (پیکسل بر ثانیه) */
-    private static final float PLANT_SPEED = 85f;
+    private static final float PLANT_SPEED = 55f;
 
     /** سرعت اسکرول پس‌زمینهٔ نوار */
     private static final float BELT_SCROLL_SPEED = 55f;
@@ -75,7 +75,7 @@ public final class ConveyorBeltLayer extends Group implements Disposable {
     @Override
     public void act(float delta) {
         if (delta > 0f) {
-            beltScroll += delta * BELT_SCROLL_SPEED;
+            beltScroll -= delta * BELT_SCROLL_SPEED;
         }
 
         syncCardsWithBelt();
