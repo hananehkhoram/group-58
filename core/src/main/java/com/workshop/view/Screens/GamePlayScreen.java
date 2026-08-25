@@ -12,10 +12,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.workshop.controller.SpecialLevelManager.ConveyorBeltManager;
-import com.workshop.controller.SpecialLevelManager.DeadLineManager;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
 import com.workshop.model.mechanisms.GameEngine;
@@ -313,6 +311,17 @@ public class GamePlayScreen implements Screen {
             );
 
         stage.addActor(waterLayer);
+        if (level.getLevelType() == LevelType.Wallnuts_MG) {
+
+            stage.addActor(
+                new BowlingRedLineLayer(
+                    shapeRenderer,
+                    getGridX() + 3 * getCellWidth(),
+                    getGridY(),
+                    getGridHeight()
+                )
+            );
+        }
 
         if (level.getLevelType() == LevelType.Vase_MG) {
 
@@ -791,6 +800,10 @@ public class GamePlayScreen implements Screen {
     }
 
     private void buildSeedBank(Skin skin) {
+        if (isConveyorLevel()) {
+            return;
+        }
+
         seedBankTable = new Table();
         seedBankTable.setFillParent(true);
         seedBankTable.left().top();

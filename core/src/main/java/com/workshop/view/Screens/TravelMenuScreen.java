@@ -116,7 +116,7 @@ public class TravelMenuScreen implements Screen {
         int columns = 1;
         int rows = 1;
 
-        float startX = -15;
+        float startX = -10;
         float startY = 200;
 
         float gapX = 50;
@@ -127,8 +127,6 @@ public class TravelMenuScreen implements Screen {
         for (int j = 0; j < 5; j++){
 
             for(int i = 0; i < 3; i++){
-
-                System.out.println("row: " + j + " level: " + (i + 1));
 
                 int miniGameLevel = i + 1;
 
@@ -199,14 +197,6 @@ public class TravelMenuScreen implements Screen {
 
 
                 stage.addActor(node);
-
-                System.out.println(
-                    "button " + (j * 3 + i + 1) +
-                        " x=" + node.getX() +
-                        " y=" + node.getY() +
-                        " w=" + node.getWidth() +
-                        " h=" + node.getHeight()
-                );
             }
 
             startX += distance;
