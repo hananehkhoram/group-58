@@ -5,6 +5,7 @@ import com.workshop.model.plants.Plant;
 import com.workshop.model.projectile.Projectile;
 import com.workshop.model.projectile.BulletType;
 import com.workshop.model.projectile.TrajectoryType;
+import com.workshop.model.projectile.ProjectileVisualVariant;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.model.plants.plantFoodEffect.PlantFoodMode;
 
@@ -41,7 +42,13 @@ public class Lobber implements BaseAbility {
                 case KERNEL_OR_BUTTER:
                     boolean isButter = Math.random() < 0.25;
                     if (isButter) {
-                        shootProjectile(ctx, plant, 40, BulletType.OCTOPUS);
+                        shootProjectile(
+                            ctx,
+                            plant,
+                            40,
+                            BulletType.OCTOPUS,
+                            ProjectileVisualVariant.BUTTER
+                        );
                     } else {
                         shootProjectile(ctx, plant, 20, BulletType.NORMAL);
                     }
@@ -60,21 +67,48 @@ public class Lobber implements BaseAbility {
                     hasShot = false;
                     break;
             }
-            if (hasShot) plant.setLastActionSecond(currentSecond);
+            if (hasShot) {
+                ctx.queuePlantAttackAnimation(plant);
+                plant.setLastActionSecond(currentSecond);
+            }
         }
     }
 
-    private void shootProjectile(GameContext ctx, Plant plant, int damage, BulletType type) {
-        Projectile p = new Projectile(
-                damage,
-                plant.getCol(), plant.getRow(), plant.getRow(),
-                4.0,
-                type,
-                TrajectoryType.LOBBED,
-                false,
-                plant
+    private void shootProjectile(
+        GameContext ctx,
+        Plant plant,
+        int damage,
+        BulletType type
+    ) {
+        shootProjectile(
+            ctx,
+            plant,
+            damage,
+            type,
+            ProjectileVisualVariant.DEFAULT
         );
-        ctx.setNewProjectiles(p);
+    }
+
+    private void shootProjectile(
+        GameContext ctx,
+        Plant plant,
+        int damage,
+        BulletType type,
+        ProjectileVisualVariant visualVariant
+    ) {
+        Projectile projectile = new Projectile(
+            damage,
+            plant.getCol(),
+            plant.getRow(),
+            plant.getRow(),
+            4.0,
+            type,
+            TrajectoryType.LOBBED,
+            false,
+            plant,
+            visualVariant
+        );
+        ctx.setNewProjectiles(projectile);
     }
 
     private boolean isTargetInRow(int row, int col, GameContext ctx) {

@@ -63,6 +63,19 @@ public class GameContext {
         }
     }
 
+    private final Deque<Plant> pendingPlantAttackAnimations =
+        new ArrayDeque<>();
+
+    public void queuePlantAttackAnimation(Plant plant) {
+        if (plant != null) {
+            pendingPlantAttackAnimations.addLast(plant);
+        }
+    }
+
+    public Plant pollPlantAttackAnimation() {
+        return pendingPlantAttackAnimations.pollFirst();
+    }
+
 
     public void announceWindRow(int row) {
         pendingWindRows.addLast(row);

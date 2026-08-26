@@ -33,7 +33,7 @@ public class Modifier implements BaseAbility {
                             Projectile fireProj = new Projectile(
                                     proj.getDamage() * multiplier,
                                     proj.getX(), proj.getY(), proj.getRow(), proj.getSpeed(),
-                                    BulletType.FIRE, proj.getTrajectory(), proj.isFromZombie(), plant
+                                    BulletType.FIRE, proj.getTrajectory(), proj.isFromZombie(), proj.getOwnerPlant()
                             );
                             ctx.getProjectiles().set(i, fireProj);
                         }

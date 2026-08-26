@@ -12,7 +12,8 @@ public class Projectile {
     protected int row;
     protected double speed;
     protected boolean isActive;
-    private Plant ownerPlant;
+    private final Plant ownerPlant;
+    private final ProjectileVisualVariant visualVariant;
 
     protected final BulletType bulletType;
     protected final TrajectoryType trajectory;
@@ -27,15 +28,104 @@ public class Projectile {
     private Damageable homingTarget;                 // فقط برای HOMING
     private final Set<Damageable> alreadyHit = new HashSet<>(); // فقط برای PIERCING
 
-    public Projectile(int damage, double x, double y, int row, double speed,
-                      BulletType bulletType, TrajectoryType trajectory, boolean isFromZombie, Plant ownerPlant) {
-        this(damage, x, y, row, speed, bulletType, trajectory, isFromZombie,
-                isFromZombie ? -1.0 : 1.0, 0.0, ownerPlant);
+    public Projectile(
+        int damage,
+        double x,
+        double y,
+        int row,
+        double speed,
+        BulletType bulletType,
+        TrajectoryType trajectory,
+        boolean isFromZombie,
+        Plant ownerPlant
+    ) {
+        this(
+            damage,
+            x,
+            y,
+            row,
+            speed,
+            bulletType,
+            trajectory,
+            isFromZombie,
+            isFromZombie ? -1.0 : 1.0,
+            0.0,
+            ownerPlant,
+            ProjectileVisualVariant.DEFAULT
+        );
     }
 
-    public Projectile(int damage, double x, double y, int row, double speed,
-                      BulletType bulletType, TrajectoryType trajectory, boolean isFromZombie,
-                      double dirX, double dirY, Plant ownerPlant) {
+    public Projectile(
+        int damage,
+        double x,
+        double y,
+        int row,
+        double speed,
+        BulletType bulletType,
+        TrajectoryType trajectory,
+        boolean isFromZombie,
+        Plant ownerPlant,
+        ProjectileVisualVariant visualVariant
+    ) {
+        this(
+            damage,
+            x,
+            y,
+            row,
+            speed,
+            bulletType,
+            trajectory,
+            isFromZombie,
+            isFromZombie ? -1.0 : 1.0,
+            0.0,
+            ownerPlant,
+            visualVariant
+        );
+    }
+
+    public Projectile(
+        int damage,
+        double x,
+        double y,
+        int row,
+        double speed,
+        BulletType bulletType,
+        TrajectoryType trajectory,
+        boolean isFromZombie,
+        double dirX,
+        double dirY,
+        Plant ownerPlant
+    ) {
+        this(
+            damage,
+            x,
+            y,
+            row,
+            speed,
+            bulletType,
+            trajectory,
+            isFromZombie,
+            dirX,
+            dirY,
+            ownerPlant,
+            ProjectileVisualVariant.DEFAULT
+        );
+    }
+
+    public Projectile(
+        int damage,
+        double x,
+        double y,
+        int row,
+        double speed,
+        BulletType bulletType,
+        TrajectoryType trajectory,
+        boolean isFromZombie,
+        double dirX,
+        double dirY,
+        Plant ownerPlant,
+        ProjectileVisualVariant visualVariant
+    ) {
         this.damage = damage;
         this.x = x;
         this.y = y;
@@ -48,6 +138,9 @@ public class Projectile {
         this.dirX = dirX;
         this.dirY = dirY;
         this.ownerPlant = ownerPlant;
+        this.visualVariant = visualVariant == null
+            ? ProjectileVisualVariant.DEFAULT
+            : visualVariant;
     }
 
 
@@ -98,7 +191,7 @@ public class Projectile {
             case ICE:
                 target.takeDamage(damage);
                 if ("Dodo".equals(target.name()) || "Hunter".equals(target.name()) ||
-                        "Troglobite".equals(target.name())) { break; }
+                    "Troglobite".equals(target.name())) { break; }
                 target.applySlowOrFreeze();
                 break;
 
@@ -148,7 +241,8 @@ public class Projectile {
     public BulletType getBulletType() { return bulletType; }
     public TrajectoryType getTrajectory() { return trajectory; }
     public boolean isFromZombie() { return isFromZombie; }
-    public Plant getOwnerPlant() {return ownerPlant;}
+    public Plant getOwnerPlant() { return ownerPlant; }
+    public ProjectileVisualVariant getVisualVariant() { return visualVariant; }
     public boolean isOutOfBounds() {
         return this.getRow() < 0 || this.getRow() >= Level.ROWS || this.getX() < -1 || this.getX() > Level.COLS;
     }

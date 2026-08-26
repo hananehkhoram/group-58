@@ -20,6 +20,7 @@ public final class PlantActor extends Actor {
     private final PamPlayer pamPlayer;
     private final HitFlashEffect hitFlash;
     private final float cellHeight;
+    private static final float FALLBACK_ATTACK_DURATION = 0.45f;
 
     // گیاه‌ها معمولاً تقریباً هم‌قدِ یه خونه‌ی گرید هستن؛ این ضریب
     // نسبتِ ارتفاعِ اسپرایتِ خامِ PAM به ارتفاعِ خونه‌ی گرید رو تعیین
@@ -59,6 +60,7 @@ public final class PlantActor extends Actor {
 
     private float stateTime;
     private float frostStateTime;
+    private final float attackDuration;
 
     public PlantActor(
         Plant plant,
@@ -75,6 +77,19 @@ public final class PlantActor extends Actor {
         this.animationSpec = animationSpec;
         this.pamPlayer = pamPlayer;
         this.cellHeight = cellHeight;
+
+        String attackClip =
+            animationSpec.getClip(PlantAnimationState.ATTACK);
+
+        if (attackClip == null) {
+            attackDuration = 0f;
+        } else {
+            attackDuration =
+                pamPlayer.clipDurationSeconds(
+                    animationSpec.getPamPath(),
+                    attackClip
+                );
+        }
     }
 
     private float getScale() {
@@ -132,17 +147,31 @@ public final class PlantActor extends Actor {
     @Override
     public void act(float delta) {
         super.act(delta);
+
         hitFlash.update(delta);
+
         boolean iced = plant.isIced();
         int freezeLevel = plant.getFreezeLevel();
-        if ((iced && !wasIced) || freezeLevel != lastFreezeLevel) {
-            frostStateTime = 0f;
-        }
-        wasIced = iced;
-        lastFreezeLevel = freezeLevel;
+
         if (!iced) {
             stateTime += delta;
+
+            if (currentState == PlantAnimationState.ATTACK) {
+                float duration = attackDuration;
+
+                if (duration <= 0f) {
+                    duration = FALLBACK_ATTACK_DURATION;
+                }
+
+                if (stateTime >= duration) {
+                    currentState = PlantAnimationState.IDLE;
+                    stateTime = 0f;
+                }
+            }
         }
+
+        wasIced = iced;
+        lastFreezeLevel = freezeLevel;
         frostStateTime += delta;
     }
 
@@ -160,6 +189,9 @@ public final class PlantActor extends Actor {
 
         if (drawClip != null) {
             hitFlash.drawWithFlash(batch, parentAlpha, () -> {
+                boolean loop =
+                    currentState != PlantAnimationState.ATTACK;
+
                 drawScaled(
                     batch,
                     animationSpec.getPamPath(),
@@ -167,7 +199,7 @@ public final class PlantActor extends Actor {
                     stateTime,
                     getX(),
                     getY(),
-                    true
+                    loop
                 );
             });
         }
@@ -283,10 +315,13 @@ public final class PlantActor extends Actor {
             return false;
         }
 
-        if (currentState != state) {
-            currentState = state;
-            stateTime = 0f;
+        // اگر همین animation در حال اجراست، دوباره از صفر شروعش نکن.
+        if (currentState == state) {
+            return true;
         }
+
+        currentState = state;
+        stateTime = 0f;
 
         return true;
     }

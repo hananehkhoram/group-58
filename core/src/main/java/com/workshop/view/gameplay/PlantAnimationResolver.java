@@ -77,6 +77,12 @@ public final class PlantAnimationResolver {
         List<String> clips =
             Textures.getPamPlayer().clips(pamPath);
 
+        logAvailableClips(
+            plantName,
+            pamPath,
+            clips
+        );
+
         String idleClip = findClip(clips, "idle");
 
         if (idleClip == null) {

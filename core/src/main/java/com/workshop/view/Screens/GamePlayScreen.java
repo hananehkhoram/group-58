@@ -364,6 +364,17 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(plantAnimationLayer);
 
+        ProjectileAnimationLayer projectileAnimationLayer =
+            new ProjectileAnimationLayer(
+                gameContext,
+                getGridX(),
+                getGridY(),
+                getGridWidth(),
+                getGridHeight()
+            );
+
+        stage.addActor(projectileAnimationLayer);
+
         stage.addActor(new LawnMowerLayer(
             gameContext,
             gameEngine,

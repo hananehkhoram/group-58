@@ -35,6 +35,14 @@ public class Shooters implements BaseAbility {
         }
         if (!canFireNow) return;
 
+        if (shootType == ShootType.STRAIGHT
+            || shootType == ShootType.STRAIGHT_SEQUENTIAL) {
+
+            if (!hasZombieAhead(self, ctx)) {
+                return;
+            }
+        }
+
         boolean hasShot;
         if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET
                 || shootType == ShootType.RANDOM_INSTANT) {
@@ -43,8 +51,12 @@ public class Shooters implements BaseAbility {
             hasShot = shootDirectional(damage, amount, shootType, bulletType, self, ctx);
         }
 
-        if (hasShot && !everyRound) {
-            self.setLastActionSecond(currentSecond);
+        if (hasShot) {
+            ctx.queuePlantAttackAnimation(self);
+
+            if (!everyRound) {
+                self.setLastActionSecond(currentSecond);
+            }
         }
     }
 
@@ -201,6 +213,27 @@ public class Shooters implements BaseAbility {
             }
         }
         com.workshop.view.Console.showMessage("Plant Food: " + self.getName() + " unleashed a barrage!");
+    }
+
+    private boolean hasZombieAhead(
+        Plant plant,
+        GameContext ctx
+    ) {
+        for (Zombie zombie : ctx.getAliveZombies()) {
+            if (zombie == null || zombie.isDead()) {
+                continue;
+            }
+
+            if (zombie.getRow() != plant.getRow()) {
+                continue;
+            }
+
+            if (zombie.getX() >= plant.getX()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

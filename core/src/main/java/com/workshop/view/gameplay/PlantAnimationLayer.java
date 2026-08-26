@@ -48,6 +48,7 @@ public final class PlantAnimationLayer extends Group {
     @Override
     public void act(float delta) {
         syncPlantActors();
+        playPendingAttackAnimations();
         super.act(delta);
     }
 
@@ -147,5 +148,17 @@ public final class PlantAnimationLayer extends Group {
             + gridHeight
             - row * cellHeight
             - cellHeight / 2f;
+    }
+
+    private void playPendingAttackAnimations() {
+        Plant plant;
+
+        while ((plant = gameContext.pollPlantAttackAnimation()) != null) {
+            PlantActor actor = plantActors.get(plant);
+
+            if (actor != null) {
+                actor.play(PlantAnimationState.ATTACK);
+            }
+        }
     }
 }
