@@ -39,6 +39,10 @@ public final class PlantActor extends Actor {
         "768/FULL/EFFECTS/FROSTBITE_CHILL_PLANT/FROSTBITE_CHILL_PLANT.PAM";
     private static final String CHILL_OVERLAY_PREFERRED_CLIP = "idle";
 
+    private static final String PLANTFOOD_GLOW_PAM =
+        "768/INITIAL/EFFECTS/PLANTFOOD_FX/PLANTFOOD_FX.PAM";
+    private static final float PLANTFOOD_GLOW_HEIGHT_TO_CELL_RATIO = 1.7f;
+
     // iceHp شروعش برای یخ‌زدگیِ کامل، ۶۰۰ است (رجوع کنید به
     // Plant.increaseFreezeLevel()).
     private static final double INITIAL_ICE_HP = 600.0;
@@ -53,6 +57,11 @@ public final class PlantActor extends Actor {
 
     private String resolvedChillClip;
     private boolean chillClipResolved;
+
+    private String resolvedPlantFoodGlowClip;
+    private boolean plantFoodGlowClipResolved;
+    private Float plantFoodGlowScale;
+    private float plantFoodGlowTime;
 
     private PlantAnimationState currentState =
         PlantAnimationState.IDLE;
@@ -144,12 +153,30 @@ public final class PlantActor extends Actor {
             stateTime += delta;
         }
         frostStateTime += delta;
+
+        plant.tickPlantFoodGlow(delta);
+        if (plant.isShowingPlantFoodGlow()) {
+            plantFoodGlowTime += delta;
+            if (animationSpec.hasClip(PlantAnimationState.PLANTFOOD)
+                && currentState != PlantAnimationState.PLANTFOOD) {
+                play(PlantAnimationState.PLANTFOOD);
+            }
+        } else {
+            plantFoodGlowTime = 0f;
+            if (currentState == PlantAnimationState.PLANTFOOD) {
+                playIdle();
+            }
+        }
     }
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
         if (plant.isDead()) {
             return;
+        }
+
+        if (plant.isShowingPlantFoodGlow()) {
+            drawPlantFoodGlow(batch, parentAlpha);
         }
 
         String clip = animationSpec.getClip(currentState);
@@ -177,6 +204,89 @@ public final class PlantActor extends Actor {
         } else if (plant.getFreezeLevel() > 0) {
             drawChillOverlay(batch, parentAlpha);
         }
+    }
+
+    private void drawPlantFoodGlow(Batch batch, float parentAlpha) {
+        if (!plantFoodGlowClipResolved) {
+            resolvedPlantFoodGlowClip = resolveClip(
+                "PlantActor(plantfood-glow)",
+                PLANTFOOD_GLOW_PAM,
+                "animation"
+            );
+            if (resolvedPlantFoodGlowClip == null) {
+                resolvedPlantFoodGlowClip = resolveClip(
+                    "PlantActor(plantfood-glow)",
+                    PLANTFOOD_GLOW_PAM,
+                    "idle"
+                );
+            }
+            plantFoodGlowClipResolved = true;
+        }
+
+        if (resolvedPlantFoodGlowClip == null) {
+            return;
+        }
+
+        batch.setColor(1f, 1f, 1f, parentAlpha);
+        drawScaled(
+            batch,
+            PLANTFOOD_GLOW_PAM,
+            resolvedPlantFoodGlowClip,
+            plantFoodGlowTime,
+            getX(),
+            getY(),
+            true,
+            getPlantFoodGlowScale()
+        );
+    }
+
+    private float getPlantFoodGlowScale() {
+        if (plantFoodGlowScale != null) {
+            return plantFoodGlowScale;
+        }
+
+        if (resolvedPlantFoodGlowClip == null) {
+            return 1f;
+        }
+
+        Rectangle bounds = pamPlayer.bounds(
+            PLANTFOOD_GLOW_PAM,
+            resolvedPlantFoodGlowClip
+        );
+
+        if (bounds == null || bounds.height <= 0f) {
+            plantFoodGlowScale = 1f;
+            return plantFoodGlowScale;
+        }
+
+        plantFoodGlowScale =
+            (cellHeight * PLANTFOOD_GLOW_HEIGHT_TO_CELL_RATIO) / bounds.height;
+        return plantFoodGlowScale;
+    }
+
+    private void drawScaled(
+        Batch batch,
+        String pamPath,
+        String clip,
+        float time,
+        float x,
+        float y,
+        boolean loop,
+        float scale
+    ) {
+        Matrix4 oldTransform = batch.getTransformMatrix().cpy();
+        Matrix4 transform = new Matrix4(oldTransform);
+        transform.translate(x, y, 0);
+        transform.scale(scale, scale, 1f);
+        transform.translate(-x, -y, 0);
+        batch.setTransformMatrix(transform);
+
+        try {
+            pamPlayer.draw(batch, pamPath, clip, time, x, y, loop);
+        } catch (Throwable ignored) {
+        }
+
+        batch.setTransformMatrix(oldTransform);
     }
 
     private void drawIceBlock(Batch batch, float parentAlpha) {

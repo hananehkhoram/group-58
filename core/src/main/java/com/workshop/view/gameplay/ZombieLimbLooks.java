@@ -26,8 +26,8 @@ final class ZombieLimbLooks {
         if (head != null) {
             return;
         }
-        head = make(ZombieLimbLooks::paintHead);
-        arm = make(ZombieLimbLooks::paintArm);
+        head = make(64, 64, ZombieLimbLooks::paintHead);
+        arm = make(96, 160, ZombieLimbLooks::paintArm);
     }
 
     private interface Painter {
@@ -35,7 +35,11 @@ final class ZombieLimbLooks {
     }
 
     private static TextureRegion make(Painter painter) {
-        Pixmap pixmap = new Pixmap(64, 64, Pixmap.Format.RGBA8888);
+        return make(64, 64, painter);
+    }
+
+    private static TextureRegion make(int width, int height, Painter painter) {
+        Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
         pixmap.setBlending(Pixmap.Blending.SourceOver);
         pixmap.setColor(0f, 0f, 0f, 0f);
         pixmap.fill();
@@ -76,17 +80,24 @@ final class ZombieLimbLooks {
 
     private static void paintArm(Pixmap pixmap) {
         pixmap.setColor(0.42f, 0.62f, 0.32f, 1f);
-        pixmap.fillRectangle(26, 6, 12, 28);
-        pixmap.fillCircle(32, 8, 7);
-        pixmap.fillRectangle(22, 30, 20, 12);
-        pixmap.fillCircle(18, 42, 7);
-        pixmap.fillCircle(32, 50, 8);
-        pixmap.fillCircle(46, 42, 7);
+        pixmap.fillCircle(48, 18, 16);
+        pixmap.fillRectangle(36, 18, 24, 52);
+        pixmap.fillCircle(48, 72, 14);
+        pixmap.fillRectangle(34, 72, 28, 48);
+        pixmap.fillCircle(48, 124, 18);
+        pixmap.fillCircle(28, 118, 11);
+        pixmap.fillCircle(68, 118, 11);
+        pixmap.fillCircle(38, 142, 10);
+        pixmap.fillCircle(58, 142, 10);
         pixmap.setColor(0.32f, 0.48f, 0.22f, 1f);
-        pixmap.fillRectangle(28, 18, 8, 4);
+        pixmap.fillRectangle(42, 40, 12, 8);
+        pixmap.fillRectangle(42, 92, 12, 8);
+        pixmap.setColor(0.55f, 0.12f, 0.12f, 1f);
+        pixmap.fillCircle(48, 14, 8);
         pixmap.setColor(0.38f, 0.55f, 0.28f, 1f);
-        pixmap.fillRectangle(14, 38, 8, 14);
-        pixmap.fillRectangle(28, 48, 8, 12);
-        pixmap.fillRectangle(42, 38, 8, 14);
+        pixmap.fillRectangle(22, 110, 12, 22);
+        pixmap.fillRectangle(62, 110, 12, 22);
+        pixmap.fillRectangle(34, 138, 12, 18);
+        pixmap.fillRectangle(50, 138, 12, 18);
     }
 }

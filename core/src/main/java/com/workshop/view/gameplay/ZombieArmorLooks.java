@@ -5,17 +5,19 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.workshop.controller.repository.Textures;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.model.zombie.behavior.Armor;
 import com.workshop.model.zombie.behavior.ArmorType;
 
 /**
- * ظاهر زره روی زامبی: سه شکل جدا برای سالم / نیمه‌خراب / تقریباً خردشده.
- * فقط ویو است؛ HP زره را می‌خواند و اسپرایت را عوض می‌کند.
+ * ظاهر زره روی زامبی: اسپرایت واقعی مخروط/سطل/آجر از اطلس،
+ * با سه مرحله سالم / فرورفته / داغان.
  */
 final class ZombieArmorLooks {
 
     private static final int TEX = 64;
+    private static final String IMG = "IMAGE_ZOMBIE_ZOMBIE_TUTORIAL_ZOMBIE_TUTORIAL_";
     private static TextureRegion[][] frames;
     private static boolean loaded;
 
@@ -99,29 +101,29 @@ final class ZombieArmorLooks {
 
         switch (type) {
             case CONE -> {
-                width = cellHeight * (stage == 2 ? 0.46f : 0.40f);
-                height = cellHeight * (stage == 0 ? 0.52f : stage == 1 ? 0.38f : 0.24f);
-                rotation = stage == 0 ? -8f : stage == 1 ? 14f : 28f;
-                x = originX - width * 0.42f;
-                y = originY + cellHeight * (stage == 2 ? 0.86f : 0.92f);
+                width = cellHeight * (stage == 0 ? 0.58f : stage == 1 ? 0.54f : 0.50f);
+                height = cellHeight * (stage == 0 ? 0.82f : stage == 1 ? 0.64f : 0.46f);
+                rotation = 0f;
+                x = originX - width * 0.52f;
+                y = originY + cellHeight * 1.00f;
                 originXLocal = width * 0.5f;
                 originYLocal = 0f;
             }
             case BUCKET -> {
-                width = cellHeight * (stage == 2 ? 0.48f : 0.42f);
-                height = cellHeight * (stage == 0 ? 0.40f : stage == 1 ? 0.30f : 0.18f);
-                rotation = stage == 0 ? -4f : stage == 1 ? 10f : 22f;
-                x = originX - width * 0.40f;
-                y = originY + cellHeight * 0.90f;
+                width = cellHeight * 0.62f;
+                height = cellHeight * (stage == 0 ? 0.50f : stage == 1 ? 0.46f : 0.40f);
+                rotation = 0f;
+                x = originX - width * 0.52f;
+                y = originY + cellHeight * 1.02f;
                 originXLocal = width * 0.5f;
                 originYLocal = 0f;
             }
             case BRICK -> {
-                width = cellHeight * 0.44f;
-                height = cellHeight * (stage == 0 ? 0.36f : stage == 1 ? 0.28f : 0.16f);
-                rotation = stage == 0 ? -6f : stage == 1 ? 12f : 26f;
-                x = originX - width * 0.40f;
-                y = originY + cellHeight * 0.90f;
+                width = cellHeight * 0.62f;
+                height = cellHeight * (stage == 0 ? 0.56f : stage == 1 ? 0.50f : 0.42f);
+                rotation = 0f;
+                x = originX - width * 0.52f;
+                y = originY + cellHeight * 1.00f;
                 originXLocal = width * 0.5f;
                 originYLocal = 0f;
             }
@@ -184,11 +186,34 @@ final class ZombieArmorLooks {
         frames = new TextureRegion[types.length][3];
         for (ArmorType type : types) {
             for (int stage = 0; stage < 3; stage++) {
-                TextureRegion region = new TextureRegion(buildTexture(type, stage));
-                region.flip(false, true);
-                frames[type.ordinal()][stage] = region;
+                TextureRegion atlas = atlasFrame(type, stage);
+                if (atlas != null) {
+                    frames[type.ordinal()][stage] = atlas;
+                } else {
+                    TextureRegion region = new TextureRegion(buildTexture(type, stage));
+                    region.flip(false, true);
+                    frames[type.ordinal()][stage] = region;
+                }
             }
         }
+    }
+
+    private static TextureRegion atlasFrame(ArmorType type, int stage) {
+        String id = atlasId(type, stage);
+        if (id == null) {
+            return null;
+        }
+        return Textures.regionOrNull(id);
+    }
+
+    private static String atlasId(ArmorType type, int stage) {
+        int s = Math.max(0, Math.min(2, stage));
+        return switch (type) {
+            case CONE -> IMG + (s == 0 ? "76X98" : s == 1 ? "60X86" : "80X83_2");
+            case BUCKET -> IMG + (s == 0 ? "81X64" : s == 1 ? "81X64_2" : "80X72");
+            case BRICK -> IMG + (s == 0 ? "91X97" : s == 1 ? "96X97" : "82X82");
+            default -> null;
+        };
     }
 
     private static Texture buildTexture(ArmorType type, int stage) {

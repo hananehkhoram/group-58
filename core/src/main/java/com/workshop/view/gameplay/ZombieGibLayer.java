@@ -99,28 +99,35 @@ public final class ZombieGibLayer extends Group {
                 addActor(new BurstActor(x, y + cell * 0.35f, cell * 0.9f, ARMOR_BREAK_PAM, 0.55f));
                 TextureRegion armor = ZombieArmorLooks.region(
                     fx.armorType != null ? fx.armorType : ArmorType.CONE,
-                    0
+                    2
                 );
                 float armorH = armorHeight(fx.armorType, cell);
                 addActor(new FallingSpriteActor(
                     armor,
-                    x - 10f,
-                    y + cell * 0.55f,
+                    x - cell * 0.18f,
+                    y + cell * 0.95f,
                     armorH * 0.92f,
                     armorH,
                     220f,
                     18f
                 ));
             }
-            case ARM -> addActor(new FallingSpriteActor(
-                ZombieLimbLooks.arm(),
-                x - 18f,
-                y + cell * 0.18f,
-                cell * 0.28f,
-                cell * 0.42f,
-                160f,
-                28f
-            ));
+            case ARM -> {
+                FallingArmActor arm = createFallingArm(fx, x, y, cell);
+                if (arm != null) {
+                    addActor(arm);
+                } else {
+                    addActor(new FallingSpriteActor(
+                        ZombieLimbLooks.arm(),
+                        x - cell * 0.16f,
+                        y + cell * 0.28f,
+                        cell * 0.32f,
+                        cell * 0.50f,
+                        160f,
+                        24f
+                    ));
+                }
+            }
             case HEAD -> {
                 FallingHeadActor head = createFallingHead(fx, x, y, cell);
                 if (head != null) {
@@ -163,9 +170,82 @@ public final class ZombieGibLayer extends Group {
         }
         float scale = (cell * 1.6f) / bounds.height;
         float feetY = y + 10f;
-        float headX = x - cell * 0.05f;
-        float headY = feetY + cell * 1.12f;
+        float headX = x + cell * 0.12f;
+        float headY = feetY + cell * 1.05f;
         return new FallingHeadActor(pamPath, clip, scale, headX, headY, cell);
+    }
+
+    private FallingArmActor createFallingArm(ZombiePartFx fx, float x, float y, float cell) {
+        if (fx.zombie == null) {
+            return null;
+        }
+        String seasonName = gameContext.getSeason() != null
+            ? gameContext.getSeason().getName()
+            : null;
+        ZombieAnimationSpec spec =
+            ZombieAnimationResolver.shared().resolve(fx.zombie, seasonName);
+        if (spec == null) {
+            return null;
+        }
+        String clip = spec.getIdleClip();
+        if (clip == null) {
+            return null;
+        }
+        String pamPath = spec.getPamPath();
+        List<String> parts = ZombieArmVisibility.outerArmRoots(pamPlayer, pamPath);
+        if (parts.isEmpty()) {
+            return null;
+        }
+        Rectangle bounds = pamPlayer.bounds(pamPath, clip);
+        if (bounds == null || bounds.height <= 0f) {
+            return null;
+        }
+        float scale = (cell * 1.6f) / bounds.height;
+        float feetX = x;
+        float feetY = y + 10f;
+        return new FallingArmActor(pamPath, clip, scale, parts, feetX, feetY, cell);
+    }
+
+    private FallingArmorActor createFallingArmor(ZombiePartFx fx, float x, float y, float cell) {
+        ArmorType type = fx.armorType;
+        if (type == null || !ZombieArmorVisibility.usesPam(type)) {
+            return null;
+        }
+        String part = ZombieArmorVisibility.partName(type, 2);
+        String bodyPam = null;
+        if (fx.zombie != null) {
+            String seasonName = gameContext.getSeason() != null
+                ? gameContext.getSeason().getName()
+                : null;
+            ZombieAnimationSpec spec =
+                ZombieAnimationResolver.shared().resolve(fx.zombie, seasonName);
+            if (spec != null) {
+                bodyPam = spec.getPamPath();
+            }
+        }
+        String overlayPam = ZombieArmorVisibility.overlayPam(pamPlayer, bodyPam, part);
+        if (overlayPam == null) {
+            return null;
+        }
+        List<String> clips = pamPlayer.clips(overlayPam);
+        if (clips == null || clips.isEmpty()) {
+            return null;
+        }
+        String clip = clips.contains("idle") ? "idle" : clips.get(0);
+        Rectangle bounds = pamPlayer.bounds(overlayPam, clip);
+        if (bounds == null || bounds.height <= 0f) {
+            return null;
+        }
+        float scale = (cell * 1.6f) / bounds.height;
+        return new FallingArmorActor(
+            overlayPam,
+            clip,
+            scale,
+            part,
+            x,
+            y + 10f,
+            cell
+        );
     }
 
     private static float armorHeight(ArmorType type, float cell) {
@@ -397,13 +477,13 @@ public final class ZombieGibLayer extends Group {
             this.cell = cell;
             this.headX = headX;
             this.headY = headY;
-            this.boxW = cell * 1.05f;
-            this.boxH = cell * 0.92f;
+            this.boxW = cell * 1.7f;
+            this.boxH = cell * 1.35f;
             this.floorY = headY - cell * 0.85f;
             this.vx = MathUtils.random(45f, 110f) * (MathUtils.randomBoolean() ? 1f : -1f);
             this.vy = MathUtils.random(160f, 210f);
-            this.spin = MathUtils.random(90f, 140f) * (MathUtils.randomBoolean() ? 1f : -1f);
-            this.rotation = MathUtils.random(-18f, 18f);
+            this.spin = MathUtils.random(16f, 28f) * (MathUtils.randomBoolean() ? 1f : -1f);
+            this.rotation = MathUtils.random(-8f, 8f);
             setBounds(headX - boxW / 2f, headY - boxH / 2f, boxW, boxH);
         }
 
@@ -413,6 +493,7 @@ public final class ZombieGibLayer extends Group {
             stateTime += delta;
             if (!grounded) {
                 rotation += spin * delta;
+                rotation = MathUtils.clamp(rotation, -22f, 22f);
                 headX += vx * delta;
                 headY += vy * delta;
                 vy -= 780f * delta;
@@ -449,8 +530,8 @@ public final class ZombieGibLayer extends Group {
 
             float cx = headX;
             float cy = headY;
-            float feetX = cx;
-            float feetY = cy - cell * 1.12f;
+            float feetX = cx - cell * 0.12f;
+            float feetY = cy - cell * 1.05f;
 
             Matrix4 original = batch.getTransformMatrix().cpy();
             Matrix4 transform = original.cpy()
@@ -469,6 +550,202 @@ public final class ZombieGibLayer extends Group {
             batch.flush();
             batch.setTransformMatrix(original);
             clipEnd();
+            batch.setColor(1f, 1f, 1f, 1f);
+        }
+    }
+
+    private final class FallingArmActor extends Actor {
+        private final String pamPath;
+        private final String clip;
+        private final float pamScale;
+        private final List<String> parts;
+        private final float cell;
+        private float originX;
+        private float originY;
+        private float vx;
+        private float vy;
+        private float rotation;
+        private final float spin;
+        private float stateTime;
+        private float groundedTime;
+        private boolean grounded;
+        private final float floorY;
+
+        FallingArmActor(
+            String pamPath,
+            String clip,
+            float pamScale,
+            List<String> parts,
+            float feetX,
+            float feetY,
+            float cell
+        ) {
+            this.pamPath = pamPath;
+            this.clip = clip;
+            this.pamScale = pamScale;
+            this.parts = parts;
+            this.cell = cell;
+            this.originX = feetX;
+            this.originY = feetY;
+            this.floorY = feetY - cell * 0.45f;
+            this.vx = MathUtils.random(35f, 90f) * (MathUtils.randomBoolean() ? 1f : -1f);
+            this.vy = MathUtils.random(140f, 190f);
+            this.spin = MathUtils.random(50f, 90f) * (MathUtils.randomBoolean() ? 1f : -1f);
+            this.rotation = MathUtils.random(-12f, 12f);
+        }
+
+        @Override
+        public void act(float delta) {
+            super.act(delta);
+            stateTime += delta;
+            if (!grounded) {
+                rotation += spin * delta;
+                originX += vx * delta;
+                originY += vy * delta;
+                vy -= 800f * delta;
+                vx *= 0.987f;
+                if (vy < 0f && originY <= floorY) {
+                    grounded = true;
+                    originY = floorY;
+                    vy = 0f;
+                    vx *= 0.22f;
+                }
+                if (stateTime > 1.35f) {
+                    grounded = true;
+                }
+            } else {
+                groundedTime += delta;
+                if (groundedTime >= 1.7f) {
+                    remove();
+                }
+            }
+        }
+
+        @Override
+        public void draw(Batch batch, float parentAlpha) {
+            float alpha = parentAlpha;
+            if (grounded) {
+                alpha *= MathUtils.clamp(1f - groundedTime / 1.7f, 0f, 1f);
+            }
+
+            float pivotX = originX - cell * 0.18f;
+            float pivotY = originY + cell * 0.48f;
+
+            batch.flush();
+            Matrix4 original = batch.getTransformMatrix().cpy();
+            Matrix4 transform = original.cpy()
+                .translate(pivotX, pivotY, 0f)
+                .rotate(0f, 0f, 1f, rotation)
+                .translate(-pivotX, -pivotY, 0f)
+                .translate(originX, originY, 0f)
+                .scale(pamScale, pamScale, 1f)
+                .translate(-originX, -originY, 0f);
+            batch.setTransformMatrix(transform);
+            batch.setColor(1f, 1f, 1f, alpha);
+            try {
+                for (String part : parts) {
+                    pamPlayer.drawPart(batch, pamPath, clip, 0.12f, originX, originY, part);
+                }
+            } catch (Throwable ignored) {
+            }
+            batch.flush();
+            batch.setTransformMatrix(original);
+            batch.setColor(1f, 1f, 1f, 1f);
+        }
+    }
+
+    private final class FallingArmorActor extends Actor {
+        private final String pamPath;
+        private final String clip;
+        private final float pamScale;
+        private final String part;
+        private final float cell;
+        private float originX;
+        private float originY;
+        private float vx;
+        private float vy;
+        private float rotation;
+        private final float spin;
+        private float stateTime;
+        private float groundedTime;
+        private boolean grounded;
+        private final float floorY;
+
+        FallingArmorActor(
+            String pamPath,
+            String clip,
+            float pamScale,
+            String part,
+            float feetX,
+            float feetY,
+            float cell
+        ) {
+            this.pamPath = pamPath;
+            this.clip = clip;
+            this.pamScale = pamScale;
+            this.part = part;
+            this.cell = cell;
+            this.originX = feetX;
+            this.originY = feetY;
+            this.floorY = feetY - cell * 0.35f;
+            this.vx = MathUtils.random(40f, 110f) * (MathUtils.randomBoolean() ? 1f : -1f);
+            this.vy = MathUtils.random(180f, 240f);
+            this.spin = MathUtils.random(60f, 110f) * (MathUtils.randomBoolean() ? 1f : -1f);
+            this.rotation = MathUtils.random(-16f, 16f);
+        }
+
+        @Override
+        public void act(float delta) {
+            super.act(delta);
+            stateTime += delta;
+            if (!grounded) {
+                rotation += spin * delta;
+                originX += vx * delta;
+                originY += vy * delta;
+                vy -= 820f * delta;
+                vx *= 0.987f;
+                if (vy < 0f && originY <= floorY) {
+                    grounded = true;
+                    originY = floorY;
+                    vy = 0f;
+                    vx *= 0.22f;
+                }
+                if (stateTime > 1.35f) {
+                    grounded = true;
+                }
+            } else {
+                groundedTime += delta;
+                if (groundedTime >= 1.7f) {
+                    remove();
+                }
+            }
+        }
+
+        @Override
+        public void draw(Batch batch, float parentAlpha) {
+            float alpha = parentAlpha;
+            if (grounded) {
+                alpha *= MathUtils.clamp(1f - groundedTime / 1.7f, 0f, 1f);
+            }
+            float pivotX = originX;
+            float pivotY = originY + cell * 1.05f;
+            batch.flush();
+            Matrix4 original = batch.getTransformMatrix().cpy();
+            Matrix4 transform = original.cpy()
+                .translate(pivotX, pivotY, 0f)
+                .rotate(0f, 0f, 1f, rotation)
+                .translate(-pivotX, -pivotY, 0f)
+                .translate(originX, originY, 0f)
+                .scale(pamScale, pamScale, 1f)
+                .translate(-originX, -originY, 0f);
+            batch.setTransformMatrix(transform);
+            batch.setColor(1f, 1f, 1f, alpha);
+            try {
+                pamPlayer.drawPart(batch, pamPath, clip, 0.12f, originX, originY, part);
+            } catch (Throwable ignored) {
+            }
+            batch.flush();
+            batch.setTransformMatrix(original);
             batch.setColor(1f, 1f, 1f, 1f);
         }
     }

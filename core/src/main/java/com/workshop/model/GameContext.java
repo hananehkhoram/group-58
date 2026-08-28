@@ -441,8 +441,20 @@ public class GameContext {
         return projectiles;
     }
 
+    private final List<Projectile> pendingProjectiles = new ArrayList<>();
+
     public void setNewProjectiles(Projectile p) {
-        this.projectiles.add(p);
+        if (p != null) {
+            pendingProjectiles.add(p);
+        }
+    }
+
+    public void flushPendingProjectiles() {
+        if (pendingProjectiles.isEmpty()) {
+            return;
+        }
+        projectiles.addAll(pendingProjectiles);
+        pendingProjectiles.clear();
     }
 
     public List<Plant> getActivePlants() {

@@ -37,7 +37,59 @@ public class Zombie implements Damageable {
     private boolean isIced = false;
     private double iceHp = 0;
     private boolean initialFrozenBlock = false;
+    private static final double SANDSTORM_DASH_SPEED = 3.6;
+    private static final float SANDSTORM_LAND_SECONDS = 0.75f;
+
+    private double sandstormTargetX;
+    private float sandstormDelay;
+    private boolean sandstormLanded;
+    private float sandstormLandTime;
     private boolean enteredViaSandstorm = false;
+
+    public void startSandstormEntry(double targetX, float delaySeconds) {
+        enteredViaSandstorm = true;
+        sandstormTargetX = targetX;
+        sandstormDelay = Math.max(0f, delaySeconds);
+        sandstormLanded = false;
+        sandstormLandTime = 0f;
+    }
+
+    public boolean isSandstormLanded() {
+        return sandstormLanded;
+    }
+
+    public float getSandstormLandTime() {
+        return sandstormLandTime;
+    }
+
+    private boolean updateSandstormDash(double deltaTime) {
+        if (!enteredViaSandstorm) {
+            return false;
+        }
+
+        setEating(false);
+
+        if (sandstormDelay > 0f) {
+            sandstormDelay -= (float) deltaTime;
+            return true;
+        }
+
+        if (!sandstormLanded) {
+            x -= SANDSTORM_DASH_SPEED * deltaTime;
+            if (x <= sandstormTargetX) {
+                x = sandstormTargetX;
+                sandstormLanded = true;
+                sandstormLandTime = 0f;
+            }
+            return true;
+        }
+
+        sandstormLandTime += (float) deltaTime;
+        if (sandstormLandTime >= SANDSTORM_LAND_SECONDS) {
+            enteredViaSandstorm = false;
+        }
+        return false;
+    }
 
     private boolean isEating = false;
     private boolean movingBackward = false;
@@ -91,6 +143,10 @@ public class Zombie implements Damageable {
             return;
         }
 
+        if (updateSandstormDash(deltaTime)) {
+            return;
+        }
+
         for (Behaviors b : behaviors.values()) {
             b.onTick(this, ctx);
         }
@@ -108,7 +164,6 @@ public class Zombie implements Damageable {
 
         if (!isEating && !airborne) {
             double effectiveSpeed = speed;
-            //if (isIced) effectiveSpeed *= 0.5;
             x += movingBackward ? effectiveSpeed * deltaTime : -effectiveSpeed * deltaTime;
         }
     }
