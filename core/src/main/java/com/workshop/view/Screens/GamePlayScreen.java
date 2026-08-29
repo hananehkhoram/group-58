@@ -136,17 +136,8 @@ public class GamePlayScreen implements Screen {
 
     private ConveyorBeltLayer conveyorBeltLayer;
     private BrainLayer brainLayer;
-
-    //===========================TEST=============================
-
-    private static final String NORMAL_VASE_PAM =
-        "768/.../VASE_NORMAL/VASE_NORMAL.PAM";
-
-    private static final String PLANT_VASE_PAM =
-        "768/.../VASE_PLANT/VASE_PLANT.PAM";
-
-    private static final String GARGANTUAR_VASE_PAM =
-        "768/.../VASE_GARGANTUAR/VASE_GARGANTUAR.PAM";
+    private static final String BRAIN_PAM_PATH =
+        "PLANT/BRAINSTEM/BRAINSTEM.PAM";
 
 
     public GamePlayScreen(
@@ -2302,10 +2293,6 @@ public class GamePlayScreen implements Screen {
         winLoseOverlay.dispose();
         if (conveyorBeltLayer != null) {
             conveyorBeltLayer.dispose();
-        }
-
-        if (brainLayer != null) {
-            brainLayer.dispose();
         }
     }
 }
