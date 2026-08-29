@@ -5,6 +5,8 @@ import com.badlogic.gdx.Game;
 import com.workshop.controller.MenuManager;
 import com.workshop.controller.repository.Audio;
 import com.workshop.controller.repository.DataManager;
+import com.workshop.model.MiniGame.Beghouled.BeghouldGame;
+import com.workshop.model.MiniGame.Zombotany.Zombotany;
 import com.workshop.model.level.Level;
 import com.workshop.model.level.LevelType;
 import com.workshop.model.season.Grave;
@@ -25,6 +27,8 @@ import com.workshop.view.Screens.RegisterScreen;
 import com.workshop.view.Screens.MainMenuScreen;
 import com.workshop.model.MiniGame.VaseGame.Vasecheccker;
 import com.workshop.model.MiniGame.WallnutsGame.WallnutBowlingGame;
+import com.workshop.model.MiniGame.Izambi.Izambi;
+
 
 public class PvzGame extends Game {
 
@@ -346,6 +350,11 @@ public class PvzGame extends Game {
 
         GameContext ctx = vaseGame.getCtx();
 
+        if (ctx == null
+            || vaseGame.getGameEngine() == null) {
+            return;
+        }
+
         menuManager.setCtx(ctx);
         menuManager.setGameEngine(
             vaseGame.getGameEngine()
@@ -360,10 +369,6 @@ public class PvzGame extends Game {
         );
     }
 
-    public void showWallnutBowling() {
-        showWallnutBowling(1);
-    }
-
     public void showWallnutBowling(int levelNumber) {
         WallnutBowlingGame bowlingGame =
             new WallnutBowlingGame();
@@ -375,6 +380,11 @@ public class PvzGame extends Game {
 
         GameContext ctx = bowlingGame.getCtx();
 
+        if (ctx == null
+            || bowlingGame.getGameEngine() == null) {
+            return;
+        }
+
         menuManager.setCtx(ctx);
         menuManager.setGameEngine(
             bowlingGame.getGameEngine()
@@ -385,6 +395,115 @@ public class PvzGame extends Game {
                 ctx,
                 () -> showWallnutBowling(levelNumber),
                 this::showTravelMenu
+            )
+        );
+    }
+
+    public void showIZombie(int levelNumber) {
+        Izambi iZombieGame = new Izambi();
+
+        iZombieGame.startMiniGame(
+            menuManager,
+            levelNumber
+        );
+
+        GameContext ctx = iZombieGame.getCtx();
+
+        if (ctx == null
+            || iZombieGame.getGameEngine() == null) {
+            return;
+        }
+
+        menuManager.setCtx(ctx);
+        menuManager.setGameEngine(
+            iZombieGame.getGameEngine()
+        );
+
+        setScreen(
+            new GamePlayScreen(
+                ctx,
+                () -> showIZombie(levelNumber),
+                this::showTravelMenu
+            )
+        );
+    }
+
+    public void showBeghouled(int levelNumber) {
+        BeghouldGame beghouledGame =
+            new BeghouldGame();
+
+        beghouledGame.start(
+            menuManager,
+            levelNumber
+        );
+
+        GameContext ctx =
+            beghouledGame.getCtx();
+
+        if (ctx == null
+            || beghouledGame.getGameEngine() == null) {
+            return;
+        }
+
+        menuManager.setCtx(ctx);
+        menuManager.setGameEngine(
+            beghouledGame.getGameEngine()
+        );
+
+        setScreen(
+            new GamePlayScreen(
+                ctx,
+                () -> showBeghouled(levelNumber),
+                this::showTravelMenu
+            )
+        );
+    }
+
+    public void showZombotany(int levelNumber) {
+        Zombotany zombotanyGame =
+            new Zombotany();
+
+        zombotanyGame.startLevel(
+            menuManager,
+            levelNumber - 1
+        );
+
+        GameContext ctx =
+            zombotanyGame.getCtx();
+
+        if (ctx == null
+            || zombotanyGame.getGameEngine() == null) {
+            return;
+        }
+
+        menuManager.setCtx(ctx);
+        menuManager.setGameEngine(
+            zombotanyGame.getGameEngine()
+        );
+
+        setScreen(
+            new PlantSelectionScreen(
+                ctx,
+                new PlantSelectionScreen.Listener() {
+
+                    @Override
+                    public void onBack() {
+                        showTravelMenu();
+                    }
+
+                    @Override
+                    public void onStartBattle() {
+                        setScreen(
+                            new GamePlayScreen(
+                                ctx,
+                                () -> showZombotany(
+                                    levelNumber
+                                ),
+                                PvzGame.this::showTravelMenu
+                            )
+                        );
+                    }
+                }
             )
         );
     }

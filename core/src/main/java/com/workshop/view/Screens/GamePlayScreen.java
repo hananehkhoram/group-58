@@ -15,6 +15,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.workshop.controller.SpecialLevelManager.ConveyorBeltManager;
 import com.workshop.model.GameContext;
+import com.workshop.model.MiniGame.Izambi.IZombieManager;
+import com.workshop.model.MiniGame.Izambi.Izambi;
 import com.workshop.model.level.Level;
 import com.workshop.model.mechanisms.GameEngine;
 import com.workshop.model.season.DarkAgesSeason;
@@ -40,13 +42,12 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.workshop.controller.MenuManager;
 import com.workshop.controller.commands.Planting;
 import com.workshop.model.plants.Plant;
-import com.workshop.view.Screens.PlantCardActor;
+import com.workshop.model.zombie.Zombie;
 import com.workshop.model.level.LevelType;
 import com.workshop.view.gameplay.DroppedSeedLayer;
-import com.workshop.controller.SpecialLevelManager.ConveyorBeltManager;
+import com.workshop.view.gameplay.*;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class GamePlayScreen implements Screen {
 
@@ -105,12 +106,16 @@ public class GamePlayScreen implements Screen {
     private float screenElapsedTime = 0f;
     private final List<PlantCardActor> seedBankCards =
         new ArrayList<>();
+    private final List<ZombieCardActor> zombieBankCards =
+        new ArrayList<>();
 
     private Plant selectedPlantForPlacement;
+    private String selectedZombieTypeForPlacement;
     private boolean plantFoodFeedMode;
     private int hoveredPlantRow = -1;
     private int hoveredPlantColumn = -1;
     private PlantActor mousePlantPreview;
+    private ZombiePlacementPreviewActor mouseZombiePreview;
 
     private final PlantAnimationResolver plantPreviewResolver =
         new PlantAnimationResolver();
@@ -123,12 +128,14 @@ public class GamePlayScreen implements Screen {
     private Table seedBankContainer;
 
     private Table seedBankTable;
+    private Table zombieBankTable;
 
     private boolean dialogueBlocking = false;
     private boolean endDialogueShown = false;
     private String lastConveyorSignature = "";
 
     private ConveyorBeltLayer conveyorBeltLayer;
+    private BrainLayer brainLayer;
 
     //===========================TEST=============================
 
@@ -320,6 +327,19 @@ public class GamePlayScreen implements Screen {
             );
         }
 
+        if (level.getLevelType() == LevelType.Izambie_MG) {
+            stage.addActor(
+                new BowlingRedLineLayer(
+                    shapeRenderer,
+                    getGridX()
+                        + IZombieManager.RED_LINE_COLUMN
+                        * getCellWidth(),
+                    getGridY(),
+                    getGridHeight()
+                )
+            );
+        }
+
         if (level.getLevelType() == LevelType.DEADLINE) {
             int deadlineColumn = level.getDeadlineColumn();
             stage.addActor(
@@ -384,14 +404,29 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(projectileAnimationLayer);
 
-        stage.addActor(new LawnMowerLayer(
-            gameContext,
-            gameEngine,
-            getGridX(),
-            getGridY(),
-            getGridWidth(),
-            getGridHeight()
-        ));
+        if (level.getLevelType() == LevelType.Izambie_MG) {
+
+            brainLayer = new BrainLayer(
+                gameContext,
+                getGridX(),
+                getGridY(),
+                getGridWidth(),
+                getGridHeight()
+            );
+
+            stage.addActor(brainLayer);
+
+        } else {
+
+            stage.addActor(new LawnMowerLayer(
+                gameContext,
+                gameEngine,
+                getGridX(),
+                getGridY(),
+                getGridWidth(),
+                getGridHeight()
+            ));
+        }
 
         ZombieAnimationLayer zombieAnimationLayer =
             new ZombieAnimationLayer(
@@ -580,7 +615,9 @@ public class GamePlayScreen implements Screen {
         // --- دیالوگ شروع مرحله (اختیاری) و بعد از آن، منوی آغاز مرحله ---
         List<DialogueLine> introDialogue = level.getIntroDialogue();
 
-        if (isConveyorLevel()) {
+        if (isIZombieLevel()) {
+            buildZombieBank(skin);
+        } else if (isConveyorLevel()) {
             buildConveyorBelt();
         } else {
             buildSeedBank(skin);
@@ -819,7 +856,7 @@ public class GamePlayScreen implements Screen {
     }
 
     private void buildSeedBank(Skin skin) {
-        if (isConveyorLevel()) {
+        if (isConveyorLevel() || isIZombieLevel()) {
             return;
         }
 
@@ -887,6 +924,152 @@ public class GamePlayScreen implements Screen {
 
     }
 
+    private void buildZombieBank(Skin skin) {
+        if (!isIZombieLevel()) {
+            return;
+        }
+
+        if (!(gameContext.getLevelManager()
+            instanceof IZombieManager manager)) {
+            return;
+        }
+
+        zombieBankTable = new Table();
+        zombieBankTable.setFillParent(true);
+        zombieBankTable.left().top();
+        zombieBankTable.padLeft(110f);
+        zombieBankTable.padTop(20f);
+
+        Table panel = new Table();
+        panel.top();
+
+        Table cardsTable = new Table();
+        cardsTable.top();
+
+        zombieBankCards.clear();
+
+        for (var entry : manager.getAvailableZombieCosts().entrySet()) {
+            Zombie zombie;
+
+            try {
+                zombie = gameContext
+                    .getZombieFactory()
+                    .create(entry.getKey());
+            } catch (IllegalArgumentException exception) {
+                Gdx.app.error(
+                    "IZombieUI",
+                    "Could not create zombie card for "
+                        + entry.getKey(),
+                    exception
+                );
+                continue;
+            }
+
+            ZombieCardActor card = new ZombieCardActor(
+                zombie,
+                entry.getKey(),
+                entry.getValue(),
+                gameContext.getSeason().getName(),
+                Textures.getPamPlayer(),
+                skin
+            );
+
+            zombieBankCards.add(card);
+
+            card.setOnClick(this::selectZombie);
+
+            cardsTable.add(card)
+                .size(100f, 58f)
+                .padBottom(60f)
+                .row();
+        }
+
+        panel.add(cardsTable)
+            .top()
+            .padTop(15f);
+
+        zombieBankTable.add(panel)
+            .width(125f)
+            .height(worldHeight - 40f)
+            .top();
+
+        stage.addActor(zombieBankTable);
+    }
+
+    private void selectZombie(
+        ZombieCardActor clickedCard
+    ) {
+        if (gameContext.getLevelManager()
+            instanceof IZombieManager manager) {
+
+            double cooldown =
+                manager
+                    .getRemainingZombieCooldownSeconds(
+                        clickedCard.getZombieType(),
+                        gameContext
+                    );
+
+            if (cooldown > 0) {
+                int seconds =
+                    (int) Math.ceil(cooldown);
+
+                Toast.showError(
+                    stage,
+                    PvzSkin.get(),
+                    clickedCard.getZombieType()
+                        + " is recharging ("
+                        + seconds
+                        + "s)"
+                );
+
+                return;
+            }
+        }
+
+        plantFoodFeedMode = false;
+        clearPlantSelection();
+
+        selectedZombieTypeForPlacement =
+            clickedCard.getZombieType();
+
+        for (ZombieCardActor card : zombieBankCards) {
+            card.setFocused(
+                card == clickedCard
+            );
+        }
+
+        showZombieOnMouse(
+            clickedCard.getZombie()
+        );
+    }
+
+    private void showZombieOnMouse(Zombie zombie) {
+        if (mouseZombiePreview != null) {
+            mouseZombiePreview.remove();
+            mouseZombiePreview = null;
+        }
+
+        ZombieAnimationSpec spec =
+            ZombieAnimationResolver.shared().resolve(
+                zombie,
+                gameContext.getSeason().getName()
+            );
+
+        if (spec == null) {
+            return;
+        }
+
+        mouseZombiePreview =
+            new ZombiePlacementPreviewActor(
+                spec,
+                Textures.getPamPlayer(),
+                getCellHeight()
+            );
+
+        mouseZombiePreview.setTouchable(Touchable.disabled);
+        stage.addActor(mouseZombiePreview);
+    }
+
     private void selectPlant(PlantCardActor clickedCard) {
         plantFoodFeedMode = false;
         selectedPlantForPlacement =
@@ -947,23 +1130,23 @@ public class GamePlayScreen implements Screen {
 
             case "I, Zombie":
                 return new BackgroundPaths(
-                    "IMAGES/Menus/GamePlay/IZombieLeft.png",
-                    "IMAGES/Menus/GamePlay/IZombie.png",
-                    "IMAGES/Menus/GamePlay/IZombieRight.png"
+                    "IMAGES/Menus/MiniGame/IzombieLeft.png",
+                    "IMAGES/Menus/MiniGame/Izombie.png",
+                    "IMAGES/Menus/MiniGame/IzombieRight.png"
                 );
 
             case "Beghouled":
                 return new BackgroundPaths(
-                    "IMAGES/Menus/GamePlay/BeghouledLeft.png",
-                    "IMAGES/Menus/GamePlay/Beghouled.png",
-                    "IMAGES/Menus/GamePlay/BeghouledRight.png"
+                    "IMAGES/Menus/MiniGame/BeghouledLeft.png",
+                    "IMAGES/Menus/MiniGame/Beghouled.png",
+                    "IMAGES/Menus/MiniGame/BeghouledRight.png"
                 );
 
             case "Zombotany":
                 return new BackgroundPaths(
-                    "IMAGES/Menus/GamePlay/ZombotanyLeft.png",
-                    "IMAGES/Menus/GamePlay/Zombotany.png",
-                    "IMAGES/Menus/GamePlay/ZombotanyRight.png"
+                    "IMAGES/Menus/MiniGame/ZombotanyLeft.png",
+                    "IMAGES/Menus/MiniGame/Zombotany.png",
+                    "IMAGES/Menus/MiniGame/ZombotanyRight.png"
                 );
 
             default:
@@ -1399,6 +1582,26 @@ public class GamePlayScreen implements Screen {
         );
     }
 
+    private void updateZombieMousePreview() {
+        if (mouseZombiePreview == null) {
+            return;
+        }
+
+        mouseStagePosition.set(
+            Gdx.input.getX(),
+            Gdx.input.getY()
+        );
+
+        stage.screenToStageCoordinates(
+            mouseStagePosition
+        );
+
+        mouseZombiePreview.setPosition(
+            mouseStagePosition.x,
+            mouseStagePosition.y
+        );
+    }
+
     private void setupPlantingClick() {
         stage.addListener(new ClickListener() {
             @Override
@@ -1406,6 +1609,16 @@ public class GamePlayScreen implements Screen {
 
                 if (plantFoodFeedMode) {
                     feedPlantAtStage(event.getStageX(), event.getStageY());
+                    return;
+                }
+
+                if (selectedZombieTypeForPlacement != null
+                    && isIZombieLevel()) {
+
+                    placeSelectedZombieAtStage(
+                        event.getStageX(),
+                        event.getStageY()
+                    );
                     return;
                 }
 
@@ -1436,6 +1649,89 @@ public class GamePlayScreen implements Screen {
                 plantSelectedPlant(column, row);
             }
         });
+    }
+
+    private void placeSelectedZombieAtStage(
+        float stageX,
+        float stageY
+    ) {
+        if (selectedZombieTypeForPlacement == null) {
+            return;
+        }
+
+        if (stageX < getGridX()
+            || stageX >= getGridX() + getGridWidth()
+            || stageY < getGridY()
+            || stageY >= getGridY() + getGridHeight()) {
+            return;
+        }
+
+        int column = (int) (
+            (stageX - getGridX()) / getCellWidth()
+        );
+
+        int row = (int) (
+            (getGridY() + getGridHeight() - stageY)
+                / getCellHeight()
+        );
+
+        if (!(gameContext.getLevelManager()
+            instanceof IZombieManager manager)) {
+            return;
+        }
+
+        if (!manager.isValidPlacement(row, column, gameContext)) {
+            Toast.showError(
+                stage,
+                PvzSkin.get(),
+                "Place zombies to the right of the red line."
+            );
+            return;
+        }
+
+        if (manager.isBrainEaten(row)) {
+            Toast.showError(
+                stage,
+                PvzSkin.get(),
+                "The brain in this row is already eaten."
+            );
+            return;
+        }
+
+        int cost = manager.getZombieCost(
+            selectedZombieTypeForPlacement
+        );
+
+        if (gameContext.getSunAmount() < cost) {
+            Toast.showError(
+                stage,
+                PvzSkin.get(),
+                "Not enough sun!"
+            );
+            return;
+        }
+
+        Izambi izambi = Izambi.getActiveInstance();
+
+        if (izambi == null) {
+            Toast.showError(
+                stage,
+                PvzSkin.get(),
+                "I-Zombie is not active."
+            );
+            return;
+        }
+
+        boolean placed = izambi.placeZombie(
+            selectedZombieTypeForPlacement,
+            row,
+            column
+        );
+
+        if (placed) {
+            clearZombieSelection();
+            updateHud();
+        }
     }
 
     private void togglePlantFoodFeedMode() {
@@ -1598,8 +1894,22 @@ public class GamePlayScreen implements Screen {
         }
     }
 
+    private void clearZombieSelection() {
+        selectedZombieTypeForPlacement = null;
+
+        if (mouseZombiePreview != null) {
+            mouseZombiePreview.remove();
+            mouseZombiePreview = null;
+        }
+
+        for (ZombieCardActor card : zombieBankCards) {
+            card.setFocused(false);
+        }
+    }
+
     private void updatePlantingHover() {
-        if (selectedPlantForPlacement == null) {
+        if (selectedPlantForPlacement == null
+            && selectedZombieTypeForPlacement == null) {
             hoveredPlantRow = -1;
             hoveredPlantColumn = -1;
             return;
@@ -1641,11 +1951,11 @@ public class GamePlayScreen implements Screen {
             return;
         }
 
-        float x =
+        float cellX =
             getGridX()
                 + hoveredPlantColumn * getCellWidth();
 
-        float y =
+        float rowY =
             getGridY()
                 + getGridHeight()
                 - (hoveredPlantRow + 1) * getCellHeight();
@@ -1664,19 +1974,65 @@ public class GamePlayScreen implements Screen {
             ShapeRenderer.ShapeType.Filled
         );
 
-        shapeRenderer.setColor(
-            1f,
-            1f,
-            1f,
-            0.20f
-        );
+        /*
+         * I-Zombie:
+         * کل ردیف زیر موس را Highlight کن.
+         */
+        if (selectedZombieTypeForPlacement != null
+            && gameContext.getLevelManager()
+            instanceof IZombieManager manager) {
 
-        shapeRenderer.rect(
-            x,
-            y,
-            getCellWidth(),
-            getCellHeight()
-        );
+            boolean validPlacement =
+                manager.isValidPlacement(
+                    hoveredPlantRow,
+                    hoveredPlantColumn,
+                    gameContext
+                )
+                    && !manager.isBrainEaten(hoveredPlantRow);
+
+            if (validPlacement) {
+                shapeRenderer.setColor(
+                    1f,
+                    1f,
+                    1f,
+                    0.20f
+                );
+            } else {
+                shapeRenderer.setColor(
+                    1f,
+                    0.15f,
+                    0.15f,
+                    0.28f
+                );
+            }
+
+            shapeRenderer.rect(
+                getGridX(),
+                rowY,
+                getGridWidth(),
+                getCellHeight()
+            );
+        }
+
+        /*
+         * Plant:
+         * رفتار قبلی؛ فقط خانه زیر موس روشن شود.
+         */
+        else {
+            shapeRenderer.setColor(
+                1f,
+                1f,
+                1f,
+                0.20f
+            );
+
+            shapeRenderer.rect(
+                cellX,
+                rowY,
+                getCellWidth(),
+                getCellHeight()
+            );
+        }
 
         shapeRenderer.end();
 
@@ -1686,6 +2042,13 @@ public class GamePlayScreen implements Screen {
     private boolean isConveyorLevel() {
         return gameContext.getLevelManager()
             instanceof ConveyorBeltManager;
+    }
+
+    private boolean isIZombieLevel() {
+        return gameContext.getLevel().getLevelType()
+            == LevelType.Izambie_MG
+            && gameContext.getLevelManager()
+            instanceof IZombieManager;
     }
 
     private List<Plant> getAvailableSeedBankPlants() {
@@ -1776,11 +2139,45 @@ public class GamePlayScreen implements Screen {
 
         updateHud();
         updatePlantMousePreview();
+        updateZombieMousePreview();
         updatePlantingHover();
         updateConveyorSeedBank();
 
         for (PlantCardActor card : seedBankCards) {
+
             card.updateAnimation(delta);
+
+            double cooldown =
+                gameContext
+                    .getRemainingCooldownSeconds(
+                        card.getPlant().getName()
+                    );
+
+            card.setCooldownRemaining(
+                cooldown
+            );
+        }
+
+        for (ZombieCardActor card : zombieBankCards) {
+
+            card.updateAnimation(delta);
+
+            double cooldown = 0;
+
+            if (gameContext.getLevelManager()
+                instanceof IZombieManager manager) {
+
+                cooldown =
+                    manager
+                        .getRemainingZombieCooldownSeconds(
+                            card.getZombieType(),
+                            gameContext
+                        );
+            }
+
+            card.setCooldownRemaining(
+                cooldown
+            );
         }
 
         if (gameContext.isGameEnded() && !endDialogueShown) {
@@ -1905,6 +2302,10 @@ public class GamePlayScreen implements Screen {
         winLoseOverlay.dispose();
         if (conveyorBeltLayer != null) {
             conveyorBeltLayer.dispose();
+        }
+
+        if (brainLayer != null) {
+            brainLayer.dispose();
         }
     }
 }

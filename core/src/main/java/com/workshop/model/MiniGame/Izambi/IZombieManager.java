@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
 
 public class IZombieManager implements LevelManager {
     public static final int RED_LINE_COLUMN = 6;
@@ -23,28 +24,34 @@ public class IZombieManager implements LevelManager {
 
     private static final int MIN_PRODUCTION_INTERVAL_TICKS = 50;
 
+    private final Map<String, Long> zombieCooldowns =
+        new HashMap<>();
+
+    private static final double ZOMBIE_COOLDOWN_SECONDS = 5.0;
+
+
 
     private static final List<Map<String, Integer>> LEVEL_ZOMBIES = List.of(
         zombiePool(
-            "Default", 50,
-            "cone head", 75,
-            "bucket head", 125,
-            "Imp", 50,
-            "Ra", 75
+            "Default", 5,
+            "cone head", 10,
+            "bucket head", 15,
+            "Imp", 5,
+            "Ra", 8
         ),
         zombiePool(
-            "Default", 50,
-            "cone head", 75,
-            "Explorer", 100,
-            "Tomb raiser", 125,
-            "Dodo", 150
+            "Default", 5,
+            "cone head", 8,
+            "Explorer", 12,
+            "Tomb raiser", 15,
+            "Dodo", 17
         ),
         zombiePool(
-            "bucket head", 125,
-            "Imp", 50,
-            "Explorer", 100,
-            "Hunter", 150,
-            "Juggler", 125
+            "bucket head", 15,
+            "Imp", 5,
+            "Explorer", 12,
+            "Hunter", 17,
+            "Juggler", 12
         )
     );
 
@@ -124,6 +131,59 @@ public class IZombieManager implements LevelManager {
         return Math.max(
             MIN_PRODUCTION_INTERVAL_TICKS,
             FIRST_PRODUCTION_DELAY_TICKS - speedUp
+        );
+    }
+
+    public double getRemainingZombieCooldownSeconds(
+        String zombieName,
+        GameContext context
+    ) {
+        if (zombieName == null || context == null) {
+            return 0;
+        }
+
+        long availableAt =
+            zombieCooldowns.getOrDefault(
+                zombieName,
+                0L
+            );
+
+        long remainingTicks =
+            availableAt
+                - context.getTimeManager().getTotalTicks();
+
+        if (remainingTicks <= 0) {
+            return 0;
+        }
+
+        return remainingTicks / 10.0;
+    }
+
+    public boolean isZombieOnCooldown(
+        String zombieName,
+        GameContext context
+    ) {
+        return getRemainingZombieCooldownSeconds(
+            zombieName,
+            context
+        ) > 0;
+    }
+
+    public void startZombieCooldown(
+        String zombieName,
+        GameContext context
+    ) {
+        if (zombieName == null || context == null) {
+            return;
+        }
+
+        long cooldownTicks =
+            (long) (ZOMBIE_COOLDOWN_SECONDS * 10);
+
+        zombieCooldowns.put(
+            zombieName,
+            context.getTimeManager().getTotalTicks()
+                + cooldownTicks
         );
     }
 

@@ -38,6 +38,11 @@ public class PlantCardActor extends Table {
     private boolean isBoosted = false;
     private float animTime = 0f;
 
+    private double cooldownRemainingSeconds = 0;
+    private Label cooldownLabel;
+    private Table cooldownOverlay;
+    private static NinePatchDrawable cooldownBackground;
+
     private OnClick onClick;
 
     private static NinePatchDrawable cardBackground;
@@ -108,6 +113,17 @@ public class PlantCardActor extends Table {
         return cardBackgroundFocused;
     }
 
+    private static NinePatchDrawable getCooldownBackground() {
+        if (cooldownBackground == null) {
+            cooldownBackground = buildRoundedBackground(
+                new Color(0f, 0f, 0f, 0.30f),
+                new Color(0f, 0f, 0f, 0f)
+            );
+        }
+
+        return cooldownBackground;
+    }
+
     public void rebuildUI() {
         clearChildren();
         clearListeners();
@@ -129,10 +145,18 @@ public class PlantCardActor extends Table {
                     // تا مثل seed bank با آفست +100 از کادر بیرون نرود.
                     drawn = drawPlantPam(batch, centerX, centerY, 0.28f);
                 } else {
-                    float drawX = centerX + (mode == Mode.SLOT ? 0f : 15f) + 100;
-                    float drawY = centerY + (mode == Mode.SLOT ? -10f : -20f);
-                    drawn = drawPlantPam(batch, drawX, drawY, 1f);
-                }
+                float drawX = centerX + (mode == Mode.SLOT ? -110f : 15f) + 100;
+                float drawY = centerY + (mode == Mode.SLOT ? -5f : -20f);
+
+                float plantScale = mode == Mode.SLOT ? 0.45f : 1f;
+
+                drawn = drawPlantPam(
+                    batch,
+                    drawX,
+                    drawY,
+                    plantScale
+                );
+            }
 
                 if (!drawn) {
                     try {
@@ -148,6 +172,11 @@ public class PlantCardActor extends Table {
 
         NinePatchDrawable background = isFocused ? getCardBackgroundFocused() : getCardBackground();
         setBackground(background);
+
+        cooldownLabel = createSafeLabel("", "big");
+        cooldownLabel.setFontScale(0.45f);
+        cooldownLabel.setAlignment(Align.center);
+        cooldownLabel.setColor(Color.WHITE);
 
         if (mode == Mode.CONVEYOR) {
             add(pamContainer).grow();
@@ -171,11 +200,57 @@ public class PlantCardActor extends Table {
             Table slotRow = new Table();
             slotRow.align(Align.center);
 
-            slotRow.add(pamContainer).size(62f, 58f).center();
-            slotRow.add().expandX();
-            slotRow.add(buildSunCostGroup()).right();
+            slotRow.add(pamContainer)
+                .size(62f, 58f)
+                .center();
 
-            add(slotRow).size(250f, 58f).center();
+            slotRow.add().expandX();
+
+            slotRow.add(buildSunCostGroup())
+                .padLeft(-10f)
+                .right();
+
+            Stack cardStack = new Stack();
+
+            cardStack.add(slotRow);
+
+            cooldownOverlay = new Table();
+            cooldownOverlay.setBackground(
+                getCooldownBackground()
+            );
+            cooldownOverlay.setTouchable(
+                Touchable.disabled
+            );
+
+            cooldownLabel =
+                createSafeLabel("", "big");
+
+            cooldownLabel.setAlignment(
+                Align.center
+            );
+
+            cooldownLabel.setFontScale(0.62f);
+
+            cooldownLabel.setColor(
+                Color.WHITE
+            );
+
+            cooldownOverlay.add(
+                cooldownLabel
+            ).center();
+
+            cooldownOverlay.setVisible(false);
+
+            Container<Table> overlayContainer =
+                new Container<>(cooldownOverlay);
+
+            overlayContainer.pad(3f);
+            overlayContainer.fill();
+
+            cardStack.add(overlayContainer);
+
+            add(cardStack)
+                .grow();
         }
 
         if (isBoosted) {
@@ -247,12 +322,57 @@ public class PlantCardActor extends Table {
         }
 
         Label sunLbl = createSafeLabel(String.valueOf(plant.getSunCost()), "big");
-        sunLbl.setFontScale(mode == Mode.SLOT ? 0.5f : 0.4f);
+        sunLbl.setFontScale(mode == Mode.SLOT ? 0.3f : 0.4f);
         sunLbl.setColor(1f, 0.92f, 0.55f, 1f);
 
         group.add(sunLbl);
 
         return group;
+    }
+
+    private void updateCooldownLabel() {
+        if (cooldownLabel == null) {
+            return;
+        }
+
+        if (cooldownRemainingSeconds <= 0) {
+            cooldownLabel.setText("");
+            return;
+        }
+
+        int seconds =
+            (int) Math.ceil(cooldownRemainingSeconds);
+
+        cooldownLabel.setText(seconds + "s");
+    }
+
+    public void setCooldownRemaining(
+        double seconds
+    ) {
+        cooldownRemainingSeconds =
+            Math.max(0, seconds);
+
+        if (cooldownOverlay == null
+            || cooldownLabel == null) {
+            return;
+        }
+
+        if (cooldownRemainingSeconds <= 0) {
+            cooldownOverlay.setVisible(false);
+            cooldownLabel.setText("");
+            return;
+        }
+
+        cooldownOverlay.setVisible(true);
+
+        int remaining =
+            (int) Math.ceil(
+                cooldownRemainingSeconds
+            );
+
+        cooldownLabel.setText(
+            remaining + "s"
+        );
     }
 
     public Plant getPlant() { return plant; }

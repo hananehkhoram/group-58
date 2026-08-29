@@ -41,12 +41,29 @@ public class TravelMenuScreen implements Screen {
                 int levelId,
                 String levelName
             ) {
+                switch (miniGameId) {
+                    case 1:
+                        game.showVaseBreaker(levelId);
+                        break;
 
-                if (miniGameId == 1) {
-                    game.showVaseBreaker(levelId);
-                }
-                else if (miniGameId == 2) {
-                    game.showWallnutBowling(levelId);
+                    case 2:
+                        game.showWallnutBowling(levelId);
+                        break;
+
+                    case 3:
+                        game.showIZombie(levelId);
+                        break;
+
+                    case 4:
+                        game.showBeghouled(levelId);
+                        break;
+
+                    case 5:
+                        game.showZombotany(levelId);
+                        break;
+
+                    default:
+                        break;
                 }
             }
         };
