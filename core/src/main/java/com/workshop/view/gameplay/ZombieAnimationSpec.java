@@ -10,6 +10,8 @@ public final class ZombieAnimationSpec {
 
     private final Map<ZombieAnimationState, String> clips =
         new EnumMap<>(ZombieAnimationState.class);
+    private final Map<ZombieAnimationState, String> armlessClips =
+        new EnumMap<>(ZombieAnimationState.class);
 
     public ZombieAnimationSpec(String pamPath, String idleClip) {
         this.pamPath = pamPath;
@@ -37,6 +39,28 @@ public final class ZombieAnimationSpec {
         return clips.get(state);
     }
 
+    public String getClip(ZombieAnimationState state, boolean lostArm) {
+        if (lostArm) {
+            String armless = armlessClips.get(state);
+            if (armless != null) {
+                return armless;
+            }
+        }
+        return clips.get(state);
+    }
+
+    public void setArmlessClip(ZombieAnimationState state, String clip) {
+        if (clip == null) {
+            armlessClips.remove(state);
+        } else {
+            armlessClips.put(state, clip);
+        }
+    }
+
+    public boolean hasArmlessClip(ZombieAnimationState state) {
+        return armlessClips.containsKey(state);
+    }
+
     public void setClip(
         ZombieAnimationState state,
         String clip
@@ -49,6 +73,13 @@ public final class ZombieAnimationSpec {
     }
 
     public boolean hasClip(ZombieAnimationState state) {
+        return clips.containsKey(state);
+    }
+
+    public boolean hasClip(ZombieAnimationState state, boolean lostArm) {
+        if (lostArm && armlessClips.containsKey(state)) {
+            return true;
+        }
         return clips.containsKey(state);
     }
 

@@ -36,19 +36,18 @@ public class TravelMenuScreen implements Screen {
 
         listener = new LevelNodeActor.Listener() {
             @Override
-            public void onEnterMiniGame(int miniGameId, int levelId, String levelName) {
+            public void onEnterMiniGame(
+                int miniGameId,
+                int levelId,
+                String levelName
+            ) {
 
-                if(miniGameId == 1){
-
-                    game.showVaseBreaker();
-
+                if (miniGameId == 1) {
+                    game.showVaseBreaker(levelId);
                 }
-                else if(miniGameId == 2){
-
-                    game.showWallnutBowling();
-
+                else if (miniGameId == 2) {
+                    game.showWallnutBowling(levelId);
                 }
-
             }
         };
 

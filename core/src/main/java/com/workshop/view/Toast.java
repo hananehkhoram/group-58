@@ -1,6 +1,7 @@
 package com.workshop.view;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -107,7 +108,7 @@ public final class Toast {//اعلان موقت
         return toast;
     }
     public static void showAnnouncement(Stage stage, Skin skin, String message) {
-        if (message == null || message.isBlank()) return;
+        if (message == null || message.isBlank() || stage == null) return;
 
         Label label = new Label(message.trim(), skin, "big");
         label.setColor(Color.valueOf("D6231C"));
@@ -116,6 +117,7 @@ public final class Toast {//اعلان موقت
         label.setAlignment(Align.center);
 
         Table holder = new Table();
+        holder.setName("wave-announcement");
         holder.add(label).width(MISSION_MAX_WIDTH - 40);
         holder.pack();
         holder.getColor().a = 0f;
@@ -126,7 +128,17 @@ public final class Toast {//اعلان موقت
             stage.getHeight() * 0.55f
         );
 
+        int alreadyShowing = 0;
+        for (Actor actor : stage.getActors()) {
+            if (actor != holder && "wave-announcement".equals(actor.getName())) {
+                alreadyShowing++;
+            }
+        }
+
+        float startDelay = alreadyShowing * (FADE_DURATION + VISIBLE_DURATION + FADE_DURATION);
+
         holder.addAction(Actions.sequence(
+            Actions.delay(startDelay),
             Actions.fadeIn(FADE_DURATION),
             Actions.delay(VISIBLE_DURATION),
             Actions.fadeOut(FADE_DURATION),

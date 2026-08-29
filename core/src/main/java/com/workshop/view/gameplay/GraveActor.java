@@ -18,13 +18,11 @@ public final class GraveActor extends Actor {
     private static final float TARGET_HEIGHT_TO_CELL_RATIO = 0.95f;
 
     private Float resolvedScale;
-
-    private float stateTime;
+    private String lastClip;
 
     public GraveActor(Grave grave, PamPlayer pamPlayer, float cellHeight) {
         this.grave = grave;
-        this.hitFlash =
-            new HitFlashEffect(grave::getHp);
+        this.hitFlash = new HitFlashEffect(grave::getHp, 0.7f);
         this.pamPlayer = pamPlayer;
         this.cellHeight = cellHeight;
     }
@@ -33,7 +31,6 @@ public final class GraveActor extends Actor {
     public void act(float delta) {
         super.act(delta);
         hitFlash.update(delta);
-        stateTime += delta;
     }
 
     private float getScale(String pamPath, String clip) {
@@ -61,9 +58,17 @@ public final class GraveActor extends Actor {
         if (pamPath == null || clip == null) {
             return;
         }
-        float flash = hitFlash.getIntensity();
-        batch.setColor(1f + flash, 1f + flash, 1f + flash, parentAlpha);
 
+        if (!clip.equals(lastClip)) {
+            lastClip = clip;
+            resolvedScale = null;
+        }
+
+        hitFlash.drawWithFlash(batch, parentAlpha, () -> drawGrave(batch, pamPath, clip));
+        batch.setColor(1f, 1f, 1f, parentAlpha);
+    }
+
+    private void drawGrave(Batch batch, String pamPath, String clip) {
         float scale = getScale(pamPath, clip);
 
         Matrix4 oldTransform = batch.getTransformMatrix().cpy();
@@ -74,14 +79,15 @@ public final class GraveActor extends Actor {
         batch.setTransformMatrix(transform);
 
         try {
+            // مرحله‌های آسیب قبر ژست ثابت‌اند؛ لوپ باعث چشمک سریع می‌شود.
             pamPlayer.draw(
                 batch,
                 pamPath,
                 clip,
-                stateTime,
+                0f,
                 getX(),
                 getY(),
-                true
+                false
             );
         } catch (Throwable ignored) {
         }

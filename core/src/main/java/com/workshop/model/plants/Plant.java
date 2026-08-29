@@ -39,6 +39,7 @@ public class Plant implements Damageable {
     private int hp;
     private int row, col;
     private boolean plantFoodActive = false;
+    private float plantFoodGlowRemaining;
 
     private int freezeLevel = 0;
     private double iceHp = 0;
@@ -82,9 +83,24 @@ public class Plant implements Damageable {
     public void activatePlantFood(GameContext ctx) {
         if (isOctopused || isIced || isCatified) return;
 
+        startPlantFoodGlow();
         if (baseAbility != null) {
             baseAbility.activatePlantFood(this, ctx, plantFoodMode);
         }
+    }
+
+    public void startPlantFoodGlow() {
+        plantFoodGlowRemaining = 2.8f;
+    }
+
+    public void tickPlantFoodGlow(float delta) {
+        if (plantFoodGlowRemaining > 0f) {
+            plantFoodGlowRemaining = Math.max(0f, plantFoodGlowRemaining - delta);
+        }
+    }
+
+    public boolean isShowingPlantFoodGlow() {
+        return plantFoodGlowRemaining > 0f;
     }
 
     // --- Damageable ---

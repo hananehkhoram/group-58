@@ -333,11 +333,15 @@ public class PvzGame extends Game {
     }
 
     public void showVaseBreaker() {
+        showVaseBreaker(1);
+    }
+
+    public void showVaseBreaker(int levelNumber) {
         Vasecheccker vaseGame = new Vasecheccker();
 
         vaseGame.startMiniGame(
             menuManager,
-            1
+            levelNumber
         );
 
         GameContext ctx = vaseGame.getCtx();
@@ -350,19 +354,23 @@ public class PvzGame extends Game {
         setScreen(
             new GamePlayScreen(
                 ctx,
-                this::showVaseBreaker,
+                () -> showVaseBreaker(levelNumber),
                 this::showTravelMenu
             )
         );
     }
 
     public void showWallnutBowling() {
+        showWallnutBowling(1);
+    }
+
+    public void showWallnutBowling(int levelNumber) {
         WallnutBowlingGame bowlingGame =
             new WallnutBowlingGame();
 
         bowlingGame.start(
             menuManager,
-            1
+            levelNumber
         );
 
         GameContext ctx = bowlingGame.getCtx();
@@ -375,7 +383,7 @@ public class PvzGame extends Game {
         setScreen(
             new GamePlayScreen(
                 ctx,
-                this::showWallnutBowling,
+                () -> showWallnutBowling(levelNumber),
                 this::showTravelMenu
             )
         );

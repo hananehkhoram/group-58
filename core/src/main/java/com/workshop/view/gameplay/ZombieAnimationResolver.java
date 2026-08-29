@@ -146,6 +146,11 @@ public final class ZombieAnimationResolver {
             spec.setClip(ZombieAnimationState.DIE, dieClip);
         }
 
+        setArmlessClip(spec, ZombieAnimationState.IDLE, clips, "idle2", "idle_2");
+        setArmlessClip(spec, ZombieAnimationState.WALK, clips, "walk2", "walk_2");
+        setArmlessClip(spec, ZombieAnimationState.EAT, clips, "eat2", "eat_2");
+        setArmlessClip(spec, ZombieAnimationState.DIE, clips, "die2", "die_2", "death2");
+
         String ashClip = findClipEndingWith(clips, "ash");
         if (ashClip != null) {
             spec.setClip(ZombieAnimationState.ASH, ashClip);
@@ -456,6 +461,36 @@ public final class ZombieAnimationResolver {
             }
         }
 
+        return null;
+    }
+
+    private void setArmlessClip(
+        ZombieAnimationSpec spec,
+        ZombieAnimationState state,
+        List<String> clips,
+        String... names
+    ) {
+        for (String name : names) {
+            String found = findExactClip(clips, name);
+            if (found == null) {
+                found = findClipEndingWith(clips, name);
+            }
+            if (found != null) {
+                spec.setArmlessClip(state, found);
+                return;
+            }
+        }
+    }
+
+    private String findExactClip(List<String> clips, String expectedName) {
+        if (clips == null) {
+            return null;
+        }
+        for (String clip : clips) {
+            if (expectedName.equalsIgnoreCase(clip)) {
+                return clip;
+            }
+        }
         return null;
     }
 

@@ -90,7 +90,6 @@ public class Wave {
 
         if (isAncientEgyptFlagWave(ctx)) {
             ctx.announce("A sandstorm is approaching!");
-            ctx.announceSandstorm();
         }
 
         Map<String, Zombie> pool = getAvailableZombiePool(ctx);
@@ -188,8 +187,7 @@ public class Wave {
 
         if (isAncientEgyptFlagWave(ctx)) {
             int colOffset = random.nextInt(4) + 1;
-            col -= colOffset;
-            zombie.setEnteredViaSandstorm(true);
+            zombie.startSandstormEntry(col - colOffset, random.nextFloat() * 1.4f);
         }
 
         zombie.setX(col);
