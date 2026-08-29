@@ -47,6 +47,8 @@ public class Shooters implements BaseAbility {
         if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET
                 || shootType == ShootType.RANDOM_INSTANT) {
             hasShot = shootHoming(damage, bulletType, shootType, self, ctx, engine);
+        } else if (shootType == ShootType.TRI_LANE) {
+            hasShot = shootTriLane(damage, bulletType, self, ctx);
         } else {
             hasShot = shootDirectional(damage, amount, shootType, bulletType, self, ctx);
         }
@@ -58,6 +60,36 @@ public class Shooters implements BaseAbility {
                 self.setLastActionSecond(currentSecond);
             }
         }
+    }
+
+    private boolean shootTriLane(int damage, BulletType bulletType, Plant self, GameContext ctx) {
+        int originRow = self.getRow();
+        int totalRows = ctx.getPlantGrid().length;
+        double startX = self.getX();
+        double[] headOffsets = {-0.32, 0.0, 0.32};
+        int[] laneDeltas = {-1, 0, 1};
+
+        boolean firedAny = false;
+        for (int i = 0; i < 3; i++) {
+            int targetRow = Math.max(0, Math.min(totalRows - 1, originRow + laneDeltas[i]));
+            double startY = originRow + headOffsets[i];
+            Projectile projectile = new Projectile(
+                damage,
+                startX,
+                startY,
+                targetRow,
+                DEFAULT_PROJECTILE_SPEED,
+                bulletType,
+                TrajectoryType.STRAIGHT,
+                false,
+                1.0,
+                0.0,
+                self
+            );
+            ctx.setNewProjectiles(projectile);
+            firedAny = true;
+        }
+        return firedAny;
     }
 
     private boolean shootDirectional(int damage, int amount, ShootType shootType,
@@ -188,6 +220,8 @@ public class Shooters implements BaseAbility {
                 for (int i = 0; i < burstShots; i++) {
                     if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET) {
                         shootHoming(empoweredDamage, bulletType, shootType, self, ctx, engine);
+                    } else if (shootType == ShootType.TRI_LANE) {
+                        shootTriLane(empoweredDamage, bulletType, self, ctx);
                     } else {
                         shootDirectional(empoweredDamage, amount, shootType, bulletType, self, ctx);
                     }

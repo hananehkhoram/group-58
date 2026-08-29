@@ -348,7 +348,7 @@ public class GameEngine {
                 continue;
             }
 
-            if (p.getHp() <= 0) {
+            if (p.isDead()) {
 
                 ctx.getPlantGrid()
                     [p.getRow()]

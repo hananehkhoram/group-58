@@ -36,6 +36,8 @@ public class Zombie implements Damageable {
 
     private boolean isIced = false;
     private double iceHp = 0;
+    private static final double BUTTER_STUN_SECONDS = 4.0;
+    private double butterRemaining;
     private boolean initialFrozenBlock = false;
     private static final double SANDSTORM_DASH_SPEED = 3.6;
     private static final float SANDSTORM_LAND_SECONDS = 0.75f;
@@ -137,6 +139,19 @@ public class Zombie implements Damageable {
             if (!ashed && random.nextInt(100) < 5) {
                 ctx.addLoot(new LootItem(LootItem.LootType.SEED, (int) getX(), getRow()));}
             return;
+        }
+
+        if (butterRemaining > 0) {
+            butterRemaining -= deltaTime;
+            if (butterRemaining <= 0) {
+                butterRemaining = 0;
+                if (effects != null) {
+                    effects.remove(Effects.BUTTERED);
+                }
+            } else {
+                setEating(false);
+                return;
+            }
         }
 
         if (initialFrozenBlock || isIced) {
@@ -478,6 +493,17 @@ public class Zombie implements Damageable {
     public double getX() { return x; }
     public double getY() { return y; }
     public boolean isIced() { return isIced; }
+
+    public void applyButter() {
+        butterRemaining = BUTTER_STUN_SECONDS;
+        if (effects != null && !effects.contains(Effects.BUTTERED)) {
+            effects.add(Effects.BUTTERED);
+        }
+    }
+
+    public boolean isButtered() {
+        return butterRemaining > 0;
+    }
     public boolean isInitialFrozenBlock() {
         return initialFrozenBlock;
     }

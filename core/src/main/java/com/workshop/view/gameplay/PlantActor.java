@@ -26,6 +26,8 @@ public final class PlantActor extends Actor {
     // نسبتِ ارتفاعِ اسپرایتِ خامِ PAM به ارتفاعِ خونه‌ی گرید رو تعیین
     // می‌کنه. اگه هنوز بزرگ/کوچیک بود، همینو دستی تیون کن.
     private static final float TARGET_HEIGHT_TO_CELL_RATIO = 1.1f;
+    private static final float GRAVE_BUSTER_HEIGHT_TO_CELL_RATIO = 1.55f;
+    private static final float MINT_HEIGHT_TO_CELL_RATIO = 2.0f;
 
     private Float resolvedScale;
 
@@ -70,6 +72,7 @@ public final class PlantActor extends Actor {
     private float stateTime;
     private float frostStateTime;
     private final float attackDuration;
+    private Float graveBusterAttackDuration;
 
     public PlantActor(
         Plant plant,
@@ -87,17 +90,14 @@ public final class PlantActor extends Actor {
         this.pamPlayer = pamPlayer;
         this.cellHeight = cellHeight;
 
-        String attackClip =
-            animationSpec.getClip(PlantAnimationState.ATTACK);
-
-        if (attackClip == null) {
+        if (animationSpec.getClip(PlantAnimationState.ATTACK) == null) {
             attackDuration = 0f;
         } else {
-            attackDuration =
-                pamPlayer.clipDurationSeconds(
-                    animationSpec.getPamPath(),
-                    attackClip
-                );
+            attackDuration = FALLBACK_ATTACK_DURATION;
+        }
+
+        if (plant.isGraveDestroyer()) {
+            currentState = PlantAnimationState.ATTACK;
         }
     }
 
@@ -106,25 +106,57 @@ public final class PlantActor extends Actor {
             return resolvedScale;
         }
 
-        String idleClip = animationSpec.getIdleClip();
-
-        if (idleClip == null) {
+        animationSpec.ensureClipsBound(pamPlayer);
+        String clip = scaleClip();
+        if (clip == null) {
             return 1f;
         }
 
-        Rectangle bounds = pamPlayer.bounds(
-            animationSpec.getPamPath(),
-            idleClip
-        );
-
+        Rectangle bounds;
+        try {
+            bounds = pamPlayer.bounds(
+                animationSpec.getPamPath(),
+                clip
+            );
+        } catch (RuntimeException exception) {
+            return 1f;
+        }
         if (bounds == null || bounds.height <= 0f) {
             return 1f;
         }
 
-        resolvedScale =
-            (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO) / bounds.height;
+        if (plant.isGraveDestroyer()) {
+            float target = cellHeight * GRAVE_BUSTER_HEIGHT_TO_CELL_RATIO;
+            float scaleY = target / bounds.height;
+            float scaleX = bounds.width > 0f ? target / bounds.width : scaleY;
+            resolvedScale = Math.max(scaleX, scaleY);
+            return resolvedScale;
+        }
 
+        float ratio = isEmpowerMint()
+            ? MINT_HEIGHT_TO_CELL_RATIO
+            : TARGET_HEIGHT_TO_CELL_RATIO;
+        resolvedScale = (cellHeight * ratio) / bounds.height;
         return resolvedScale;
+    }
+
+    private String scaleClip() {
+        if (plant.isGraveDestroyer()) {
+            String attack = animationSpec.getClip(PlantAnimationState.ATTACK);
+            if (attack != null) {
+                return attack;
+            }
+        }
+        return animationSpec.getIdleClip();
+    }
+
+    private boolean isEmpowerMint() {
+        String name = plant.getName();
+        if (name == null) {
+            return false;
+        }
+        String compact = name.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+        return compact.endsWith("mint");
     }
 
     private void drawScaled(
@@ -165,7 +197,13 @@ public final class PlantActor extends Actor {
         if (!iced) {
             stateTime += delta;
 
-            if (currentState == PlantAnimationState.ATTACK) {
+            if (plant.isGraveDestroyer()) {
+                animationSpec.ensureClipsBound(pamPlayer);
+                play(PlantAnimationState.ATTACK);
+                if (stateTime >= graveBusterAttackDuration()) {
+                    plant.markActionComplete();
+                }
+            } else if (currentState == PlantAnimationState.ATTACK) {
                 float duration = attackDuration;
 
                 if (duration <= 0f) {
@@ -192,7 +230,8 @@ public final class PlantActor extends Actor {
             }
         } else {
             plantFoodGlowTime = 0f;
-            if (currentState == PlantAnimationState.PLANTFOOD) {
+            if (currentState == PlantAnimationState.PLANTFOOD
+                && !plant.isGraveDestroyer()) {
                 playIdle();
             }
         }
@@ -208,6 +247,7 @@ public final class PlantActor extends Actor {
             drawPlantFoodGlow(batch, parentAlpha);
         }
 
+        animationSpec.ensureClipsBound(pamPlayer);
         String clip = animationSpec.getClip(currentState);
         if (clip == null) {
             clip = animationSpec.getIdleClip();
@@ -243,15 +283,8 @@ public final class PlantActor extends Actor {
             resolvedPlantFoodGlowClip = resolveClip(
                 "PlantActor(plantfood-glow)",
                 PLANTFOOD_GLOW_PAM,
-                "animation"
+                "plantfood_on"
             );
-            if (resolvedPlantFoodGlowClip == null) {
-                resolvedPlantFoodGlowClip = resolveClip(
-                    "PlantActor(plantfood-glow)",
-                    PLANTFOOD_GLOW_PAM,
-                    "idle"
-                );
-            }
             plantFoodGlowClipResolved = true;
         }
 
@@ -414,6 +447,35 @@ public final class PlantActor extends Actor {
         );
 
         return MIN_ICE_ALPHA + fraction * (1f - MIN_ICE_ALPHA);
+    }
+
+    private float graveBusterAttackDuration() {
+        if (graveBusterAttackDuration != null) {
+            return graveBusterAttackDuration;
+        }
+
+        animationSpec.ensureClipsBound(pamPlayer);
+        String clip = animationSpec.getClip(PlantAnimationState.ATTACK);
+        if (clip == null) {
+            clip = animationSpec.getIdleClip();
+        }
+
+        try {
+            if (clip != null) {
+                float duration = pamPlayer.clipDurationSeconds(
+                    animationSpec.getPamPath(),
+                    clip
+                );
+                if (duration > 0.05f) {
+                    graveBusterAttackDuration = duration;
+                    return duration;
+                }
+            }
+        } catch (RuntimeException ignored) {
+        }
+
+        graveBusterAttackDuration = 2f;
+        return graveBusterAttackDuration;
     }
 
     public boolean play(PlantAnimationState state) {

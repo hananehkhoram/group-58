@@ -1572,7 +1572,26 @@ public class GamePlayScreen implements Screen {
         if (after != null && after != before) {
             clearPlantSelection();
             updateHud();
+            return;
         }
+
+        boolean graveBuster = selectedPlantForPlacement.getAbilityParams() != null
+            && "GRAVE_DESTROY".equals(
+                selectedPlantForPlacement.getAbilityParams().get("explosiveType")
+            );
+        boolean onGrave = row >= 0
+            && row < gameContext.getGraveGrid().length
+            && column >= 0
+            && column < gameContext.getGraveGrid()[row].length
+            && gameContext.getGraveGrid()[row][column] != null;
+
+        Toast.showError(
+            stage,
+            PvzSkin.get(),
+            graveBuster && !onGrave
+                ? "Plant Grave Buster on a grave."
+                : "Can't plant there."
+        );
     }
 
     private void showPlantCooldownError(String plantName) {

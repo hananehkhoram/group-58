@@ -7,13 +7,13 @@ import com.workshop.model.plants.Tag;
 import com.workshop.model.projectile.BulletType;
 import com.workshop.model.projectile.Projectile;
 import com.workshop.model.projectile.ProjectileVisualVariant;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -60,22 +60,28 @@ public final class ProjectileAnimationResolver {
             return cached;
         }
 
-        Descriptor descriptor = Descriptor.from(projectile);
-        String pamPath = findUniquePamPath(projectile, descriptor, cacheKey);
-        if (pamPath == null) {
+        ProjectileAnimationSpec spec = specFromSprite(projectile);
+        if (spec == null) {
+            Descriptor descriptor = Descriptor.from(projectile);
+            String pamPath = findUniquePamPath(projectile, descriptor, cacheKey);
+            if (pamPath != null && !isOwnerPlantAnimation(pamPath, projectile.getOwnerPlant())) {
+                spec = new ProjectileAnimationSpec(
+                    pamPath,
+                    pickProjectileClip(pamPath),
+                    1f,
+                    0f,
+                    0f
+                );
+                Gdx.app.log(LOG_TAG, "Resolved " + cacheKey + " -> " + pamPath);
+            }
+        }
+
+        if (spec == null) {
+            logMissing(projectile, cacheKey);
             return null;
         }
 
-        ProjectileAnimationSpec spec = new ProjectileAnimationSpec(
-            pamPath,
-            null,
-            1f,
-            0f,
-            0f
-        );
-
         resolvedSpecs.put(cacheKey, spec);
-        Gdx.app.log(LOG_TAG, "Resolved " + cacheKey + " -> " + pamPath);
         return spec;
     }
 
@@ -86,21 +92,71 @@ public final class ProjectileAnimationResolver {
     ) {
         List<Match> matches = collectMatches(projectile, descriptor);
         if (matches.isEmpty()) {
-            logMissing(projectile, cacheKey);
             return null;
         }
 
         List<Match> strongest = removeQualityDominated(matches);
+        String preferred = preferOwnerProjectilePath(strongest, descriptor);
+        if (preferred != null) {
+            return preferred;
+        }
         if (strongest.size() == 1) {
             return strongest.get(0).candidate.getPath();
         }
 
         List<Match> minimal = removeDominatedByExtraTokens(strongest, descriptor);
+        preferred = preferOwnerProjectilePath(minimal, descriptor);
+        if (preferred != null) {
+            return preferred;
+        }
         if (minimal.size() == 1) {
             return minimal.get(0).candidate.getPath();
         }
 
         logAmbiguous(projectile, cacheKey, minimal);
+        return null;
+    }
+
+    private String preferOwnerProjectilePath(
+        List<Match> matches,
+        Descriptor descriptor
+    ) {
+        if (descriptor.ownerCompact.isEmpty() || matches == null || matches.isEmpty()) {
+            return null;
+        }
+
+        List<Match> ownerProjectiles = new ArrayList<>();
+        for (Match match : matches) {
+            String compactPath = match.candidate.getCompactPath();
+            if (compactPath.contains(descriptor.ownerCompact)
+                && ProjectilePamCatalog.isProjectileAssetPath(match.candidate.getPath())) {
+                ownerProjectiles.add(match);
+            }
+        }
+
+        if (ownerProjectiles.isEmpty()) {
+            return null;
+        }
+
+        List<Match> flight = new ArrayList<>();
+        for (Match match : ownerProjectiles) {
+            String upper = match.candidate.getPath().toUpperCase(Locale.ROOT);
+            if (upper.contains("SPLAT")
+                || upper.contains("EXPLODE")
+                || upper.contains("EXPLOSION")
+                || upper.contains("HIT")
+                || upper.contains("IMPACT")) {
+                continue;
+            }
+            flight.add(match);
+        }
+
+        List<Match> chosen = flight.size() == 1 ? flight
+            : flight.isEmpty() ? ownerProjectiles
+            : flight;
+        if (chosen.size() == 1) {
+            return chosen.get(0).candidate.getPath();
+        }
         return null;
     }
 
@@ -112,7 +168,8 @@ public final class ProjectileAnimationResolver {
         String plantBodyPath = resolvePlantBodyPamPath(projectile.getOwnerPlant());
 
         for (ProjectilePamCatalog.Candidate candidate : catalog.getCandidates()) {
-            if (isSamePath(candidate.getPath(), plantBodyPath)) {
+            if (isOwnerPlantAnimation(candidate.getPath(), projectile.getOwnerPlant())
+                || isSameNormalizedPath(candidate.getPath(), plantBodyPath)) {
                 continue;
             }
 
@@ -277,6 +334,91 @@ public final class ProjectileAnimationResolver {
         return path;
     }
 
+    private ProjectileAnimationSpec specFromSprite(Projectile projectile) {
+        String imageId = ProjectileLooks.imageId(projectile);
+        if (imageId == null) {
+            return null;
+        }
+        return new ProjectileAnimationSpec(
+            null,
+            null,
+            null,
+            imageId,
+            ProjectileLooks.spriteScale(projectile.getOwnerPlant()),
+            0f,
+            0f,
+            false
+        );
+    }
+
+    private boolean isOwnerPlantAnimation(String path, Plant plant) {
+        if (path == null || plant == null) {
+            return false;
+        }
+
+        String ownerCompact = ProjectilePamCatalog.compact(plant.getName());
+        String fileCompact = ProjectilePamCatalog.compact(fileNameWithoutExtension(path));
+        if (!ownerCompact.isEmpty() && ownerCompact.equals(fileCompact)) {
+            return true;
+        }
+
+        String bodyPath = plantBodyPamPaths.get(plant.getName());
+        if (isSameNormalizedPath(path, bodyPath)) {
+            return true;
+        }
+
+        String upper = path.replace('\\', '/').toUpperCase(Locale.ROOT);
+        return upper.contains("/PLANT/") && !isProjectileAssetPath(upper);
+    }
+
+    private static boolean isProjectileAssetPath(String upperPath) {
+        return upperPath.contains("PROJECTILE")
+            || upperPath.contains("/PEA/")
+            || upperPath.endsWith("/PEA.PAM")
+            || upperPath.contains("BULLET");
+    }
+
+    private String pickProjectileClip(String pamPath) {
+        try {
+            List<String> clips = Textures.getPamPlayer().clips(pamPath);
+            if (clips == null || clips.isEmpty()) {
+                return "idle";
+            }
+            for (String preferred : new String[]{"idle", "animation", "loop"}) {
+                for (String clip : clips) {
+                    if (clip != null && preferred.equalsIgnoreCase(clip.trim())) {
+                        return clip;
+                    }
+                }
+            }
+            return clips.get(0);
+        } catch (RuntimeException exception) {
+            return "idle";
+        }
+    }
+
+    private static String fileNameWithoutExtension(String path) {
+        String normalized = path.replace('\\', '/');
+        int slash = normalized.lastIndexOf('/');
+        String name = slash < 0 ? normalized : normalized.substring(slash + 1);
+        int dot = name.lastIndexOf('.');
+        return dot < 0 ? name : name.substring(0, dot);
+    }
+
+    private static boolean isSameNormalizedPath(String first, String second) {
+        return first != null
+            && second != null
+            && normalizePamPath(first).equals(normalizePamPath(second));
+    }
+
+    private static String normalizePamPath(String path) {
+        String normalized = path.replace('\\', '/');
+        if (normalized.regionMatches(true, 0, "IMAGES/", 0, 7)) {
+            normalized = normalized.substring(7);
+        }
+        return normalized.replaceAll("/+", "/").toUpperCase(Locale.ROOT);
+    }
+
     private String createCacheKey(Projectile projectile) {
         Plant owner = projectile.getOwnerPlant();
         String ownerName = owner == null ? "NO_OWNER" : owner.getName();
@@ -425,13 +567,16 @@ public final class ProjectileAnimationResolver {
             boolean transformed = configuredType != null
                 && configuredType != projectile.getBulletType();
 
-            Set<String> ownerTokens = transformed
-                ? Collections.emptySet()
-                : ProjectilePamCatalog.tokenize(plant.getName());
-
             String ownerCompact = transformed
                 ? ""
                 : ProjectilePamCatalog.compact(plant.getName());
+
+            Set<String> ownerTokens = transformed
+                ? Collections.emptySet()
+                : new HashSet<>(ProjectilePamCatalog.tokenize(plant.getName()));
+            if (!transformed && !ownerCompact.isEmpty()) {
+                ownerTokens.add(ownerCompact);
+            }
 
             Set<String> tagTokens = buildTagTokens(plant, projectile.getBulletType());
             Set<String> bulletTokens = buildBulletTokens(projectile.getBulletType());

@@ -46,7 +46,7 @@ public class Lobber implements BaseAbility {
                             ctx,
                             plant,
                             40,
-                            BulletType.OCTOPUS,
+                            BulletType.NORMAL,
                             ProjectileVisualVariant.BUTTER
                         );
                     } else {
@@ -145,7 +145,9 @@ public class Lobber implements BaseAbility {
         for (int i = 0; i < targetCount; i++) {
             Zombie z = alive.get(i);
             z.takeDamage(baseDamage * 3);
-            if ("KERNEL_OR_BUTTER".equals(lobType) || "AOE_ICE".equals(lobType)) {
+            if ("KERNEL_OR_BUTTER".equals(lobType)) {
+                z.applyButter();
+            } else if ("AOE_ICE".equals(lobType)) {
                 z.applySlowOrFreeze();
             }
         }

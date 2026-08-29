@@ -100,7 +100,21 @@ public class Planting implements Command {
         }
 
         Tile tile = engine.getTiles(x, y);
-        if (tile == null || !tile.isPlantable() || tile.getPlant() != null) {
+        if (tile == null) {
+            Console.showMessage("You can't plant here.");
+            return false;
+        }
+
+        if (isGraveDestroyer(template)) {
+            if (tile.getPlant() != null) {
+                Console.showMessage("You can't plant here.");
+                return false;
+            }
+            if (ctx.getGraveGrid()[y][x] == null) {
+                Console.showMessage("Grave Buster can only be planted on a grave.");
+                return false;
+            }
+        } else if (!tile.isPlantable() || tile.getPlant() != null) {
             Console.showMessage("You can't plant here.");
             return false;
         }
@@ -195,6 +209,12 @@ public class Planting implements Command {
             }
             Console.showMessage("Boosted plant food effect activated on planting!");
         }
+    }
+
+    private static boolean isGraveDestroyer(Plant plant) {
+        return plant != null
+            && plant.getAbilityParams() != null
+            && "GRAVE_DESTROY".equals(plant.getAbilityParams().get("explosiveType"));
     }
 
     private boolean isVaseLevel(GameContext ctx) {
