@@ -62,7 +62,7 @@ public class BeghouledManager {
             case 1 -> List.of(
                 "Peashooter",
                 "Wall-nut",
-                "Puff-shroom",
+                "Sunflower",
                 "Cabbage-pult",
                 "Snow Pea"
             );
@@ -70,7 +70,7 @@ public class BeghouledManager {
             case 2 -> List.of(
                 "Peashooter",
                 "Wall-nut",
-                "Puff-shroom",
+                "Kernel-pult",
                 "Melon-pult",
                 "Snow Pea"
             );
@@ -97,7 +97,11 @@ public class BeghouledManager {
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 if (!craterGrid[r][c]) {
-                    String randomPlant = activePlantTypes.get(rand.nextInt(activePlantTypes.size()));
+                    String randomPlant =
+                        activePlantTypes.get(
+                            rand.nextInt(activePlantTypes.size())
+                        );
+
                     placePlantDirect(
                         r,
                         c,
@@ -117,6 +121,7 @@ public class BeghouledManager {
             removeMatches(initialMatches);
             applyGravityAndRefill();
         }
+
         if (!hasPossibleMove()) {
             resetBoard();
         }

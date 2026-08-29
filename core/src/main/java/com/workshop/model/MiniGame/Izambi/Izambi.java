@@ -185,6 +185,24 @@ public class Izambi {
             return false;
         }
 
+        double remainingCooldown =
+            iZombieManager
+                .getRemainingZombieCooldownSeconds(
+                    zombieType,
+                    ctx
+                );
+
+        if (remainingCooldown > 0) {
+            Console.showMessage(
+                zombieType
+                    + " is on cooldown for "
+                    + (int) Math.ceil(remainingCooldown)
+                    + " more seconds."
+            );
+
+            return false;
+        }
+
         int cost =
             iZombieManager.getZombieCost(zombieType);
 
@@ -211,6 +229,11 @@ public class Izambi {
 
             ctx.setSunAmount(
                 ctx.getSunAmount() - cost
+            );
+
+            iZombieManager.startZombieCooldown(
+                zombieType,
+                ctx
             );
 
             Console.showMessage(
