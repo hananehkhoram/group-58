@@ -381,6 +381,7 @@ public class GameEngine {
     }
 
     public void updateProjectiles(double deltaTime) {
+        ctx.flushPendingProjectiles();
         Iterator<Projectile> it = ctx.getProjectiles().iterator();
         while (it.hasNext()) {
             Projectile p = it.next();
@@ -398,6 +399,7 @@ public class GameEngine {
                 handlePlantProjectile(p, it);
             }
         }
+        ctx.flushPendingProjectiles();
     }
 
     private void handleZombieProjectile(Projectile p, Iterator<Projectile> it) {
@@ -483,7 +485,7 @@ public class GameEngine {
     }
 
     private void checkZombieHit(Projectile p, Iterator<Projectile> it) {
-        for (Zombie z : ctx.getAliveZombies()) {
+        for (Zombie z : new ArrayList<>(ctx.getAliveZombies())) {
             if (z.isDead()){
                 continue;
             }

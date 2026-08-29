@@ -107,6 +107,7 @@ public class GamePlayScreen implements Screen {
         new ArrayList<>();
 
     private Plant selectedPlantForPlacement;
+    private boolean plantFoodFeedMode;
     private int hoveredPlantRow = -1;
     private int hoveredPlantColumn = -1;
     private PlantActor mousePlantPreview;
@@ -234,9 +235,6 @@ public class GamePlayScreen implements Screen {
         rightBackground = new Image(rightTexture);
 
         buildBackground();
-        if(level.getLevelType().equals(LevelType.DEADLINE)){
-
-        }
 
         ZombieIntroLayer zombieIntroLayer =
             new ZombieIntroLayer();
@@ -312,11 +310,22 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(waterLayer);
         if (level.getLevelType() == LevelType.Wallnuts_MG) {
-
             stage.addActor(
                 new BowlingRedLineLayer(
                     shapeRenderer,
                     getGridX() + 3 * getCellWidth(),
+                    getGridY(),
+                    getGridHeight()
+                )
+            );
+        }
+
+        if (level.getLevelType() == LevelType.DEADLINE) {
+            int deadlineColumn = level.getDeadlineColumn();
+            stage.addActor(
+                new BowlingRedLineLayer(
+                    shapeRenderer,
+                    getGridX() + deadlineColumn * getCellWidth(),
                     getGridY(),
                     getGridHeight()
                 )
@@ -422,14 +431,6 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(chillWindLayer);
 
-        stage.addActor(new SandstormLayer(
-            gameContext,
-            getGridX(),
-            getGridY(),
-            getGridWidth(),
-            getGridHeight()
-        ));
-
         pauseOverlay = new PauseOverlay(
             stage,
             skin,
@@ -501,6 +502,13 @@ public class GamePlayScreen implements Screen {
         Table plantFoodCounter = new Table();
         plantFoodCounter.add(plantFoodIcon).size(48, 48).padRight(8);
         plantFoodCounter.add(plantFoodAmountLabel);
+        plantFoodCounter.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                event.stop();
+                togglePlantFoodFeedMode();
+            }
+        });
 
         zombieProgressBar = new ProgressBar(
             0f,
@@ -845,6 +853,11 @@ public class GamePlayScreen implements Screen {
             seedBankCards.add(card);
 
             card.setOnClick(clickedCard -> {
+                if (!isConveyorLevel()
+                    && gameContext.isOnCooldown(clickedCard.getPlant().getName())) {
+                    showPlantCooldownError(clickedCard.getPlant().getName());
+                    return;
+                }
                 selectPlant(clickedCard);
             });
 
@@ -875,6 +888,7 @@ public class GamePlayScreen implements Screen {
     }
 
     private void selectPlant(PlantCardActor clickedCard) {
+        plantFoodFeedMode = false;
         selectedPlantForPlacement =
             clickedCard.getPlant();
 
@@ -1390,6 +1404,11 @@ public class GamePlayScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
 
+                if (plantFoodFeedMode) {
+                    feedPlantAtStage(event.getStageX(), event.getStageY());
+                    return;
+                }
+
                 if (selectedPlantForPlacement == null) {
                     return;
                 }
@@ -1419,6 +1438,67 @@ public class GamePlayScreen implements Screen {
         });
     }
 
+    private void togglePlantFoodFeedMode() {
+        if (currentPlantFoodCount() <= 0) {
+            plantFoodFeedMode = false;
+            Toast.showError(stage, PvzSkin.get(), "No plant food!");
+            return;
+        }
+
+        plantFoodFeedMode = !plantFoodFeedMode;
+        if (plantFoodFeedMode) {
+            clearPlantSelection();
+            Toast.showInfo(stage, PvzSkin.get(), "Select a plant to feed");
+        }
+    }
+
+    private void feedPlantAtStage(float stageX, float stageY) {
+        if (stageX < getGridX()
+            || stageX >= getGridX() + getGridWidth()
+            || stageY < getGridY()
+            || stageY >= getGridY() + getGridHeight()) {
+            return;
+        }
+
+        int column = (int) ((stageX - getGridX()) / getCellWidth());
+        int row = (int) (
+            (getGridY() + getGridHeight() - stageY) / getCellHeight()
+        );
+
+        Plant[][] grid = gameContext.getPlantGrid();
+        if (row < 0 || row >= grid.length
+            || column < 0 || column >= grid[row].length) {
+            return;
+        }
+
+        Plant plant = grid[row][column];
+        if (plant == null || plant.isDead()) {
+            Toast.showError(stage, PvzSkin.get(), "No plant there.");
+            return;
+        }
+
+        if (currentPlantFoodCount() <= 0) {
+            plantFoodFeedMode = false;
+            Toast.showError(stage, PvzSkin.get(), "No plant food!");
+            return;
+        }
+
+        if (!UserManager.getInstance().usePlantFood(1)) {
+            plantFoodFeedMode = false;
+            Toast.showError(stage, PvzSkin.get(), "No plant food!");
+            return;
+        }
+
+        plant.activatePlantFood(gameContext);
+        plantFoodFeedMode = false;
+        updateHud();
+        Toast.showSuccess(
+            stage,
+            PvzSkin.get(),
+            "Fed " + plant.getName() + "!"
+        );
+    }
+
     private void plantSelectedPlant(int column, int row) {
         if (selectedPlantForPlacement == null) {
             return;
@@ -1445,6 +1525,15 @@ public class GamePlayScreen implements Screen {
         boolean conveyorLevel =
             gameContext.getLevelManager()
                 instanceof ConveyorBeltManager;
+
+        if (!usingHeldSeed
+            && !isConveyorLevel()
+            && !conveyorLevel
+            && gameContext.isOnCooldown(selectedPlantForPlacement.getName())) {
+
+            showPlantCooldownError(selectedPlantForPlacement.getName());
+            return;
+        }
 
         if (!usingHeldSeed
             && !isConveyorLevel()
@@ -1484,6 +1573,16 @@ public class GamePlayScreen implements Screen {
             clearPlantSelection();
             updateHud();
         }
+    }
+
+    private void showPlantCooldownError(String plantName) {
+        int seconds = (int) Math.ceil(
+            gameContext.getRemainingCooldownSeconds(plantName)
+        );
+        String message = seconds > 0
+            ? plantName + " is still recharging (" + seconds + "s)"
+            : plantName + " is still recharging";
+        Toast.showError(stage, PvzSkin.get(), message);
     }
 
     private void clearPlantSelection() {
@@ -1743,6 +1842,7 @@ public class GamePlayScreen implements Screen {
                     .getPlantFactory()
                     .create(plantName);
 
+            plantFoodFeedMode = false;
             selectedPlantForPlacement =
                 plant;
 

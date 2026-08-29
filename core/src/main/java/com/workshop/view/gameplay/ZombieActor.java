@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.workshop.model.zombie.Zombie;
 
 import java.util.List;
+import java.util.Map;
 
 import pvz.libpvz.pam.PamPlayer;
 
@@ -36,12 +37,15 @@ public final class ZombieActor extends Actor {
 
     private static final double INITIAL_ICE_HP = 600.0;
 
-    private String resolvedSandstormClip;
+    private String resolvedSandstormIntroClip;
+    private String resolvedSandstormLoopClip;
+    private String resolvedSandstormOutroClip;
     private boolean sandstormClipResolved;
     private static final String SANDSTORM_TOP_PAM =
         "768/INITIAL/EFFECTS/SANDSTORM_TOP/SANDSTORM_TOP.PAM";
-    private static final float SANDSTORM_EFFECT_DURATION = 4.8f;
-    private static final float SANDSTORM_HEIGHT_TO_CELL_RATIO = 2.2f;
+    private static final String SANDSTORM_REAR_PAM =
+        "768/INITIAL/EFFECTS/SANDSTORM_REAR/SANDSTORM_REAR.PAM";
+    private static final float SANDSTORM_HEIGHT_TO_CELL_RATIO = 2.15f;
 
     private float sandstormEffectTime;
     private Float sandstormScale;
@@ -59,6 +63,7 @@ public final class ZombieActor extends Actor {
     private static final float ASH_DURATION = 1.25f;
     private static final float DIE_DURATION = 1.45f;
     private boolean wearingArmor;
+    private boolean wasArmless;
 
     public ZombieActor(
         Zombie zombie,
@@ -115,7 +120,7 @@ public final class ZombieActor extends Actor {
         float y,
         boolean loop
     ) {
-        drawScaled(batch, pamPath, clip, time, x, y, loop, getScale());
+        drawScaled(batch, pamPath, clip, time, x, y, loop, getScale(), currentPartsVisibility());
     }
 
     private void drawScaled(
@@ -128,6 +133,20 @@ public final class ZombieActor extends Actor {
         boolean loop,
         float scale
     ) {
+        drawScaled(batch, pamPath, clip, time, x, y, loop, scale, null);
+    }
+
+    private void drawScaled(
+        Batch batch,
+        String pamPath,
+        String clip,
+        float time,
+        float x,
+        float y,
+        boolean loop,
+        float scale,
+        Map<String, Boolean> partsVisibility
+    ) {
         Matrix4 oldTransform = batch.getTransformMatrix().cpy();
         Matrix4 transform = new Matrix4(oldTransform);
         transform.translate(x, y, 0);
@@ -136,11 +155,30 @@ public final class ZombieActor extends Actor {
         batch.setTransformMatrix(transform);
 
         try {
-            pamPlayer.draw(batch, pamPath, clip, time, x, y, loop);
+            pamPlayer.draw(batch, pamPath, clip, time, x, y, loop, partsVisibility);
+            if (zombie.hasLostArm()) {
+                for (String stump : ZombieArmVisibility.stumpParts(pamPlayer, pamPath)) {
+                    pamPlayer.drawPart(batch, pamPath, clip, time, x, y, stump);
+                }
+            }
         } catch (Throwable ignored) {
         }
 
         batch.setTransformMatrix(oldTransform);
+    }
+
+    private Map<String, Boolean> currentPartsVisibility() {
+        if (!zombie.hasLostArm() || animationSpec.hasArmlessClip(currentState)) {
+            return null;
+        }
+        Map<String, Boolean> arm = ZombieArmVisibility.hideOuterArm(
+            pamPlayer,
+            animationSpec.getPamPath()
+        );
+        if (arm == null || arm.isEmpty()) {
+            return null;
+        }
+        return arm;
     }
 
     private float getSandstormScale() {
@@ -148,14 +186,14 @@ public final class ZombieActor extends Actor {
             return sandstormScale;
         }
 
-        if (resolvedSandstormClip == null) {
+        String clip = resolvedSandstormLoopClip != null
+            ? resolvedSandstormLoopClip
+            : resolvedSandstormIntroClip;
+        if (clip == null) {
             return 1f;
         }
 
-        Rectangle bounds = pamPlayer.bounds(
-            SANDSTORM_TOP_PAM,
-            resolvedSandstormClip
-        );
+        Rectangle bounds = pamPlayer.bounds(SANDSTORM_TOP_PAM, clip);
 
         if (bounds == null || bounds.height <= 0f) {
             sandstormScale = 1f;
@@ -174,12 +212,15 @@ public final class ZombieActor extends Actor {
 
         if (zombie.isEnteredViaSandstorm()) {
             sandstormEffectTime += delta;
-            if (sandstormEffectTime >= SANDSTORM_EFFECT_DURATION) {
-                zombie.setEnteredViaSandstorm(false);
-            }
         }
 
         refreshArmorSpec();
+
+        boolean armless = zombie.hasLostArm();
+        if (armless != wasArmless) {
+            wasArmless = armless;
+            stateTime = 0f;
+        }
 
         if (zombie.isDead() && !zombie.isAshed()) {
             if (currentState != ZombieAnimationState.DIE) {
@@ -222,7 +263,7 @@ public final class ZombieActor extends Actor {
             nextState = ZombieAnimationState.WALK;
         }
 
-        if (!animationSpec.hasClip(nextState)) {
+        if (!animationSpec.hasClip(nextState, zombie.hasLostArm())) {
             nextState = ZombieAnimationState.IDLE;
         }
 
@@ -243,19 +284,51 @@ public final class ZombieActor extends Actor {
             return;
         }
 
-        if (clips.contains("idle")) {
-            resolvedSandstormClip = "idle";
-        } else if (clips.contains("animation")) {
-            resolvedSandstormClip = "animation";
-        } else {
-            resolvedSandstormClip = clips.get(0);
+        resolvedSandstormIntroClip = pickClip(clips, "intro", "animation", "idle");
+        resolvedSandstormLoopClip = pickClip(clips, "loop", "animation", "idle");
+        resolvedSandstormOutroClip = pickClip(clips, "outro", "intro", "animation");
+        if (resolvedSandstormLoopClip == null) {
+            resolvedSandstormLoopClip = clips.get(0);
         }
+        if (resolvedSandstormIntroClip == null) {
+            resolvedSandstormIntroClip = resolvedSandstormLoopClip;
+        }
+        if (resolvedSandstormOutroClip == null) {
+            resolvedSandstormOutroClip = resolvedSandstormLoopClip;
+        }
+    }
 
-        Gdx.app.log(
-            "ZombieActor",
-            "Sandstorm clips: " + clips
-                + " | selected: " + resolvedSandstormClip
-        );
+    private static String pickClip(List<String> clips, String... names) {
+        for (String name : names) {
+            if (clips.contains(name)) {
+                return name;
+            }
+        }
+        return null;
+    }
+
+    private String currentSandstormClip() {
+        if (zombie.isSandstormLanded()) {
+            return resolvedSandstormOutroClip;
+        }
+        if (sandstormEffectTime < 0.4f) {
+            return resolvedSandstormIntroClip;
+        }
+        return resolvedSandstormLoopClip;
+    }
+
+    private float currentSandstormTime() {
+        if (zombie.isSandstormLanded()) {
+            return zombie.getSandstormLandTime();
+        }
+        if (sandstormEffectTime < 0.4f) {
+            return sandstormEffectTime;
+        }
+        return sandstormEffectTime - 0.4f;
+    }
+
+    private boolean currentSandstormLoops() {
+        return !zombie.isSandstormLanded() && sandstormEffectTime >= 0.4f;
     }
 
     @Override
@@ -277,15 +350,34 @@ public final class ZombieActor extends Actor {
         float dangerTint = resolveDangerTint(zombie.getX());
         float flash = hitFlash.getIntensity();
 
+        boolean inStorm = zombie.isEnteredViaSandstorm();
+        if (inStorm) {
+            if (!sandstormClipResolved) {
+                resolveSandstormClip();
+                sandstormClipResolved = true;
+            }
+            drawSandstormLayer(batch, parentAlpha, SANDSTORM_REAR_PAM);
+        }
+
+        float bodyAlpha = inStorm && !zombie.isSandstormLanded()
+            ? parentAlpha * 0.55f
+            : parentAlpha;
+
         batch.setColor(
             1f + flash,
             1f - dangerTint + flash,
             1f - dangerTint + flash,
-            parentAlpha
+            bodyAlpha
         );
 
-        String clip = animationSpec.getClip(currentState);
+        String clip = animationSpec.getClip(currentState, zombie.hasLostArm());
 
+        if (clip == null) {
+            clip = animationSpec.getClip(
+                ZombieAnimationState.IDLE,
+                zombie.hasLostArm()
+            );
+        }
         if (clip == null) {
             clip = animationSpec.getIdleClip();
         }
@@ -306,29 +398,30 @@ public final class ZombieActor extends Actor {
             getX(),
             getY(),
             cellHeight,
-            parentAlpha
+            bodyAlpha
         );
 
-        if (zombie.isEnteredViaSandstorm()) {
-            if (!sandstormClipResolved) {
-                resolveSandstormClip();
-                sandstormClipResolved = true;
-            }
-
-            if (resolvedSandstormClip != null) {
-                batch.setColor(1f, 1f, 1f, parentAlpha);
-                drawScaled(
-                    batch,
-                    SANDSTORM_TOP_PAM,
-                    resolvedSandstormClip,
-                    sandstormEffectTime,
-                    getX(),
-                    getY(),
-                    true,
-                    getSandstormScale()
-                );
-            }
+        if (inStorm) {
+            drawSandstormLayer(batch, parentAlpha, SANDSTORM_TOP_PAM);
         }
+    }
+
+    private void drawSandstormLayer(Batch batch, float parentAlpha, String pamPath) {
+        String stormClip = currentSandstormClip();
+        if (stormClip == null) {
+            return;
+        }
+        batch.setColor(1f, 1f, 1f, parentAlpha);
+        drawScaled(
+            batch,
+            pamPath,
+            stormClip,
+            currentSandstormTime(),
+            getX(),
+            getY(),
+            currentSandstormLoops(),
+            getSandstormScale()
+        );
     }
 
     private void refreshArmorSpec() {
@@ -350,7 +443,10 @@ public final class ZombieActor extends Actor {
 
     private void drawDie(Batch batch, float parentAlpha) {
         batch.setColor(1f, 1f, 1f, parentAlpha);
-        String clip = animationSpec.getClip(ZombieAnimationState.DIE);
+        String clip = animationSpec.getClip(
+            ZombieAnimationState.DIE,
+            zombie.hasLostArm()
+        );
         if (clip == null) {
             clip = animationSpec.getIdleClip();
         }

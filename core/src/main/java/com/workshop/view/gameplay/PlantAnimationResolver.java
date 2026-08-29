@@ -114,6 +114,20 @@ public final class PlantAnimationResolver {
             );
         }
 
+        String plantFoodClip = findClip(clips, "plantfood");
+        if (plantFoodClip == null) {
+            plantFoodClip = findClip(clips, "plant_food");
+        }
+        if (plantFoodClip == null) {
+            plantFoodClip = specialClip;
+        }
+        if (plantFoodClip != null) {
+            spec.setClip(
+                PlantAnimationState.PLANTFOOD,
+                plantFoodClip
+            );
+        }
+
         resolvedSpecs.put(key, spec);
         return spec;
     }
