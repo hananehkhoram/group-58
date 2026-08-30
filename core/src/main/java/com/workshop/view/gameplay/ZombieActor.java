@@ -31,12 +31,6 @@ public final class ZombieActor extends Actor {
 
     private final HitFlashEffect hitFlash;
 
-    private static final String ICE_BLOCK_PAM =
-        "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_ZOMBIE/FROSTBITE_ICE_BLOCK_ZOMBIE.PAM";
-    private static final String ICE_BLOCK_PREFERRED_CLIP = "idle";
-
-    private static final double INITIAL_ICE_HP = 600.0;
-
     private String resolvedSandstormIntroClip;
     private String resolvedSandstormLoopClip;
     private String resolvedSandstormOutroClip;
@@ -49,10 +43,13 @@ public final class ZombieActor extends Actor {
 
     private float sandstormEffectTime;
     private Float sandstormScale;
-    private static final float MIN_ICE_ALPHA = 0.25f;
 
-    private String resolvedIceBlockClip;
-    private boolean iceBlockClipResolved;
+    private static final float ICE_HEIGHT_TO_CELL_RATIO = 2.0f;
+    private static final float ICE_X_OFFSET = 33f;
+    private static final float ICE_Y_OFFSET = 0f;
+
+    private boolean wasIceVisible;
+    private float iceBreakTimer;
 
     private ZombieAnimationState currentState =
         ZombieAnimationState.IDLE;
@@ -74,15 +71,19 @@ public final class ZombieActor extends Actor {
         float cellHeight
     ) {
         this.zombie = zombie;
+
         this.hitFlash = new HitFlashEffect(() ->
             zombie.getHp() + (int) zombie.getIceHp()
         );
+
         this.animationSpec = animationSpec;
         this.resolver = resolver;
         this.seasonName = seasonName;
         this.pamPlayer = pamPlayer;
         this.cellHeight = cellHeight;
         this.wearingArmor = hasLiveArmor();
+
+        this.wasIceVisible = isIceVisible();
     }
 
     private float getScale() {
@@ -226,6 +227,7 @@ public final class ZombieActor extends Actor {
     public void act(float delta) {
         super.act(delta);
         hitFlash.update(delta);
+        updateIceBreakState(delta);
 
         if (zombie.isEnteredViaSandstorm()) {
             sandstormEffectTime += delta;
@@ -421,6 +423,19 @@ public final class ZombieActor extends Actor {
         if (inStorm) {
             drawSandstormLayer(batch, parentAlpha, SANDSTORM_TOP_PAM);
         }
+
+        if (iceBreakTimer > 0f) {
+            IceDamageSprite.drawBreak(
+                batch,
+                getX(),
+                getY(),
+                cellHeight,
+                ICE_HEIGHT_TO_CELL_RATIO,
+                ICE_X_OFFSET,
+                ICE_Y_OFFSET,
+                parentAlpha
+            );
+        }
     }
 
     private void drawSandstormLayer(Batch batch, float parentAlpha, String pamPath) {
@@ -557,66 +572,22 @@ public final class ZombieActor extends Actor {
         return proximity * MAX_DANGER_TINT;
     }
 
-    private void drawIceBlock(Batch batch, float parentAlpha) {
-        if (!iceBlockClipResolved) {
-            resolveIceBlockClip();
-            iceBlockClipResolved = true;
-        }
-
-        if (resolvedIceBlockClip == null) {
-            return;
-        }
-
-        float alpha = resolveIceBlockAlpha(zombie.getIceHp()) * parentAlpha;
-
-        float flash = hitFlash.getIntensity();
-        batch.setColor(1f + flash, 1f + flash, 1f + flash, alpha);
-
-        drawScaled(
+    private void drawIceBlock(
+        Batch batch,
+        float parentAlpha
+    ) {
+        IceDamageSprite.drawDamage(
             batch,
-            ICE_BLOCK_PAM,
-            resolvedIceBlockClip,
-            stateTime,
-            getX() + 33f,
+            zombie.getIceHp(),
+            getX(),
             getY(),
-            true
+            cellHeight,
+            ICE_HEIGHT_TO_CELL_RATIO,
+            ICE_X_OFFSET,
+            ICE_Y_OFFSET,
+            parentAlpha,
+            hitFlash.getIntensity()
         );
-
-        batch.setColor(1f, 1f, 1f, parentAlpha);
-    }
-
-    private void resolveIceBlockClip() {
-        List<String> clips = pamPlayer.clips(ICE_BLOCK_PAM);
-
-        if (clips == null || clips.isEmpty()) {
-            Gdx.app.error(
-                "ZombieActor",
-                "No clips found for PAM: " + ICE_BLOCK_PAM
-            );
-            return;
-        }
-
-        if (clips.contains(ICE_BLOCK_PREFERRED_CLIP)) {
-            resolvedIceBlockClip = ICE_BLOCK_PREFERRED_CLIP;
-        } else {
-            Gdx.app.log(
-                "ZombieActor",
-                "Clip \"" + ICE_BLOCK_PREFERRED_CLIP + "\" not found in "
-                    + ICE_BLOCK_PAM + ", falling back to \"" + clips.get(0)
-                    + "\". Available: " + clips
-            );
-            resolvedIceBlockClip = clips.get(0);
-        }
-    }
-
-    private float resolveIceBlockAlpha(double iceHp) {
-        float fraction = MathUtils.clamp(
-            (float) (iceHp / INITIAL_ICE_HP),
-            0f,
-            1f
-        );
-
-        return MIN_ICE_ALPHA + fraction * (1f - MIN_ICE_ALPHA);
     }
 
     public ZombieAnimationState getCurrentState() {
@@ -625,5 +596,29 @@ public final class ZombieActor extends Actor {
 
     public Zombie getZombie() {
         return zombie;
+    }
+
+    private boolean isIceVisible() {
+        return zombie.isInitialFrozenBlock()
+            || zombie.isIced();
+    }
+
+    private void updateIceBreakState(float delta) {
+        boolean iceVisible = isIceVisible();
+
+        if (wasIceVisible && !iceVisible) {
+            iceBreakTimer =
+                IceDamageSprite.BREAK_DURATION;
+        }
+
+        if (iceBreakTimer > 0f) {
+            iceBreakTimer -= delta;
+
+            if (iceBreakTimer < 0f) {
+                iceBreakTimer = 0f;
+            }
+        }
+
+        wasIceVisible = iceVisible;
     }
 }
