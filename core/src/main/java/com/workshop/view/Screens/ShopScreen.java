@@ -32,6 +32,9 @@ import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 import pvz.skin.PvzSkin;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,8 +52,9 @@ public class ShopScreen implements Screen {
         final boolean purchased;
         final ItemType itemType;
         final Plant iconPlant;
+        final boolean isDaily;
 
-        ShopEntry(int id, String title, int price, Currency currency, boolean purchased, ItemType itemType, Plant iconPlant) {
+        ShopEntry(int id, String title, int price, Currency currency, boolean purchased, ItemType itemType, Plant iconPlant, boolean isDaily) {
             this.id = id;
             this.title = title;
             this.price = price;
@@ -58,6 +62,7 @@ public class ShopScreen implements Screen {
             this.purchased = purchased;
             this.itemType = itemType;
             this.iconPlant = iconPlant;
+            this.isDaily = isDaily;
         }
     }
 
@@ -75,17 +80,20 @@ public class ShopScreen implements Screen {
     private CurrencyHeader currencyHeader;
 
     private Texture menuBgTexture, overlayTexture, panelTexture;
-    private Drawable cardHeaderBg, cardBodyBg, grassIconBg;
+    private Drawable cardHeaderBg, cardBodyBg, grassIconBg, redRibbonBg;
 
     private TextureBank textureBank;
     private PamPlayer pamPlayer;
     private float stateTime = 0f;
+
+    private List<Label> dailyTimerLabels = new ArrayList<>();
 
     public ShopScreen(GameContext ctx, Listener listener) {
         this.ctx = ctx;
         this.listener = listener;
         this.skin = PvzSkin.get();
         this.stage = new Stage(new FitViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
+        this.shopMenu = new ShopMenu(ctx);
 
         initPvzLibrary();
         initCustomDrawables();
@@ -106,6 +114,7 @@ public class ShopScreen implements Screen {
         cardHeaderBg = createColorDrawable(Color.valueOf("4C9A2A"));
         cardBodyBg = createColorDrawable(Color.valueOf("F3E5AB"));
         grassIconBg = createColorDrawable(Color.valueOf("6B8E23"));
+        redRibbonBg = createColorDrawable(new Color(0.85f, 0.15f, 0.15f, 0.95f));
     }
 
     private Drawable createColorDrawable(Color color) {
@@ -118,7 +127,6 @@ public class ShopScreen implements Screen {
     }
 
     private void buildUI() {
-        shopMenu = new ShopMenu(ctx);
         currentUser = UserManager.getInstance().getCurrentUser();
 
         stage.clear();
@@ -140,7 +148,6 @@ public class ShopScreen implements Screen {
         stage.addActor(bg);
         stage.addActor(rootTable);
 
-        // Header
         Table header = new Table();
         ImageButton closeBtn = new ImageButton(skin, "generic_close_circle");
         closeBtn.addListener(new ChangeListener() {
@@ -174,6 +181,7 @@ public class ShopScreen implements Screen {
 
     private void refreshItemsGrid() {
         itemsGrid.clear();
+        dailyTimerLabels.clear();
         currentUser = UserManager.getInstance().getCurrentUser();
 
         for (ShopEntry entry : buildEntries()) {
@@ -183,15 +191,15 @@ public class ShopScreen implements Screen {
 
     private List<ShopEntry> buildEntries() {
         List<ShopEntry> entries = new ArrayList<>();
-        DailyOffer offer = currentUser != null ? currentUser.getLastDailyOffer() : null;
+        DailyOffer offer = shopMenu.getShop().getDailyOffer();
 
         if (offer != null) {
             String plantName = offer.getPlantType() != null ? offer.getPlantType().getName() : offer.getName();
-            entries.add(new ShopEntry(0, "Daily: " + plantName, offer.getPrice(), offer.getCurrency(), offer.isPurchased(), null, offer.getPlantType()));
+            entries.add(new ShopEntry(0, "Daily: " + plantName, offer.getPrice(), offer.getCurrency(), offer.isPurchased(), null, offer.getPlantType(), true));
         }
 
         for (ItemType item : ItemType.values()) {
-            entries.add(new ShopEntry(item.getId(), item.getDisplayName(), item.getPrice(), item.getCurrency(), false, item, null));
+            entries.add(new ShopEntry(item.getId(), item.getDisplayName(), item.getPrice(), item.getCurrency(), false, item, null, false));
         }
         return entries;
     }
@@ -199,7 +207,6 @@ public class ShopScreen implements Screen {
     private Table createItemCard(ShopEntry entry) {
         Table card = new Table().top();
 
-        // Header
         Table headerTable = new Table();
         headerTable.setBackground(cardHeaderBg);
         Label nameLbl = createSafeLabel(entry.title, "default");
@@ -209,13 +216,22 @@ public class ShopScreen implements Screen {
         nameLbl.setWrap(true);
         headerTable.add(nameLbl).width(190).pad(4).center();
 
-        // Body
         Table bodyTable = new Table().top().pad(10);
         bodyTable.setBackground(cardBodyBg);
+
+        Stack iconStack = new Stack();
 
         Table iconHolder = new Table();
         iconHolder.setBackground(grassIconBg);
         iconHolder.add(buildIcon(entry)).size(130, 130);
+
+        iconStack.add(iconHolder);
+
+        if (entry.isDaily) {
+            Container<WidgetGroup> ribbonOverlay = new Container<>(createDiagonalRibbon());
+            ribbonOverlay.top();
+            iconStack.add(ribbonOverlay);
+        }
 
         Table priceTable = new Table().center();
         Label priceLbl = createSafeLabel(String.valueOf(entry.price), "default");
@@ -233,7 +249,7 @@ public class ShopScreen implements Screen {
             }
         });
 
-        bodyTable.add(iconHolder).size(150, 150).padTop(10).padBottom(20).row();
+        bodyTable.add(iconStack).size(150, 150).padTop(10).padBottom(20).row();
         bodyTable.add(priceTable).expandY().center().padBottom(15).row();
         bodyTable.add(buyBtn).width(140).height(42).bottom().padBottom(15);
 
@@ -241,6 +257,50 @@ public class ShopScreen implements Screen {
         card.add(bodyTable).grow();
 
         return card;
+    }
+
+    private WidgetGroup createDiagonalRibbon() {
+        WidgetGroup group = new WidgetGroup();
+
+        float width = 130f;
+        float height = 22f;
+
+        Image bg = new Image(redRibbonBg);
+        bg.setSize(width, height);
+
+        Label timerLbl = createSafeLabel(getRemainingTimeString(), "big");
+        timerLbl.setFontScale(0.32f);
+        timerLbl.setColor(Color.WHITE);
+        timerLbl.setAlignment(Align.center);
+        timerLbl.setSize(width, height);
+
+        dailyTimerLabels.add(timerLbl);
+
+        group.addActor(bg);
+        group.addActor(timerLbl);
+        group.setSize(width, height);
+
+        return group;
+    }
+
+    private String getRemainingTimeString() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nextMidnight = LocalDateTime.of(now.toLocalDate().plusDays(1), LocalTime.MIDNIGHT);
+        Duration duration = Duration.between(now, nextMidnight);
+
+        long hours = duration.toHours();
+        long minutes = duration.toMinutesPart();
+        long seconds = duration.toSecondsPart();
+
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    private void updateDailyTimers() {
+        if (dailyTimerLabels.isEmpty()) return;
+        String timeStr = getRemainingTimeString();
+        for (Label lbl : dailyTimerLabels) {
+            lbl.setText(timeStr);
+        }
     }
 
     private Actor buildCurrencyIcon(Currency currency) {
@@ -266,17 +326,15 @@ public class ShopScreen implements Screen {
                     renderPamAnimation(batch, "768/INITIAL/ZEN_GARDEN/GROWING_PLANT_SLOT/GROWING_PLANT_SLOT.PAM", "idle", getX() + getWidth() / 2f, getY() + getHeight() / 2f, 0.45f, stateTime);
                 } else if (entry.itemType == ItemType.SELECTED_SEED_PACK || entry.itemType == ItemType.RANDOM_SEED_PACK) {
                     String clip = (entry.itemType == ItemType.SELECTED_SEED_PACK) ? "sunflower_idle" : "sunflower_shout";
-                    // انتقال Sunflower به سمت بالا (از 10f به 65f تغییر کرد)
                     renderPamAnimation(batch, "768/FULL/NPC/SUNFLOWER/SUNFLOWER.PAM", clip, getX() + getWidth() / 2f, getY() + 65f, 0.18f, stateTime);
                 } else if (entry.iconPlant != null) {
                     String rawName = entry.iconPlant.getName().toUpperCase().replace(" ", "").replace("-", "");
-                    renderPamAnimation(batch, "PLANT/" + rawName + "/" + rawName + ".PAM", "idle", getX() + getWidth() / 2f, getY() + 65f, 0.25f, stateTime);
+                    renderPamAnimation(batch, "PLANT/" + rawName + "/" + rawName + ".PAM", "idle", getX() + getWidth() / 2f, getY() + getHeight() / 2f - 10f, 0.45f, stateTime);
                 }
             }
         };
     }
 
-    // متد کمکی برای جلوگیری از کد تکراری در رندر انیمیشن‌ها
     private void renderPamAnimation(Batch batch, String path, String clip, float x, float y, float scale, float time) {
         if (textureBank != null) textureBank.update();
         Matrix4 oldTransform = batch.getTransformMatrix().cpy();
@@ -459,11 +517,14 @@ public class ShopScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        refreshItemsGrid();
     }
 
     @Override
     public void render(float delta) {
         stateTime += delta;
+        updateDailyTimers();
+
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
