@@ -867,8 +867,6 @@ public class GamePlayScreen implements Screen {
         seedBankTable.padLeft(110f);
         seedBankTable.padTop(20f);
 
-        // مستطیل بزرگ پشت کارت‌ها: خودِ بنرِ راه‌راهِ leftBackground از قبل
-        // به‌عنوان بک‌گراند این ستون کار می‌کنه، پس اینجا فقط چیدمانه.
         Table seedBankPanel = new Table();
         seedBankPanel.top();
 
