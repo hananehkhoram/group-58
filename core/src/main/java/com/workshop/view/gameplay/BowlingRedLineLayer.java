@@ -1,20 +1,14 @@
 package com.workshop.view.gameplay;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 
 public class BowlingRedLineLayer extends Actor {
 
     private final ShapeRenderer shapeRenderer;
-
-    private final float x;
-    private final float y;
-    private final float height;
-
 
     public BowlingRedLineLayer(
         ShapeRenderer shapeRenderer,
@@ -23,36 +17,25 @@ public class BowlingRedLineLayer extends Actor {
         float height
     ) {
         this.shapeRenderer = shapeRenderer;
-        this.x = x;
-        this.y = y;
-        this.height = height;
 
+        setPosition(x, y);
+        setHeight(height);
+        setWidth(4f);
         setTouchable(null);
     }
 
-
     @Override
     public void draw(Batch batch, float parentAlpha) {
+        if (shapeRenderer == null) return;
 
         batch.end();
 
-        shapeRenderer.setProjectionMatrix(
-            batch.getProjectionMatrix()
-        );
+        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
+        shapeRenderer.setTransformMatrix(new Matrix4());
 
-        shapeRenderer.begin(
-            ShapeRenderer.ShapeType.Line
-        );
-
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.RED);
-
-        shapeRenderer.line(
-            x,
-            y,
-            x,
-            y + height
-        );
-
+        shapeRenderer.rect(getX(), getY(), getWidth(), getHeight());
         shapeRenderer.end();
 
         batch.begin();

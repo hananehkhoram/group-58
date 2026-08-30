@@ -101,12 +101,6 @@ public final class ScreenResourceManager {
 
         String folderName = resolvePlantFolderName(plantName);
 
-        if (folderName.equalsIgnoreCase("CATTAILMINT") ||
-            folderName.equalsIgnoreCase("CATTAIL")) {
-            batch.setColor(Color.WHITE);
-            return drawPlantFallback(batch, plantName, drawX, drawY);
-        }
-
         String pamPath = existingPamPath(plantName, folderName);
         if (pamPath == null) {
             batch.setColor(Color.WHITE);

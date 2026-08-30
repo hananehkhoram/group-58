@@ -307,7 +307,7 @@ public class CollectionScreen implements Screen {
                 float drawY = stagePos.y + 12f * scale;
 
                 String pamPath = "PLANT/" + folderName + "/" + folderName + ".PAM";
-                if (!pamPath.equals("PLANT/CATTAILMINT/CATTAILMINT.PAM") && !pamPath.equals("PLANT/CATTAIL/CATTAIL.PAM")) {
+
                     List<String> preferredClips = new ArrayList<>();
 
                     if (folderName.equalsIgnoreCase("SUNSHROOM") || folderName.equalsIgnoreCase("PUFFSHROOM")) {
@@ -329,7 +329,7 @@ public class CollectionScreen implements Screen {
                         if (!preferredClips.contains(c)) {
                             preferredClips.add(c);
                         }
-                    }
+
 
                     boolean drawn = false;
                     for (String clip : preferredClips) {

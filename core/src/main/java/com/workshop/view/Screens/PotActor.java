@@ -96,22 +96,16 @@ public class PotActor extends Group {
         }
     }
 
-    public void update(float delta) {
-        act(delta);
-    }
-
     @Override
     public void act(float delta) {
         super.act(delta);
 
         if (!pot.isLocked() && !pot.isEmpty() && !pot.isPlantReady()) {
-            double remainingHours = pot.getRemainingPlantedTime() - (delta / 3600.0);
+            double remainingHours = pot.getRemainingPlantedTime();
             if (remainingHours <= 0) {
-                pot.setRemainingPlantedTime(0);
                 pot.setPlantReady(true);
                 refresh();
             } else {
-                pot.setRemainingPlantedTime(remainingHours);
                 timeLabel.setText(formatTime(remainingHours * 3600.0));
             }
         }
