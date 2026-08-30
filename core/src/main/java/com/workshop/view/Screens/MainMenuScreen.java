@@ -8,10 +8,13 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
@@ -24,6 +27,8 @@ import com.workshop.view.Toast;
 import com.workshop.view.components.CurrencyHeader;
 
 import pvz.skin.PvzSkin;
+
+import java.time.LocalTime;
 
 public class MainMenuScreen implements Screen {
 
@@ -71,16 +76,40 @@ public class MainMenuScreen implements Screen {
         if (background != null) stage.addActor(background);
         stage.addActor(root);
 
+        User currentUser = UserManager.getInstance().getCurrentUser();
+
         Table topBar = new Table();
+
+        String usernameText = (currentUser != null) ? "User: " + currentUser.getUsername() : "User: Guest";
+        Label userLabel = skin.has("big", Label.LabelStyle.class)
+            ? new Label(usernameText, skin, "big")
+            : new Label(usernameText, skin);
+
+        userLabel.setFontScale(0.6f);
+        userLabel.setColor(Color.GOLD);
+
+        topBar.add(userLabel).left().padLeft(20).expandX();
+
         currencyHeader = new CurrencyHeader();
         topBar.add(currencyHeader).right().padRight(10);
+
         root.add(topBar).fillX().height(45).pad(10, 0, 0, 0).row();
 
         Table panel = new Table();
-        panel.pad(250);
-        panel.padBottom(150);
+        panel.padTop(100);
 
-        User currentUser = UserManager.getInstance().getCurrentUser();
+        String username = (currentUser != null) ? currentUser.getUsername() : "Player";
+        String greetingText = getGreetingMessage(username);
+
+        Label greetingLabel = skin.has("big", Label.LabelStyle.class)
+            ? new Label(greetingText, skin, "big")
+            : new Label(greetingText, skin);
+
+        greetingLabel.setFontScale(0.85f);
+        greetingLabel.setColor(Color.WHITE);
+        greetingLabel.setAlignment(Align.center);
+
+        panel.add(greetingLabel).center().padBottom(15).row();
 
         TextButton playButton = new TextButton("Play", skin, "purple");
         playButton.addListener(new ChangeListener() {
@@ -89,7 +118,7 @@ public class MainMenuScreen implements Screen {
                 if (listener != null) listener.onPlay();
             }
         });
-        panel.add(playButton).width(260).height(70).expand().center().row();
+        panel.add(playButton).width(260).height(70).center().padBottom(15).row();
 
         ImageButton settingsButton = new ImageButton(skin, "settings");
         settingsButton.addListener(new ChangeListener() {
@@ -101,33 +130,20 @@ public class MainMenuScreen implements Screen {
 
         Actor profileButton = buildProfileButton();
         Actor collectionButton = buildCollectionButton();
-        Actor greenHouseButton = buildGreenHouseButton();
         Actor shopButton = buildShopButton();
-
-
 
         boolean hasUnreadNews = currentUser != null
             && new MainMenu((GameContext) null).shouldShowRedDot(currentUser);
         Actor newsButton = buildNewsButton(hasUnreadNews);
-
-        TextButton logoutButton = new TextButton("Logout", skin, "green_small");
-        logoutButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (listener != null) listener.onLogout();
-            }
-        });
 
         Table iconRow = new Table();
         iconRow.defaults().pad(6);
         iconRow.add(settingsButton).size(75, 72);
         iconRow.add(profileButton).size(75, 72);
         iconRow.add(collectionButton).size(75, 72);
-        iconRow.add(greenHouseButton).size(75, 72);
         iconRow.add(newsButton);
         iconRow.add(shopButton).size(75, 72);
         panel.add(iconRow).padBottom(10).row();
-
 
         TextButton exitButton = new TextButton("Exit", skin, "brown");
         exitButton.addListener(new ChangeListener() {
@@ -136,14 +152,42 @@ public class MainMenuScreen implements Screen {
                 Toast.showError(stage, skin, "You must use 'Logout' to leave the main menu.");
             }
         });
-        panel.add(exitButton).width(200).padBottom(10).row();
-        panel.add(logoutButton)
-            .width(130)
-            .height(50)
-            .padBottom(5)
-            .row();
+        panel.add(exitButton).width(200).padBottom(8).row();
+
+        TextButton logoutButton = new TextButton("Logout", skin, "green_small");
+        logoutButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (listener != null) listener.onLogout();
+            }
+        });
+        panel.add(logoutButton).width(130).height(45).padBottom(10).row();
 
         root.add(panel).grow();
+
+        Table bottomTable = new Table();
+        bottomTable.setFillParent(true);
+        bottomTable.bottom();
+        Actor greenHouseButton = buildGreenHouseButton();
+        bottomTable.add(greenHouseButton).size(260, 220).padBottom(-20).row();
+        stage.addActor(bottomTable);
+    }
+
+    private String getGreetingMessage(String username) {
+        int hour = LocalTime.now().getHour();
+        String greeting;
+
+        if (hour >= 5 && hour < 12) {
+            greeting = "Good morning";
+        } else if (hour >= 12 && hour < 17) {
+            greeting = "Good afternoon";
+        } else if (hour >= 17 && hour < 23) {
+            greeting = "Good evening";
+        } else {
+            greeting = "Hello Night Owl";
+        }
+
+        return greeting + ", " + username + "!";
     }
 
     private Actor buildProfileButton() {
@@ -171,42 +215,44 @@ public class MainMenuScreen implements Screen {
         });
         return profileButton;
     }
+
     private Actor buildGreenHouseButton() {
         Texture icon = new Texture(Gdx.files.internal("IMAGES/Menus/GreenHouse/IMAGE_UI_MAINMENU_MM_GREENHOUSE.png"));
         TextureRegion iconRegion = new TextureRegion(icon);
-        if (iconRegion != null) {
-            ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
-            style.imageUp = new TextureRegionDrawable(iconRegion);
-            ImageButton iconButton = new ImageButton(style);
-            iconButton.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    if (listener != null) listener.onGreenHouse();
-                }
-            });
-            return iconButton;
-        }
 
-        TextButton greenHouseButton = new TextButton("Greenhouse", skin, "green_small");
-        greenHouseButton.addListener(new ChangeListener() {
+        ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
+        style.imageUp = new TextureRegionDrawable(iconRegion);
+        style.pressedOffsetY = -4;
+
+        ImageButton iconButton = new ImageButton(style);
+        iconButton.getImageCell().grow();
+        iconButton.getImage().setScaling(Scaling.fit);
+
+        iconButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (listener != null) listener.onGreenHouse();
             }
         });
-        return greenHouseButton;
+        return iconButton;
     }
 
     private Actor buildCollectionButton() {
         TextureRegion iconRegion = Textures.regionOrNull("IMAGE_UI_HUD_ALMANACBUTTON_BUTTONS_HUD_ALMANAC_NORMAL");
 
+        if (iconRegion == null) {
+            iconRegion = Textures.regionOrNull("IMAGE_UI_MAINMENU_MM_ALMANAC");
+        }
+
         if (iconRegion != null) {
             ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
             style.imageUp = new TextureRegionDrawable(iconRegion);
+            style.pressedOffsetY = -4;
+
             ImageButton iconButton = new ImageButton(style);
-            iconButton.addListener(new ChangeListener() {
+            iconButton.addListener(new ClickListener() {
                 @Override
-                public void changed(ChangeEvent event, Actor actor) {
+                public void clicked(InputEvent event, float x, float y) {
                     if (listener != null) listener.onCollection();
                 }
             });
@@ -240,12 +286,14 @@ public class MainMenuScreen implements Screen {
 
         return stack;
     }
+
     private Actor buildShopButton() {
         TextureRegion iconRegion = Textures.regionOrNull("IMAGE_UI_MAINMENU_MM_SHOP");
 
         if (iconRegion != null) {
             ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
             style.imageUp = new TextureRegionDrawable(iconRegion);
+            style.pressedOffsetY = -4;
             ImageButton iconButton = new ImageButton(style);
             iconButton.addListener(new ChangeListener() {
                 @Override
@@ -272,6 +320,7 @@ public class MainMenuScreen implements Screen {
         if (iconRegion != null) {
             ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
             style.imageUp = new TextureRegionDrawable(iconRegion);
+            style.pressedOffsetY = -4;
             ImageButton iconButton = new ImageButton(style);
             iconButton.addListener(new ChangeListener() {
                 @Override
