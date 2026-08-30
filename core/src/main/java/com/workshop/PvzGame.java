@@ -336,6 +336,43 @@ public class PvzGame extends Game {
         setScreen(new LeaderBoardScreen(this));
     }
 
+    public void showIZombieMultiplayer() {
+        setScreen(new OpponentSelectScreen(this));
+    }
+
+    public void showNetworkIzambiMatch(
+        String matchId,
+        String opponentUsername,
+        com.workshop.model.MiniGame.Izambi.multiplayer.MatchRole yourRole,
+        boolean isHost
+    ) {
+        setScreen(new NetworkIzambiScreen(this, matchId, opponentUsername, yourRole, isHost));
+    }
+
+    public void showCouchIzambi() {
+        com.workshop.model.MiniGame.Izambi.multiplayer.CouchIzambiMatch match =
+            new com.workshop.model.MiniGame.Izambi.multiplayer.CouchIzambiMatch();
+
+        match.start(menuManager, 1);
+
+        if (match.getIzambi() == null || match.getIzambi().getGameEngine() == null) {
+            return;
+        }
+
+        GameContext ctx = match.getIzambi().getCtx();
+        menuManager.setCtx(ctx);
+        menuManager.setGameEngine(match.getIzambi().getGameEngine());
+
+        setScreen(
+            new CouchIzambiScreen(
+                this,
+                match,
+                ctx,
+                this::showCouchIzambi,
+                this::showTravelMenu
+            )
+        );
+    }
     public void showVaseBreaker() {
         showVaseBreaker(1);
     }

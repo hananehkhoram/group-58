@@ -23,7 +23,7 @@ public final class BrainLayer extends Group {
      * اسم واقعی را حدس نزن.
      */
     private static final String BRAIN_PAM =
-        "PUT_YOUR_REAL_BRAIN_PAM_PATH_HERE";
+        "768/FULL/ZOMBIE/POWER_BRAIN_PROJECTILE/POWER_BRAIN_PROJECTILE.PAM";
 
     private static final float TARGET_HEIGHT_TO_CELL_RATIO = 0.55f;
 
