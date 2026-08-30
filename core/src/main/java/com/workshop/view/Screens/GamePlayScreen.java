@@ -439,6 +439,14 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(zombieAnimationLayer);
 
+        stage.addActor(new ProjectileHitFxLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
         stage.addActor(new ExplosionFxLayer(
             gameContext,
             getGridX(),
@@ -523,7 +531,7 @@ public class GamePlayScreen implements Screen {
 
         Table sunCounter = new Table();
         sunCounter.add(sunIcon).size(56, 57).padRight(8);
-        sunCounter.add(sunAmountLabel);
+        sunCounter.add(sunAmountLabel).minWidth(48).left();
 
         Image plantFoodIcon = new Image(
             skin.get("plantfood", ImageButton.ImageButtonStyle.class).imageUp
@@ -536,7 +544,7 @@ public class GamePlayScreen implements Screen {
 
         Table plantFoodCounter = new Table();
         plantFoodCounter.add(plantFoodIcon).size(48, 48).padRight(8);
-        plantFoodCounter.add(plantFoodAmountLabel);
+        plantFoodCounter.add(plantFoodAmountLabel).minWidth(48).left();
         plantFoodCounter.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -544,6 +552,27 @@ public class GamePlayScreen implements Screen {
                 togglePlantFoodFeedMode();
             }
         });
+
+        Table sunRow = new Table();
+        sunRow.add(sunCounter).left();
+
+        Table plantFoodRow = new Table();
+        plantFoodRow.add(plantFoodCounter).left();
+
+        boolean debugMode = UserManager.getInstance().getCurrentUser() != null
+            && UserManager.getInstance().getCurrentUser().isDebugMode();
+        if (debugMode) {
+            sunRow.add(createDebugAddButton(skin, () ->
+                gameContext.addSun(50)
+            )).size(40, 40).padLeft(12);
+            plantFoodRow.add(createDebugAddButton(skin, () -> {
+                com.workshop.model.user.User user =
+                    UserManager.getInstance().getCurrentUser();
+                if (user != null) {
+                    user.setPlantFoodCount(user.getPlantFoodCount() + 1);
+                }
+            })).size(40, 40).padLeft(12);
+        }
 
         zombieProgressBar = new ProgressBar(
             0f,
@@ -582,8 +611,8 @@ public class GamePlayScreen implements Screen {
         hudTable.top();
         hudTable.pad(20);
         Table leftCounters = new Table();
-        leftCounters.add(sunCounter).left().row();
-        leftCounters.add(plantFoodCounter).left().padTop(6);
+        leftCounters.add(sunRow).left().row();
+        leftCounters.add(plantFoodRow).left().padTop(6);
 
         hudTable.add(leftCounters)
             .left()
@@ -686,6 +715,27 @@ public class GamePlayScreen implements Screen {
     private int currentPlantFoodCount() {
         com.workshop.model.user.User user = UserManager.getInstance().getCurrentUser();
         return user != null ? user.getPlantFoodCount() : 0;
+    }
+
+    private ImageButton createDebugAddButton(Skin skin, Runnable onAdd) {
+        ImageButton button = new ImageButton(skin, "generic_close_circle") {
+            @Override
+            protected void sizeChanged() {
+                super.sizeChanged();
+                setOrigin(getWidth() / 2f, getHeight() / 2f);
+            }
+        };
+        button.setTransform(true);
+        button.setRotation(45f);
+        button.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                event.stop();
+                onAdd.run();
+                updateHud();
+            }
+        });
+        return button;
     }
 
     private Group buildWaveFlagsOverlay(

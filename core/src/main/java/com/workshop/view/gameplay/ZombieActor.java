@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.workshop.model.zombie.Zombie;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -168,17 +169,31 @@ public final class ZombieActor extends Actor {
     }
 
     private Map<String, Boolean> currentPartsVisibility() {
-        if (!zombie.hasLostArm() || animationSpec.hasArmlessClip(currentState)) {
-            return null;
-        }
-        Map<String, Boolean> arm = ZombieArmVisibility.hideOuterArm(
+        Map<String, Boolean> props = ZombiePropVisibility.visibility(
             pamPlayer,
-            animationSpec.getPamPath()
+            animationSpec.getPamPath(),
+            zombie
         );
-        if (arm == null || arm.isEmpty()) {
-            return null;
+
+        Map<String, Boolean> arm = null;
+        if (zombie.hasLostArm()
+            && !animationSpec.hasArmlessClip(currentState)) {
+            arm = ZombieArmVisibility.hideOuterArm(
+                pamPlayer,
+                animationSpec.getPamPath()
+            );
         }
-        return arm;
+
+        if (props == null || props.isEmpty()) {
+            return arm == null || arm.isEmpty() ? null : arm;
+        }
+        if (arm == null || arm.isEmpty()) {
+            return props;
+        }
+
+        Map<String, Boolean> merged = new HashMap<>(props);
+        merged.putAll(arm);
+        return merged;
     }
 
     private float getSandstormScale() {

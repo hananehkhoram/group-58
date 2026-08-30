@@ -134,6 +134,16 @@ public class GameContext {
         return pendingExplosions.pollFirst();
     }
 
+    private final Deque<ProjectileHitFx> pendingProjectileHits = new ArrayDeque<>();
+
+    public void spawnProjectileHit(int row, double x) {
+        pendingProjectileHits.addLast(new ProjectileHitFx(row, x));
+    }
+
+    public ProjectileHitFx pollProjectileHit() {
+        return pendingProjectileHits.pollFirst();
+    }
+
     public void shakeScreen(float intensity, float duration) {
         pendingShakes.addLast(new ScreenShake(intensity, duration));
     }
