@@ -242,6 +242,10 @@ public class GameContext {
         return timeManager.getTotalTicks() < availableAt;
     }
 
+    public void setGameEnded(boolean gameEnded) {
+        this.gameEnded = gameEnded;
+    }
+
     public void setCooldown(String plantName, double rechargeSeconds) {
         long ticksFromNow = (long) (rechargeSeconds * 10);
         plantCooldowns.put(plantName, timeManager.getTotalTicks() + ticksFromNow);
@@ -611,6 +615,19 @@ public class GameContext {
 
     public void setBattleStarted(boolean battleStarted) {
         this.battleStarted = battleStarted;
+    }
+
+    // When true, GameEngine no longer auto-triggers campaign win/loss for
+    // I-Zombie levels (used by the networked "I, Zombie" match, which owns
+    // its own win/lose rules and must not touch single-player progression).
+    private boolean externalWinLossHandling = false;
+
+    public boolean isExternalWinLossHandling() {
+        return externalWinLossHandling;
+    }
+
+    public void setExternalWinLossHandling(boolean externalWinLossHandling) {
+        this.externalWinLossHandling = externalWinLossHandling;
     }
 
     public void setActiveWaveInProgress(boolean activeWaveInProgress) {
