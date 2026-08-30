@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.workshop.controller.repository.Textures;
+import com.workshop.model.projectile.BowlingWallnut;
 import com.workshop.model.projectile.Projectile;
 
 import pvz.libpvz.pam.PamPlayer;
@@ -14,6 +15,7 @@ public final class ProjectileActor extends Actor {
 
     private static final float TARGET_HEIGHT_TO_CELL_RATIO = 0.5f;
     private static final float SPRITE_HEIGHT_TO_CELL_RATIO = 0.32f;
+    private static final float BOWLING_HEIGHT_TO_CELL_RATIO = 1.1f;
     private static final float FROZEN_PART_TIME = 0.22f;
 
     private final Projectile projectile;
@@ -113,7 +115,7 @@ public final class ProjectileActor extends Actor {
             return false;
         }
 
-        float size = cellHeight * SPRITE_HEIGHT_TO_CELL_RATIO * spec.getScale();
+        float size = cellHeight * spriteHeightRatio() * spec.getScale();
         float x = getX() - size / 2f;
         float y = getY() - size / 2f;
         batch.draw(region, x, y, size, size);
@@ -138,9 +140,25 @@ public final class ProjectileActor extends Actor {
             return resolvedScale;
         }
 
-        float targetHeight = cellHeight * TARGET_HEIGHT_TO_CELL_RATIO;
+        float targetHeight = cellHeight * pamHeightRatio();
         resolvedScale = targetHeight / bounds.height;
         resolvedScale *= spec.getScale();
         return resolvedScale;
+    }
+
+    private float pamHeightRatio() {
+        return isBowlingPlant()
+            ? BOWLING_HEIGHT_TO_CELL_RATIO
+            : TARGET_HEIGHT_TO_CELL_RATIO;
+    }
+
+    private float spriteHeightRatio() {
+        return isBowlingPlant()
+            ? BOWLING_HEIGHT_TO_CELL_RATIO
+            : SPRITE_HEIGHT_TO_CELL_RATIO;
+    }
+
+    private boolean isBowlingPlant() {
+        return projectile instanceof BowlingWallnut;
     }
 }

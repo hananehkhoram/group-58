@@ -27,7 +27,9 @@ public class WallNut implements BaseAbility {
                 executeLaneAttract(self, engine.getCtx());
                 break;
             case SUN_GENERATING:
-                executeSunGenerating(self, engine.getCtx());
+                if (engine.getCtx().checkAndTriggerSunBean(self, 2)) {
+                    executeSunGenerating(self, engine.getCtx());
+                }
                 break;
         }
     }
@@ -95,7 +97,7 @@ public class WallNut implements BaseAbility {
     }
 
     private void executeSunGenerating(Plant self, GameContext ctx) {
-        ctx.produceSun(self.getCol(), self.getRow(), 5);
+        ctx.produceSun(self.getCol(), self.getRow(), 2);
     }
 
     private void plantFoodLaneRedirect(Plant self, GameContext ctx) {

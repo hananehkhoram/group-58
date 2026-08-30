@@ -6,6 +6,7 @@ import com.workshop.model.MiniGame.VaseGame.Vase;
 import com.workshop.model.MiniGame.VaseGame.VaseContent;
 import com.workshop.model.plants.PlantActivator;
 import com.workshop.model.projectile.BulletType;
+import com.workshop.model.projectile.ExplodeONut;
 import com.workshop.model.projectile.Projectile;
 import com.workshop.model.level.Level;
 import com.workshop.model.plants.Plant;
@@ -411,6 +412,7 @@ public class GameEngine {
         Plant target = ctx.getPlantGrid()[p.getRow()][(int) p.getX()];
         if (target != null && !target.isDead()) {
             p.onHit(target);
+            spawnProjectileHit(p);
             if (!p.isActive()) {
                 it.remove();
             }
@@ -419,6 +421,7 @@ public class GameEngine {
 
     private void handlePlantProjectile(Projectile p, Iterator<Projectile> it) {
         if (checkPlantObstacle(p)) {
+            spawnProjectileHit(p);
             p.deactivate();
             it.remove();
             return;
@@ -446,6 +449,7 @@ public class GameEngine {
         }
 
         grave.takeDamage(p.getDamage(), ctx);
+        spawnProjectileHit(p);
 
         if (p.getTrajectory() != TrajectoryType.PIERCING) {
             p.deactivate();
@@ -499,6 +503,7 @@ public class GameEngine {
                 Submerge submerge = z.getSubmerge();
 
                 if (deflector != null && deflector.canDeflect(p)) {
+                    spawnProjectileHit(p);
                     deflector.deflect(p, ctx, z);
                     it.remove();
                     break;
@@ -511,6 +516,7 @@ public class GameEngine {
                 boolean aliveBeforeHit = !z.isDead();
                 long deadBefore = ctx.getAliveZombies().stream().filter(Zombie::isDead).count();
                 p.onHit(z);
+                spawnProjectileHit(p);
                 long deadAfter = ctx.getAliveZombies().stream().filter(Zombie::isDead).count();
                 long newlyKilled = deadAfter - deadBefore;
                 for (int i = 0; i < newlyKilled; i++) {
@@ -540,6 +546,13 @@ public class GameEngine {
         }
     }
 
+
+    private void spawnProjectileHit(Projectile p) {
+        if (p instanceof ExplodeONut) {
+            return;
+        }
+        ctx.spawnProjectileHit(p.getRow(), p.getX());
+    }
 
     private void applyLobberSplash(Projectile p, Zombie primaryTarget) {
         com.workshop.model.plants.Plant owner = p.getOwnerPlant();

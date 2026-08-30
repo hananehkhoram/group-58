@@ -79,10 +79,6 @@ public final class GameClient {
         return response;
     }
 
-    public synchronized NetResponse updateNickname(String newNickname) {
-        return request("UPDATE_NICKNAME", newNickname);
-    }
-
     public synchronized void logout() {
         if (isConnected()) {
             request("LOGOUT");
@@ -105,6 +101,13 @@ public final class GameClient {
             String.valueOf(user.getOtherQuestsCompletedCount()),
             String.valueOf(user.getMaxMewPoint())
         );
+    }
+
+    public synchronized NetResponse updateNickname(String newNickname) {
+        if (!isConnected()) {
+            return NetResponse.offline();
+        }
+        return request("UPDATE_NICKNAME", newNickname == null ? "" : newNickname);
     }
 
     public synchronized NetResponse submitBonusScore(int score) {

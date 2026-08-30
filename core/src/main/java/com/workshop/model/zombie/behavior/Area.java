@@ -45,7 +45,15 @@ public class Area implements Behaviors {
         }
 
         int row = zombie.getRow();
-        int fishermanCol = (int) zombie.getX();
+        if (row < 0 || row >= ctx.getPlantGrid().length) {
+            return;
+        }
+
+        int totalCols = ctx.getPlantGrid()[0].length;
+        int fishermanCol = Math.min((int) zombie.getX(), totalCols - 1);
+        if (fishermanCol < 0) {
+            return;
+        }
 
         Plant targetPlant = null;
         int targetCol = -1;
@@ -66,7 +74,6 @@ public class Area implements Behaviors {
             return;
         }
 
-
         int rightCol = targetCol + 1;
         if (rightCol < Level.COLS && ctx.getPlantGrid()[row][rightCol] == null) {
             ctx.getPlantGrid()[row][targetCol] = null;
@@ -76,8 +83,8 @@ public class Area implements Behaviors {
             lastFishermanActionSecond = currentSecond;
 
             Console.showMessage(String.format(
-                    "Fisherman Zombie pulled %s from col %d to col %d!\n",
-                    targetPlant.getName(), targetCol, rightCol));
+                "Fisherman Zombie pulled %s from col %d to col %d!\n",
+                targetPlant.getName(), targetCol, rightCol));
         }
     }
 
@@ -93,8 +100,8 @@ public class Area implements Behaviors {
             if (target != null && !target.isDead()) {
 
                 double distance = zombie.isMovingBackward()
-                        ? target.getCol() - zombie.getX()
-                        : zombie.getX() - target.getCol();
+                    ? target.getCol() - zombie.getX()
+                    : zombie.getX() - target.getCol();
 
                 if (distance > 0 && distance < 1.0) {
                     target.takeDamage(Integer.MAX_VALUE);
@@ -134,5 +141,4 @@ public class Area implements Behaviors {
             torchLit = false;
         }
     }
-
 }

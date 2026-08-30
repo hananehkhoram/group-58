@@ -53,6 +53,7 @@ public final class ClientHandler implements Runnable {
                 case "LOGIN" -> login(p);
                 case "LOGOUT" -> logout();
                 case "SYNC_PROFILE" -> syncProfile(p);
+                case "UPDATE_NICKNAME" -> updateNickname(p);
                 case "GET_LEADERBOARD" -> leaderboard();
                 case "SUBMIT_BONUS_SCORE" -> submitBonus(p);
                 case "GET_ONLINE_USERS" -> ok(String.join(",", sessions.onlineUsernames()));
@@ -118,6 +119,29 @@ public final class ClientHandler implements Runnable {
         snap.maxMewPoint = Integer.parseInt(p[8]);
         store.put(snap);
         return ok(snap.toWire());
+    }
+
+    private String updateNickname(String[] p) {
+        if (username == null) {
+            return err("Not logged in.");
+        }
+        String nickName = p.length > 1 ? p[1].trim() : "";
+        if (!isNickNameValid(nickName)) {
+            return err("Invalid nickname.");
+        }
+        UserSnapshot snap = store.find(username);
+        if (snap == null) {
+            return err("User does not exist!");
+        }
+        snap.nickName = nickName;
+        store.put(snap);
+        return ok(snap.toWire());
+    }
+
+    private static boolean isNickNameValid(String nickName) {
+        return nickName != null
+            && nickName.length() >= 3
+            && nickName.length() <= 30;
     }
 
     private String submitBonus(String[] p) {

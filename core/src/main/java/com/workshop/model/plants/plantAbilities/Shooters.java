@@ -19,6 +19,18 @@ public class Shooters implements BaseAbility {
 
     private static final double DEFAULT_PROJECTILE_SPEED = 1.0;
 
+    @Override
+    public void activate(Plant self, GameContext ctx) {
+        if (self == null || ctx == null) return;
+
+        if ("PuffShroom".equalsIgnoreCase(self.getName())) {
+            int currentSecond = ctx.getTimeManager().getTotalSeconds();
+            if (currentSecond - self.getPlantTimeSecond() >= 60) {
+                self.takeDamage(Integer.MAX_VALUE);
+                ctx.getActivePlants().remove(self);
+            }
+        }
+    }
 
     public void shoot(int damage, int amount, String interval, ShootType shootType,
                       BulletType bulletType, Plant self, GameEngine engine) {
@@ -45,7 +57,7 @@ public class Shooters implements BaseAbility {
 
         boolean hasShot;
         if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET
-                || shootType == ShootType.RANDOM_INSTANT) {
+            || shootType == ShootType.RANDOM_INSTANT) {
             hasShot = shootHoming(damage, bulletType, shootType, self, ctx, engine);
         } else if (shootType == ShootType.TRI_LANE) {
             hasShot = shootTriLane(damage, bulletType, self, ctx);
@@ -115,7 +127,7 @@ public class Shooters implements BaseAbility {
                     double startX = self.getX() + dir[0] * 0.3 * i;
                     double startY = row + dir[1] * 0.3 * i;
                     Projectile p = new Projectile(damage, startX, startY, row,
-                            DEFAULT_PROJECTILE_SPEED, bulletType, trajectory, false, dir[0], dir[1], self);
+                        DEFAULT_PROJECTILE_SPEED, bulletType, trajectory, false, dir[0], dir[1], self);
                     ctx.setNewProjectiles(p);
                     firedAny = true;
                 }
@@ -177,7 +189,7 @@ public class Shooters implements BaseAbility {
         Zombie target = candidates.get(0);
 
         Projectile p = new Projectile(damage, self.getX(), self.getRow(), self.getRow(),
-                DEFAULT_PROJECTILE_SPEED, bulletType, TrajectoryType.HOMING, false, self);
+            DEFAULT_PROJECTILE_SPEED, bulletType, TrajectoryType.HOMING, false, self);
         p.setHomingTarget(target);
         ctx.setNewProjectiles(p);
         return true;
@@ -227,7 +239,7 @@ public class Shooters implements BaseAbility {
                     }
                 }
             }
-            case MULTI_TARGET_BURST -> { // Caulipower, Electric Blueberry, Magnet-shroom
+            case MULTI_TARGET_BURST -> {
                 if ("Magnet-shroom".equalsIgnoreCase(self.getName())) {
                     for (int i = 0; i < 3; i++) handleMagnetShroomAction(self, ctx);
                 } else {
@@ -236,10 +248,12 @@ public class Shooters implements BaseAbility {
                     }
                 }
             }
-            case SELF_RESET -> { // Sea-shroom, Puff-shroom: رفرش همه‌ی نمونه‌های خودشون
+            case SELF_RESET -> {
+                int currentSecond = ctx.getTimeManager().getTotalSeconds();
                 for (Plant other : ctx.getAlivePlants()) {
-                    if (other.getName().equals(self.getName())) {
+                    if (other.getName().equalsIgnoreCase(self.getName())) {
                         other.setLastActionSecond(0);
+                        other.setPlantTimeSecond(currentSecond);
                     }
                 }
             }
@@ -249,10 +263,7 @@ public class Shooters implements BaseAbility {
         com.workshop.view.Console.showMessage("Plant Food: " + self.getName() + " unleashed a barrage!");
     }
 
-    private boolean hasZombieAhead(
-        Plant plant,
-        GameContext ctx
-    ) {
+    private boolean hasZombieAhead(Plant plant, GameContext ctx) {
         for (Zombie zombie : ctx.getAliveZombies()) {
             if (zombie == null || zombie.isDead()) {
                 continue;
@@ -269,5 +280,4 @@ public class Shooters implements BaseAbility {
 
         return false;
     }
-
 }
