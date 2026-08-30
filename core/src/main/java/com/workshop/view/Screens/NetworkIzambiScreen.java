@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -42,9 +43,13 @@ import com.workshop.view.gameplay.ZombieGibLayer;
 import pvz.skin.PvzSkin;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 /**
  * Screen for a networked 2-player "I, Zombie" match, built from the same
@@ -88,6 +93,17 @@ public class NetworkIzambiScreen implements Screen {
     private Label timerLabel;
 
     private boolean endHandled;
+    private static final String[] TEXT_REACTIONS = {
+        "GG!",
+        "Nice move!",
+        "Oops!"
+    };
+
+    private static final String[] EMOJI_PATHS = {
+        "UI/REACTIONS/emoji_0.png",
+        "UI/REACTIONS/emoji_1.png",
+        "UI/REACTIONS/emoji_2.png"
+    };
 
     public NetworkIzambiScreen(
         PvzGame game,
@@ -146,7 +162,7 @@ public class NetworkIzambiScreen implements Screen {
                         case "STATE" -> match.onRemoteState(payload);
                         case "ACTION" -> match.onRemoteAction(payload);
                         case "END" -> match.onRemoteEnd(payload);
-                        case "REACTION" -> Toast.showInfo(stage, skin, opponentUsername + ": " + payload);
+                        case "REACTION" -> handleReaction(payload);
                         default -> {
                         }
                     }
@@ -219,14 +235,68 @@ public class NetworkIzambiScreen implements Screen {
         hud.add(sunLabel).right().padTop(6f).row();
         hud.add(timerLabel).right().padTop(6f).row();
 
-        TextButton reactionButton = new TextButton("Send GG", skin, "purple");
-        reactionButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                new Thread(() -> GameClient.get().sendMatchReaction(matchId, "GG")).start();
-            }
-        });
-        hud.add(reactionButton).right().padTop(16f).width(160f).row();
+        Table reactionTable = new Table();
+
+        for (int i = 0; i < TEXT_REACTIONS.length; i++) {
+            final int reactionIndex = i;
+
+            TextButton button = new TextButton(
+                TEXT_REACTIONS[i],
+                skin,
+                "purple"
+            );
+
+            button.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    sendTextReaction(reactionIndex);
+                }
+            });
+
+            reactionTable.add(button)
+                .width(150f)
+                .height(45f)
+                .padBottom(5f);
+
+            reactionTable.row();
+        }
+
+        hud.add(reactionTable)
+            .right()
+            .padTop(16f)
+            .row();
+
+        Table emojiTable = new Table();
+
+        for (int i = 0; i < EMOJI_PATHS.length; i++) {
+            final int emojiIndex = i;
+
+            Texture texture = new Texture(
+                Gdx.files.internal(EMOJI_PATHS[i])
+            );
+
+            TextureRegionDrawable drawable =
+                new TextureRegionDrawable(new TextureRegion(texture));
+
+            ImageButton emojiButton = new ImageButton(drawable);
+
+            emojiButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    sendEmojiReaction(emojiIndex);
+                }
+            });
+
+            emojiTable.add(emojiButton)
+                .width(55f)
+                .height(55f)
+                .pad(4f);
+        }
+
+        hud.add(emojiTable)
+            .right()
+            .padTop(8f)
+            .row();
 
         TextButton forfeitButton = new TextButton("Forfeit", skin, "purple");
         forfeitButton.addListener(new ChangeListener() {
@@ -438,6 +508,103 @@ public class NetworkIzambiScreen implements Screen {
         overlay.add(label).padBottom(16f).row();
         overlay.add(backButton).width(220f);
         stage.addActor(overlay);
+    }
+
+    private void sendTextReaction(int index) {
+        if (index < 0 || index >= TEXT_REACTIONS.length) {
+            return;
+        }
+
+        String payload = "TEXT:" + index;
+
+        new Thread(() ->
+            GameClient.get().sendMatchReaction(matchId, payload),
+            "reaction-sender"
+        ).start();
+    }
+
+    private void sendEmojiReaction(int index) {
+        if (index < 0 || index >= EMOJI_PATHS.length) {
+            return;
+        }
+
+        String payload = "EMOJI:" + index;
+
+        new Thread(() ->
+            GameClient.get().sendMatchReaction(matchId, payload),
+            "emoji-reaction-sender"
+        ).start();
+    }
+
+    private void handleReaction(String payload) {
+        if (payload == null || payload.isBlank()) {
+            return;
+        }
+
+        if (payload.startsWith("TEXT:")) {
+            String indexText = payload.substring("TEXT:".length());
+
+            try {
+                int index = Integer.parseInt(indexText);
+
+                if (index < 0 || index >= TEXT_REACTIONS.length) {
+                    return;
+                }
+
+                Toast.showInfo(
+                    stage,
+                    skin,
+                    opponentUsername + ": " + TEXT_REACTIONS[index]
+                );
+            } catch (NumberFormatException ignored) {
+                // Invalid reaction payload.
+            }
+        }
+
+        if (payload.startsWith("EMOJI:")) {
+            String indexText = payload.substring("EMOJI:".length());
+
+            try {
+                int index = Integer.parseInt(indexText);
+
+                if (index < 0 || index >= EMOJI_PATHS.length) {
+                    return;
+                }
+
+                showEmojiReaction(index);
+            } catch (NumberFormatException ignored) {
+                // Invalid emoji reaction.
+            }
+        }
+    }
+
+    private void showEmojiReaction(int index) {
+        Texture texture = new Texture(
+            Gdx.files.internal(EMOJI_PATHS[index])
+        );
+
+        Image image = new Image(texture);
+
+        image.setSize(110f, 110f);
+
+        image.setPosition(
+            stage.getViewport().getWorldWidth() - 140f,
+            stage.getViewport().getWorldHeight() - 150f
+        );
+
+        stage.addActor(image);
+
+        image.addAction(
+            Actions.sequence(
+                Actions.fadeIn(0.15f),
+                Actions.delay(2f),
+                Actions.fadeOut(0.35f),
+                Actions.run(() -> {
+                    image.remove();
+                    texture.dispose();
+                })
+            )
+        );
     }
 
     @Override

@@ -44,8 +44,10 @@ public final class ZombieActor extends Actor {
     private float sandstormEffectTime;
     private Float sandstormScale;
 
-    private static final float ICE_HEIGHT_TO_CELL_RATIO = 2.0f;
-    private static final float ICE_X_OFFSET = 33f;
+    private static final float ICE_HEIGHT_TO_CELL_RATIO =
+        TARGET_HEIGHT_TO_CELL_RATIO * 1.05f;
+
+    private static final float ICE_X_OFFSET = 0f;
     private static final float ICE_Y_OFFSET = 0f;
 
     private boolean wasIceVisible;
