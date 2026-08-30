@@ -94,11 +94,6 @@ public class Planting implements Command {
             return false;
         }
 
-        if (ctx.getSeason().isWaterCell(y, x, ctx) && !template.hasTheTag(Tag.WATER) && !template.isHasLilyPadUnderneath()) {
-            Console.showMessage("You can't plant this on a water cell!");
-            return false;
-        }
-
         if (levelManager != null && !isHeldSeed && !levelManager.canPlant(type, ctx)) {
             Console.showMessage("You can't plant this here.");
             return false;
@@ -110,8 +105,29 @@ public class Planting implements Command {
             return false;
         }
 
+        boolean water = ctx.getSeason().isWaterCell(y, x, ctx);
+        Plant occupant = tile.getPlant();
+        boolean onLilyPad = occupant != null && occupant.isLilyPad();
+
+        if (template.isLilyPad()) {
+            if (!water) {
+                Console.showMessage("Lily Pad can only be planted on water.");
+                return false;
+            }
+            if (occupant != null) {
+                Console.showMessage("You can't plant here.");
+                return false;
+            }
+        } else if (water
+            && !onLilyPad
+            && !template.hasTheTag(Tag.WATER)
+            && !template.isHasLilyPadUnderneath()) {
+            Console.showMessage("You can't plant this on a water cell!");
+            return false;
+        }
+
         if (isGraveDestroyer(template)) {
-            if (tile.getPlant() != null) {
+            if (occupant != null) {
                 Console.showMessage("You can't plant here.");
                 return false;
             }
@@ -119,7 +135,7 @@ public class Planting implements Command {
                 Console.showMessage("Grave Buster can only be planted on a grave.");
                 return false;
             }
-        } else if (!tile.isPlantable() || tile.getPlant() != null) {
+        } else if (!tile.isPlantable() || (occupant != null && !onLilyPad)) {
             Console.showMessage("You can't plant here.");
             return false;
         }
@@ -174,6 +190,13 @@ public class Planting implements Command {
 
     private void performNormalPlanting(Plant template, String type, int x, int y, GameContext ctx, GameEngine engine, LevelManager levelManager, Plant plantToRemoveFromBelt, boolean isConveyorLevel, boolean isHeldSeed) {
         Plant newPlant = ctx.getPlantFactory().create(template.getName());
+        Plant occupant = ctx.getPlantGrid()[y][x];
+        boolean onLilyPad = occupant != null && occupant.isLilyPad();
+        if (onLilyPad) {
+            newPlant.setHasLilyPadUnderneath(true);
+            ctx.getAlivePlants().remove(occupant);
+            ctx.getPlantGrid()[y][x] = null;
+        }
         engine.getTiles(x, y).setPlant(newPlant);
         ctx.getPlantGrid()[y][x] = newPlant;
         ctx.getAlivePlants().add(newPlant);

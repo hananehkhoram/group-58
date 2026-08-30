@@ -57,6 +57,7 @@ final class ProjectilePamCatalog {
         return upper.contains("PROJECTILE")
             || upper.contains("/PEA/")
             || upper.endsWith("/PEA.PAM")
+            || upper.contains("FIRE_PEA")
             || upper.contains("BULLET");
     }
 

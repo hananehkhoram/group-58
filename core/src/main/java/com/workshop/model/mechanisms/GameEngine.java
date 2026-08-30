@@ -353,26 +353,32 @@ public class GameEngine {
                 continue;
             }
 
-            if (p.isDead()) {
+            flushTimedOutShots(p);
 
-                ctx.getPlantGrid()
-                    [p.getRow()]
-                    [p.getCol()] = null;
+            if (p.isDead()) {
+                p.discardPendingShots();
+                int row = p.getRow();
+                int col = p.getCol();
+                boolean restoreLilyPad = p.isHasLilyPadUnderneath();
+
+                ctx.getPlantGrid()[row][col] = null;
 
                 if (ctx.getLevel().getLevelType()
                     == LevelType.Beghouled_MG
                     && ctx.getBeghouldManager() != null) {
 
                     ctx.getBeghouldManager()
-                        .markCrater(
-                            p.getRow(),
-                            p.getCol()
-                        );
+                        .markCrater(row, col);
+                    restoreLilyPad = false;
                 }
 
                 ctx.getAlivePlants().remove(p);
 
                 ctx.incrementPlantsLost(p);
+
+                if (restoreLilyPad) {
+                    restoreLilyPad(row, col);
+                }
             }
         }
     }
@@ -380,8 +386,41 @@ public class GameEngine {
     public void removePlant(int row, int col) {
         Plant p = ctx.getPlantGrid()[row][col];
         if (p != null) {
+            p.discardPendingShots();
             ctx.getPlantGrid()[row][col] = null;
             ctx.getAlivePlants().remove(p);
+        }
+    }
+
+    private void flushTimedOutShots(Plant plant) {
+        if (!plant.hasPendingShots()) {
+            return;
+        }
+        long armed = plant.getPendingShotArmedTick();
+        if (armed < 0) {
+            return;
+        }
+        if (ctx.getTimeManager().getTotalTicks() - armed >= 15) {
+            plant.releaseAllPendingShots(ctx);
+        }
+    }
+
+    private void restoreLilyPad(int row, int col) {
+        if (row < 0 || col < 0
+            || row >= ctx.getPlantGrid().length
+            || col >= ctx.getPlantGrid()[row].length) {
+            return;
+        }
+        if (ctx.getPlantGrid()[row][col] != null) {
+            return;
+        }
+        try {
+            Plant pad = ctx.getPlantFactory().create("Lily Pad");
+            pad.setRow(row);
+            pad.setCol(col);
+            ctx.getPlantGrid()[row][col] = pad;
+            ctx.getAlivePlants().add(pad);
+        } catch (RuntimeException ignored) {
         }
     }
 

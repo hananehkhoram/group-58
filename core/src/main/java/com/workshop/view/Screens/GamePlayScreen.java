@@ -806,7 +806,7 @@ public class GamePlayScreen implements Screen {
     private void updateHud() {
         if (startZombiesButton != null) {
             startZombiesButton.setVisible(
-                gameplayStarted && !gameContext.isManualStartCommandReceived()
+                gameplayStarted && !ctx.isManualStartCommandReceived()
             );
         }
         sunAmountLabel.setText(

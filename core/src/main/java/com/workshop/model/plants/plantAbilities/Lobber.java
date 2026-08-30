@@ -33,70 +33,47 @@ public class Lobber implements BaseAbility {
             } catch (NumberFormatException e) {
             }
 
-            boolean hasShot = true;
-
-            switch (lobType) {
-                case NORMAL:
-                    shootProjectile(ctx, plant, damage, BulletType.NORMAL);
-                    break;
-                case KERNEL_OR_BUTTER:
-                    boolean isButter = Math.random() < 0.25;
-                    if (isButter) {
-                        shootProjectile(
-                            ctx,
-                            plant,
-                            40,
-                            BulletType.NORMAL,
-                            ProjectileVisualVariant.BUTTER
-                        );
-                    } else {
-                        shootProjectile(ctx, plant, 20, BulletType.NORMAL);
-                    }
-                    break;
-
-                case AOE:
-                    shootProjectile(ctx, plant, damage, BulletType.NORMAL);
-                    break;
-                case AOE_ICE:
-                    shootProjectile(ctx, plant, damage, BulletType.ICE);
-                    break;
-                case AOE_FIRE:
-                    shootProjectile(ctx, plant, damage, BulletType.FIRE);
-                    break;
-                default:
-                    hasShot = false;
-                    break;
+            if (plant.hasPendingShots()) {
+                return;
             }
-            if (hasShot) {
-                ctx.queuePlantAttackAnimation(plant);
-                plant.setLastActionSecond(currentSecond);
+
+            Projectile shot = switch (lobType) {
+                case NORMAL -> createProjectile(plant, damage, BulletType.NORMAL);
+                case KERNEL_OR_BUTTER -> Math.random() < 0.25
+                    ? createProjectile(plant, 40, BulletType.NORMAL, ProjectileVisualVariant.BUTTER)
+                    : createProjectile(plant, 20, BulletType.NORMAL);
+                case AOE -> createProjectile(plant, damage, BulletType.NORMAL);
+                case AOE_ICE -> createProjectile(plant, damage, BulletType.ICE);
+                case AOE_FIRE -> createProjectile(plant, damage, BulletType.FIRE);
+                default -> null;
+            };
+            if (shot == null) {
+                return;
             }
+            plant.armPendingShots(
+                java.util.List.of(shot),
+                ctx.getTimeManager().getTotalTicks()
+            );
+            ctx.queuePlantAttackAnimation(plant);
+            plant.setLastActionSecond(currentSecond);
         }
     }
 
-    private void shootProjectile(
-        GameContext ctx,
+    private Projectile createProjectile(
         Plant plant,
         int damage,
         BulletType type
     ) {
-        shootProjectile(
-            ctx,
-            plant,
-            damage,
-            type,
-            ProjectileVisualVariant.DEFAULT
-        );
+        return createProjectile(plant, damage, type, ProjectileVisualVariant.DEFAULT);
     }
 
-    private void shootProjectile(
-        GameContext ctx,
+    private Projectile createProjectile(
         Plant plant,
         int damage,
         BulletType type,
         ProjectileVisualVariant visualVariant
     ) {
-        Projectile projectile = new Projectile(
+        return new Projectile(
             damage,
             plant.getCol(),
             plant.getRow(),
@@ -108,7 +85,6 @@ public class Lobber implements BaseAbility {
             plant,
             visualVariant
         );
-        ctx.setNewProjectiles(projectile);
     }
 
     private boolean isTargetInRow(int row, int col, GameContext ctx) {
