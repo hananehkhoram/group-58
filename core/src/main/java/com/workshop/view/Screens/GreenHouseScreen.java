@@ -231,14 +231,6 @@ public class GreenHouseScreen implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        for (int i = 0; i < GreenHouse.ROWS; i++) {
-            for (int j = 0; j < GreenHouse.COLS; j++) {
-                if (potActors[i][j] != null) {
-                    potActors[i][j].update(delta);
-                }
-            }
-        }
-
         stage.act(delta);
         stage.draw();
     }

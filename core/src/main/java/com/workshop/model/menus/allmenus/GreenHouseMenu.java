@@ -86,11 +86,11 @@ public class GreenHouseMenu extends BaseMenu {
 
         if (plant == null){
             pot.setMarigold(true);
-            pot.setRemainingPlantedTime(2);
+            pot.setPlantedHours(2);
             pot.plant(null);
         }
         else {
-            pot.setRemainingPlantedTime(8);
+            pot.setPlantedHours(8);
             pot.setMarigold(false);
             pot.plant(plant);
         }
@@ -125,10 +125,6 @@ public class GreenHouseMenu extends BaseMenu {
         }
 
         DataManager.getInstance().saveUser();
-        pot.setEmpty(true);
-        pot.setPlantType(null);
-        pot.setMarigold(false);
-
         return result;
     }
 

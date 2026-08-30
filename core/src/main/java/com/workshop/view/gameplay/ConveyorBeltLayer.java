@@ -19,12 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * نوار کناری نقاله:
- * 1) پس‌زمینهٔ متحرک نوار
- * 2) حرکت پیوستهٔ کارت گیاهان از پایین به بالا
- * 3) انباشته شدن پشت کارت جلویی (بدون عبور از روی هم)
- */
+
 public final class ConveyorBeltLayer extends Group implements Disposable {
 
     private static final float CARD_WIDTH = 108f;
@@ -35,10 +30,8 @@ public final class ConveyorBeltLayer extends Group implements Disposable {
     private static final float PAD_BOTTOM = 10f;
     private static final float BELT_INSET = 5f;
 
-    /** سرعت حرکت گیاهان روی نوار (پیکسل بر ثانیه) */
     private static final float PLANT_SPEED = 55f;
 
-    /** سرعت اسکرول پس‌زمینهٔ نوار */
     private static final float BELT_SCROLL_SPEED = 55f;
 
     private final ConveyorBeltManager conveyorManager;
@@ -182,11 +175,7 @@ public final class ConveyorBeltLayer extends Group implements Disposable {
         seedBankCards.add(card);
     }
 
-    /**
-     * حرکت پیوسته + انباشته شدن:
-     * هر کارت به سمت جایگاه خودش در پشته می‌رود،
-     * ولی از کارت جلویی رد نمی‌شود.
-     */
+
     private void moveAndStackCards(float delta) {
         List<Plant> belt = conveyorManager.getConveyorBelt();
         float topSlotY = getHeight() - PAD_TOP - CARD_HEIGHT;

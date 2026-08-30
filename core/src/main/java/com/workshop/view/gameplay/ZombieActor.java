@@ -25,7 +25,6 @@ public final class ZombieActor extends Actor {
     private static final double DANGER_ZONE_X = 1.5;
     private static final float MAX_DANGER_TINT = 0.65f;
 
-
     private static final float TARGET_HEIGHT_TO_CELL_RATIO = 1.6f;
 
     private Float resolvedScale;
@@ -150,8 +149,11 @@ public final class ZombieActor extends Actor {
     ) {
         Matrix4 oldTransform = batch.getTransformMatrix().cpy();
         Matrix4 transform = new Matrix4(oldTransform);
+
+        float scaleX = (zombie.getSpeed() < 0) ? -scale : scale;
+
         transform.translate(x, y, 0);
-        transform.scale(scale, scale, 1f);
+        transform.scale(scaleX, scale, 1f);
         transform.translate(-x, -y, 0);
         batch.setTransformMatrix(transform);
 

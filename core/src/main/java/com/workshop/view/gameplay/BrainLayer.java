@@ -1,30 +1,41 @@
 package com.workshop.view.gameplay;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Disposable;
+import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
 import com.workshop.model.MiniGame.Izambi.IZombieManager;
+import pvz.libpvz.pam.PamPlayer;
 
-public final class BrainLayer extends Group implements Disposable {
+import java.util.List;
 
-    private static final float BRAIN_HEIGHT_TO_CELL_RATIO = 0.55f;
+public final class BrainLayer extends Group {
+
+    /*
+     * این مقدار را با مسیر واقعی PAM مغز خودت جایگزین کن.
+     *
+     * مثال ساختار مسیر:
+     * 768/.../.../SOMETHING.PAM
+     *
+     * اسم واقعی را حدس نزن.
+     */
+    private static final String BRAIN_PAM =
+        "PUT_YOUR_REAL_BRAIN_PAM_PATH_HERE";
+
+    private static final float TARGET_HEIGHT_TO_CELL_RATIO = 0.55f;
 
     private final GameContext gameContext;
+    private final PamPlayer pamPlayer;
 
     private final float gridX;
     private final float gridY;
     private final float gridWidth;
     private final float gridHeight;
 
-    private final Image[] brainActors;
-
-    private final Texture brainTexture;
+    private final BrainActor[] brainActors;
 
     public BrainLayer(
         GameContext gameContext,
@@ -34,59 +45,32 @@ public final class BrainLayer extends Group implements Disposable {
         float gridHeight
     ) {
         this.gameContext = gameContext;
+        this.pamPlayer = Textures.getPamPlayer();
 
         this.gridX = gridX;
         this.gridY = gridY;
         this.gridWidth = gridWidth;
         this.gridHeight = gridHeight;
 
-        int rows =
-            gameContext.getLevel().getRows();
+        int rows = gameContext.getLevel().getRows();
 
-        brainActors =
-            new Image[rows];
-
-        brainTexture =
-            createBrainTexture();
+        brainActors = new BrainActor[rows];
 
         createBrains();
     }
 
     private void createBrains() {
-        TextureRegion region =
-            new TextureRegion(brainTexture);
-
-        TextureRegionDrawable drawable =
-            new TextureRegionDrawable(region);
-
         for (int row = 0; row < brainActors.length; row++) {
 
-            Image brain =
-                new Image(drawable);
-
-            brain.setTouchable(
-                com.badlogic.gdx.scenes.scene2d.Touchable.disabled
-            );
-
-            float height =
-                getCellHeight()
-                    * BRAIN_HEIGHT_TO_CELL_RATIO;
-
-            float aspect =
-                (float) brainTexture.getWidth()
-                    / brainTexture.getHeight();
-
-            float width =
-                height * aspect;
-
-            brain.setSize(
-                width,
-                height
-            );
+            BrainActor brain =
+                new BrainActor(
+                    BRAIN_PAM,
+                    getCellHeight()
+                );
 
             brain.setPosition(
-                getBrainX(width),
-                getBrainY(row, height)
+                getBrainX(),
+                getBrainY(row)
             );
 
             brainActors[row] = brain;
@@ -97,12 +81,12 @@ public final class BrainLayer extends Group implements Disposable {
 
     @Override
     public void act(float delta) {
-        updateBrains();
+        syncBrains();
 
         super.act(delta);
     }
 
-    private void updateBrains() {
+    private void syncBrains() {
         if (!(gameContext.getLevelManager()
             instanceof IZombieManager manager)) {
 
@@ -110,9 +94,11 @@ public final class BrainLayer extends Group implements Disposable {
             return;
         }
 
+        setVisible(true);
+
         for (int row = 0; row < brainActors.length; row++) {
 
-            Image brain =
+            BrainActor brain =
                 brainActors[row];
 
             if (brain == null) {
@@ -125,26 +111,6 @@ public final class BrainLayer extends Group implements Disposable {
         }
     }
 
-    private float getBrainX(float brainWidth) {
-        return gridX
-            - getCellWidth() * 0.55f
-            - brainWidth / 2f;
-    }
-
-    private float getBrainY(
-        int row,
-        float brainHeight
-    ) {
-        float centerY =
-            gridY
-                + gridHeight
-                - row * getCellHeight()
-                - getCellHeight() / 2f;
-
-        return centerY
-            - brainHeight / 2f;
-    }
-
     private float getCellWidth() {
         return gridWidth
             / gameContext.getLevel().getColumns();
@@ -155,106 +121,180 @@ public final class BrainLayer extends Group implements Disposable {
             / gameContext.getLevel().getRows();
     }
 
-    private Texture createBrainTexture() {
-        int width = 110;
-        int height = 75;
+    private float getBrainX() {
+        return gridX
+            - getCellWidth() * 0.45f;
+    }
 
-        Pixmap pixmap =
-            new Pixmap(
-                width,
-                height,
-                Pixmap.Format.RGBA8888
+    private float getBrainY(int row) {
+        float cellHeight = getCellHeight();
+
+        return gridY
+            + gridHeight
+            - row * cellHeight
+            - cellHeight / 2f;
+    }
+
+    private final class BrainActor extends Actor {
+
+        private final String pamPath;
+        private final float cellHeight;
+
+        private String animationClip;
+
+        private float stateTime;
+
+        private Float resolvedScale;
+
+        BrainActor(
+            String pamPath,
+            float cellHeight
+        ) {
+            this.pamPath = pamPath;
+            this.cellHeight = cellHeight;
+
+            resolveAnimationClip();
+        }
+
+        private void resolveAnimationClip() {
+            try {
+                pamPlayer.loadSync(pamPath);
+
+                List<String> clips =
+                    pamPlayer.clips(pamPath);
+
+                if (clips == null || clips.isEmpty()) {
+                    throw new IllegalStateException(
+                        "Brain PAM has no animation clips: "
+                            + pamPath
+                    );
+                }
+
+                /*
+                 * به جای حدس زدن اسم clip:
+                 * اگر idle وجود داشته باشد از آن استفاده می‌کنیم.
+                 * در غیر این صورت اگر فقط یک clip باشد همان واقعی را می‌گیریم.
+                 * اگر چند clip باشد خطا می‌دهیم تا خودت clip درست را مشخص کنی.
+                 */
+                if (clips.contains("idle")) {
+                    animationClip = "idle";
+                    return;
+                }
+
+                if (clips.size() == 1) {
+                    animationClip = clips.get(0);
+                    return;
+                }
+
+                throw new IllegalStateException(
+                    "Brain PAM has multiple clips. "
+                        + "Choose the correct one explicitly. Clips: "
+                        + clips
+                );
+
+            } catch (Exception e) {
+                throw new IllegalStateException(
+                    "Could not load brain animation from: "
+                        + pamPath,
+                    e
+                );
+            }
+        }
+
+        private float getScale() {
+            if (resolvedScale != null) {
+                return resolvedScale;
+            }
+
+            Rectangle bounds =
+                pamPlayer.bounds(
+                    pamPath,
+                    animationClip
+                );
+
+            if (bounds == null
+                || bounds.height <= 0f) {
+
+                resolvedScale = 1f;
+                return resolvedScale;
+            }
+
+            resolvedScale =
+                cellHeight
+                    * TARGET_HEIGHT_TO_CELL_RATIO
+                    / bounds.height;
+
+            return resolvedScale;
+        }
+
+        @Override
+        public void act(float delta) {
+            super.act(delta);
+
+            stateTime += delta;
+        }
+
+        @Override
+        public void draw(
+            Batch batch,
+            float parentAlpha
+        ) {
+            if (animationClip == null) {
+                return;
+            }
+
+            float scale = getScale();
+
+            Matrix4 oldTransform =
+                batch.getTransformMatrix().cpy();
+
+            Matrix4 transform =
+                new Matrix4(oldTransform);
+
+            transform.translate(
+                getX(),
+                getY(),
+                0f
             );
 
-        pixmap.setColor(
-            0f,
-            0f,
-            0f,
-            0f
-        );
-
-        pixmap.fill();
-
-        Color brainColor =
-            new Color(
-                0.92f,
-                0.42f,
-                0.55f,
+            transform.scale(
+                scale,
+                scale,
                 1f
             );
 
-        pixmap.setColor(brainColor);
+            transform.translate(
+                -getX(),
+                -getY(),
+                0f
+            );
 
-        pixmap.fillCircle(
-            38,
-            36,
-            27
-        );
+            batch.setTransformMatrix(
+                transform
+            );
 
-        pixmap.fillCircle(
-            70,
-            36,
-            27
-        );
+            batch.setColor(
+                1f,
+                1f,
+                1f,
+                parentAlpha
+            );
 
-        pixmap.fillCircle(
-            53,
-            25,
-            25
-        );
-
-        pixmap.setColor(
-            0.55f,
-            0.16f,
-            0.28f,
-            1f
-        );
-
-        pixmap.drawLine(
-            53,
-            12,
-            53,
-            59
-        );
-
-        pixmap.drawLine(
-            25,
-            31,
-            43,
-            38
-        );
-
-        pixmap.drawLine(
-            28,
-            48,
-            45,
-            43
-        );
-
-        pixmap.drawLine(
-            80,
-            27,
-            63,
-            36
-        );
-
-        pixmap.drawLine(
-            81,
-            49,
-            64,
-            43
-        );
-
-        Texture texture =
-            new Texture(pixmap);
-
-        pixmap.dispose();
-
-        return texture;
-    }
-
-    @Override
-    public void dispose() {
-        brainTexture.dispose();
+            try {
+                pamPlayer.draw(
+                    batch,
+                    pamPath,
+                    animationClip,
+                    stateTime,
+                    getX(),
+                    getY(),
+                    true
+                );
+            } finally {
+                batch.setTransformMatrix(
+                    oldTransform
+                );
+            }
+        }
     }
 }

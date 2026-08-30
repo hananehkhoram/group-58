@@ -48,6 +48,11 @@ public class Planting implements Command {
             return;
         }
 
+        if (ctx.getLevel().getLevelType() == LevelType.PLANT_WHAT_YOU_GET && template.getName().equalsIgnoreCase("sunflower")){
+            Console.simplePrint("You can't plant sunflowers in this level.");
+            return;
+        }
+
         if (!isValidPlacement(template, type, x, y, ctx, engine, levelManager, isConveyorLevel, isHeldSeed)) {
             return;
         }
@@ -192,7 +197,7 @@ public class Planting implements Command {
             ctx.setHeldSeed(null); // DebugF
         }
 
-        if (!isConveyorLevel && !isHeldSeed) {
+        if (!isConveyorLevel && !isHeldSeed && ctx.getLevel().getLevelType() != LevelType.PLANT_WHAT_YOU_GET) {
             ctx.setCooldown(type, template.getRechargeTime());
         }
 

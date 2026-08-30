@@ -49,6 +49,8 @@ import com.workshop.view.gameplay.*;
 
 import java.util.ArrayList;
 
+import static com.workshop.view.Screens.CollectionScreen.pamPlayer;
+
 public class GamePlayScreen implements Screen {
 
     private final Stage stage;
@@ -136,17 +138,8 @@ public class GamePlayScreen implements Screen {
 
     private ConveyorBeltLayer conveyorBeltLayer;
     private BrainLayer brainLayer;
-
-    //===========================TEST=============================
-
-    private static final String NORMAL_VASE_PAM =
-        "768/.../VASE_NORMAL/VASE_NORMAL.PAM";
-
-    private static final String PLANT_VASE_PAM =
-        "768/.../VASE_PLANT/VASE_PLANT.PAM";
-
-    private static final String GARGANTUAR_VASE_PAM =
-        "768/.../VASE_GARGANTUAR/VASE_GARGANTUAR.PAM";
+    private static final String BRAIN_PAM_PATH =
+        "PLANT/BRAINSTEM/BRAINSTEM.PAM";
 
 
     public GamePlayScreen(
@@ -317,39 +310,39 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(waterLayer);
         if (level.getLevelType() == LevelType.Wallnuts_MG) {
-            stage.addActor(
-                new BowlingRedLineLayer(
-                    shapeRenderer,
-                    getGridX() + 3 * getCellWidth(),
-                    getGridY(),
-                    getGridHeight()
-                )
+            BowlingRedLineLayer redLineLayer = new BowlingRedLineLayer(
+                shapeRenderer,
+                getGridX() + 3 * getCellWidth(),
+                getGridY(),
+                getGridHeight()
             );
+            stage.addActor(redLineLayer);
+            redLineLayer.toFront();
         }
 
         if (level.getLevelType() == LevelType.Izambie_MG) {
-            stage.addActor(
-                new BowlingRedLineLayer(
-                    shapeRenderer,
-                    getGridX()
-                        + IZombieManager.RED_LINE_COLUMN
-                        * getCellWidth(),
-                    getGridY(),
-                    getGridHeight()
-                )
+            BowlingRedLineLayer redLineLayer = new BowlingRedLineLayer(
+                shapeRenderer,
+                getGridX() + IZombieManager.RED_LINE_COLUMN * getCellWidth(),
+                getGridY(),
+                getGridHeight()
             );
+            stage.addActor(redLineLayer);
+            redLineLayer.toFront();
         }
 
         if (level.getLevelType() == LevelType.DEADLINE) {
-            int deadlineColumn = level.getDeadlineColumn();
-            stage.addActor(
-                new BowlingRedLineLayer(
-                    shapeRenderer,
-                    getGridX() + deadlineColumn * getCellWidth(),
-                    getGridY(),
-                    getGridHeight()
-                )
+            int deadlineColumn = 3;
+            float lineX = getGridX() + (deadlineColumn * getCellWidth());
+
+            BowlingRedLineLayer redLineLayer = new BowlingRedLineLayer(
+                shapeRenderer,
+                lineX,
+                getGridY(),
+                getGridHeight()
             );
+            stage.addActor(redLineLayer);
+            redLineLayer.toFront();
         }
 
         if (level.getLevelType() == LevelType.Vase_MG) {
@@ -2370,10 +2363,6 @@ public class GamePlayScreen implements Screen {
         winLoseOverlay.dispose();
         if (conveyorBeltLayer != null) {
             conveyorBeltLayer.dispose();
-        }
-
-        if (brainLayer != null) {
-            brainLayer.dispose();
         }
     }
 }
