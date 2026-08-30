@@ -37,8 +37,8 @@ public final class PlantAnimationSpec {
             return;
         }
         clipsBound = true;
-        setClip(PlantAnimationState.IDLE, pickClip(available, "idle", "intro"));
-        setClip(PlantAnimationState.ATTACK, pickClip(available, "attack", "special", "intro"));
+        setClip(PlantAnimationState.IDLE, pickClip(available, "idle", "loop"));
+        setClip(PlantAnimationState.ATTACK, pickClip(available, "attack", "special", "loop"));
         setClip(PlantAnimationState.SPECIAL, pickClip(available, "special"));
         setClip(PlantAnimationState.PLANTFOOD, pickClip(available, "plantfood"));
     }

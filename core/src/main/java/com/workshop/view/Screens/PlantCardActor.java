@@ -117,8 +117,8 @@ public class PlantCardActor extends Table {
     private static NinePatchDrawable getCardBackgroundBoosted() {
         if (cardBackgroundBoosted == null) {
             cardBackgroundBoosted = buildRoundedBackground(
-                new Color(0.6f, 0.45f, 0.05f, 0.85f),
-                new Color(1f, 0.85f, 0.2f, 1f)
+                new Color(0.82f, 0.62f, 0.08f, 0.90f),
+                new Color(1f, 0.92f, 0.4f, 1f)
             );
         }
         return cardBackgroundBoosted;
@@ -147,6 +147,28 @@ public class PlantCardActor extends Table {
 
                 float centerX = getX() + getWidth() / 2f;
                 float centerY = getY() + getHeight() / 2f;
+
+                // رندر انیمیشن پس‌زمینه بوست، با مقیاس مناسب برای فیت شدن در کادر کارت
+                if (isBoosted && pamPlayer != null) {
+                    Matrix4 oldMatrix = batch.getTransformMatrix().cpy();
+                    Matrix4 transform = new Matrix4(oldMatrix);
+                    transform.translate(centerX, centerY, 0);
+
+                    // اسکیل بهینه‌شده متناسب با ابعاد کادر
+                    float boostScale = (mode == Mode.SLOT) ? 0.16f : 0.22f;
+                    transform.scale(boostScale, boostScale, 1f);
+
+                    transform.translate(-centerX, -centerY, 0);
+                    batch.setTransformMatrix(transform);
+
+                    try {
+                        pamPlayer.draw(batch, "768/INITIAL/ZEN_GARDEN/BOOSTCARD_ANIM/BOOSTCARD_ANIM.PAM", "animation", animTime, centerX, centerY, true);
+                    } catch (Exception ignored) {
+                    }
+
+                    batch.setTransformMatrix(oldMatrix);
+                }
+
                 batch.setColor(Color.WHITE);
 
                 boolean drawn;
@@ -195,6 +217,9 @@ public class PlantCardActor extends Table {
 
             Label lvlLbl = createSafeLabel("LVL " + plant.getLevel(), "big");
             lvlLbl.setFontScale(0.32f);
+            if (isBoosted) {
+                lvlLbl.setColor(new Color(0.25f, 0.15f, 0.0f, 1f));
+            }
 
             footerTable.add(lvlLbl).left().expandX();
             footerTable.add(buildSunCostGroup()).right();
@@ -232,11 +257,7 @@ public class PlantCardActor extends Table {
             add(cardStack).grow();
         }
 
-        if (isBoosted) {
-            setColor(1f, 0.85f, 0.35f, 1f);
-        } else {
-            setColor(Color.WHITE);
-        }
+        setColor(Color.WHITE);
 
         addListener(new ClickListener() {
             @Override
@@ -267,7 +288,7 @@ public class PlantCardActor extends Table {
         }
 
         String pamPath = "PLANT/" + rawName + "/" + rawName + ".PAM";
-        String[] clips = {"idle", "idle_stage1", "intro", "animation", "anim", "attack", "idle1_1", "stage1_spawn"};
+        String[] clips = {"idle", "idle_stage1", "loop", "animation", "anim", "attack1", "idle1_1", "stage1_spawn"};
 
         Matrix4 oldTransform = batch.getTransformMatrix().cpy();
         if (scale != 1f) {
@@ -302,7 +323,12 @@ public class PlantCardActor extends Table {
 
         Label sunLbl = createSafeLabel(String.valueOf(plant.getSunCost()), "big");
         sunLbl.setFontScale(mode == Mode.SLOT ? 0.3f : 0.4f);
-        sunLbl.setColor(1f, 0.92f, 0.55f, 1f);
+
+        if (isBoosted) {
+            sunLbl.setColor(new Color(0.2f, 0.1f, 0.0f, 1f));
+        } else {
+            sunLbl.setColor(1f, 0.92f, 0.55f, 1f);
+        }
 
         group.add(sunLbl);
 

@@ -32,7 +32,7 @@ public class ZombieDetailsScreen extends BaseScreen {
     private static final float BASE_WIDTH = 1280f;
     private static final float BASE_HEIGHT = 720f;
     private static final Color BG_COLOR = Color.valueOf("0d1b3e");
-    private static final Color STAT_BOX_BG_COLOR = Color.valueOf("2f6c2f"); // رنگ کارت ویژگی‌ها
+    private static final Color STAT_BOX_BG_COLOR = Color.valueOf("2f6c2f");
 
     private static ZombieAnimationResolver animationResolver;
 
@@ -47,7 +47,6 @@ public class ZombieDetailsScreen extends BaseScreen {
     private Image bg;
     private Texture generatedBgTexture;
     private Drawable cardBgDrawable;
-    private Drawable zombieDisplayBg; // پس‌زمینه نمایش زامبی
 
     public ZombieDetailsScreen(Zombie zombie, PamPlayer pamPlayer, TextureBank textureBank, BackListener backListener) {
         this(zombie, pamPlayer, textureBank, backListener, null);
@@ -68,21 +67,8 @@ public class ZombieDetailsScreen extends BaseScreen {
         this.animationSpec = animationResolver.resolve(zombie, seasonName);
 
         this.cardBgDrawable = createSolidColorDrawable(STAT_BOX_BG_COLOR);
-        this.zombieDisplayBg = loadZombieDisplayBackgroundDrawable();
 
         buildUI();
-    }
-
-    private Drawable loadZombieDisplayBackgroundDrawable() {
-        String fullPath = "IMAGES/Menus/Collection/bg.png";
-        try {
-            if (Gdx.files.internal(fullPath).exists()) {
-                Texture tex = new Texture(Gdx.files.internal(fullPath));
-                tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-                return new TextureRegionDrawable(new TextureRegion(tex));
-            }
-        } catch (Exception ignored) {}
-        return createSolidColorDrawable(Color.valueOf("4a3319")); // پشتیبان (قهوه‌ای)
     }
 
     private void buildUI() {
@@ -91,9 +77,17 @@ public class ZombieDetailsScreen extends BaseScreen {
         Table root = new Table();
         root.setFillParent(true);
 
-        generatedBgTexture = createSolidColorTexture(BG_COLOR.r, BG_COLOR.g, BG_COLOR.b, BG_COLOR.a);
-        generatedBgTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        bg = new Image(new TextureRegionDrawable(new TextureRegion(generatedBgTexture)));
+        String bgTexturePath = "IMAGES/Menus/Collection/plantDetailBG.png";
+
+        if (Gdx.files.internal(bgTexturePath).exists()) {
+            Texture bgTexture = new Texture(Gdx.files.internal(bgTexturePath));
+            bgTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            bg = new Image(new TextureRegionDrawable(new TextureRegion(bgTexture)));
+        } else {
+            generatedBgTexture = createSolidColorTexture(BG_COLOR.r, BG_COLOR.g, BG_COLOR.b, BG_COLOR.a);
+            generatedBgTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            bg = new Image(new TextureRegionDrawable(new TextureRegion(generatedBgTexture)));
+        }
         bg.setFillParent(true);
         bg.setScaling(Scaling.fill);
         stage.addActor(bg);
@@ -138,10 +132,6 @@ public class ZombieDetailsScreen extends BaseScreen {
 
         Stack zombieStack = new Stack();
 
-        Table bgWrapper = new Table();
-        bgWrapper.setBackground(zombieDisplayBg); // استفاده از تصویر پس‌زمینه جدید
-        zombieStack.add(bgWrapper);
-
         Actor zombiePamActor = createZombiePamActor(scale);
         Table animWrapper = new Table();
         animWrapper.add(zombiePamActor).expand().fill();
@@ -185,7 +175,7 @@ public class ZombieDetailsScreen extends BaseScreen {
 
     private Table createStatBox(Drawable icon, String labelText, String valueText, float scale) {
         Table box = new Table();
-        box.setBackground(cardBgDrawable); // استفاده از رنگ کارت (سبز)
+        box.setBackground(cardBgDrawable);
 
         if (icon != null) {
             box.add(new Image(icon)).size(32 * scale, 32 * scale).pad(6 * scale);
@@ -250,7 +240,8 @@ public class ZombieDetailsScreen extends BaseScreen {
                 if (textureBank != null) textureBank.update();
 
                 float drawX = getX() + (getWidth() / 2f) + (10f * scale);
-                float drawY = getY() + (getHeight() * 0.2f);
+                // ضریب ارتفاع رو از 0.2f به 0.35f تغییر دادیم تا زامبی بالاتر بیاد
+                float drawY = getY() + (getHeight() * 0.35f);
 
                 try {
                     pamPlayer.draw(batch, pamPath, idleClip, stateTime, drawX, drawY, true);
@@ -294,6 +285,9 @@ public class ZombieDetailsScreen extends BaseScreen {
         stage.dispose();
         if (generatedBgTexture != null) {
             generatedBgTexture.dispose();
+        }
+        if (bg != null && bg.getDrawable() instanceof TextureRegionDrawable) {
+            ((TextureRegionDrawable) bg.getDrawable()).getRegion().getTexture().dispose();
         }
         super.dispose();
     }

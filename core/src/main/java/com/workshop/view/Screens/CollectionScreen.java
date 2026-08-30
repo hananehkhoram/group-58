@@ -26,6 +26,7 @@ import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
 import com.workshop.model.menus.allmenus.CollectionMenu;
 import com.workshop.model.plants.Plant;
+import com.workshop.model.plants.PlantFamily;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 import com.workshop.model.zombie.Zombie;
@@ -104,11 +105,8 @@ public class CollectionScreen implements Screen {
         rootTable.setFillParent(true);
 
         if (menuBgTexture == null) {
-            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-            pixmap.setColor(0.35f, 0.15f, 0.08f, 1f);
-            pixmap.fill();
-            menuBgTexture = new Texture(pixmap);
-            pixmap.dispose();
+            menuBgTexture = new Texture(Gdx.files.internal("IMAGES/Menus/Collection/c_bg.png"));
+            menuBgTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         }
 
         Image bg = new Image(new TextureRegionDrawable(new TextureRegion(menuBgTexture)));
@@ -140,8 +138,19 @@ public class CollectionScreen implements Screen {
         TextButton plantsTabBtn = new TextButton("Plants", skin, "purple");
         TextButton zombiesTabBtn = new TextButton("Zombies", skin, "purple");
 
+        String[] filterOptions = new String[PlantFamily.values().length + 4];
+        filterOptions[0] = "All";
+        filterOptions[1] = "Unlocked";
+        filterOptions[2] = "Locked";
+        filterOptions[3] = "Upgradable";
+
+        int optIdx = 4;
+        for (PlantFamily family : PlantFamily.values()) {
+            filterOptions[optIdx++] = family.name();
+        }
+
         filterBox = new SelectBox<>(skin);
-        filterBox.setItems("All", "Unlocked", "Locked", "Upgradable");
+        filterBox.setItems(filterOptions);
         filterBox.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -169,7 +178,7 @@ public class CollectionScreen implements Screen {
 
         tabTable.add(plantsTabBtn).width(140 * scale).height(45 * scale).pad(5 * scale);
         tabTable.add(zombiesTabBtn).width(140 * scale).height(45 * scale).pad(5 * scale);
-        tabTable.add(filterBox).width(160 * scale).height(40 * scale).padLeft(30 * scale);
+        tabTable.add(filterBox).width(180 * scale).height(40 * scale).padLeft(30 * scale);
         rootTable.add(tabTable).left().pad(10 * scale).row();
 
         Table divider = new Table();
@@ -249,6 +258,12 @@ public class CollectionScreen implements Screen {
             if ("Locked".equals(filter) && isUnlocked) continue;
             if ("Upgradable".equals(filter) && !canUpgrade) continue;
 
+            if (!filter.equals("All") && !filter.equals("Unlocked") && !filter.equals("Locked") && !filter.equals("Upgradable")) {
+                if (plant.getFamily() == null || !plant.getFamily().name().equalsIgnoreCase(filter)) {
+                    continue;
+                }
+            }
+
             Table card = createPlantCard(plant, isUnlocked, currentSeeds, seedsNeeded, scale);
             gridTable.add(card).size(165 * scale, 220 * scale).pad(10 * scale);
 
@@ -298,9 +313,9 @@ public class CollectionScreen implements Screen {
                     if (folderName.equalsIgnoreCase("SUNSHROOM") || folderName.equalsIgnoreCase("PUFFSHROOM")) {
                         preferredClips.add("idle_stage1");
                     } else if (folderName.contains("MINT")) {
-                        preferredClips.add("intro");
+                        preferredClips.add("loop");
                     } else if (folderName.contains("BUSTER")) {
-                        preferredClips.add("attack");
+                        preferredClips.add("attack1");
                     } else if (folderName.contains("ELECTRICBLUE") || folderName.equalsIgnoreCase("CAULIPOWER")) {
                         preferredClips.add("idle1_1");
                     } else if (folderName.contains("KIWIBEAST")) {
@@ -309,7 +324,7 @@ public class CollectionScreen implements Screen {
                         preferredClips.add("stage1_spawn");
                     }
 
-                    String[] defaultClips = {"idle", "idle_stage1", "intro", "animation", "anim", "attack", "idle1_1", "stage1_spawn"};
+                    String[] defaultClips = {"idle", "idle_stage1", "loop", "animation", "anim", "attack", "idle1_1", "stage1_spawn"};
                     for (String c : defaultClips) {
                         if (!preferredClips.contains(c)) {
                             preferredClips.add(c);
