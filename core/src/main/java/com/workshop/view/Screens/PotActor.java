@@ -59,22 +59,25 @@ public class PotActor extends Group {
         setSize(90, 100);
 
         timeLabel = new Label("", skin);
-        timeLabel.setPosition(0, -5);
+        timeLabel.setPosition(0, 0);
         timeLabel.setWidth(90);
         timeLabel.setAlignment(Align.center);
-        timeLabel.setFontScale(0.70f);
-        addActor(timeLabel);
+        timeLabel.setFontScale(0.65f);
 
         actionButton = new TextButton("", skin, "green_small");
-        actionButton.setSize(75, 24);
-        actionButton.setPosition(7.5f, -32);
+        actionButton.setSize(92, 26);
+        actionButton.setPosition(-1f, -28);
+        actionButton.getLabel().setFontScale(0.8f);
+
         actionButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 handleClick();
             }
         });
+
         addActor(actionButton);
+        addActor(timeLabel);
 
         refresh();
     }
@@ -93,22 +96,16 @@ public class PotActor extends Group {
         }
     }
 
-    public void update(float delta) {
-        act(delta);
-    }
-
     @Override
     public void act(float delta) {
         super.act(delta);
 
         if (!pot.isLocked() && !pot.isEmpty() && !pot.isPlantReady()) {
-            double remainingHours = pot.getRemainingPlantedTime() - (delta / 3600.0);
+            double remainingHours = pot.getRemainingPlantedTime();
             if (remainingHours <= 0) {
-                pot.setRemainingPlantedTime(0);
                 pot.setPlantReady(true);
                 refresh();
             } else {
-                pot.setRemainingPlantedTime(remainingHours);
                 timeLabel.setText(formatTime(remainingHours * 3600.0));
             }
         }
@@ -125,24 +122,19 @@ public class PotActor extends Group {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        super.draw(batch, parentAlpha);
-
         if (textureBank != null) textureBank.update();
 
         float drawX = getX() + getWidth() / 2f;
-        float drawY = getY() - 5f;
+        float drawY = getY() + 8f;
+
+        String potClip = (!pot.isEmpty() && !pot.isPlantReady()) ? "boost" : "idle";
+        renderPamScaled(batch, POT_PAM, potClip, animTime, drawX, drawY, 0.38f);
 
         if (pot.isLocked() || isUnlockingAnim) {
             String clip = isUnlockingAnim ? "open" : "idle";
             float time = isUnlockingAnim ? unlockAnimTime : animTime;
             renderPamScaled(batch, LOCK_PAM, clip, time, drawX, drawY + 15f, 0.35f);
-            return;
-        }
-
-        String potClip = (!pot.isEmpty() && !pot.isPlantReady()) ? "boost" : "idle";
-        renderPamScaled(batch, POT_PAM, potClip, animTime, drawX, drawY, 0.38f);
-
-        if (!pot.isEmpty()) {
+        } else if (!pot.isEmpty()) {
             float plantX = drawX - 18f;
 
             if (!pot.isPlantReady()) {
@@ -159,6 +151,8 @@ public class PotActor extends Group {
                 }
             }
         }
+
+        super.draw(batch, parentAlpha);
     }
 
     private void renderPamScaled(Batch batch, String path, String clip, float time, float x, float y, float scale) {
@@ -178,6 +172,8 @@ public class PotActor extends Group {
     }
 
     public void refresh() {
+        timeLabel.toFront();
+
         if (pot.isLocked()) {
             timeLabel.setText("");
             actionButton.setText("Buy");
@@ -201,9 +197,11 @@ public class PotActor extends Group {
             timeLabel.setColor(Color.GREEN);
             actionButton.setText("Collect");
         } else {
-            timeLabel.setText(formatTime(pot.getRemainingPlantedTime()));
+            timeLabel.setText(formatTime(pot.getRemainingPlantedTime() * 3600.0));
             timeLabel.setColor(Color.WHITE);
-            actionButton.setText("Speed up");
+
+            int gemsNeeded = (int) Math.ceil(pot.getRemainingPlantedTime());
+            actionButton.setText("Speed " + gemsNeeded);
         }
     }
 
@@ -214,7 +212,14 @@ public class PotActor extends Group {
     }
 
     private String formatTime(double seconds) {
-        int s = (int) Math.max(0, seconds);
-        return String.format("%02d:%02d", s / 60, s % 60);
+        int totalSecs = (int) Math.max(0, seconds);
+        int hours = totalSecs / 3600;
+        int mins = (totalSecs % 3600) / 60;
+        int secs = totalSecs % 60;
+
+        if (hours > 0) {
+            return String.format("%02d:%02d:%02d", hours, mins, secs);
+        }
+        return String.format("%02d:%02d", mins, secs);
     }
 }

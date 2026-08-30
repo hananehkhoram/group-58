@@ -49,6 +49,8 @@ import com.workshop.view.gameplay.*;
 
 import java.util.ArrayList;
 
+import static com.workshop.view.Screens.CollectionScreen.pamPlayer;
+
 public class GamePlayScreen implements Screen {
 
     private final Stage stage;
@@ -308,39 +310,39 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(waterLayer);
         if (level.getLevelType() == LevelType.Wallnuts_MG) {
-            stage.addActor(
-                new BowlingRedLineLayer(
-                    shapeRenderer,
-                    getGridX() + 3 * getCellWidth(),
-                    getGridY(),
-                    getGridHeight()
-                )
+            BowlingRedLineLayer redLineLayer = new BowlingRedLineLayer(
+                shapeRenderer,
+                getGridX() + 3 * getCellWidth(),
+                getGridY(),
+                getGridHeight()
             );
+            stage.addActor(redLineLayer);
+            redLineLayer.toFront();
         }
 
         if (level.getLevelType() == LevelType.Izambie_MG) {
-            stage.addActor(
-                new BowlingRedLineLayer(
-                    shapeRenderer,
-                    getGridX()
-                        + IZombieManager.RED_LINE_COLUMN
-                        * getCellWidth(),
-                    getGridY(),
-                    getGridHeight()
-                )
+            BowlingRedLineLayer redLineLayer = new BowlingRedLineLayer(
+                shapeRenderer,
+                getGridX() + IZombieManager.RED_LINE_COLUMN * getCellWidth(),
+                getGridY(),
+                getGridHeight()
             );
+            stage.addActor(redLineLayer);
+            redLineLayer.toFront();
         }
 
         if (level.getLevelType() == LevelType.DEADLINE) {
-            int deadlineColumn = level.getDeadlineColumn();
-            stage.addActor(
-                new BowlingRedLineLayer(
-                    shapeRenderer,
-                    getGridX() + deadlineColumn * getCellWidth(),
-                    getGridY(),
-                    getGridHeight()
-                )
+            int deadlineColumn = 3;
+            float lineX = getGridX() + (deadlineColumn * getCellWidth());
+
+            BowlingRedLineLayer redLineLayer = new BowlingRedLineLayer(
+                shapeRenderer,
+                lineX,
+                getGridY(),
+                getGridHeight()
             );
+            stage.addActor(redLineLayer);
+            redLineLayer.toFront();
         }
 
         if (level.getLevelType() == LevelType.Vase_MG) {
@@ -858,8 +860,6 @@ public class GamePlayScreen implements Screen {
         seedBankTable.padLeft(110f);
         seedBankTable.padTop(20f);
 
-        // مستطیل بزرگ پشت کارت‌ها: خودِ بنرِ راه‌راهِ leftBackground از قبل
-        // به‌عنوان بک‌گراند این ستون کار می‌کنه، پس اینجا فقط چیدمانه.
         Table seedBankPanel = new Table();
         seedBankPanel.top();
 
@@ -877,6 +877,9 @@ public class GamePlayScreen implements Screen {
                 skin,
                 PlantCardActor.Mode.SLOT
             );
+
+            // --- خط اضافه شده: تنظیم حالت بوست روی کارت در گیم‌پلی ---
+            card.setBoosted(plant.isPlantFoodActive());
 
             seedBankCards.add(card);
 
@@ -912,9 +915,7 @@ public class GamePlayScreen implements Screen {
             lastConveyorSignature =
                 getConveyorSignature(conveyorManager);
         }
-
     }
-
     private void buildZombieBank(Skin skin) {
         if (!isIZombieLevel()) {
             return;
@@ -1859,7 +1860,26 @@ public class GamePlayScreen implements Screen {
         if (after != null && after != before) {
             clearPlantSelection();
             updateHud();
+            return;
         }
+
+        boolean graveBuster = selectedPlantForPlacement.getAbilityParams() != null
+            && "GRAVE_DESTROY".equals(
+                selectedPlantForPlacement.getAbilityParams().get("explosiveType")
+            );
+        boolean onGrave = row >= 0
+            && row < gameContext.getGraveGrid().length
+            && column >= 0
+            && column < gameContext.getGraveGrid()[row].length
+            && gameContext.getGraveGrid()[row][column] != null;
+
+        Toast.showError(
+            stage,
+            PvzSkin.get(),
+            graveBuster && !onGrave
+                ? "Plant Grave Buster on a grave."
+                : "Can't plant there."
+        );
     }
 
     private void showPlantCooldownError(String plantName) {

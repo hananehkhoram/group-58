@@ -2,6 +2,7 @@ package com.workshop.model.projectile;
 
 import com.workshop.model.level.Level;
 import com.workshop.model.plants.Plant;
+import com.workshop.model.zombie.Zombie;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -177,7 +178,12 @@ public class Projectile {
             return;
         }
 
-        switch (bulletType) {
+        if (visualVariant == ProjectileVisualVariant.BUTTER) {
+            target.takeDamage(damage);
+            if (target instanceof Zombie zombie) {
+                zombie.applyButter();
+            }
+        } else switch (bulletType) {
             case FIRE:
                 if ("Imp Dragon".equals(target.name())) { break; }
                 target.takeDamage(damage * 2);

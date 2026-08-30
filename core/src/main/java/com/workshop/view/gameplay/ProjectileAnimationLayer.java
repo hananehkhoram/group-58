@@ -1,10 +1,13 @@
 package com.workshop.view.gameplay;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
+import com.workshop.model.plants.Plant;
 import com.workshop.model.projectile.Projectile;
 import com.workshop.model.projectile.TrajectoryType;
+import com.workshop.model.zombie.Zombie;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -18,6 +21,10 @@ public final class ProjectileAnimationLayer extends Group {
 
     private static final float SHOOTER_MUZZLE_X_RATIO = 0.20f;
     private static final float SHOOTER_MUZZLE_Y_RATIO = 0.18f;
+    private static final float LOB_LAUNCH_X_RATIO = 0.50f;
+    private static final float LOB_LAUNCH_Y_RATIO = 0.62f;
+    private static final float LOB_APEX_Y_RATIO = 1.25f;
+    private static final float LOB_LAND_Y_RATIO = 0.10f;
 
     private final GameContext gameContext;
     private final ProjectileAnimationResolver resolver;
@@ -107,7 +114,10 @@ public final class ProjectileAnimationLayer extends Group {
         float drawX = getProjectileX(projectile);
         float drawY = getProjectileY(projectile);
 
-        if (projectile.getOwnerPlant() != null
+        if (projectile.getTrajectory() == TrajectoryType.LOBBED) {
+            drawX += lobOffsetX(projectile);
+            drawY += lobOffsetY(projectile);
+        } else if (projectile.getOwnerPlant() != null
             && projectile.getTrajectory() == TrajectoryType.STRAIGHT) {
             drawX += getCellWidth() * SHOOTER_MUZZLE_X_RATIO;
             drawY += getCellHeight() * SHOOTER_MUZZLE_Y_RATIO;
@@ -116,6 +126,48 @@ public final class ProjectileAnimationLayer extends Group {
         drawX += spec.getOffsetX();
         drawY += spec.getOffsetY();
         actor.setPosition(drawX, drawY);
+    }
+
+    private float lobFlightT(Projectile projectile) {
+        Plant owner = projectile.getOwnerPlant();
+        float launchX = owner != null ? (float) owner.getX() : (float) projectile.getX();
+        float traveled = (float) projectile.getX() - launchX;
+        return MathUtils.clamp(traveled / estimateLobSpan(projectile, launchX), 0f, 1f);
+    }
+
+    private float lobOffsetX(Projectile projectile) {
+        float t = lobFlightT(projectile);
+        return getCellWidth() * LOB_LAUNCH_X_RATIO * (1f - t);
+    }
+
+    private float lobOffsetY(Projectile projectile) {
+        float t = lobFlightT(projectile);
+        float heightRatio = LOB_LAUNCH_Y_RATIO * (1f - t) * (1f - t)
+            + LOB_APEX_Y_RATIO * 2f * t * (1f - t)
+            + LOB_LAND_Y_RATIO * t * t;
+        return getCellHeight() * heightRatio;
+    }
+
+    private float estimateLobSpan(Projectile projectile, float launchX) {
+        float landingX = launchX + 4f;
+        float nearest = Float.MAX_VALUE;
+
+        for (Zombie zombie : gameContext.getAliveZombies()) {
+            if (zombie == null || zombie.isDead() || zombie.getRow() != projectile.getRow()) {
+                continue;
+            }
+            if (zombie.getX() < launchX) {
+                continue;
+            }
+
+            float distance = (float) zombie.getX() - launchX;
+            if (distance < nearest) {
+                nearest = distance;
+                landingX = (float) zombie.getX();
+            }
+        }
+
+        return Math.max(1.2f, landingX - launchX);
     }
 
     private void removeMissing(Set<Projectile> active) {

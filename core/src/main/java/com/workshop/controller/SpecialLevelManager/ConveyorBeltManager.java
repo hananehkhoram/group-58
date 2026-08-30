@@ -40,7 +40,7 @@ public class ConveyorBeltManager implements LevelManager{
 
     @Override
     public void onPlantSuccess(Plant plantedPlant, GameContext context) {
-        conveyorBelt.removeIf(p -> p.getName().equalsIgnoreCase(plantedPlant.getName()));
+        conveyorBelt.remove(plantedPlant);
     }
 
     private void spawnPlantOnConveyor(GameContext context) {

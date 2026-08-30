@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 
-public class Shop{
+public class Shop {
     private ItemType[] permanentItems;
     private UserManager um;
     protected User currentUser;
@@ -18,7 +18,6 @@ public class Shop{
         this.um = UserManager.getInstance();
         this.currentUser = um.getCurrentUser();
         this.permanentItems = ItemType.values();
-
     }
 
     public ItemType[] getPermanentItems() {
@@ -31,7 +30,7 @@ public class Shop{
         LocalDate today = LocalDate.now();
 
         if (currentUser.getLastDailyOfferDate() == null
-                || !today.equals(currentUser.getLastDailyOfferDate())) {
+            || !today.equals(currentUser.getLastDailyOfferDate())) {
 
             updateDailyOffer(currentUser);
         }
@@ -39,13 +38,12 @@ public class Shop{
         return currentUser.getLastDailyOffer();
     }
 
-    public void updateDailyOffer(User currentUser){
+    public void updateDailyOffer(User currentUser) {
         Plant randomPlant = getRandomUnlockedPlant(currentUser);
         currentUser.setLastDailyOfferDate(LocalDate.now());
         DailyOffer newOffer = new DailyOffer(randomPlant);
         currentUser.setLastDailyOffer(newOffer);
 
-//        um.saveToFile();
         DataManager.getInstance().saveUser();
     }
 
@@ -57,7 +55,6 @@ public class Shop{
         }
 
         Random random = new Random();
-
         int randomIndex = random.nextInt(unlockedPlants.size());
 
         return unlockedPlants.get(randomIndex);
@@ -72,4 +69,3 @@ public class Shop{
         return null;
     }
 }
-

@@ -58,7 +58,7 @@
 57,Ice-shroom,EXPLOSIVE,SHROOM;ICE,75,0,0,Explosive,explosiveType=BOARD_WIDE_FREEZE,یخ زدن و توقف موقت تمامی زامبی‌های موجود در کل نقشه.,NONE,ندارد (مصرفی آنی),STAT:FREEZE_TIME:+2s,STAT:COOLDOWN:-5s,STAT:DMG:+50,,50
 58,Lily Pad,MODIFIER,WATER;STACK,25,300,0,Modifier,modifierType=WATER_PLATFORM,بستر کاشت سایر گیاهان روی آب (ضروری برای ساحل).,SELF_RESET,ایجاد چند کپی از خود روی خانه‌های خالی آب.,STAT:COST:-25,STAT:HP:+200,STAT:COOLDOWN:-2s,,5
 59,Hot Potato,EXPLOSIVE,FIRE,0,0,0,Explosive,explosiveType=MELT_AREA,کاشت روی یخ برای آب کردن فوری آن (ضروری برای غار یخ‌زده).,NONE,ندارد (مصرفی آنی),STAT:COOLDOWN:-2s,BEHAVIOR:MELT_AREA_3X3,BEHAVIOR:EXPLODE_ON_FINISH,,5
-60,Grave Buster,EXPLOSIVE,,0,0,Insta-kill,Explosive,explosiveType=GRAVE_DESTROY,از بین بردن قبرها. (ضروری برای مراحل مصر باستان و قرون تاریک).,NONE,ندارد (مصرفی آنی),STAT:EAT_TIME:-1s,STAT:COOLDOWN:-2s,BEHAVIOR:EXPLODE_ON_FINISH,,10
+60,Grave Buster,EXPLOSIVE,,0,300,Insta-kill,Explosive,explosiveType=GRAVE_DESTROY,از بین بردن قبرها. (ضروری برای مراحل مصر باستان و قرون تاریک).,NONE,ندارد (مصرفی آنی),STAT:EAT_TIME:-1s,STAT:COOLDOWN:-2s,BEHAVIOR:EXPLODE_ON_FINISH,3,10
 61,Enlighten-mint,SUN_PRODUCER,,0,0,0,PlantFooder,,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,NONE,ندارد (مصرفی آنی),STAT:DURATION:+1s,STAT:COOLDOWN:-5s,BEHAVIOR:RESET_FAMILY_COOLDOWNS,,85
 62,Appease mint,SHOOTER,,0,0,0,PlantFooder,,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,NONE,ندارد (مصرفی آنی),STAT:DURATION:+1s,STAT:COOLDOWN:-5s,BEHAVIOR:RESET_FAMILY_COOLDOWNS,,85
 63,Arma-mint,LOBBER,,0,0,0,PlantFooder,,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,NONE,ندارد (مصرفی آنی),STAT:DURATION:+1s,STAT:COOLDOWN:-5s,BEHAVIOR:RESET_FAMILY_COOLDOWNS,,85

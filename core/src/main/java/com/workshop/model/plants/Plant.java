@@ -33,6 +33,7 @@ public class Plant implements Damageable {
     private Double actionInterval;
     private double rechargeTime;
     private int lastActionSecond = 0;   // timeManaging
+    private boolean actionComplete;
 
     private int level;
 
@@ -112,6 +113,9 @@ public class Plant implements Damageable {
 
     @Override
     public boolean isDead() {
+        if (baseHp <= 0) {
+            return false;
+        }
         return hp <= 0;
     }
 
@@ -194,6 +198,19 @@ public class Plant implements Damageable {
     public int getLastActionSecond() { return lastActionSecond; }
     public void setLastActionSecond(int lastActionSecond)
     { this.lastActionSecond = lastActionSecond; }
+
+    public void markActionComplete() {
+        actionComplete = true;
+    }
+
+    public boolean isActionComplete() {
+        return actionComplete;
+    }
+
+    public boolean isGraveDestroyer() {
+        return abilityParams != null
+            && "GRAVE_DESTROY".equals(abilityParams.get("explosiveType"));
+    }
 
     public boolean hasTheTag(Tag tag) {
         return tags != null && tags.contains(tag);

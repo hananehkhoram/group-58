@@ -36,6 +36,7 @@ public class GreenHouseMenu extends BaseMenu {
         this.plantFactory = new PlantFactory(dm);
         this.name = "Greenhouse menu";
     }
+
     public String buyPot(int x, int y) {
         Pot pot = greenHouse.getPot(x, y);
         if (pot == null) return "Invalid pot index.";
@@ -60,12 +61,12 @@ public class GreenHouseMenu extends BaseMenu {
             for (int j = 0; j < 5; j++) {
                 Pot pot = greenHouse.getPot(i, j);
                 sb.append("---------\n").append(" (").append(i).append(", ").append(j).append(") ").
-                        append(pot.isLocked() ? "Locked " : "Open ");
+                    append(pot.isLocked() ? "Locked " : "Open ");
                 if (pot.isEmpty()) {
                     sb.append("Pot is empty.\n");
                 } else {
                     String plantName = (pot.isMarigold() || pot.getPlantType() == null)
-                            ? "Marigold" : pot.getPlantType().getName();
+                        ? "Marigold" : pot.getPlantType().getName();
                     sb.append(plantName).append(" Remaining time: ");
                     sb.append(pot.getRemainingPlantedTime()).append("\n");
                     if (pot.isPlantReady()) sb.append("Plant is ready!\n");
@@ -74,6 +75,7 @@ public class GreenHouseMenu extends BaseMenu {
         }
         return sb.toString();
     }
+
     public String plantPot(int x,int y){
         Pot pot = greenHouse.getPot(x,y);
         if (pot == null) return "Invalid pot index.";
@@ -84,17 +86,18 @@ public class GreenHouseMenu extends BaseMenu {
 
         if (plant == null){
             pot.setMarigold(true);
-            pot.setRemainingPlantedTime(2);
+            pot.setPlantedHours(2);
             pot.plant(null);
         }
         else {
-            pot.setRemainingPlantedTime(8);
+            pot.setPlantedHours(8);
             pot.setMarigold(false);
             pot.plant(plant);
         }
         DataManager.getInstance().saveUser();
         return "Pot successfully planted.";
     }
+
     public String collectPlant(int x,int y){
         Pot pot = greenHouse.getPot(x,y);
         String result = null;
@@ -103,30 +106,25 @@ public class GreenHouseMenu extends BaseMenu {
         if (pot.isEmpty()) return "Pot is empty";
         if (!pot.isPlantReady()) return "Plant is not ready.";
 
-
-
         if (pot.isMarigold() || pot.getPlantType() == null){
             currentUser.setCoins(currentUser.getCoins() + 500);
             Console.showMessage("Successfully collected marigold");
             pot.collectPlant();
+            result = "Successfully collected 500 coins from Marigold!";
         }
         else {
             String plantName = pot.getPlantType().getName();
 
             if (currentUser.hasStoredBoost(plantName)) {
-                result =  ("Harvested " + plantName + ". You already have a stored boost for this plant," +
-                        " so no extra boost was added.");
+                result = ("Harvested " + plantName + ". You already have a stored boost for this plant, so no extra boost was added.");
             } else {
                 currentUser.addStoredBoost(plantName);
                 result = ("Harvested " + plantName + "! A stored boost has been activated for your next match.");
             }
+            pot.collectPlant();
         }
+
         DataManager.getInstance().saveUser();
-        pot.setEmpty(true);
-        pot.setPlantType(null);
-        pot.setMarigold(false);
-
-
         return result;
     }
 
@@ -140,15 +138,19 @@ public class GreenHouseMenu extends BaseMenu {
         double remainingHours = pot.getRemainingPlantedTime();
         int gemsNeeded = (int) Math.ceil(remainingHours);
 
+        if (currentUser.getGems() < gemsNeeded) {
+            return "Not enough gems!";
+        }
+
+        currentUser.setGems(currentUser.getGems() - gemsNeeded);
         pot.setPlantReady(true);
-//        um.saveToFile();
         DataManager.getInstance().saveUser();
 
         String name = (pot.isMarigold() || pot.getPlantType() == null) ? "Marigold" : pot.getPlantType().getName();
 
-        return "Successfully accelerated growth! Gained a fully grown " + name + " for " +
-                gemsNeeded + " gems.";
+        return "Successfully accelerated growth! Gained a fully grown " + name + " for " + gemsNeeded + " gems.";
     }
+
     public Plant determineRandomPlantToPlant() {
         if (random.nextBoolean()) {
             return null;

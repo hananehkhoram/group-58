@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -17,7 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.workshop.model.GameContext;
 import com.workshop.model.menus.allmenus.ShopMenu;
 import com.workshop.model.plants.Plant;
@@ -32,6 +33,9 @@ import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 import pvz.skin.PvzSkin;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,8 +53,9 @@ public class ShopScreen implements Screen {
         final boolean purchased;
         final ItemType itemType;
         final Plant iconPlant;
+        final boolean isDaily;
 
-        ShopEntry(int id, String title, int price, Currency currency, boolean purchased, ItemType itemType, Plant iconPlant) {
+        ShopEntry(int id, String title, int price, Currency currency, boolean purchased, ItemType itemType, Plant iconPlant, boolean isDaily) {
             this.id = id;
             this.title = title;
             this.price = price;
@@ -58,15 +63,17 @@ public class ShopScreen implements Screen {
             this.purchased = purchased;
             this.itemType = itemType;
             this.iconPlant = iconPlant;
+            this.isDaily = isDaily;
         }
     }
 
-    private static final float VIRTUAL_WIDTH = 1024f;
-    private static final float VIRTUAL_HEIGHT = 576f;
+    private static final float DESIGN_WIDTH = 1024f;
+    private static final float DESIGN_HEIGHT = 576f;
 
     private final GameContext ctx;
     private final Listener listener;
     private final Stage stage;
+    private final ScreenViewport viewport;
     private final Skin skin;
 
     private ShopMenu shopMenu;
@@ -75,21 +82,37 @@ public class ShopScreen implements Screen {
     private CurrencyHeader currencyHeader;
 
     private Texture menuBgTexture, overlayTexture, panelTexture;
-    private Drawable cardHeaderBg, cardBodyBg, grassIconBg;
+    private Drawable cardHeaderBg, cardBodyBg, grassIconBg, redRibbonBg;
 
     private TextureBank textureBank;
     private PamPlayer pamPlayer;
     private float stateTime = 0f;
+    private float conversionPurchasedTime = -10f;
+
+    private List<Label> dailyTimerLabels = new ArrayList<>();
 
     public ShopScreen(GameContext ctx, Listener listener) {
         this.ctx = ctx;
         this.listener = listener;
         this.skin = PvzSkin.get();
-        this.stage = new Stage(new FitViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
+
+        enableLinearFilteringOnFonts();
+
+        this.viewport = new ScreenViewport();
+        this.stage = new Stage(viewport);
+        this.shopMenu = new ShopMenu(ctx);
 
         initPvzLibrary();
         initCustomDrawables();
         buildUI();
+    }
+
+    private void enableLinearFilteringOnFonts() {
+        if (skin == null) return;
+        for (BitmapFont font : skin.getAll(BitmapFont.class).values()) {
+            font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            font.getData().setScale(1.25f);
+        }
     }
 
     private void initPvzLibrary() {
@@ -106,6 +129,7 @@ public class ShopScreen implements Screen {
         cardHeaderBg = createColorDrawable(Color.valueOf("4C9A2A"));
         cardBodyBg = createColorDrawable(Color.valueOf("F3E5AB"));
         grassIconBg = createColorDrawable(Color.valueOf("6B8E23"));
+        redRibbonBg = createColorDrawable(new Color(0.85f, 0.15f, 0.15f, 0.95f));
     }
 
     private Drawable createColorDrawable(Color color) {
@@ -118,19 +142,16 @@ public class ShopScreen implements Screen {
     }
 
     private void buildUI() {
-        shopMenu = new ShopMenu(ctx);
         currentUser = UserManager.getInstance().getCurrentUser();
 
         stage.clear();
         Table rootTable = new Table();
         rootTable.setFillParent(true);
 
+        // بارگذاری پس‌زمینه از مسیر IMAGES/Menus/shop/shop_bg.png
         if (menuBgTexture == null) {
-            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-            pixmap.setColor(Color.valueOf("2D1E18"));
-            pixmap.fill();
-            menuBgTexture = new Texture(pixmap);
-            pixmap.dispose();
+            menuBgTexture = new Texture(Gdx.files.internal("IMAGES/Menus/shop/shop_bg.png"));
+            menuBgTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         }
 
         Image bg = new Image(new TextureRegionDrawable(new TextureRegion(menuBgTexture)));
@@ -140,7 +161,6 @@ public class ShopScreen implements Screen {
         stage.addActor(bg);
         stage.addActor(rootTable);
 
-        // Header
         Table header = new Table();
         ImageButton closeBtn = new ImageButton(skin, "generic_close_circle");
         closeBtn.addListener(new ChangeListener() {
@@ -151,7 +171,6 @@ public class ShopScreen implements Screen {
         });
 
         Label titleLabel = createSafeLabel("CRAZY DAVE'S SHOP", "big");
-        titleLabel.setFontScale(0.85f);
         titleLabel.setColor(Color.GOLD);
 
         currencyHeader = new CurrencyHeader();
@@ -163,7 +182,7 @@ public class ShopScreen implements Screen {
         rootTable.add(header).fillX().padTop(5).row();
         rootTable.add(buildDivider()).fillX().height(3).padLeft(15).padRight(15).padBottom(5).row();
 
-        itemsGrid = new Table().top();
+        itemsGrid = new Table().center();
         ScrollPane scrollPane = new ScrollPane(itemsGrid, skin);
         scrollPane.setFadeScrollBars(false);
         scrollPane.setScrollingDisabled(false, true);
@@ -174,24 +193,25 @@ public class ShopScreen implements Screen {
 
     private void refreshItemsGrid() {
         itemsGrid.clear();
+        dailyTimerLabels.clear();
         currentUser = UserManager.getInstance().getCurrentUser();
 
         for (ShopEntry entry : buildEntries()) {
-            itemsGrid.add(createItemCard(entry)).size(210, 410).pad(10);
+            itemsGrid.add(createItemCard(entry)).width(250f).height(480f).pad(15);
         }
     }
 
     private List<ShopEntry> buildEntries() {
         List<ShopEntry> entries = new ArrayList<>();
-        DailyOffer offer = currentUser != null ? currentUser.getLastDailyOffer() : null;
+        DailyOffer offer = shopMenu.getShop().getDailyOffer();
 
         if (offer != null) {
             String plantName = offer.getPlantType() != null ? offer.getPlantType().getName() : offer.getName();
-            entries.add(new ShopEntry(0, "Daily: " + plantName, offer.getPrice(), offer.getCurrency(), offer.isPurchased(), null, offer.getPlantType()));
+            entries.add(new ShopEntry(0, "Daily: " + plantName, offer.getPrice(), offer.getCurrency(), offer.isPurchased(), null, offer.getPlantType(), true));
         }
 
         for (ItemType item : ItemType.values()) {
-            entries.add(new ShopEntry(item.getId(), item.getDisplayName(), item.getPrice(), item.getCurrency(), false, item, null));
+            entries.add(new ShopEntry(item.getId(), item.getDisplayName(), item.getPrice(), item.getCurrency(), false, item, null, false));
         }
         return entries;
     }
@@ -199,30 +219,44 @@ public class ShopScreen implements Screen {
     private Table createItemCard(ShopEntry entry) {
         Table card = new Table().top();
 
-        // Header
         Table headerTable = new Table();
         headerTable.setBackground(cardHeaderBg);
         Label nameLbl = createSafeLabel(entry.title, "default");
-        nameLbl.setFontScale(0.75f);
         nameLbl.setColor(Color.WHITE);
         nameLbl.setAlignment(Align.center);
         nameLbl.setWrap(true);
-        headerTable.add(nameLbl).width(190).pad(4).center();
+        headerTable.add(nameLbl).width(230f).pad(8).center();
 
-        // Body
         Table bodyTable = new Table().top().pad(10);
         bodyTable.setBackground(cardBodyBg);
 
+        Stack iconStack = new Stack();
+
         Table iconHolder = new Table();
         iconHolder.setBackground(grassIconBg);
-        iconHolder.add(buildIcon(entry)).size(130, 130);
+        iconHolder.add(buildIcon(entry)).size(180f, 180f);
+
+        iconStack.add(iconHolder);
+
+        if (entry.isDaily) {
+            WidgetGroup ribbon = createDiagonalRibbon();
+
+            float offsetX = 140f;
+            float offsetY = 100f;
+
+            Container<WidgetGroup> ribbonContainer = new Container<>(ribbon);
+            ribbonContainer.top().center();
+            ribbonContainer.padTop(-offsetY).padLeft(-offsetX);
+
+            iconStack.add(ribbonContainer);
+        }
 
         Table priceTable = new Table().center();
         Label priceLbl = createSafeLabel(String.valueOf(entry.price), "default");
-        priceLbl.setFontScale(0.9f);
         priceLbl.setColor(entry.currency == Currency.COIN ? Color.valueOf("8B5A00") : Color.valueOf("005F73"));
+
         priceTable.add(priceLbl).padRight(10);
-        priceTable.add(buildCurrencyIcon(entry.currency)).size(24, 24);
+        priceTable.add(buildCurrencyIcon(entry.currency)).size(36, 36);
 
         TextButton buyBtn = new TextButton(entry.purchased ? "Sold" : "Buy", skin, "green_small");
         buyBtn.setDisabled(entry.purchased);
@@ -233,23 +267,79 @@ public class ShopScreen implements Screen {
             }
         });
 
-        bodyTable.add(iconHolder).size(150, 150).padTop(10).padBottom(20).row();
+        bodyTable.add(iconStack).size(190f, 190f).padTop(10).padBottom(15).row();
         bodyTable.add(priceTable).expandY().center().padBottom(15).row();
-        bodyTable.add(buyBtn).width(140).height(42).bottom().padBottom(15);
+        bodyTable.add(buyBtn).width(180f).height(50f).bottom().padBottom(10);
 
-        card.add(headerTable).fillX().height(45).row();
+        card.add(headerTable).fillX().height(60f).row();
         card.add(bodyTable).grow();
 
         return card;
+    }
+
+    private WidgetGroup createDiagonalRibbon() {
+        WidgetGroup group = new WidgetGroup();
+
+        float width = 120f;
+        float height = 24f;
+
+        Image bg = new Image(redRibbonBg);
+        bg.setSize(width, height);
+
+        Label timerLbl = createSafeLabel(getRemainingTimeString(), "default");
+        timerLbl.setColor(Color.WHITE);
+        timerLbl.setAlignment(Align.center);
+
+        dailyTimerLabels.add(timerLbl);
+
+        Actor clockIcon = new Actor() {
+            @Override
+            public void draw(Batch batch, float parentAlpha) {
+                renderPamAnimation(batch, "768/FULL/UI/PENNY_PURSUITS/ZOMBOSS/CLOCK_ICON/CLOCK_ICON.PAM", "default", getX() + getWidth() / 2f, getY() + getHeight() / 2f, 0.25f, stateTime);
+            }
+        };
+
+        Table contentTable = new Table();
+        contentTable.setSize(width, height);
+        contentTable.add(timerLbl).expandX().center().padLeft(6f);
+        contentTable.add(clockIcon).size(18f, 18f).padRight(6f);
+
+        group.addActor(bg);
+        group.addActor(contentTable);
+        group.setSize(width, height);
+
+        return group;
+    }
+
+    private String getRemainingTimeString() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nextMidnight = LocalDateTime.of(now.toLocalDate().plusDays(1), LocalTime.MIDNIGHT);
+        Duration duration = Duration.between(now, nextMidnight);
+
+        long hours = duration.toHours();
+        long minutes = duration.toMinutesPart();
+        long seconds = duration.toSecondsPart();
+
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    private void updateDailyTimers() {
+        if (dailyTimerLabels.isEmpty()) return;
+        String timeStr = getRemainingTimeString();
+        for (Label lbl : dailyTimerLabels) {
+            lbl.setText(timeStr);
+        }
     }
 
     private Actor buildCurrencyIcon(Currency currency) {
         return new Actor() {
             @Override
             public void draw(Batch batch, float parentAlpha) {
-                String path = (currency == Currency.COIN) ? "768/INITIAL/EFFECTS/COIN_GOLD/COIN_GOLD.PAM" : "768/INITIAL/EFFECTS/COIN_DIAMOND/COIN_DIAMOND.PAM";
-                String clip = (currency == Currency.COIN) ? "animation" : "idle";
-                renderPamAnimation(batch, path, clip, getX() + getWidth() / 2f + 15f, getY() + getHeight() / 2f, 0.22f, stateTime);
+                if (currency == Currency.COIN) {
+                    renderPamAnimation(batch, "768/INITIAL/EFFECTS/COIN_GOLD/COIN_GOLD.PAM", "animation", getX() + getWidth() / 2f, getY() + getHeight() / 2f, 0.25f, stateTime);
+                } else {
+                    renderPamAnimation(batch, "768/INITIAL/EFFECTS/COIN_DIAMOND/COIN_DIAMOND.PAM", "idle", getX() + getWidth() / 2f + 4f, getY() + getHeight() / 2f, 0.16f, stateTime);
+                }
             }
         };
     }
@@ -259,24 +349,26 @@ public class ShopScreen implements Screen {
             @Override
             public void draw(Batch batch, float parentAlpha) {
                 if (entry.itemType == ItemType.CURRENCY_CONVERSION) {
-                    renderPamAnimation(batch, "768/INITIAL/EFFECTS/PRIZE_COINS_LARGE/PRIZE_COINS_LARGE.PAM", "idle", getX() + getWidth() / 2f, getY() + getHeight() / 2f, 0.35f, stateTime);
+                    float durationSincePurchase = stateTime - conversionPurchasedTime;
+                    String clip = (durationSincePurchase >= 0f && durationSincePurchase < 1.2f) ? "born" : "idle";
+                    float animTime = (clip.equals("born")) ? durationSincePurchase : stateTime;
+
+                    renderPamAnimation(batch, "768/INITIAL/EFFECTS/PRIZE_COINS_LARGE/PRIZE_COINS_LARGE.PAM", clip, getX() + getWidth() / 2f, getY() + getHeight() / 2f, 0.35f, animTime);
                 } else if (entry.itemType == ItemType.PLANT_FOOD) {
                     renderPamAnimation(batch, "768/INITIAL/EFFECTS/PLANTFOOD_PICKUP/PLANTFOOD_PICKUP.PAM", "idle", getX() + getWidth() / 2f, getY() + getHeight() / 2f, 0.45f, stateTime);
                 } else if (entry.itemType == ItemType.POT_UNLOCK) {
                     renderPamAnimation(batch, "768/INITIAL/ZEN_GARDEN/GROWING_PLANT_SLOT/GROWING_PLANT_SLOT.PAM", "idle", getX() + getWidth() / 2f, getY() + getHeight() / 2f, 0.45f, stateTime);
                 } else if (entry.itemType == ItemType.SELECTED_SEED_PACK || entry.itemType == ItemType.RANDOM_SEED_PACK) {
                     String clip = (entry.itemType == ItemType.SELECTED_SEED_PACK) ? "sunflower_idle" : "sunflower_shout";
-                    // انتقال Sunflower به سمت بالا (از 10f به 65f تغییر کرد)
                     renderPamAnimation(batch, "768/FULL/NPC/SUNFLOWER/SUNFLOWER.PAM", clip, getX() + getWidth() / 2f, getY() + 65f, 0.18f, stateTime);
                 } else if (entry.iconPlant != null) {
                     String rawName = entry.iconPlant.getName().toUpperCase().replace(" ", "").replace("-", "");
-                    renderPamAnimation(batch, "PLANT/" + rawName + "/" + rawName + ".PAM", "idle", getX() + getWidth() / 2f, getY() + 65f, 0.25f, stateTime);
+                    renderPamAnimation(batch, "PLANT/" + rawName + "/" + rawName + ".PAM", "idle", getX() + getWidth() / 2f, getY() + getHeight() / 2f - 10f, 0.45f, stateTime);
                 }
             }
         };
     }
 
-    // متد کمکی برای جلوگیری از کد تکراری در رندر انیمیشن‌ها
     private void renderPamAnimation(Batch batch, String path, String clip, float x, float y, float scale, float time) {
         if (textureBank != null) textureBank.update();
         Matrix4 oldTransform = batch.getTransformMatrix().cpy();
@@ -434,6 +526,9 @@ public class ShopScreen implements Screen {
 
         if (result != null && result.startsWith("Successfully")) {
             Toast.showSuccess(stage, skin, result);
+            if (entry.itemType == ItemType.CURRENCY_CONVERSION) {
+                conversionPurchasedTime = stateTime;
+            }
         } else {
             Toast.showError(stage, skin, result);
         }
@@ -459,11 +554,14 @@ public class ShopScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        refreshItemsGrid();
     }
 
     @Override
     public void render(float delta) {
         stateTime += delta;
+        updateDailyTimers();
+
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
@@ -472,7 +570,9 @@ public class ShopScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+        viewport.update(width, height, true);
+        float scale = Math.min((float) width / DESIGN_WIDTH, (float) height / DESIGN_HEIGHT);
+        viewport.setUnitsPerPixel(1f / scale);
     }
 
     @Override public void pause() {}

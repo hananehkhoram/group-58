@@ -22,19 +22,33 @@ public final class PlantAnimationResolver {
     private final Map<String, PlantAnimationSpec> resolvedSpecs =
         new HashMap<>();
 
+    private static PlantAnimationResolver shared;
+
+    public static PlantAnimationResolver shared() {
+        if (shared == null) {
+            shared = new PlantAnimationResolver();
+        }
+        return shared;
+    }
+
     public PlantAnimationResolver() {
         FileHandle root =
             Textures.assetsRoot().child(PLANT_ROOT);
 
-        if (!root.exists()) {
+        if (root.exists()) {
+            scanDirectory(root, PAM_PREFIX);
+        } else {
             Gdx.app.error(
                 "PlantAnimationResolver",
                 "Plant animation folder not found: " + root.path()
             );
-            return;
         }
 
-        scanDirectory(root, PAM_PREFIX);
+        FileHandle loosePlants =
+            Textures.assetsRoot().child("IMAGES/PLANT");
+        if (loosePlants.exists() && loosePlants.isDirectory()) {
+            scanDirectory(loosePlants, "PLANT");
+        }
 
         List<String> sunClips =
             Textures.getPamPlayer().clips(
@@ -71,62 +85,22 @@ public final class PlantAnimationResolver {
                 "PlantAnimationResolver",
                 "No PAM found for plant: " + plantName
             );
+            resolvedSpecs.put(key, null);
             return null;
         }
 
-        List<String> clips =
-            Textures.getPamPlayer().clips(pamPath);
-
-        logAvailableClips(
-            plantName,
-            pamPath,
-            clips
-        );
-
-        String idleClip = findClip(clips, "idle");
-
-        if (idleClip == null) {
-            Gdx.app.error(
-                "PlantAnimationResolver",
-                "No idle clip found for: " + plantName
-            );
-            return null;
-        }
-
+        // Do not call clips() here: it loadSyncs atlases on the render thread
+        // and freezes the game the first time a plant like Peashooter is chosen.
         PlantAnimationSpec spec =
-            new PlantAnimationSpec(pamPath, idleClip);
+            new PlantAnimationSpec(pamPath, "idle");
+        spec.setClip(PlantAnimationState.ATTACK, "attack");
+        spec.setClip(PlantAnimationState.SPECIAL, "special");
+        spec.setClip(PlantAnimationState.PLANTFOOD, "plantfood");
 
-        String attackClip = findClip(clips, "attack");
-
-        if (attackClip != null) {
-            spec.setClip(
-                PlantAnimationState.ATTACK,
-                attackClip
-            );
-        }
-
-        String specialClip = findClip(clips, "special");
-
-        if (specialClip != null) {
-            spec.setClip(
-                PlantAnimationState.SPECIAL,
-                specialClip
-            );
-        }
-
-        String plantFoodClip = findClip(clips, "plantfood");
-        if (plantFoodClip == null) {
-            plantFoodClip = findClip(clips, "plant_food");
-        }
-        if (plantFoodClip == null) {
-            plantFoodClip = specialClip;
-        }
-        if (plantFoodClip != null) {
-            spec.setClip(
-                PlantAnimationState.PLANTFOOD,
-                plantFoodClip
-            );
-        }
+        Gdx.app.log(
+            "PlantAnimationResolver",
+            plantName + " -> " + pamPath
+        );
 
         resolvedSpecs.put(key, spec);
         return spec;
@@ -156,7 +130,9 @@ public final class PlantAnimationResolver {
                     .replace('\\', '/')
                     .toUpperCase();
 
-            if (!normalizedPath.contains("/PLANT/")) {
+            if (!normalizedPath.contains("/PLANT/")
+                && !normalizedPath.contains("/EMPOWERMINTS/")
+                && !normalizedPath.startsWith("PLANT/")) {
                 continue;
             }
 
@@ -165,7 +141,7 @@ public final class PlantAnimationResolver {
 
             pamPaths.putIfAbsent(
                 normalize(fileName),
-                childPath
+                stripImagesPrefix(childPath)
             );
         }
     }
@@ -185,6 +161,18 @@ public final class PlantAnimationResolver {
         }
 
         return null;
+    }
+
+    private static String stripImagesPrefix(String path) {
+        if (path == null) {
+            return null;
+        }
+
+        String normalized = path.replace('\\', '/');
+        while (normalized.regionMatches(true, 0, "IMAGES/", 0, 7)) {
+            normalized = normalized.substring(7);
+        }
+        return normalized;
     }
 
     private String normalize(String name) {

@@ -22,13 +22,11 @@ public class ShopMenu extends BaseMenu {
     private Random random = new Random();
     private GreenHouse greenHouse;
 
-
     public ShopMenu(GameContext ctx) {
         super(ctx, MenuType.SHOP);
         this.um = UserManager.getInstance();
         this.currentUser = um.getCurrentUser();
         this.shop = new Shop();
-        shop.updateDailyOffer(currentUser);
         this.greenHouse = currentUser.getGreenHouse();
         this.name = "Shop menu";
     }
@@ -47,6 +45,7 @@ public class ShopMenu extends BaseMenu {
         }
         return sb.toString();
     }
+
     public String showDailyOffer(){
         var offer = shop.getDailyOffer();
         StringBuilder sb = new StringBuilder();
@@ -56,15 +55,15 @@ public class ShopMenu extends BaseMenu {
             } else {
                 sb.append("=== Daily offer ===\n");
                 sb.append("-----------\n");
-                sb.append("Today's special plant seed: ").append(shop.getDailyOffer().getPlantType().getName());
-                sb.append("\nId: ").append(shop.getDailyOffer().getId());
-                sb.append("\nPrice: ").append(shop.getDailyOffer().getPrice()).append("\n");
+                sb.append("Today's special plant seed: ").append(offer.getPlantType().getName());
+                sb.append("\nId: ").append(offer.getId());
+                sb.append("\nPrice: ").append(offer.getPrice()).append("\n");
                 sb.append("-----------\n");
-
             }
         }
         return sb.toString();
     }
+
     public String buyItem(int id, int count, String plantType){
         if (count <= 0) {
             return "Invalid count.";
@@ -90,7 +89,6 @@ public class ShopMenu extends BaseMenu {
         };
     }
 
-    /** محدودیت‌های موجودی (مثل حداکثر تعداد گلدان یا پلانت‌فود) را چک می‌کند. */
     private String checkStockLimit(ItemType item, int count) {
         if (item == ItemType.POT_UNLOCK && currentUser.getOwnedPotsCount() + count > GreenHouse.ROWS * GreenHouse.COLS) {
             return "Purchase failed! You cannot own more than " + (GreenHouse.ROWS * GreenHouse.COLS) + " pots.";
@@ -98,7 +96,6 @@ public class ShopMenu extends BaseMenu {
         return null;
     }
 
-    /** بر اساس نوع ارز، مبلغ رو از کاربر کم می‌کند؛ اگر پول کافی نبود پیام خطا برمی‌گرداند. */
     private String chargeCurrency(ItemType item, int count) {
         int totalCost = item.getPrice() * count;
         if (item.getCurrency() == Currency.COIN) {
@@ -142,7 +139,7 @@ public class ShopMenu extends BaseMenu {
         currentUser.addSeedsToInventory(plant.getName(), seedsGained);
         DataManager.getInstance().saveUser();
         return "Successfully purchased " + count + "x " + item.getDisplayName() +
-                "! You received " + seedsGained + " seeds for: " + plant.getName();
+            "! You received " + seedsGained + " seeds for: " + plant.getName();
     }
 
     private String completeSelectedSeedPackPurchase(ItemType item, int count, String plantType) {
@@ -159,7 +156,7 @@ public class ShopMenu extends BaseMenu {
         currentUser.addSeedsToInventory(officialPlantName, totalSeedsGained);
         DataManager.getInstance().saveUser();
         return "Successfully purchased " + count + "x " + item.getDisplayName() +
-                " for " + officialPlantName + "! Gained " + totalSeedsGained + " seeds.";
+            " for " + officialPlantName + "! Gained " + totalSeedsGained + " seeds.";
     }
 
     private String findUnlockedPlantName(String plantType) {
@@ -171,14 +168,13 @@ public class ShopMenu extends BaseMenu {
         return null;
     }
 
-    /** بدون کم کردن پول یا تغییر وضعیت، بررسی می‌کند آیا این خرید مجاز است یا نه. */
     public String canPurchase(int id, int count) {
         if (count <= 0) {
             return "Invalid count.";
         }
 
         if (id == 0) {
-            DailyOffer offer = currentUser.getLastDailyOffer();
+            DailyOffer offer = shop.getDailyOffer();
             if (offer == null) return "No daily offer available today.";
             if (offer.isPurchased()) return "You have already purchased today's daily offer!";
             if (count > 1) return "You can only buy 1 pack of the daily offer per day.";
@@ -200,7 +196,7 @@ public class ShopMenu extends BaseMenu {
     }
 
     public String buyDailyOffer(int count){
-        DailyOffer offer = currentUser.getLastDailyOffer();
+        DailyOffer offer = shop.getDailyOffer();
         if (offer == null) {
             return "No daily offer available today.";
         }
@@ -211,7 +207,6 @@ public class ShopMenu extends BaseMenu {
             return "You can only buy 1 pack of the daily offer per day.";
         }
 
-
         int totalCost = offer.getPrice();
         if (currentUser.getCoins() < totalCost) return "Not enough coins!";
         currentUser.setCoins(currentUser.getCoins() - totalCost);
@@ -219,9 +214,11 @@ public class ShopMenu extends BaseMenu {
         currentUser.addSeedsToInventory(offer.getName(), offer.getAmount());
 
         offer.setPurchased(true);
-
-//        um.saveToFile();
         DataManager.getInstance().saveUser();
         return "Successfully purchased today's special offer";
+    }
+
+    public Shop getShop() {
+        return shop;
     }
 }

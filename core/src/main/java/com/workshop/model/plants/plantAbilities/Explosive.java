@@ -171,12 +171,29 @@ public class Explosive implements BaseAbility {
         int pRow = plant.getRow();
         int pCol = plant.getCol();
 
-        if (pRow >= 0 && pRow < ctx.getLevel().getRows() && pCol >= 0 && pCol < ctx.getLevel().getColumns()) {
-            if (ctx.getGraveGrid()[pRow][pCol] != null) {
-                ctx.removeGrave(pRow, pCol);
-                engine.removePlant(pRow, pCol);
-            }
+        if (pRow < 0 || pRow >= ctx.getLevel().getRows()
+            || pCol < 0 || pCol >= ctx.getLevel().getColumns()) {
+            return;
         }
+
+        if (ctx.getGraveGrid()[pRow][pCol] == null) {
+            return;
+        }
+
+        int currentSecond = ctx.getTimeManager().getTotalSeconds();
+        if (plant.getLastActionSecond() <= 0) {
+            plant.setLastActionSecond(Math.max(1, currentSecond));
+            ctx.queuePlantAttackAnimation(plant);
+            return;
+        }
+
+        boolean timedOut = currentSecond - plant.getLastActionSecond() >= 5;
+        if (!plant.isActionComplete() && !timedOut) {
+            return;
+        }
+
+        ctx.removeGrave(pRow, pCol);
+        engine.removePlant(pRow, pCol);
     }
 
     private List<int[]> get3x3Tiles(int pRow, int pCol, GameContext ctx) {

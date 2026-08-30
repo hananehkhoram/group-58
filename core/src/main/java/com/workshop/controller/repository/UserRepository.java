@@ -104,9 +104,12 @@ public class UserRepository implements AssetRepository<User> {
 
         String plantName = (u.getLastDailyOffer() != null && u.getLastDailyOffer().getPlantType() != null)
             ? u.getLastDailyOffer().getPlantType().getName() : "";
+        String dateStr = u.getLastDailyOfferDate() == null ? "" : u.getLastDailyOfferDate().toString();
+
         String dailyOffer = u.getLastDailyOffer() == null ? "" :
             u.getLastDailyOffer().getId() + LIST_SEP + u.getLastDailyOffer().getDate() + LIST_SEP
-                + u.getLastDailyOffer().isPurchased() + LIST_SEP + plantName + LIST_SEP + u.isBoughtDailyOfferToday();
+                + u.getLastDailyOffer().isPurchased() + LIST_SEP + plantName + LIST_SEP + u.isBoughtDailyOfferToday()
+                + LIST_SEP + dateStr;
 
         String seedPackets = String.join(LIST_SEP,
             u.getPlantSeedsInventory().entrySet().stream()
@@ -271,7 +274,6 @@ public class UserRepository implements AssetRepository<User> {
             }
         }
 
-
         if (f.length > 28 && !f[28].isBlank()) {
             String[] offerParts = f[28].split(LIST_SEP, -1);
             DailyOffer d = new DailyOffer(Integer.parseInt(offerParts[0]), Long.parseLong(offerParts[1]), Boolean.parseBoolean(offerParts[2]));
@@ -280,8 +282,11 @@ public class UserRepository implements AssetRepository<User> {
                 d.setPlantType(p);
             }
             u.setLastDailyOffer(d);
-            if (offerParts.length > 4) {
+            if (offerParts.length > 4 && !offerParts[4].isBlank()) {
                 u.setBoughtDailyOfferToday(Boolean.parseBoolean(offerParts[4]));
+            }
+            if (offerParts.length > 5 && !offerParts[5].isBlank()) {
+                u.setLastDailyOfferDate(java.time.LocalDate.parse(offerParts[5]));
             }
         }
 

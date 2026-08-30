@@ -61,7 +61,6 @@ public class GreenHouseScreen implements Screen {
         {312, 422, 532, 642}
     };
 
-    // Y offsets updated slightly for optimal spacing between wooden tiles
     private static final float[][] SLOT_OFFSET_Y = {
         {340, 340, 340, 340},
         {215, 215, 215, 215},
@@ -97,19 +96,34 @@ public class GreenHouseScreen implements Screen {
         bg.setFillParent(true);
         stage.addActor(bg);
 
-        currencyHeader = new CurrencyHeader();
-        currencyHeader.setPosition(VIRTUAL_WIDTH - currencyHeader.getPrefWidth() - 20, VIRTUAL_HEIGHT - 50);
-        stage.addActor(currencyHeader);
-
         PotActor.Listener potListener = new PotActor.Listener() {
-            @Override public void onBuy(int x, int y) { showStoreRedirectDialog(); }
-            @Override public void onPlant(int x, int y) { handleResult(greenHouseMenu.plantPot(x, y), x, y); }
-            @Override public void onFasterGrow(int x, int y) { handleResult(greenHouseMenu.growPlant(x, y), x, y); }
-            @Override public void onCollect(int x, int y) {
-                String result = greenHouseMenu.collectPlant(x, y);
+            @Override
+            public void onBuy(int x, int y) {
+                String result = greenHouseMenu.buyPot(x, y);
                 potActors[x][y].refresh();
                 if (currencyHeader != null) currencyHeader.updateValues();
                 showRewardDialog(result);
+            }
+
+            @Override
+            public void onPlant(int x, int y) {
+                handleResult(greenHouseMenu.plantPot(x, y), x, y);
+            }
+
+            @Override
+            public void onFasterGrow(int x, int y) {
+                String result = greenHouseMenu.growPlant(x, y);
+                handleResult(result, x, y);
+            }
+
+            @Override
+            public void onCollect(int x, int y) {
+                String result = greenHouseMenu.collectPlant(x, y);
+                potActors[x][y].refresh();
+                if (currencyHeader != null) currencyHeader.updateValues();
+                if (result != null) {
+                    showRewardDialog(result);
+                }
             }
         };
 
@@ -120,8 +134,14 @@ public class GreenHouseScreen implements Screen {
                 actor.setPosition(SLOT_OFFSET_X[i][j], SLOT_OFFSET_Y[i][j]);
                 potActors[i][j] = actor;
                 stage.addActor(actor);
+                actor.toFront();
             }
         }
+
+        currencyHeader = new CurrencyHeader();
+        currencyHeader.setPosition(VIRTUAL_WIDTH - currencyHeader.getPrefWidth() - 20, VIRTUAL_HEIGHT - 50);
+        stage.addActor(currencyHeader);
+        currencyHeader.toFront();
 
         TextButton backButton = new TextButton("Back", skin, "green_small");
         backButton.setPosition(55, VIRTUAL_HEIGHT - 65);
@@ -133,6 +153,7 @@ public class GreenHouseScreen implements Screen {
             }
         });
         stage.addActor(backButton);
+        backButton.toFront();
     }
 
     private void handleResult(String result, int x, int y) {
@@ -179,37 +200,10 @@ public class GreenHouseScreen implements Screen {
         return new Label(text, skin);
     }
 
-    private void showStoreRedirectDialog() {
-        Table panel = buildPanel();
-
-        Label titleLbl = createSafeLabel("Locked Slot!", "big");
-        panel.add(titleLbl).padBottom(15).row();
-
-        Label messageLbl = createSafeLabel("You need to purchase this pot slot from the Store first!", "default");
-        messageLbl.setWrap(true);
-        messageLbl.setAlignment(Align.center);
-        panel.add(messageLbl).width(320).padBottom(20).row();
-
-        TextButton okBtn = new TextButton("OK", skin, "green_small");
-
-        Table overlayRoot = buildOverlayRoot(panel);
-
-        okBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                overlayRoot.remove();
-            }
-        });
-
-        panel.add(okBtn).width(120).height(45);
-        stage.addActor(overlayRoot);
-    }
-
     private void showRewardDialog(String rewardText) {
-
         Table panel = buildPanel();
 
-        Label titleLbl = createSafeLabel("Prize Collected!", "big");
+        Label titleLbl = createSafeLabel("Notice", "big");
         panel.add(titleLbl).padBottom(15).row();
 
         Label rewardLbl = createSafeLabel(rewardText, "default");
@@ -236,14 +230,6 @@ public class GreenHouseScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        for (int i = 0; i < GreenHouse.ROWS; i++) {
-            for (int j = 0; j < GreenHouse.COLS; j++) {
-                if (potActors[i][j] != null) {
-                    potActors[i][j].update(delta);
-                }
-            }
-        }
 
         stage.act(delta);
         stage.draw();

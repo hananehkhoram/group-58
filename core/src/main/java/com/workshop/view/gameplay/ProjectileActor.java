@@ -1,9 +1,11 @@
 package com.workshop.view.gameplay;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.workshop.controller.repository.Textures;
 import com.workshop.model.projectile.Projectile;
 
 import pvz.libpvz.pam.PamPlayer;
@@ -11,6 +13,8 @@ import pvz.libpvz.pam.PamPlayer;
 public final class ProjectileActor extends Actor {
 
     private static final float TARGET_HEIGHT_TO_CELL_RATIO = 0.5f;
+    private static final float SPRITE_HEIGHT_TO_CELL_RATIO = 0.32f;
+    private static final float FROZEN_PART_TIME = 0.22f;
 
     private final Projectile projectile;
     private final ProjectileAnimationSpec spec;
@@ -41,6 +45,10 @@ public final class ProjectileActor extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
+        if (drawSprite(batch)) {
+            return;
+        }
+
         Rectangle bounds = getBounds();
         if (bounds == null || bounds.width <= 0f || bounds.height <= 0f) {
             return;
@@ -59,15 +67,28 @@ public final class ProjectileActor extends Actor {
         batch.setTransformMatrix(transform);
 
         try {
-            pamPlayer.draw(
-                batch,
-                spec.getPamPath(),
-                spec.getClip(),
-                stateTime,
-                0f,
-                0f,
-                true
-            );
+            float time = spec.isFreezeFrame() ? FROZEN_PART_TIME : stateTime;
+            if (spec.getPart() != null) {
+                pamPlayer.drawPart(
+                    batch,
+                    spec.getPamPath(),
+                    spec.getClip(),
+                    time,
+                    0f,
+                    0f,
+                    spec.getPart()
+                );
+            } else {
+                pamPlayer.draw(
+                    batch,
+                    spec.getPamPath(),
+                    spec.getClip(),
+                    time,
+                    0f,
+                    0f,
+                    true
+                );
+            }
         } finally {
             batch.setTransformMatrix(oldTransform);
         }
@@ -81,8 +102,29 @@ public final class ProjectileActor extends Actor {
         return spec;
     }
 
+    private boolean drawSprite(Batch batch) {
+        String imageId = spec.getImageResourceId();
+        if (imageId == null) {
+            return false;
+        }
+
+        TextureRegion region = Textures.regionOrNull(imageId);
+        if (region == null) {
+            return false;
+        }
+
+        float size = cellHeight * SPRITE_HEIGHT_TO_CELL_RATIO * spec.getScale();
+        float x = getX() - size / 2f;
+        float y = getY() - size / 2f;
+        batch.draw(region, x, y, size, size);
+        return true;
+    }
+
     private Rectangle getBounds() {
         if (resolvedBounds == null) {
+            if (spec.getPamPath() == null) {
+                return null;
+            }
             resolvedBounds = pamPlayer.bounds(
                 spec.getPamPath(),
                 spec.getClip()

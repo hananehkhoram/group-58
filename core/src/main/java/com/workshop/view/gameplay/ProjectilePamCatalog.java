@@ -35,6 +35,10 @@ final class ProjectilePamCatalog {
     }
 
     boolean isPlantEntityAnimation(Candidate candidate) {
+        if (isProjectileAssetPath(candidate.getPath())) {
+            return false;
+        }
+
         Boolean cached = entityAnimationCache.get(candidate.getPath());
         if (cached != null) {
             return cached;
@@ -43,6 +47,17 @@ final class ProjectilePamCatalog {
         boolean entityAnimation = inspectPlantEntityAnimation(candidate);
         entityAnimationCache.put(candidate.getPath(), entityAnimation);
         return entityAnimation;
+    }
+
+    static boolean isProjectileAssetPath(String path) {
+        if (path == null) {
+            return false;
+        }
+        String upper = path.replace('\\', '/').toUpperCase(Locale.ROOT);
+        return upper.contains("PROJECTILE")
+            || upper.contains("/PEA/")
+            || upper.endsWith("/PEA.PAM")
+            || upper.contains("BULLET");
     }
 
     private void scanAllPamFiles() {

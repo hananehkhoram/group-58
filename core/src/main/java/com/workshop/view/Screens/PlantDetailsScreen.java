@@ -128,14 +128,6 @@ public class PlantDetailsScreen extends BaseScreen {
         Table leftCol = new Table();
 
         Stack plantStack = new Stack();
-        Drawable woodBg = getStatIconDrawable("wood_bg");
-        if (woodBg != null) {
-            plantStack.add(new Image(woodBg));
-        } else {
-            Table t = new Table();
-            t.setBackground(createWhiteDrawable(Color.valueOf("4a3319")));
-            plantStack.add(t);
-        }
 
         Actor plantPamActor = createPlantPamActor(scale);
         Table animWrapper = new Table();
@@ -336,9 +328,9 @@ public class PlantDetailsScreen extends BaseScreen {
                 if (folderName.equalsIgnoreCase("SUNSHROOM") || folderName.equalsIgnoreCase("PUFFSHROOM")) {
                     clip = "idle_stage1";
                 } else if (folderName.contains("MINT")) {
-                    clip = "intro";
+                    clip = "loop";
                 } else if (folderName.contains("BUSTER")) {
-                    clip = "attack";
+                    clip = "attack1";
                 } else if (folderName.contains("ELECTRICBLUE") || folderName.equalsIgnoreCase("CAULIPOWER")) {
                     clip = "idle1_1";
                 } else if (folderName.contains("KIWIBEAST")) {

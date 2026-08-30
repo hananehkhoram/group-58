@@ -43,6 +43,9 @@ public class PlantSelectionScreen implements Screen {
     }
 
     private static final int MAX_SELECTED_PLANTS = 8;
+    private static final int SEED_BANK_CARD_WIDTH = 110;
+    private static final int SEED_BANK_CARD_HEIGHT = 85;
+    private static final int SEED_BANK_PADDING = 4;
 
     private static TextureBank textureBank;
     private static PamPlayer pamPlayer;
@@ -61,6 +64,7 @@ public class PlantSelectionScreen implements Screen {
     private Texture fallbackCardBg;
     private CurrencyHeader currencyHeader;
     private Image bg;
+    private Drawable fallbackEmptyCardBg;
 
     private Plant focusedPlant = null;
     private float globalAnimTime = 0f;
@@ -99,23 +103,34 @@ public class PlantSelectionScreen implements Screen {
             bgTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
             bg = new Image(new TextureRegionDrawable(new TextureRegion(bgTexture)));
         } else {
-            Gdx.app.error("PlantSelectionScreen", "Background texture not found at: " + bgTexturePath);
             bg = new Image(createWhiteDrawable(Color.valueOf("0d1b3e")));
         }
         bg.setFillParent(true);
         bg.setScaling(Scaling.fill);
         stage.addActor(bg);
 
-        Table root = new Table();
-        root.setFillParent(true);
-        root.pad(6);
-        stage.addActor(root);
+        String seedBankBgPath = "IMAGES/Menus/selection/seedbankBG.png";
+        Drawable seedBankDrawable;
+        if (Gdx.files.internal(seedBankBgPath).exists()) {
+            seedBankDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal(seedBankBgPath))));
+        } else {
+            seedBankDrawable = createWhiteDrawable(Color.valueOf("5a3214"));
+        }
 
-        Table bodyTable = new Table();
-        bodyTable.defaults().pad(4);
+        Table seedBankContainer = new Table();
+        seedBankContainer.setBackground(seedBankDrawable);
 
-        Table leftSidebar = new Table();
-        leftSidebar.setBackground(getFallbackCardBackground());
+        sidebarSlotsTable = new Table();
+        sidebarSlotsTable.defaults().pad(SEED_BANK_PADDING);
+
+        ScrollPane slotScroll = new ScrollPane(sidebarSlotsTable, skin);
+        slotScroll.setFadeScrollBars(false);
+        slotScroll.setScrollingDisabled(true, false);
+        slotScroll.setOverscroll(false, false);
+
+        Stack seedBankStack = new Stack();
+        seedBankStack.add(seedBankContainer);
+        seedBankStack.add(slotScroll);
 
         ImageButton closeButton = new ImageButton(skin, "generic_close_circle");
         closeButton.addListener(new ChangeListener() {
@@ -124,37 +139,38 @@ public class PlantSelectionScreen implements Screen {
                 if (listener != null) listener.onBack();
             }
         });
-        leftSidebar.add(closeButton).size(60, 30).padTop(4).row();
 
-        Label sidebarTitle = createSafeLabel("SLOTS", "big");
-        sidebarTitle.setFontScale(0.35f);
-        leftSidebar.add(sidebarTitle).padBottom(2).row();
+        Table root = new Table();
+        root.setFillParent(true);
+        root.pad(10);
+        stage.addActor(root);
 
-        sidebarSlotsTable = new Table();
-        ScrollPane slotScroll = new ScrollPane(sidebarSlotsTable, skin);
-        slotScroll.setFadeScrollBars(false);
-        slotScroll.setScrollingDisabled(true, false);
-        leftSidebar.add(slotScroll).growY().top().padTop(2).row();
-        bodyTable.add(leftSidebar).width(140).growY().padRight(4);
+        Table bodyTable = new Table();
+        bodyTable.defaults().pad(6);
+
+        Table leftSidebar = new Table();
+        leftSidebar.add(closeButton).size(45, 45).padTop(4).padBottom(6).center().row();
+        leftSidebar.add(seedBankStack).width(130).growY().top();
 
         Table mainArea = new Table();
         mainArea.defaults().pad(4);
 
         Table topBar = new Table();
         currencyHeader = new CurrencyHeader();
-        topBar.add(currencyHeader).right().padRight(10);
-        mainArea.add(topBar).fillX().height(45).pad(0, 0, 4, 0).row();
+        topBar.add(currencyHeader).right().padRight(5);
+        mainArea.add(topBar).fillX().height(45).pad(0, 0, 6, 0).row();
 
         detailPanel = new Table();
         detailPanel.setBackground(getFallbackCardBackground());
-        mainArea.add(detailPanel).fillX().height(200).padBottom(4).row();
+        mainArea.add(detailPanel).growX().height(260).padBottom(6).row();
 
         availableGrid = new Table();
-        availableGrid.defaults().pad(3);
+        availableGrid.defaults().pad(6);
         ScrollPane scrollPane = new ScrollPane(availableGrid, skin);
         scrollPane.setFadeScrollBars(false);
         mainArea.add(scrollPane).grow().row();
 
+        bodyTable.add(leftSidebar).width(140).growY().padRight(10).top();
         bodyTable.add(mainArea).grow();
         root.add(bodyTable).grow();
 
@@ -174,8 +190,8 @@ public class PlantSelectionScreen implements Screen {
         Table startBar = new Table();
         startBar.setFillParent(true);
         startBar.bottom().right();
-        startBar.padRight(24).padBottom(18);
-        startBar.add(letsRockBtn).width(200).height(52);
+        startBar.padRight(20).padBottom(16);
+        startBar.add(letsRockBtn).width(190).height(48);
         startBar.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.childrenOnly);
         stage.addActor(startBar);
     }
@@ -215,7 +231,7 @@ public class PlantSelectionScreen implements Screen {
             TextureRegion reg = Textures.regionOrNull("PLANT_" + plantName.toUpperCase().replace(" ", "_"));
             if (reg != null) {
                 if (grayedOut) batch.setColor(0.3f, 0.3f, 0.3f, 1f);
-                batch.draw(reg, x - 25, y, 50, 50);
+                batch.draw(reg, x - 35, y, 70, 70);
                 if (grayedOut) batch.setColor(Color.WHITE);
             }
         } catch (Exception ignored) {
@@ -231,23 +247,26 @@ public class PlantSelectionScreen implements Screen {
             public void draw(Batch batch, float parentAlpha) {
                 super.draw(batch, parentAlpha);
                 float drawX = getX() + getWidth() / 2f;
-                float drawY = getY() + 10f;
+                float drawY = getY() + 15f;
                 renderPlantWithClipFallback(
-                    batch, focusedPlant.getName(), globalAnimTime, drawX, drawY, false
+                    batch, focusedPlant.getName(), globalAnimTestTime(), drawX, drawY, false
                 );
             }
+            private float globalAnimTestTime() {
+                return globalAnimTime;
+            }
         };
-        detailPanel.add(animTable).size(120, 120).padLeft(50).padRight(50);
+        detailPanel.add(animTable).size(130, 100).padLeft(25).padRight(20);
 
         Table infoColumn = new Table();
         infoColumn.top().left();
 
         Label nameLbl = createSafeLabel(focusedPlant.getName() + " (LVL " + focusedPlant.getLevel() + ")", "big");
-        nameLbl.setFontScale(1f);
+        nameLbl.setFontScale(0.85f);
         infoColumn.add(nameLbl).left().padBottom(6).row();
 
         Table statsGrid = new Table();
-        statsGrid.defaults().left().padRight(20).padBottom(4);
+        statsGrid.defaults().left().padRight(24).padBottom(6);
         statsGrid.add(createSafeLabel("SUN COST: " + focusedPlant.getSunCost(), "big"));
         statsGrid.add(createSafeLabel("RECHARGE: " + focusedPlant.getRechargeTime() + "s", "big")).row();
         statsGrid.add(createSafeLabel("HP: " + focusedPlant.getBaseHp(), "big"));
@@ -255,10 +274,10 @@ public class PlantSelectionScreen implements Screen {
 
         for (Cell<?> cell : statsGrid.getCells()) {
             if (cell.getActor() instanceof Label) {
-                ((Label) cell.getActor()).setFontScale(0.8f);
+                ((Label) cell.getActor()).setFontScale(0.65f);
             }
         }
-        infoColumn.add(statsGrid).left().padBottom(8).row();
+        infoColumn.add(statsGrid).left().padBottom(10).row();
 
         Table btnRow = new Table();
 
@@ -304,17 +323,17 @@ public class PlantSelectionScreen implements Screen {
             }
         });
 
-        btnRow.add(upgradeBtn).width(130).height(30).padRight(10);
-        btnRow.add(boostBtn).width(130).height(30);
+        btnRow.add(upgradeBtn).width(210).height(42).padRight(14);
+        btnRow.add(boostBtn).width(190).height(42);
 
         infoColumn.add(btnRow).left();
-        detailPanel.add(infoColumn).expand().left().pad(5);
+        detailPanel.add(infoColumn).expandX().fillX().left().pad(12, 0, 12, 20);
     }
 
     private void refreshAvailableGrid(List<Plant> allUnlocked) {
         availableGrid.clear();
         availableCards.clear();
-        int maxCols = 5;
+        int maxCols = 6;
         int col = 0;
 
         for (Plant plant : allUnlocked) {
@@ -341,7 +360,7 @@ public class PlantSelectionScreen implements Screen {
             });
 
             availableCards.put(plant.getName(), card);
-            availableGrid.add(card).size(135, 190).pad(5);
+            availableGrid.add(card).size(SEED_BANK_CARD_WIDTH, SEED_BANK_CARD_HEIGHT).pad(4);
             col++;
             if (col % maxCols == 0) availableGrid.row();
         }
@@ -351,6 +370,7 @@ public class PlantSelectionScreen implements Screen {
         sidebarSlotsTable.clear();
         activeSlotActors.clear();
         List<Plant> selected = new ArrayList<>(ctx.getActivePlants());
+
         for (Plant plant : selected) {
             PlantCardActor card = new PlantCardActor(plant, pamPlayer, textureBank, skin, PlantCardActor.Mode.SLOT);
             card.setBoosted(plant.isPlantFoodActive());
@@ -361,19 +381,30 @@ public class PlantSelectionScreen implements Screen {
             });
             activeSlotActors.add(card);
             Container<PlantCardActor> slotContainer = new Container<>(card);
-            slotContainer.size(110, 85);
-            sidebarSlotsTable.add(slotContainer).padBottom(6).row();
+            slotContainer.size(SEED_BANK_CARD_WIDTH, SEED_BANK_CARD_HEIGHT);
+            sidebarSlotsTable.add(slotContainer).top().row();
         }
+
         for (int i = selected.size(); i < MAX_SELECTED_PLANTS; i++) {
-            sidebarSlotsTable.add(buildEmptySlot()).size(110, 85).padBottom(6).row();
+            sidebarSlotsTable.add(buildEmptySeedBankSlot()).size(SEED_BANK_CARD_WIDTH, SEED_BANK_CARD_HEIGHT).top().row();
         }
     }
 
-    private Table buildEmptySlot() {
+    private Table buildEmptySeedBankSlot() {
         Table empty = new Table();
-        empty.setBackground(getFallbackCardBackground());
-        empty.setColor(0.2f, 0.2f, 0.2f, 0.4f);
+        empty.setBackground(getFallbackEmptyCardBackground());
         return empty;
+    }
+
+    private Drawable getFallbackEmptyCardBackground() {
+        if (fallbackEmptyCardBg == null) {
+            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+            pixmap.setColor(Color.valueOf("381d0b"));
+            pixmap.fill();
+            fallbackEmptyCardBg = new TextureRegionDrawable(new TextureRegion(new Texture(pixmap)));
+            pixmap.dispose();
+        }
+        return fallbackEmptyCardBg;
     }
 
     private boolean isPlantSelected(Plant plant) {
@@ -390,7 +421,7 @@ public class PlantSelectionScreen implements Screen {
     private Drawable getFallbackCardBackground() {
         if (fallbackCardBg == null) {
             Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-            pixmap.setColor(new Color(0, 0, 0, 0.6f));
+            pixmap.setColor(new Color(0.08f, 0.08f, 0.08f, 0.75f));
             pixmap.fill();
             fallbackCardBg = new Texture(pixmap);
             fallbackCardBg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);

@@ -126,7 +126,7 @@ public class LevelFactory {
 
         Level deadlineLevel = new Level("Frozen Caves - Day 2", 5, 9,
                 generateWaves(6, 160, 200), LevelType.DEADLINE, null);
-        deadlineLevel.setDeadlineColumn(2);
+        deadlineLevel.setDeadlineColumn(3);
         levels.add(deadlineLevel);
 
         Level timedWarLevel = new Level("Frozen Caves - Day 3", 5, 9,
@@ -181,8 +181,8 @@ public class LevelFactory {
                 generateWaves(6, 180, 200), LevelType.SAVE_QUR_SEEDS, null,
                 null, null, null, new ArrayList<>());
         List<Level.PrePlacedPlant> blueprints = new ArrayList<>();
-        blueprints.add(new Level.PrePlacedPlant(p("Sunflower"), 0, 4));
-        blueprints.add(new Level.PrePlacedPlant(p("Peashooter"), 2, 4));
+        blueprints.add(new Level.PrePlacedPlant(p("Sunflower"), 0, 3));
+        blueprints.add(new Level.PrePlacedPlant(p("Peashooter"), 2, 3));
 
         saveSeedsLevel = new Level("Big Wave Beach - Day 2", 5, 9,
                 generateWaves(6, 180, 200), LevelType.SAVE_QUR_SEEDS, null,
