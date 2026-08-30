@@ -88,6 +88,11 @@ public class NetworkIzambiScreen implements Screen {
     private Label timerLabel;
 
     private boolean endHandled;
+    private static final String[] TEXT_REACTIONS = {
+        "GG!",
+        "Nice move!",
+        "Oops!"
+    };
 
     public NetworkIzambiScreen(
         PvzGame game,
@@ -146,7 +151,7 @@ public class NetworkIzambiScreen implements Screen {
                         case "STATE" -> match.onRemoteState(payload);
                         case "ACTION" -> match.onRemoteAction(payload);
                         case "END" -> match.onRemoteEnd(payload);
-                        case "REACTION" -> Toast.showInfo(stage, skin, opponentUsername + ": " + payload);
+                        case "REACTION" -> handleReaction(payload);
                         default -> {
                         }
                     }
@@ -219,14 +224,36 @@ public class NetworkIzambiScreen implements Screen {
         hud.add(sunLabel).right().padTop(6f).row();
         hud.add(timerLabel).right().padTop(6f).row();
 
-        TextButton reactionButton = new TextButton("Send GG", skin, "purple");
-        reactionButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                new Thread(() -> GameClient.get().sendMatchReaction(matchId, "GG")).start();
-            }
-        });
-        hud.add(reactionButton).right().padTop(16f).width(160f).row();
+        Table reactionTable = new Table();
+
+        for (int i = 0; i < TEXT_REACTIONS.length; i++) {
+            final int reactionIndex = i;
+
+            TextButton button = new TextButton(
+                TEXT_REACTIONS[i],
+                skin,
+                "purple"
+            );
+
+            button.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    sendTextReaction(reactionIndex);
+                }
+            });
+
+            reactionTable.add(button)
+                .width(150f)
+                .height(45f)
+                .padBottom(5f);
+
+            reactionTable.row();
+        }
+
+        hud.add(reactionTable)
+            .right()
+            .padTop(16f)
+            .row();
 
         TextButton forfeitButton = new TextButton("Forfeit", skin, "purple");
         forfeitButton.addListener(new ChangeListener() {
@@ -438,6 +465,45 @@ public class NetworkIzambiScreen implements Screen {
         overlay.add(label).padBottom(16f).row();
         overlay.add(backButton).width(220f);
         stage.addActor(overlay);
+    }
+
+    private void sendTextReaction(int index) {
+        if (index < 0 || index >= TEXT_REACTIONS.length) {
+            return;
+        }
+
+        String payload = "TEXT:" + index;
+
+        new Thread(() ->
+            GameClient.get().sendMatchReaction(matchId, payload),
+            "reaction-sender"
+        ).start();
+    }
+
+    private void handleReaction(String payload) {
+        if (payload == null || payload.isBlank()) {
+            return;
+        }
+
+        if (payload.startsWith("TEXT:")) {
+            String indexText = payload.substring("TEXT:".length());
+
+            try {
+                int index = Integer.parseInt(indexText);
+
+                if (index < 0 || index >= TEXT_REACTIONS.length) {
+                    return;
+                }
+
+                Toast.showInfo(
+                    stage,
+                    skin,
+                    opponentUsername + ": " + TEXT_REACTIONS[index]
+                );
+            } catch (NumberFormatException ignored) {
+                // Invalid reaction payload.
+            }
+        }
     }
 
     @Override
