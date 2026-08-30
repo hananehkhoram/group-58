@@ -13,12 +13,31 @@ public final class ClientHandler implements Runnable {
     private final Socket socket;
     private final UserStore store;
     private final SessionManager sessions;
+    private final MatchmakingService matchmaking;
     private String username;
+    private volatile PrintWriter out;
 
-    public ClientHandler(Socket socket, UserStore store, SessionManager sessions) {
+    public ClientHandler(Socket socket, UserStore store, SessionManager sessions, MatchmakingService matchmaking) {
         this.socket = socket;
         this.store = store;
         this.sessions = sessions;
+        this.matchmaking = matchmaking;
+    }
+
+    public boolean isConnected() {
+        return socket != null && socket.isConnected() && !socket.isClosed();
+    }
+
+    /** Pushes an unsolicited server -> client message, tagged as an EVENT. */
+    public void sendEvent(String... parts) {
+        PrintWriter writer = out;
+        if (writer == null) {
+            return;
+        }
+        String[] all = new String[parts.length + 1];
+        all[0] = "EVENT";
+        System.arraycopy(parts, 0, all, 1, parts.length);
+        writer.println(UserSnapshot.join(all));
     }
 
     @Override
@@ -27,15 +46,18 @@ public final class ClientHandler implements Runnable {
             BufferedReader in = new BufferedReader(
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8)
             );
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8)
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8)
         ) {
+            this.out = writer;
             String line;
             while ((line = in.readLine()) != null) {
-                out.println(handle(line));
+                writer.println(handle(line));
             }
         } catch (Exception ignored) {
         } finally {
+            this.out = null;
             sessions.unbind(this);
+            matchmaking.handleDisconnect(this);
             try {
                 socket.close();
             } catch (Exception ignored) {
@@ -57,6 +79,12 @@ public final class ClientHandler implements Runnable {
                 case "GET_LEADERBOARD" -> leaderboard();
                 case "SUBMIT_BONUS_SCORE" -> submitBonus(p);
                 case "GET_ONLINE_USERS" -> ok(String.join(",", sessions.onlineUsernames()));
+                case "CHALLENGE" -> challenge(p);
+                case "CHALLENGE_RESPOND" -> challengeRespond(p);
+                case "QUEUE_JOIN" -> queueJoin();
+                case "QUEUE_CANCEL" -> queueCancel();
+                case "MATCH_MSG" -> matchMessage(p);
+                case "MATCH_LEAVE" -> matchLeave(p);
                 default -> err("Unknown message type: " + type);
             };
         } catch (Exception e) {
@@ -100,6 +128,7 @@ public final class ClientHandler implements Runnable {
 
     private String logout() {
         sessions.unbind(this);
+        matchmaking.handleDisconnect(this);
         username = null;
         return ok("");
     }
@@ -167,6 +196,55 @@ public final class ClientHandler implements Runnable {
             sb.append(snap.toWire());
         }
         return ok(sb.toString());
+    }
+
+    private String challenge(String[] p) {
+        if (username == null) {
+            return err("Not logged in.");
+        }
+        String target = p[1];
+        String role = p[2];
+        if (!store.exists(target)) {
+            return err("No such user.");
+        }
+        String error = matchmaking.challenge(this, username, target, role);
+        return error == null ? ok("") : err(error);
+    }
+
+    private String challengeRespond(String[] p) {
+        if (username == null) {
+            return err("Not logged in.");
+        }
+        String challenger = p[1];
+        boolean accept = "accept".equalsIgnoreCase(p[2]);
+        String error = matchmaking.respondChallenge(this, username, challenger, accept);
+        return error == null ? ok("") : err(error);
+    }
+
+    private String queueJoin() {
+        if (username == null) {
+            return err("Not logged in.");
+        }
+        String error = matchmaking.joinQueue(this, username);
+        return error == null ? ok("") : err(error);
+    }
+
+    private String queueCancel() {
+        matchmaking.cancelQueue(this);
+        return ok("");
+    }
+
+    private String matchMessage(String[] p) {
+        String matchId = p[1];
+        String kind = p[2];
+        String payload = p.length > 3 ? UserSnapshot.joinFrom(p, 3) : "";
+        String error = matchmaking.relay(this, matchId, kind, payload);
+        return error == null ? ok("") : err(error);
+    }
+
+    private String matchLeave(String[] p) {
+        matchmaking.leaveMatch(this, p[1]);
+        return ok("");
     }
 
     private static String ok(String payload) {

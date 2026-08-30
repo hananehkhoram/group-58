@@ -50,6 +50,7 @@ public final class PlantAnimationLayer extends Group {
         syncPlantActors();
         playPendingAttackAnimations();
         super.act(delta);
+        releaseSyncedShots();
     }
 
     private void syncPlantActors() {
@@ -103,11 +104,16 @@ public final class PlantAnimationLayer extends Group {
             return null;
         }
 
+        PlantAnimationSpec lilyPadSpec = plant.isHasLilyPadUnderneath()
+            ? resolver.resolve("Lily Pad")
+            : null;
+
         return new PlantActor(
             plant,
             spec,
             pamPlayer,
-            getCellHeight()
+            getCellHeight(),
+            lilyPadSpec
         );
     }
 
@@ -158,6 +164,25 @@ public final class PlantAnimationLayer extends Group {
 
             if (actor != null) {
                 actor.play(PlantAnimationState.ATTACK);
+            } else {
+                plant.releaseAllPendingShots(gameContext);
+            }
+        }
+    }
+
+    private void releaseSyncedShots() {
+        for (Map.Entry<Plant, PlantActor> entry : plantActors.entrySet()) {
+            Plant plant = entry.getKey();
+            PlantActor actor = entry.getValue();
+            if (plant == null || actor == null || !plant.hasPendingShots()) {
+                continue;
+            }
+            int due = actor.dueShotReleases();
+            for (int i = 0; i < due; i++) {
+                if (!plant.releaseNextPendingShot(gameContext)) {
+                    break;
+                }
+                actor.markShotReleased();
             }
         }
     }

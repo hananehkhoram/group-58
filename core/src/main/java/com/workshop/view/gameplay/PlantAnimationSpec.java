@@ -37,10 +37,10 @@ public final class PlantAnimationSpec {
             return;
         }
         clipsBound = true;
-        setClip(PlantAnimationState.IDLE, pickClip(available, "idle", "loop"));
-        setClip(PlantAnimationState.ATTACK, pickClip(available, "attack", "special", "loop"));
-        setClip(PlantAnimationState.SPECIAL, pickClip(available, "special"));
-        setClip(PlantAnimationState.PLANTFOOD, pickClip(available, "plantfood"));
+        setClip(PlantAnimationState.IDLE, pickClip(available, "idle", "idle1", "idle_stage1", "loop"));
+        setClip(PlantAnimationState.ATTACK, pickClip(available, "attack", "attack1", "shoot", "special"));
+        setClip(PlantAnimationState.SPECIAL, pickClip(available, "special", "special1"));
+        setClip(PlantAnimationState.PLANTFOOD, pickClip(available, "plantfood", "plantfood1", "plant_food"));
     }
 
     private static String pickClip(List<String> available, String... preferred) {

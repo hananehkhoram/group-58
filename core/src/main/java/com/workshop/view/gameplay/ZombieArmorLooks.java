@@ -107,7 +107,7 @@ final class ZombieArmorLooks {
                 width = cellHeight * (stage == 0 ? 0.58f : stage == 1 ? 0.54f : 0.50f);
                 height = width * aspect;
                 rotation = 0f;
-                x = originX - width * 0.68f;
+                x = originX - width * 0.88f;
                 y = originY + cellHeight * 0.70f;
                 originXLocal = width * 0.5f;
                 originYLocal = 0f;
@@ -116,7 +116,7 @@ final class ZombieArmorLooks {
                 width = cellHeight * 0.62f;
                 height = width * aspect;
                 rotation = 0f;
-                x = originX - width * 0.68f;
+                x = originX - width * 0.88f;
                 y = originY + cellHeight * 0.72f;
                 originXLocal = width * 0.5f;
                 originYLocal = 0f;
@@ -125,7 +125,7 @@ final class ZombieArmorLooks {
                 width = cellHeight * 0.62f;
                 height = cellHeight * (stage == 0 ? 0.56f : stage == 1 ? 0.50f : 0.42f);
                 rotation = 0f;
-                x = originX - width * 0.68f;
+                x = originX - width * 0.88f;
                 y = originY + cellHeight * 0.70f;
                 originXLocal = width * 0.5f;
                 originYLocal = 0f;

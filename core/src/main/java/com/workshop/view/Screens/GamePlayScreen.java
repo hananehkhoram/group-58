@@ -45,11 +45,8 @@ import com.workshop.model.plants.Plant;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.model.level.LevelType;
 import com.workshop.view.gameplay.DroppedSeedLayer;
-import com.workshop.view.gameplay.*;
 
 import java.util.ArrayList;
-
-import static com.workshop.view.Screens.CollectionScreen.pamPlayer;
 
 public class GamePlayScreen implements Screen {
 
@@ -58,7 +55,7 @@ public class GamePlayScreen implements Screen {
     private final WinLoseOverlay winLoseOverlay;
 
     private final GameEngine gameEngine;
-    private final GameContext gameContext;
+    private final GameContext ctx;
 
     private static final float TICK_DURATION = 0.1f;
     private float timeAccumulator = 0f;
@@ -71,6 +68,7 @@ public class GamePlayScreen implements Screen {
     private Label plantFoodAmountLabel;
     private Label waveLabel;
     private ProgressBar zombieProgressBar;
+    private TextButton startZombiesButton;
 
     private final Image leftBackground;
     private final Image centerBackground;
@@ -111,15 +109,15 @@ public class GamePlayScreen implements Screen {
     private final List<ZombieCardActor> zombieBankCards =
         new ArrayList<>();
 
-    private Plant selectedPlantForPlacement;
+    protected Plant selectedPlantForPlacement;
     private String selectedZombieTypeForPlacement;
     private boolean plantFoodFeedMode;
     private int hoveredPlantRow = -1;
     private int hoveredPlantColumn = -1;
-    private PlantActor mousePlantPreview;
+    protected PlantActor mousePlantPreview;
     private ZombiePlacementPreviewActor mouseZombiePreview;
 
-    private final PlantAnimationResolver plantPreviewResolver =
+    protected final PlantAnimationResolver plantPreviewResolver =
         new PlantAnimationResolver();
 
     private final Vector2 mouseStagePosition =
@@ -148,7 +146,7 @@ public class GamePlayScreen implements Screen {
     ) {
         this.exitAction = exitAction;
 
-        this.gameContext = gameContext;
+        this.ctx = gameContext;
         this.gameEngine = gameContext.getGameEngine();
 
         MenuManager plantingMenuManager =
@@ -622,6 +620,29 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(hudTable);
 
+        if (level.getLevelType() == LevelType.PLANT_WHAT_YOU_GET) {
+            String buttonStyle = skin.has("green", TextButton.TextButtonStyle.class)
+                ? "green"
+                : "default";
+            startZombiesButton = new TextButton("Let's Rock!", skin, buttonStyle);
+            startZombiesButton.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    event.stop();
+                    gameContext.triggerManualWaveStart();
+                    startZombiesButton.setVisible(false);
+                }
+            });
+            Table startTable = new Table();
+            startTable.setFillParent(true);
+            startTable.bottom();
+            startTable.add(startZombiesButton)
+                .padBottom(36)
+                .width(280)
+                .height(64);
+            stage.addActor(startTable);
+        }
+
         SunAnimationLayer sunAnimationLayer =
             new SunAnimationLayer(
                 gameContext,
@@ -633,17 +654,18 @@ public class GamePlayScreen implements Screen {
                 getGridHeight()
             );
 
-        // --- دیالوگ شروع مرحله (اختیاری) و بعد از آن، منوی آغاز مرحله ---
         List<DialogueLine> introDialogue = level.getIntroDialogue();
 
-        if (isIZombieLevel()) {
-            buildZombieBank(skin);
-        } else if (isConveyorLevel()) {
-            buildConveyorBelt();
-        } else {
-            buildSeedBank(skin);
+        if (!suppressDefaultUI()) {
+            if (isIZombieLevel()) {
+                buildZombieBank(skin);
+            } else if (isConveyorLevel()) {
+                buildConveyorBelt();
+            } else {
+                buildSeedBank(skin);
+            }
+            setupPlantingClick();
         }
-        setupPlantingClick();
 
         if (introDialogue != null && !introDialogue.isEmpty()) {
             dialogueBlocking = true;
@@ -697,7 +719,7 @@ public class GamePlayScreen implements Screen {
 
     private void buildConveyorBelt() {
         conveyorBeltLayer = new ConveyorBeltLayer(
-            (ConveyorBeltManager) gameContext.getLevelManager(),
+            (ConveyorBeltManager) ctx.getLevelManager(),
             worldHeight,
             seedBankCards,
             this::selectPlant
@@ -781,20 +803,25 @@ public class GamePlayScreen implements Screen {
     }
 
     private void updateHud() {
+        if (startZombiesButton != null) {
+            startZombiesButton.setVisible(
+                gameplayStarted && !ctx.isManualStartCommandReceived()
+            );
+        }
         sunAmountLabel.setText(
-            String.valueOf(gameContext.getSunAmount())
+            String.valueOf(ctx.getSunAmount())
         );
         plantFoodAmountLabel.setText(
             String.valueOf(currentPlantFoodCount())
         );
 
         com.workshop.model.mechanisms.Wave[] waves =
-            gameContext.getLevel().getWaves();
+            ctx.getLevel().getWaves();
 
         int totalWaves = waves != null ? waves.length : 0;
 
 
-        int currentWaveIndex = gameContext.getCurrentWaveIndex();
+        int currentWaveIndex = ctx.getCurrentWaveIndex();
 
         float overallProgress = 0f;
 
@@ -830,11 +857,11 @@ public class GamePlayScreen implements Screen {
     }
 
     private void showEndOfLevelDialogue() {
-        boolean won = gameContext.isPlayerWon();
+        boolean won = ctx.isPlayerWon();
 
         List<DialogueLine> lines = won
-            ? gameContext.getLevel().getWinDialogue()
-            : gameContext.getLevel().getLoseDialogue();
+            ? ctx.getLevel().getWinDialogue()
+            : ctx.getLevel().getLoseDialogue();
 
         Runnable showFinalOverlay = () -> {
             if (won) {
@@ -845,6 +872,7 @@ public class GamePlayScreen implements Screen {
                 winLoseOverlay.showLose();
             }
         };
+
 
         if (lines != null && !lines.isEmpty()) {
             dialogueBlocking = true;
@@ -861,6 +889,14 @@ public class GamePlayScreen implements Screen {
         } else {
             showFinalOverlay.run();
         }
+    }
+
+    protected boolean handlesOwnEndOfGame() {
+        return false;
+    }
+
+    protected WinLoseOverlay getWinLoseOverlay() {
+        return winLoseOverlay;
     }
 
     private void buildBackground() {
@@ -934,7 +970,7 @@ public class GamePlayScreen implements Screen {
 
             card.setOnClick(clickedCard -> {
                 if (!isConveyorLevel()
-                    && gameContext.isOnCooldown(clickedCard.getPlant().getName())) {
+                    && ctx.isOnCooldown(clickedCard.getPlant().getName())) {
                     showPlantCooldownError(clickedCard.getPlant().getName());
                     return;
                 }
@@ -958,7 +994,7 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(seedBankTable);
 
-        if (gameContext.getLevelManager()
+        if (ctx.getLevelManager()
             instanceof ConveyorBeltManager conveyorManager) {
 
             lastConveyorSignature =
@@ -970,7 +1006,7 @@ public class GamePlayScreen implements Screen {
             return;
         }
 
-        if (!(gameContext.getLevelManager()
+        if (!(ctx.getLevelManager()
             instanceof IZombieManager manager)) {
             return;
         }
@@ -993,7 +1029,7 @@ public class GamePlayScreen implements Screen {
             Zombie zombie;
 
             try {
-                zombie = gameContext
+                zombie = ctx
                     .getZombieFactory()
                     .create(entry.getKey());
             } catch (IllegalArgumentException exception) {
@@ -1010,7 +1046,7 @@ public class GamePlayScreen implements Screen {
                 zombie,
                 entry.getKey(),
                 entry.getValue(),
-                gameContext.getSeason().getName(),
+                ctx.getSeason().getName(),
                 Textures.getPamPlayer(),
                 skin
             );
@@ -1040,14 +1076,14 @@ public class GamePlayScreen implements Screen {
     private void selectZombie(
         ZombieCardActor clickedCard
     ) {
-        if (gameContext.getLevelManager()
+        if (ctx.getLevelManager()
             instanceof IZombieManager manager) {
 
             double cooldown =
                 manager
                     .getRemainingZombieCooldownSeconds(
                         clickedCard.getZombieType(),
-                        gameContext
+                        ctx
                     );
 
             if (cooldown > 0) {
@@ -1093,7 +1129,7 @@ public class GamePlayScreen implements Screen {
         ZombieAnimationSpec spec =
             ZombieAnimationResolver.shared().resolve(
                 zombie,
-                gameContext.getSeason().getName()
+                ctx.getSeason().getName()
             );
 
         if (spec == null) {
@@ -1210,8 +1246,8 @@ public class GamePlayScreen implements Screen {
         float gridWidth = getGridWidth();
         float gridHeight = getGridHeight();
 
-        int rows = gameContext.getLevel().getRows();
-        int columns = gameContext.getLevel().getColumns();
+        int rows = ctx.getLevel().getRows();
+        int columns = ctx.getLevel().getColumns();
 
         float cellWidth = getCellWidth();
         float cellHeight = getCellHeight();
@@ -1254,7 +1290,7 @@ public class GamePlayScreen implements Screen {
      * just something the player can see.
      */
     private void drawNecromancyMarkers() {
-        if (!(gameContext.getSeason() instanceof DarkAgesSeason darkAges)) {
+        if (!(ctx.getSeason() instanceof DarkAgesSeason darkAges)) {
             return;
         }
 
@@ -1263,8 +1299,8 @@ public class GamePlayScreen implements Screen {
         float cellWidth = getCellWidth();
         float cellHeight = getCellHeight();
 
-        int rows = gameContext.getLevel().getRows();
-        int columns = gameContext.getLevel().getColumns();
+        int rows = ctx.getLevel().getRows();
+        int columns = ctx.getLevel().getColumns();
 
         shapeRenderer.setProjectionMatrix(stage.getCamera().combined);
 
@@ -1320,31 +1356,37 @@ public class GamePlayScreen implements Screen {
         }
     }
 
-    private float getGridX() {
+    protected float getGridX() {
         return leftTexture.getWidth() + 252;
     }
 
-    private float getGridY() {
+    protected float getGridY() {
         return 80;
     }
 
-    private float getGridWidth() {
+    protected float getGridWidth() {
         return centerTexture.getWidth() - 285;
     }
 
-    private float getGridHeight() {
+    protected float getGridHeight() {
         return centerTexture.getHeight() - 278;
     }
 
-    private float getCellWidth() {
+    protected float getCellWidth() {
         return getGridWidth()
-            / gameContext.getLevel().getColumns();
+            / ctx.getLevel().getColumns();
     }
 
-    private float getCellHeight() {
+    protected float getCellHeight() {
         return getGridHeight()
-            / gameContext.getLevel().getRows();
+            / ctx.getLevel().getRows();
     }
+
+    protected boolean suppressDefaultUI() {
+        return false;
+    }
+
+    protected Stage getStage() { return stage; }
 
     private float getCellCenterX(int column) {
         return getGridX()
@@ -1443,7 +1485,7 @@ public class GamePlayScreen implements Screen {
         }
 
         com.workshop.model.mechanisms.ScreenShake request;
-        while ((request = gameContext.pollScreenShake()) != null) {
+        while ((request = ctx.pollScreenShake()) != null) {
             float remaining = Math.max(0f, shakeDuration - shakeTime) * shakeIntensity;
             if (request.intensity >= remaining) {
                 shakeIntensity = request.intensity;
@@ -1474,7 +1516,7 @@ public class GamePlayScreen implements Screen {
             return;
         }
 
-        if (pauseOverlay.isVisible() || gameContext.isPaused()) {
+        if (pauseOverlay.isVisible() || ctx.isPaused()) {
             return;
         }
 
@@ -1574,7 +1616,7 @@ public class GamePlayScreen implements Screen {
         }
     }
 
-    private void showPlantOnMouse(Plant plant) {
+    protected void showPlantOnMouse(Plant plant) {
         if (mousePlantPreview != null) {
             mousePlantPreview.remove();
             mousePlantPreview = null;
@@ -1603,7 +1645,7 @@ public class GamePlayScreen implements Screen {
         stage.addActor(mousePlantPreview);
     }
 
-    private void updatePlantMousePreview() {
+    protected void updatePlantMousePreview() {
         if (mousePlantPreview == null) {
             return;
         }
@@ -1716,12 +1758,12 @@ public class GamePlayScreen implements Screen {
                 / getCellHeight()
         );
 
-        if (!(gameContext.getLevelManager()
+        if (!(ctx.getLevelManager()
             instanceof IZombieManager manager)) {
             return;
         }
 
-        if (!manager.isValidPlacement(row, column, gameContext)) {
+        if (!manager.isValidPlacement(row, column, ctx)) {
             Toast.showError(
                 stage,
                 PvzSkin.get(),
@@ -1743,7 +1785,7 @@ public class GamePlayScreen implements Screen {
             selectedZombieTypeForPlacement
         );
 
-        if (gameContext.getSunAmount() < cost) {
+        if (ctx.getSunAmount() < cost) {
             Toast.showError(
                 stage,
                 PvzSkin.get(),
@@ -1802,7 +1844,7 @@ public class GamePlayScreen implements Screen {
             (getGridY() + getGridHeight() - stageY) / getCellHeight()
         );
 
-        Plant[][] grid = gameContext.getPlantGrid();
+        Plant[][] grid = ctx.getPlantGrid();
         if (row < 0 || row >= grid.length
             || column < 0 || column >= grid[row].length) {
             return;
@@ -1826,7 +1868,7 @@ public class GamePlayScreen implements Screen {
             return;
         }
 
-        plant.activatePlantFood(gameContext);
+        plant.activatePlantFood(ctx);
         plantFoodFeedMode = false;
         updateHud();
         Toast.showSuccess(
@@ -1846,13 +1888,13 @@ public class GamePlayScreen implements Screen {
             "TRY " + selectedPlantForPlacement.getName()
                 + " row=" + row
                 + " col=" + column
-                + " sun=" + gameContext.getSunAmount()
+                + " sun=" + ctx.getSunAmount()
                 + " cost=" + selectedPlantForPlacement.getSunCost()
         );
 
         boolean usingHeldSeed =
-            gameContext.getHeldSeed() != null
-                && gameContext
+            ctx.getHeldSeed() != null
+                && ctx
                 .getHeldSeed()
                 .equalsIgnoreCase(
                     selectedPlantForPlacement
@@ -1860,13 +1902,13 @@ public class GamePlayScreen implements Screen {
                 );
 
         boolean conveyorLevel =
-            gameContext.getLevelManager()
+            ctx.getLevelManager()
                 instanceof ConveyorBeltManager;
 
         if (!usingHeldSeed
             && !isConveyorLevel()
             && !conveyorLevel
-            && gameContext.isOnCooldown(selectedPlantForPlacement.getName())) {
+            && ctx.isOnCooldown(selectedPlantForPlacement.getName())) {
 
             showPlantCooldownError(selectedPlantForPlacement.getName());
             return;
@@ -1875,7 +1917,7 @@ public class GamePlayScreen implements Screen {
         if (!usingHeldSeed
             && !isConveyorLevel()
             && !conveyorLevel
-            && gameContext.getSunAmount()
+            && ctx.getSunAmount()
             < selectedPlantForPlacement.getSunCost()) {
 
             Toast.showError(
@@ -1888,7 +1930,7 @@ public class GamePlayScreen implements Screen {
         }
 
         Plant before =
-            gameContext.getPlantGrid()[row][column];
+            ctx.getPlantGrid()[row][column];
 
         plantingCommand.execute(
             new String[] {
@@ -1899,7 +1941,7 @@ public class GamePlayScreen implements Screen {
         );
 
         Plant after =
-            gameContext.getPlantGrid()[row][column];
+            ctx.getPlantGrid()[row][column];
 
         Gdx.app.log(
             "PlantingUI",
@@ -1908,7 +1950,7 @@ public class GamePlayScreen implements Screen {
 
         if (after != null && after != before) {
             // ثبت زمان کاشت گیاه در لحظه موفقیت عملیات کاشت
-            int currentSecond = gameContext.getTimeManager().getTotalSeconds();
+            int currentSecond = ctx.getTimeManager().getTotalSeconds();
             after.setPlantTimeSecond(currentSecond);
 
             clearPlantSelection();
@@ -1921,10 +1963,10 @@ public class GamePlayScreen implements Screen {
             selectedPlantForPlacement.getAbilityParams().get("explosiveType")
         );
         boolean onGrave = row >= 0
-            && row < gameContext.getGraveGrid().length
+            && row < ctx.getGraveGrid().length
             && column >= 0
-            && column < gameContext.getGraveGrid()[row].length
-            && gameContext.getGraveGrid()[row][column] != null;
+            && column < ctx.getGraveGrid()[row].length
+            && ctx.getGraveGrid()[row][column] != null;
 
         Toast.showError(
             stage,
@@ -1934,9 +1976,9 @@ public class GamePlayScreen implements Screen {
                 : "Can't plant there."
         );
     }
-    private void showPlantCooldownError(String plantName) {
+    public void showPlantCooldownError(String plantName) {
         int seconds = (int) Math.ceil(
-            gameContext.getRemainingCooldownSeconds(plantName)
+            ctx.getRemainingCooldownSeconds(plantName)
         );
         String message = seconds > 0
             ? plantName + " is still recharging (" + seconds + "s)"
@@ -1944,7 +1986,14 @@ public class GamePlayScreen implements Screen {
         Toast.showError(stage, PvzSkin.get(), message);
     }
 
-    private void clearPlantSelection() {
+    protected void clearPlantPreview() {
+        if (mousePlantPreview != null) {
+            mousePlantPreview.remove();
+            mousePlantPreview = null;
+        }
+    }
+
+    protected void clearPlantSelection() {
         selectedPlantForPlacement = null;
 
         if (mousePlantPreview != null) {
@@ -2042,14 +2091,14 @@ public class GamePlayScreen implements Screen {
          * کل ردیف زیر موس را Highlight کن.
          */
         if (selectedZombieTypeForPlacement != null
-            && gameContext.getLevelManager()
+            && ctx.getLevelManager()
             instanceof IZombieManager manager) {
 
             boolean validPlacement =
                 manager.isValidPlacement(
                     hoveredPlantRow,
                     hoveredPlantColumn,
-                    gameContext
+                    ctx
                 )
                     && !manager.isBrainEaten(hoveredPlantRow);
 
@@ -2103,25 +2152,25 @@ public class GamePlayScreen implements Screen {
     }
 
     private boolean isConveyorLevel() {
-        return gameContext.getLevelManager()
+        return ctx.getLevelManager()
             instanceof ConveyorBeltManager;
     }
 
     private boolean isIZombieLevel() {
-        return gameContext.getLevel().getLevelType()
+        return ctx.getLevel().getLevelType()
             == LevelType.Izambie_MG
-            && gameContext.getLevelManager()
+            && ctx.getLevelManager()
             instanceof IZombieManager;
     }
 
     private List<Plant> getAvailableSeedBankPlants() {
-        if (gameContext.getLevelManager()
+        if (ctx.getLevelManager()
             instanceof ConveyorBeltManager conveyorManager) {
 
             return conveyorManager.getConveyorBelt();
         }
 
-        return gameContext.getActivePlants();
+        return ctx.getActivePlants();
     }
 
     private void rebuildSeedBank() {
@@ -2148,7 +2197,7 @@ public class GamePlayScreen implements Screen {
     }
 
     private void updateConveyorSeedBank() {
-        if (!(gameContext.getLevelManager()
+        if (!(ctx.getLevelManager()
             instanceof ConveyorBeltManager conveyorManager)) {
             return;
         }
@@ -2185,16 +2234,16 @@ public class GamePlayScreen implements Screen {
         if (gameplayStarted
             && !pauseOverlay.isVisible()
             && !winLoseOverlay.isVisible()
-            && !gameContext.isPaused()
-            && !gameContext.isGameEnded()
+            && !ctx.isPaused()
+            && !ctx.isGameEnded()
             && !dialogueBlocking) {
 
             timeAccumulator += delta;
 
             while (timeAccumulator >= TICK_DURATION
-                && !gameContext.isGameEnded()) {
+                && !ctx.isGameEnded()) {
 
-                gameContext.getTimeManager().advanceTime(1);
+                ctx.getTimeManager().advanceTime(1);
                 gameEngine.update(TICK_DURATION);
                 timeAccumulator -= TICK_DURATION;
             }
@@ -2211,7 +2260,7 @@ public class GamePlayScreen implements Screen {
             card.updateAnimation(delta);
 
             double cooldown =
-                gameContext
+                ctx
                     .getRemainingCooldownSeconds(
                         card.getPlant().getName()
                     );
@@ -2227,14 +2276,14 @@ public class GamePlayScreen implements Screen {
 
             double cooldown = 0;
 
-            if (gameContext.getLevelManager()
+            if (ctx.getLevelManager()
                 instanceof IZombieManager manager) {
 
                 cooldown =
                     manager
                         .getRemainingZombieCooldownSeconds(
                             card.getZombieType(),
-                            gameContext
+                            ctx
                         );
             }
 
@@ -2243,15 +2292,15 @@ public class GamePlayScreen implements Screen {
             );
         }
 
-        if (gameContext.isGameEnded() && !endDialogueShown) {
+        if (ctx.isGameEnded() && !endDialogueShown && !handlesOwnEndOfGame()) {
             endDialogueShown = true;
             showEndOfLevelDialogue();
         }
 
-        if (screenElapsedTime >= MISSION_DISPLAY_TIME && !gameContext.isGameEnded()) {
+        if (screenElapsedTime >= MISSION_DISPLAY_TIME && !ctx.isGameEnded()) {
             String announcement;
 
-            while ((announcement = gameContext.pollAnnouncement()) != null) {
+            while ((announcement = ctx.pollAnnouncement()) != null) {
                 Toast.showAnnouncement(
                     stage,
                     PvzSkin.get(),
@@ -2260,7 +2309,7 @@ public class GamePlayScreen implements Screen {
             }
 
             String soundCue;
-            while ((soundCue = gameContext.pollSoundCue()) != null) {
+            while ((soundCue = ctx.pollSoundCue()) != null) {
                 if (soundCue.startsWith("sfx:")) {
                     Audio.playSfx(soundCue.substring("sfx:".length()));
                 } else {
@@ -2298,7 +2347,7 @@ public class GamePlayScreen implements Screen {
     ) {
         try {
             Plant plant =
-                gameContext
+                ctx
                     .getPlantFactory()
                     .create(plantName);
 
@@ -2317,7 +2366,7 @@ public class GamePlayScreen implements Screen {
             );
 
         } catch (Exception e) {
-            gameContext.setHeldSeed(null);
+            ctx.setHeldSeed(null);
 
             Gdx.app.error(
                 "VaseSeed",

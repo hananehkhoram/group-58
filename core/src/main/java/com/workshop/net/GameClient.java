@@ -13,20 +13,32 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public final class GameClient {
     public static final int DEFAULT_PORT = 5454;
     public static final String DEFAULT_HOST = "127.0.0.1";
 
     private static final GameClient INSTANCE = new GameClient();
+    private static final long REQUEST_TIMEOUT_SECONDS = 5;
 
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
     private String loggedUsername;
+    private Thread readerThread;
+    private volatile MatchListener matchListener;
+
+    private final BlockingQueue<String> pendingResponses = new LinkedBlockingQueue<>();
 
     public static GameClient get() {
         return INSTANCE;
+    }
+
+    public void setMatchListener(MatchListener listener) {
+        this.matchListener = listener;
     }
 
     public synchronized boolean connect(String host, int port) {
@@ -36,11 +48,62 @@ public final class GameClient {
             socket.connect(new InetSocketAddress(host, port), 1500);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
+            startReaderThread();
             NetResponse ping = request("PING");
             return ping.ok;
         } catch (Exception e) {
             disconnect();
             return false;
+        }
+    }
+
+    private void startReaderThread() {
+        readerThread = new Thread(this::readLoop, "game-client-reader");
+        readerThread.setDaemon(true);
+        readerThread.start();
+    }
+
+    private void readLoop() {
+        try {
+            String line;
+            while (in != null && (line = in.readLine()) != null) {
+                dispatch(line);
+            }
+        } catch (IOException ignored) {
+        } finally {
+            pendingResponses.offer("\u0000DISCONNECTED");
+        }
+    }
+
+    private void dispatch(String line) {
+        String[] parts = UserSnapshot.split(line);
+        if (parts.length > 0 && "EVENT".equals(parts[0])) {
+            handleEvent(parts);
+        } else {
+            pendingResponses.offer(line);
+        }
+    }
+
+    private void handleEvent(String[] parts) {
+        MatchListener listener = matchListener;
+        if (listener == null || parts.length < 2) {
+            return;
+        }
+        String type = parts[1];
+        try {
+            switch (type) {
+                case "CHALLENGE_INVITE" -> listener.onChallengeInvite(parts[2], parts[3]);
+                case "CHALLENGE_DECLINED" -> listener.onChallengeDeclined(parts[2]);
+                case "MATCH_FOUND" -> listener.onMatchFound(parts[2], parts[3], parts[4], "1".equals(parts[5]));
+                case "MATCH_MSG" -> listener.onMatchMessage(
+                    parts[2], parts[3], parts.length > 4 ? UserSnapshot.joinFrom(parts, 4) : ""
+                );
+                case "OPPONENT_LEFT" -> listener.onOpponentLeft(parts[2]);
+                default -> {
+                }
+            }
+        } catch (Exception ignored) {
+            // A malformed/short event should never crash the reader thread.
         }
     }
 
@@ -59,6 +122,7 @@ public final class GameClient {
         socket = null;
         in = null;
         out = null;
+        pendingResponses.clear();
     }
 
     public synchronized NetResponse register(
@@ -142,6 +206,42 @@ public final class GameClient {
         return names;
     }
 
+    public synchronized NetResponse challenge(String targetUsername, String role) {
+        return request("CHALLENGE", targetUsername, role);
+    }
+
+    public synchronized NetResponse respondToChallenge(String challengerUsername, boolean accept) {
+        return request("CHALLENGE_RESPOND", challengerUsername, accept ? "accept" : "decline");
+    }
+
+    public synchronized NetResponse joinRandomQueue() {
+        return request("QUEUE_JOIN");
+    }
+
+    public synchronized NetResponse cancelRandomQueue() {
+        return request("QUEUE_CANCEL");
+    }
+
+    public synchronized NetResponse sendMatchAction(String matchId, String payload) {
+        return request("MATCH_MSG", matchId, "ACTION", payload);
+    }
+
+    public synchronized NetResponse sendMatchState(String matchId, String payload) {
+        return request("MATCH_MSG", matchId, "STATE", payload);
+    }
+
+    public synchronized NetResponse sendMatchReaction(String matchId, String payload) {
+        return request("MATCH_MSG", matchId, "REACTION", payload);
+    }
+
+    public synchronized NetResponse sendMatchEnd(String matchId, String payload) {
+        return request("MATCH_MSG", matchId, "END", payload);
+    }
+
+    public synchronized NetResponse leaveMatch(String matchId) {
+        return request("MATCH_LEAVE", matchId);
+    }
+
     public User applyLoginSnapshot(UserSnapshot snap) {
         UserManager um = UserManager.getInstance();
         User existing = null;
@@ -172,15 +272,18 @@ public final class GameClient {
         }
         try {
             out.println(UserSnapshot.join(prepend(type, parts)));
-            String line = in.readLine();
+            String line = pendingResponses.poll(REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             if (line == null) {
+                return NetResponse.fail("Server did not respond in time.");
+            }
+            if ("\u0000DISCONNECTED".equals(line)) {
                 disconnect();
                 return NetResponse.fail("Disconnected from server.");
             }
             return NetResponse.parse(line);
-        } catch (IOException e) {
-            disconnect();
-            return NetResponse.fail("Server connection lost.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return NetResponse.fail("Request interrupted.");
         }
     }
 

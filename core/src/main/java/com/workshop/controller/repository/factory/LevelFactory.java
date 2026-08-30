@@ -1,6 +1,7 @@
 package com.workshop.controller.repository.factory;
 
 import com.workshop.controller.repository.DataManager;
+import com.workshop.controller.repository.PlantRepository;
 import com.workshop.model.GameContext;
 import com.workshop.model.MiniGame.VaseGame.VaseContent;
 import com.workshop.model.MiniGame.VaseGame.Vase;
@@ -23,7 +24,34 @@ import java.util.List;
 public class LevelFactory {
 
     private static Plant p(String name) {
-        return DataManager.getInstance().plants.get(name);
+        PlantRepository repo = DataManager.getInstance().plants;
+        Plant exact = repo.get(name);
+        if (exact != null) {
+            return exact;
+        }
+        String compact = compactPlantName(name);
+        for (Plant plant : repo.getPlantDataMap().values()) {
+            if (plant.getName() != null
+                && compactPlantName(plant.getName()).equals(compact)) {
+                return plant;
+            }
+        }
+        return null;
+    }
+
+    private static String compactPlantName(String name) {
+        return name.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+    }
+
+    private static List<Plant> plants(String... names) {
+        List<Plant> result = new ArrayList<>();
+        for (String name : names) {
+            Plant plant = p(name);
+            if (plant != null) {
+                result.add(plant);
+            }
+        }
+        return result;
     }
 
     private static Wave[] generateWaves(int waveCount, int baseCost, int waveDelayTicks) {
@@ -131,7 +159,7 @@ public class LevelFactory {
 
         Level timedWarLevel = new Level("Frozen Caves - Day 3", 5, 9,
                 generateWaves(6, 170, 200), LevelType.TIMED_WAR, null);
-        timedWarLevel.setTimedWarDuration(90);
+        timedWarLevel.setTimedWarDuration(226);
         timedWarLevel.setSunProductionMode(false);
         timedWarLevel.setTimedWarTargetZombies(15);
         levels.add(timedWarLevel);

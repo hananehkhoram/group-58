@@ -1,6 +1,7 @@
 package com.workshop.view.gameplay;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.plants.Tag;
@@ -23,6 +24,10 @@ import pvz.libpvz.pam.PamPlayer;
 public final class ProjectileAnimationResolver {
 
     private static final String LOG_TAG = "ProjectileAnimationResolver";
+    private static final String[] FIRE_PEA_PAMS = {
+        "768/INITIAL/EFFECTS/T_FIRE_PEA/FIRE_PEASHOOTER.PAM",
+        "768/INITIAL/EFFECTS/T_FIRE_PEA/T_FIRE_PEA.PAM"
+    };
     private static ProjectilePamCatalog sharedCatalog;
 
     private final ProjectilePamCatalog catalog;
@@ -62,6 +67,9 @@ public final class ProjectileAnimationResolver {
         }
 
         ProjectileAnimationSpec spec = specFromPlantBody(projectile);
+        if (spec == null) {
+            spec = specFromFirePea(projectile);
+        }
         if (spec == null) {
             spec = specFromSprite(projectile);
         }
@@ -357,6 +365,33 @@ public final class ProjectileAnimationResolver {
         );
     }
 
+    private ProjectileAnimationSpec specFromFirePea(Projectile projectile) {
+        if (!ProjectileLooks.isFirePeaLook(projectile)) {
+            return null;
+        }
+
+        for (String path : FIRE_PEA_PAMS) {
+            if (!pamFileExists(path)) {
+                continue;
+            }
+            return new ProjectileAnimationSpec(
+                path,
+                pickProjectileClip(path),
+                2.0f,
+                0f,
+                0f
+            );
+        }
+        return null;
+    }
+
+    private static boolean pamFileExists(String relativeToImages) {
+        FileHandle file = Textures.assetsRoot()
+            .child("IMAGES")
+            .child(relativeToImages.replace('\\', '/'));
+        return file.exists() && !file.isDirectory();
+    }
+
     private ProjectileAnimationSpec specFromSprite(Projectile projectile) {
         String imageId = ProjectileLooks.imageId(projectile);
         if (imageId == null) {
@@ -379,6 +414,11 @@ public final class ProjectileAnimationResolver {
             return false;
         }
 
+        String upper = path.replace('\\', '/').toUpperCase(Locale.ROOT);
+        if (upper.contains("/EFFECTS/")) {
+            return false;
+        }
+
         String ownerCompact = ProjectilePamCatalog.compact(plant.getName());
         String fileCompact = ProjectilePamCatalog.compact(fileNameWithoutExtension(path));
         if (!ownerCompact.isEmpty() && ownerCompact.equals(fileCompact)) {
@@ -390,7 +430,6 @@ public final class ProjectileAnimationResolver {
             return true;
         }
 
-        String upper = path.replace('\\', '/').toUpperCase(Locale.ROOT);
         return upper.contains("/PLANT/") && !isProjectileAssetPath(upper);
     }
 
@@ -398,6 +437,7 @@ public final class ProjectileAnimationResolver {
         return upperPath.contains("PROJECTILE")
             || upperPath.contains("/PEA/")
             || upperPath.endsWith("/PEA.PAM")
+            || upperPath.contains("FIRE_PEA")
             || upperPath.contains("BULLET");
     }
 

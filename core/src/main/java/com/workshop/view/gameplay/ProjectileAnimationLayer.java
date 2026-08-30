@@ -118,7 +118,8 @@ public final class ProjectileAnimationLayer extends Group {
             drawX += lobOffsetX(projectile);
             drawY += lobOffsetY(projectile);
         } else if (projectile.getOwnerPlant() != null
-            && projectile.getTrajectory() == TrajectoryType.STRAIGHT) {
+            && projectile.getTrajectory() == TrajectoryType.STRAIGHT
+            && !projectile.getOwnerPlant().isPeaFamily()) {
             drawX += getCellWidth() * SHOOTER_MUZZLE_X_RATIO;
             drawY += getCellHeight() * SHOOTER_MUZZLE_Y_RATIO;
         }

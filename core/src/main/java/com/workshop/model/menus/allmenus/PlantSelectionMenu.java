@@ -3,7 +3,9 @@ package com.workshop.model.menus.allmenus;
 import com.workshop.controller.repository.DataManager;
 import com.workshop.controller.repository.PlantRepository;
 import com.workshop.controller.repository.factory.PlantFactory;
+import com.workshop.controller.SpecialLevelManager.PlantWhatYouGetManager;
 import com.workshop.model.GameContext;
+import com.workshop.model.level.LevelType;
 import com.workshop.model.menus.BaseMenu;
 import com.workshop.model.menus.MenuType;
 import com.workshop.model.plants.Plant;
@@ -57,6 +59,9 @@ public class PlantSelectionMenu extends BaseMenu {
         for (Plant p : plants) if (p.getName().equalsIgnoreCase(plantType)) inUserPlant = p;
 
         if (inUserPlant == null) return "Plant is not unlocked.";
+        if (isSunflowerBanned(inUserPlant.getName())) {
+            return "You cannot select Sunflower in this level.";
+        }
         for (Plant p : ctx.getActivePlants()) if (p.getName().equalsIgnoreCase(plantType)) return "Plant is already chosen.";
 
         Plant newPlant = plantFactory.create(String.valueOf(inUserPlant.getName()));
@@ -97,7 +102,15 @@ public class PlantSelectionMenu extends BaseMenu {
         userPlant.setPlantFoodActive(true);
         for (Plant p : ctx.getActivePlants()) if (p.getName().equalsIgnoreCase(plantType)) p.setPlantFoodActive(true);
         return "Successfully boosted " + userPlant.getName() + "!";
-    }    public String startGame() {
+    }
+
+    private boolean isSunflowerBanned(String plantName) {
+        return ctx.getLevel() != null
+            && ctx.getLevel().getLevelType() == LevelType.PLANT_WHAT_YOU_GET
+            && PlantWhatYouGetManager.isSunflower(plantName);
+    }
+
+    public String startGame() {
         if (ctx.getActivePlants().isEmpty()) {
             return "You must choose at least one plant before starting.";
         }

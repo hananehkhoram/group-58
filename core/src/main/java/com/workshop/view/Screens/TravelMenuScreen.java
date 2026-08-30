@@ -129,6 +129,15 @@ public class TravelMenuScreen implements Screen {
             }
         });
 
+        com.badlogic.gdx.scenes.scene2d.ui.TextButton iZombieMultiplayerButton =
+            new com.badlogic.gdx.scenes.scene2d.ui.TextButton("I, Zombie: 2-Player", skin, "purple");
+        iZombieMultiplayerButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.showIZombieMultiplayer();
+            }
+        });
+
         int columns = 1;
         int rows = 1;
 
@@ -230,7 +239,11 @@ public class TravelMenuScreen implements Screen {
 
         topLeft.add(leaderboardButton)
             .width(89.4f)
-            .height(26.1f);
+            .height(26.1f)
+            .padRight(15);
+
+        topLeft.add(iZombieMultiplayerButton)
+            .width(170);
 
         stage.addActor(topLeft);
 

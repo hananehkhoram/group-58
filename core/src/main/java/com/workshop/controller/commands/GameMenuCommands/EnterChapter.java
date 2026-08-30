@@ -4,7 +4,6 @@ import com.workshop.controller.MenuManager;
 import com.workshop.controller.commandHandler.Command;
 import com.workshop.controller.repository.DataManager;
 import com.workshop.model.level.Level;
-import com.workshop.model.level.LevelType;
 import com.workshop.model.menus.Menu;
 import com.workshop.model.menus.allmenus.GameMenu;
 import com.workshop.model.season.Grave;
@@ -76,7 +75,7 @@ public class EnterChapter implements Command {
 
         if (currentMenu instanceof GameMenu) {
             menuManager.startBattle(levelToPlay, chapter);
-            if (levelToPlay.getLevelType().equals(LevelType.CONVEYOR_BELT)){
+            if (levelToPlay.skipsPlantSelection()){
                 menuManager.getCtx().getSeason().onLevelStart(menuManager.getCtx());
 
                 for (Grave g : menuManager.getCtx().getSeason().getInitialGraves(menuManager.getCtx().getLevel())) {

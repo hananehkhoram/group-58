@@ -19,6 +19,10 @@ public final class SessionManager {
         return online.containsKey(username.toLowerCase());
     }
 
+    public ClientHandler handlerFor(String username) {
+        return online.get(username.toLowerCase());
+    }
+
     public List<String> onlineUsernames() {
         return new ArrayList<>(online.keySet());
     }

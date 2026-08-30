@@ -2,6 +2,7 @@ package com.workshop.view.gameplay;
 
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.plants.Plant;
+import com.workshop.model.projectile.BulletType;
 import com.workshop.model.projectile.Projectile;
 import com.workshop.model.projectile.ProjectileVisualVariant;
 
@@ -18,10 +19,22 @@ final class ProjectileLooks {
         if (projectile == null) {
             return null;
         }
-        return imageId(projectile.getOwnerPlant(), projectile.getVisualVariant());
+        return imageId(
+            projectile.getOwnerPlant(),
+            projectile.getVisualVariant(),
+            projectile.getBulletType()
+        );
     }
 
     static String imageId(Plant plant, ProjectileVisualVariant variant) {
+        return imageId(plant, variant, null);
+    }
+
+    static String imageId(
+        Plant plant,
+        ProjectileVisualVariant variant,
+        BulletType bulletType
+    ) {
         if (plant == null || plant.getName() == null) {
             return null;
         }
@@ -32,12 +45,14 @@ final class ProjectileLooks {
         }
 
         String cacheKey = compact + "|"
-            + (variant == null ? "DEFAULT" : variant.name());
+            + (variant == null ? "DEFAULT" : variant.name())
+            + "|"
+            + (bulletType == null ? "NONE" : bulletType.name());
         if (cachedIds.containsKey(cacheKey)) {
             return cachedIds.get(cacheKey);
         }
 
-        String[] candidates = candidatesFor(compact, variant);
+        String[] candidates = candidatesFor(compact, variant, bulletType);
         for (String id : candidates) {
             if (id != null && Textures.regionOrNull(id) != null) {
                 cachedIds.put(cacheKey, id);
@@ -48,9 +63,20 @@ final class ProjectileLooks {
         return null;
     }
 
+    static boolean isFirePeaLook(Projectile projectile) {
+        if (projectile == null || projectile.getOwnerPlant() == null) {
+            return false;
+        }
+        return isFirePeaLook(
+            ProjectilePamCatalog.compact(projectile.getOwnerPlant().getName()),
+            projectile.getBulletType()
+        );
+    }
+
     private static String[] candidatesFor(
         String compact,
-        ProjectileVisualVariant variant
+        ProjectileVisualVariant variant,
+        BulletType bulletType
     ) {
         boolean butter = variant == ProjectileVisualVariant.BUTTER;
         if (butter || compact.contains("KERNEL")) {
@@ -123,6 +149,14 @@ final class ProjectileLooks {
             };
         }
 
+        if (isFirePeaLook(compact, bulletType)) {
+            return new String[]{
+                "IMAGE_EFFECTS_T_FIRE_PEA_T_FIRE_PEA_43X43",
+                "IMAGE_EFFECTS_T_FIRE_PEA_T_FIRE_PEA_31X31",
+                "IMAGE_EFFECTS_T_FIRE_PEA_T_FIRE_PEA_67X35"
+            };
+        }
+
         if (isPeaPlant(compact)) {
             return new String[]{
                 "IMAGE_PLANT_" + compact + "_" + compact + "_23X23",
@@ -144,7 +178,20 @@ final class ProjectileLooks {
         if (compact.contains("CABBAGE") || compact.contains("PEPPER")) {
             return 1.4f;
         }
+        if (compact.contains("FIREPEA")) {
+            return 2.0f;
+        }
         return 1f;
+    }
+
+    private static boolean isFirePeaLook(String compact, BulletType bulletType) {
+        if (compact.contains("FIREPEA")) {
+            return true;
+        }
+        if (bulletType != BulletType.FIRE || !isPeaPlant(compact)) {
+            return false;
+        }
+        return !compact.contains("MELON") && !compact.contains("PEPPER");
     }
 
     private static boolean isPeaPlant(String compact) {

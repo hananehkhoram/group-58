@@ -76,8 +76,7 @@ public class Tile {
         }
         TerrainType t = getTerrainType();
 
-        return t != TerrainType.WATER
-            && t != TerrainType.GRAVE
+        return t != TerrainType.GRAVE
             && t != TerrainType.CRATER;
     }
 

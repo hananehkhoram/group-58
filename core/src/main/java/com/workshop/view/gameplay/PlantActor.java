@@ -17,10 +17,12 @@ public final class PlantActor extends Actor {
 
     private final Plant plant;
     private final PlantAnimationSpec animationSpec;
+    private final PlantAnimationSpec lilyPadSpec;
     private final PamPlayer pamPlayer;
     private final HitFlashEffect hitFlash;
     private final float cellHeight;
     private static final float FALLBACK_ATTACK_DURATION = 0.45f;
+    private static final float SEQUENTIAL_SPIT_GAP = 0.14f;
 
     // گیاه‌ها معمولاً تقریباً هم‌قدِ یه خونه‌ی گرید هستن؛ این ضریب
     // نسبتِ ارتفاعِ اسپرایتِ خامِ PAM به ارتفاعِ خونه‌ی گرید رو تعیین
@@ -30,6 +32,7 @@ public final class PlantActor extends Actor {
     private static final float MINT_HEIGHT_TO_CELL_RATIO = 2.0f;
 
     private Float resolvedScale;
+    private Float lilyPadScale;
 
     private static final String ICE_BLOCK_PAM =
         "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_PLANT/FROSTBITE_ICE_BLOCK_PLANT.PAM";
@@ -71,14 +74,25 @@ public final class PlantActor extends Actor {
 
     private float stateTime;
     private float frostStateTime;
-    private final float attackDuration;
+    private Float resolvedAttackDuration;
     private Float graveBusterAttackDuration;
+    private int spitReleaseIndex;
 
     public PlantActor(
         Plant plant,
         PlantAnimationSpec animationSpec,
         PamPlayer pamPlayer,
         float cellHeight
+    ) {
+        this(plant, animationSpec, pamPlayer, cellHeight, null);
+    }
+
+    public PlantActor(
+        Plant plant,
+        PlantAnimationSpec animationSpec,
+        PamPlayer pamPlayer,
+        float cellHeight,
+        PlantAnimationSpec lilyPadSpec
     ) {
         this.plant = plant;
         this.hitFlash = new HitFlashEffect(() ->
@@ -87,14 +101,9 @@ public final class PlantActor extends Actor {
                 + (int) plant.getOctopusHp()
         );
         this.animationSpec = animationSpec;
+        this.lilyPadSpec = lilyPadSpec;
         this.pamPlayer = pamPlayer;
         this.cellHeight = cellHeight;
-
-        if (animationSpec.getClip(PlantAnimationState.ATTACK) == null) {
-            attackDuration = 0f;
-        } else {
-            attackDuration = FALLBACK_ATTACK_DURATION;
-        }
 
         if (plant.isGraveDestroyer()) {
             currentState = PlantAnimationState.ATTACK;
@@ -204,15 +213,10 @@ public final class PlantActor extends Actor {
                     plant.markActionComplete();
                 }
             } else if (currentState == PlantAnimationState.ATTACK) {
-                float duration = attackDuration;
-
-                if (duration <= 0f) {
-                    duration = FALLBACK_ATTACK_DURATION;
-                }
-
-                if (stateTime >= duration) {
+                if (stateTime >= attackClipDuration()) {
                     currentState = PlantAnimationState.IDLE;
                     stateTime = 0f;
+                    spitReleaseIndex = 0;
                 }
             }
         }
@@ -247,6 +251,8 @@ public final class PlantActor extends Actor {
             drawPlantFoodGlow(batch, parentAlpha);
         }
 
+        drawLilyPadUnderneath(batch, parentAlpha);
+
         animationSpec.ensureClipsBound(pamPlayer);
         String clip = animationSpec.getClip(currentState);
         if (clip == null) {
@@ -276,6 +282,56 @@ public final class PlantActor extends Actor {
         } else if (plant.getFreezeLevel() > 0) {
             drawChillOverlay(batch, parentAlpha);
         }
+    }
+
+    private void drawLilyPadUnderneath(Batch batch, float parentAlpha) {
+        if (lilyPadSpec == null || !plant.isHasLilyPadUnderneath()) {
+            return;
+        }
+
+        lilyPadSpec.ensureClipsBound(pamPlayer);
+        String clip = lilyPadSpec.getIdleClip();
+        if (clip == null) {
+            return;
+        }
+
+        batch.setColor(1f, 1f, 1f, parentAlpha);
+        drawScaled(
+            batch,
+            lilyPadSpec.getPamPath(),
+            clip,
+            stateTime,
+            getX(),
+            getY() - cellHeight * 0.08f,
+            true,
+            getLilyPadScale()
+        );
+    }
+
+    private float getLilyPadScale() {
+        if (lilyPadScale != null) {
+            return lilyPadScale;
+        }
+        if (lilyPadSpec == null) {
+            return 1f;
+        }
+        String clip = lilyPadSpec.getIdleClip();
+        if (clip == null) {
+            return 1f;
+        }
+        Rectangle bounds;
+        try {
+            bounds = pamPlayer.bounds(lilyPadSpec.getPamPath(), clip);
+        } catch (RuntimeException exception) {
+            lilyPadScale = 1f;
+            return lilyPadScale;
+        }
+        if (bounds == null || bounds.height <= 0f) {
+            lilyPadScale = 1f;
+            return lilyPadScale;
+        }
+        lilyPadScale = (cellHeight * 0.95f) / bounds.height;
+        return lilyPadScale;
     }
 
     private void drawPlantFoodGlow(Batch batch, float parentAlpha) {
@@ -494,8 +550,53 @@ public final class PlantActor extends Actor {
 
         currentState = state;
         stateTime = 0f;
+        if (state == PlantAnimationState.ATTACK) {
+            spitReleaseIndex = 0;
+        }
 
         return true;
+    }
+
+    int dueShotReleases() {
+        if (currentState != PlantAnimationState.ATTACK) {
+            return 0;
+        }
+        float spitAt = attackClipDuration() * plant.attackReleaseRatio();
+        int due = 0;
+        while (spitReleaseIndex + due < 8
+            && stateTime >= spitAt + (spitReleaseIndex + due) * SEQUENTIAL_SPIT_GAP) {
+            due++;
+        }
+        return due;
+    }
+
+    void markShotReleased() {
+        spitReleaseIndex++;
+    }
+
+    private float attackClipDuration() {
+        if (resolvedAttackDuration != null) {
+            return resolvedAttackDuration;
+        }
+        animationSpec.ensureClipsBound(pamPlayer);
+        String clip = animationSpec.getClip(PlantAnimationState.ATTACK);
+        if (clip == null) {
+            resolvedAttackDuration = FALLBACK_ATTACK_DURATION;
+            return resolvedAttackDuration;
+        }
+        try {
+            float duration = pamPlayer.clipDurationSeconds(
+                animationSpec.getPamPath(),
+                clip
+            );
+            if (duration > 0.08f) {
+                resolvedAttackDuration = duration;
+                return resolvedAttackDuration;
+            }
+        } catch (RuntimeException ignored) {
+        }
+        resolvedAttackDuration = FALLBACK_ATTACK_DURATION;
+        return resolvedAttackDuration;
     }
 
     public void playIdle() {

@@ -6,7 +6,9 @@ import com.workshop.model.plants.plantFoodEffect.PlantFoodMode;
 import com.workshop.model.plants.upgradeEffect.BehaviorEffect;
 import com.workshop.model.plants.upgradeEffect.BehaviorKey;
 import com.workshop.model.plants.upgradeEffect.StatEffect;
+import com.workshop.model.plants.plantAbilities.Lobber;
 import com.workshop.model.projectile.Damageable;
+import com.workshop.model.projectile.Projectile;
 import com.workshop.model.zombie.Zombie;
 
 import java.util.*;
@@ -34,6 +36,8 @@ public class Plant implements Damageable {
     private int lastActionSecond = 0;   // timeManaging
     private int plantTimeSecond = 0;    // زمان کاشت گیاه بر حسب ثانیه
     private boolean actionComplete;
+    private final List<Projectile> pendingShots = new ArrayList<>();
+    private long pendingShotArmedTick = -1;
 
     private int level;
 
@@ -142,6 +146,16 @@ public class Plant implements Damageable {
     public void setId(int id) { this.id = id; }
 
     public String getName() { return name; }
+
+    public boolean isPeaFamily() {
+        if (name == null) {
+            return false;
+        }
+        String compact = name.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
+        return compact.contains("PEA")
+            || compact.contains("REPEATER")
+            || compact.contains("GATLING");
+    }
     public void setName(String name) { this.name = name; }
 
     public PlantFamily getFamily() { return family; }
@@ -196,6 +210,60 @@ public class Plant implements Damageable {
     public void setCol(int col) { this.col = col; }
 
     public int getLastActionSecond() { return lastActionSecond; }
+    public void armPendingShots(List<Projectile> shots, long armedTick) {
+        if (shots == null || shots.isEmpty()) {
+            return;
+        }
+        pendingShots.addAll(shots);
+        if (pendingShotArmedTick < 0) {
+            pendingShotArmedTick = armedTick;
+        }
+    }
+
+    public boolean hasPendingShots() {
+        return !pendingShots.isEmpty();
+    }
+
+    public int pendingShotCount() {
+        return pendingShots.size();
+    }
+
+    public boolean releaseNextPendingShot(GameContext ctx) {
+        if (pendingShots.isEmpty() || ctx == null) {
+            return false;
+        }
+        ctx.setNewProjectiles(pendingShots.remove(0));
+        ctx.flushPendingProjectiles();
+        if (pendingShots.isEmpty()) {
+            pendingShotArmedTick = -1;
+        }
+        return true;
+    }
+
+    public void releaseAllPendingShots(GameContext ctx) {
+        while (releaseNextPendingShot(ctx)) {
+        }
+    }
+
+    public void discardPendingShots() {
+        pendingShots.clear();
+        pendingShotArmedTick = -1;
+    }
+
+    public long getPendingShotArmedTick() {
+        return pendingShotArmedTick;
+    }
+
+    public float attackReleaseRatio() {
+        if (isPeaFamily()) {
+            return 0.40f;
+        }
+        if (baseAbility instanceof Lobber) {
+            return 0.52f;
+        }
+        return 0.45f;
+    }
+
     public void setLastActionSecond(int lastActionSecond)
     { this.lastActionSecond = lastActionSecond; }
 
@@ -229,6 +297,17 @@ public class Plant implements Damageable {
 
     public int getFreezeLevel() { return freezeLevel; }
     public boolean isHasLilyPadUnderneath() { return hasLilyPadUnderneath; }
+    public void setHasLilyPadUnderneath(boolean hasLilyPadUnderneath) {
+        this.hasLilyPadUnderneath = hasLilyPadUnderneath;
+    }
+
+    public boolean isLilyPad() {
+        if (name != null && name.equalsIgnoreCase("Lily Pad")) {
+            return true;
+        }
+        return abilityParams != null
+            && "WATER_PLATFORM".equals(abilityParams.get("modifierType"));
+    }
     public int getHp() { return hp; }
 
     public boolean isPlantFoodActive() { return plantFoodActive; }

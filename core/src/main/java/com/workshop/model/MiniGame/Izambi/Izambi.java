@@ -46,6 +46,16 @@ public class Izambi {
         "Wall-nut"
     };
 
+    // Fixed pool of plants a human "plant" player may buy during a 2-player
+    // "I, Zombie" match. Costs come from each plant's own template cost.
+    private static final String[] MULTIPLAYER_PLANT_POOL = {
+        "Peashooter",
+        "Repeater",
+        "Snow Pea",
+        "Cabbage-pult",
+        "Wall-nut"
+    };
+
     private static Izambi activeInstance;
 
     private final Random random = new Random();
@@ -127,6 +137,100 @@ public class Izambi {
         );
 
         showAvailableZombies();
+    }
+
+    /**
+     * Starts an "I, Zombie" match for the networked/couch 2-player mode:
+     * the lawn starts empty (no auto-placed plants) because a real human
+     * plant-player will place plants via {@link #placePlant}, and win/loss
+     * is handed off to the caller instead of the single-player campaign
+     * logic (see {@link GameContext#setExternalWinLossHandling}).
+     */
+    public void startMultiplayerMatch(MenuManager menuManager, int levelNumber) {
+        List<Level> levels = LevelFactory.buildIzombieLevels();
+
+        if (levels == null || levels.isEmpty()) {
+            Console.showMessage("Error: No levels found for I-Zombie mini-game.");
+            return;
+        }
+
+        int levelIndex = Math.max(0, Math.min(levelNumber - 1, levels.size() - 1));
+
+        currentLevel = levels.get(levelIndex);
+
+        Season season = new IzombieSeason(levels);
+
+        ctx = new GameContext(currentLevel, season);
+        ctx.setZombieFactory(new ZombieFactory(DataManager.getInstance()));
+
+        iZombieManager = new IZombieManager(levelIndex, currentLevel.getRows());
+        ctx.setLevelManager(iZombieManager);
+        iZombieManager.onLevelStart(ctx);
+
+        gameEngine = new GameEngine(ctx, menuManager);
+        ctx.setGameEngine(gameEngine);
+        ctx.setExternalWinLossHandling(true);
+
+        ctx.setSunAmount(INITIAL_SUN);
+
+        initSunProducerZombies();
+
+        ctx.setBattleStarted(true);
+    }
+
+    /**
+     * Plant-side counterpart of {@link #placeZombie}: places a plant on the
+     * defenders' half of the lawn (left of the red line). Sun cost is not
+     * deducted here — the 2-player match tracks the plant player's sun as
+     * a separate pool from {@code ctx.getSunAmount()} (which belongs to the
+     * zombie economy), so callers must check/deduct cost before calling.
+     */
+    public boolean placePlant(String plantName, int row, int column) {
+        if (ctx == null || iZombieManager == null || ctx.isGameEnded()) {
+            return false;
+        }
+
+        if (row < 0 || row >= currentLevel.getRows()
+            || column < 0 || column >= IZombieManager.RED_LINE_COLUMN) {
+            return false;
+        }
+
+        Plant plant;
+        try {
+            plant = new PlantFactory(DataManager.getInstance()).create(plantName);
+        } catch (IllegalArgumentException exception) {
+            return false;
+        }
+
+        Tile tile = gameEngine.getTiles(column, row);
+        if (tile == null || !tile.setPlant(plant)) {
+            return false;
+        }
+
+        plant.setRow(row);
+        plant.setCol(column);
+        ctx.getAlivePlants().add(plant);
+        return true;
+    }
+
+    public static String[] getMultiplayerPlantPool() {
+        return MULTIPLAYER_PLANT_POOL.clone();
+    }
+
+    public int getPlantCost(String plantName) {
+        try {
+            return new PlantFactory(DataManager.getInstance()).create(plantName).getSunCost();
+        } catch (IllegalArgumentException exception) {
+            return -1;
+        }
+    }
+
+    public IZombieManager getIZombieManager() {
+        return iZombieManager;
+    }
+
+    public Level getCurrentLevel() {
+        return currentLevel;
     }
 
     public boolean placeZombie(

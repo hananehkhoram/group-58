@@ -184,6 +184,7 @@ public class GameContext {
     private LevelManager levelManager;
     private boolean activeWaveInProgress = false;
     private boolean manualStartCommandReceived = false;
+    private long manualWaveStartTick = 0;
     private boolean battleStarted = false;
 
     private int multiKillPatternCount = 0;
@@ -239,6 +240,10 @@ public class GameContext {
     public boolean isOnCooldown(String plantName) {
         long availableAt = plantCooldowns.getOrDefault(plantName, 0L);
         return timeManager.getTotalTicks() < availableAt;
+    }
+
+    public void setGameEnded(boolean gameEnded) {
+        this.gameEnded = gameEnded;
     }
 
     public void setCooldown(String plantName, double rechargeSeconds) {
@@ -564,6 +569,10 @@ public class GameContext {
         return playerWon;
     }
 
+    public boolean isSetupPhase() {
+        return isSetupPhase;
+    }
+
     public void setSetupPhase(boolean v) {
         this.isSetupPhase = v;
     }
@@ -608,6 +617,19 @@ public class GameContext {
         this.battleStarted = battleStarted;
     }
 
+    // When true, GameEngine no longer auto-triggers campaign win/loss for
+    // I-Zombie levels (used by the networked "I, Zombie" match, which owns
+    // its own win/lose rules and must not touch single-player progression).
+    private boolean externalWinLossHandling = false;
+
+    public boolean isExternalWinLossHandling() {
+        return externalWinLossHandling;
+    }
+
+    public void setExternalWinLossHandling(boolean externalWinLossHandling) {
+        this.externalWinLossHandling = externalWinLossHandling;
+    }
+
     public void setActiveWaveInProgress(boolean activeWaveInProgress) {
         this.activeWaveInProgress = activeWaveInProgress;
     }
@@ -630,6 +652,14 @@ public class GameContext {
 
     public void triggerManualWaveStart() {
         this.manualStartCommandReceived = true;
+        this.isSetupPhase = false;
+        if (timeManager != null) {
+            this.manualWaveStartTick = timeManager.getTotalTicks();
+        }
+    }
+
+    public long getManualWaveStartTick() {
+        return manualWaveStartTick;
     }
     public void recordPlantKill(Plant killer) {
         if (killer == null) return;

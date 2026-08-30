@@ -22,8 +22,8 @@ public final class BrainLayer extends Group {
      *
      * اسم واقعی را حدس نزن.
      */
-    private static final String BRAIN_PAM_PATH =
-        "PLANT/BRAINSTEM/BRAINSTEM.PAM";
+    private static final String BRAIN_PAM =
+        "768/FULL/ZOMBIE/POWER_BRAIN_PROJECTILE/POWER_BRAIN_PROJECTILE.PAM";
 
     private static final float TARGET_HEIGHT_TO_CELL_RATIO = 0.55f;
 
@@ -64,7 +64,7 @@ public final class BrainLayer extends Group {
 
             BrainActor brain =
                 new BrainActor(
-                    BRAIN_PAM_PATH,
+                    BRAIN_PAM,
                     getCellHeight()
                 );
 
