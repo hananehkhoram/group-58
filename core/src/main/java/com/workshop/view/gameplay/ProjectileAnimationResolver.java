@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.plants.Tag;
+import com.workshop.model.projectile.BowlingWallnut;
 import com.workshop.model.projectile.BulletType;
 import com.workshop.model.projectile.Projectile;
 import com.workshop.model.projectile.ProjectileVisualVariant;
@@ -60,7 +61,10 @@ public final class ProjectileAnimationResolver {
             return cached;
         }
 
-        ProjectileAnimationSpec spec = specFromSprite(projectile);
+        ProjectileAnimationSpec spec = specFromPlantBody(projectile);
+        if (spec == null) {
+            spec = specFromSprite(projectile);
+        }
         if (spec == null) {
             Descriptor descriptor = Descriptor.from(projectile);
             String pamPath = findUniquePamPath(projectile, descriptor, cacheKey);
@@ -332,6 +336,25 @@ public final class ProjectileAnimationResolver {
         String path = spec == null ? null : spec.getPamPath();
         plantBodyPamPaths.put(name, path);
         return path;
+    }
+
+    private ProjectileAnimationSpec specFromPlantBody(Projectile projectile) {
+        if (!(projectile instanceof BowlingWallnut)) {
+            return null;
+        }
+
+        String path = resolvePlantBodyPamPath(projectile.getOwnerPlant());
+        if (path == null) {
+            return null;
+        }
+
+        return new ProjectileAnimationSpec(
+            path,
+            pickProjectileClip(path),
+            1f,
+            0f,
+            0f
+        );
     }
 
     private ProjectileAnimationSpec specFromSprite(Projectile projectile) {

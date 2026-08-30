@@ -99,22 +99,25 @@ final class ZombieArmorLooks {
         float originXLocal;
         float originYLocal;
 
+        float aspect = region.getRegionHeight()
+            / (float) Math.max(1, region.getRegionWidth());
+
         switch (type) {
             case CONE -> {
                 width = cellHeight * (stage == 0 ? 0.58f : stage == 1 ? 0.54f : 0.50f);
-                height = cellHeight * (stage == 0 ? 0.82f : stage == 1 ? 0.64f : 0.46f);
+                height = width * aspect;
                 rotation = 0f;
-                x = originX - width * 0.52f;
-                y = originY + cellHeight * 1.00f;
+                x = originX - width * 0.68f;
+                y = originY + cellHeight * 0.70f;
                 originXLocal = width * 0.5f;
                 originYLocal = 0f;
             }
             case BUCKET -> {
                 width = cellHeight * 0.62f;
-                height = cellHeight * (stage == 0 ? 0.50f : stage == 1 ? 0.46f : 0.40f);
+                height = width * aspect;
                 rotation = 0f;
-                x = originX - width * 0.52f;
-                y = originY + cellHeight * 1.02f;
+                x = originX - width * 0.68f;
+                y = originY + cellHeight * 0.72f;
                 originXLocal = width * 0.5f;
                 originYLocal = 0f;
             }
@@ -122,8 +125,8 @@ final class ZombieArmorLooks {
                 width = cellHeight * 0.62f;
                 height = cellHeight * (stage == 0 ? 0.56f : stage == 1 ? 0.50f : 0.42f);
                 rotation = 0f;
-                x = originX - width * 0.52f;
-                y = originY + cellHeight * 1.00f;
+                x = originX - width * 0.68f;
+                y = originY + cellHeight * 0.70f;
                 originXLocal = width * 0.5f;
                 originYLocal = 0f;
             }
@@ -199,19 +202,64 @@ final class ZombieArmorLooks {
     }
 
     private static TextureRegion atlasFrame(ArmorType type, int stage) {
-        String id = atlasId(type, stage);
-        if (id == null) {
+        String[] ids = atlasIds(type, stage);
+        if (ids == null) {
             return null;
         }
-        return Textures.regionOrNull(id);
+        for (String id : ids) {
+            TextureRegion region = Textures.regionOrNull(id);
+            if (region != null) {
+                return region;
+            }
+        }
+        return null;
     }
 
-    private static String atlasId(ArmorType type, int stage) {
+    private static final String WEST =
+        "IMAGE_ZOMBIE_ZOMBIE_WEST_BASIC_ZOMBIE_WEST_BASIC_";
+    private static final String WEST_BRICK =
+        "IMAGE_ZOMBIE_ZOMBIE_WEST_BASIC_BRICK_ZOMBIE_WEST_BASIC_BRICK_";
+
+    private static String[] atlasIds(ArmorType type, int stage) {
         int s = Math.max(0, Math.min(2, stage));
         return switch (type) {
-            case CONE -> IMG + (s == 0 ? "76X98" : s == 1 ? "60X86" : "80X83_2");
-            case BUCKET -> IMG + (s == 0 ? "81X64" : s == 1 ? "81X64_2" : "80X72");
-            case BRICK -> IMG + (s == 0 ? "91X97" : s == 1 ? "96X97" : "82X82");
+            case CONE -> switch (s) {
+                case 0 -> new String[] {
+                    WEST + "80X83_2",
+                    WEST_BRICK + "80X83_2",
+                    IMG + "76X98"
+                };
+                case 1 -> new String[] {
+                    WEST + "80X83",
+                    WEST_BRICK + "80X83",
+                    IMG + "60X86"
+                };
+                default -> new String[] {
+                    WEST + "82X82",
+                    WEST_BRICK + "82X82",
+                    IMG + "80X83_2"
+                };
+            };
+            case BUCKET -> switch (s) {
+                case 0 -> new String[] {
+                    WEST + "99X92",
+                    WEST_BRICK + "99X92",
+                    IMG + "81X64"
+                };
+                case 1 -> new String[] {
+                    WEST + "99X87",
+                    WEST_BRICK + "99X87",
+                    IMG + "81X64_2"
+                };
+                default -> new String[] {
+                    WEST + "100X75",
+                    WEST_BRICK + "100X75",
+                    IMG + "80X72"
+                };
+            };
+            case BRICK -> new String[] {
+                IMG + (s == 0 ? "91X97" : s == 1 ? "96X97" : "82X82")
+            };
             default -> null;
         };
     }

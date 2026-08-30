@@ -103,6 +103,13 @@ public final class GameClient {
         );
     }
 
+    public synchronized NetResponse updateNickname(String newNickname) {
+        if (!isConnected()) {
+            return NetResponse.offline();
+        }
+        return request("UPDATE_NICKNAME", newNickname == null ? "" : newNickname);
+    }
+
     public synchronized NetResponse submitBonusScore(int score) {
         return request("SUBMIT_BONUS_SCORE", String.valueOf(score));
     }

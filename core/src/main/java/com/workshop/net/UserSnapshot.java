@@ -39,6 +39,9 @@ public final class UserSnapshot {
     }
 
     public void applyTo(User user) {
+        if (nickName != null && !nickName.isBlank()) {
+            user.setNickName(nickName);
+        }
         user.setCoins(coins);
         user.setGems(gems);
         user.setMaxMewPoint(maxMewPoint);
