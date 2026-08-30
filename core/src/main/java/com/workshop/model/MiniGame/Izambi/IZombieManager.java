@@ -57,6 +57,12 @@ public class IZombieManager implements LevelManager {
 
     private final int levelIndex;
     private final boolean[] eatenBrains;
+    private static final int BRAIN_MAX_HP = 500;
+    private final int[] brainHp;
+    private final Set<Zombie> brainEatingZombies =
+        Collections.newSetFromMap(
+            new IdentityHashMap<>()
+        );
 
 
     private final Set<Zombie> sunProducerZombies =
@@ -68,14 +74,26 @@ public class IZombieManager implements LevelManager {
     private long startTick;
 
     public IZombieManager(int levelIndex, int rows) {
-        if (levelIndex < 0 || levelIndex >= LEVEL_ZOMBIES.size()) {
+        if (levelIndex < 0
+            || levelIndex >= LEVEL_ZOMBIES.size()) {
+
             throw new IllegalArgumentException(
-                "Invalid I-Zombie level index: " + levelIndex
+                "Invalid I-Zombie level index: "
+                    + levelIndex
             );
         }
 
         this.levelIndex = levelIndex;
-        this.eatenBrains = new boolean[rows];
+
+        this.eatenBrains =
+            new boolean[rows];
+
+        this.brainHp =
+            new int[rows];
+
+        for (int row = 0; row < rows; row++) {
+            brainHp[row] = BRAIN_MAX_HP;
+        }
     }
 
     private static Map<String, Integer> zombiePool(Object... values) {
@@ -96,6 +114,7 @@ public class IZombieManager implements LevelManager {
 
         sunProducerZombies.removeIf(Zombie::isDead);
         nextProductionTicks.keySet().removeIf(Zombie::isDead);
+        brainEatingZombies.removeIf(Zombie::isDead);
 
         for (Zombie producer : sunProducerZombies) {
             long nextTick = nextProductionTicks.getOrDefault(
@@ -185,6 +204,65 @@ public class IZombieManager implements LevelManager {
             context.getTimeManager().getTotalTicks()
                 + cooldownTicks
         );
+    }
+
+    public boolean attackBrain(
+        Zombie zombie,
+        GameContext context
+    ) {
+        if (zombie == null || context == null) {
+            return false;
+        }
+
+        int row = zombie.getRow();
+
+        if (row < 0 || row >= eatenBrains.length) {
+            return false;
+        }
+
+        if (isBrainEaten(row)) {
+            return true;
+        }
+
+        /*
+         * زامبی کنار مغز ثابت می‌ماند.
+         */
+        zombie.setX(0.0);
+
+        /*
+         * فقط اولین باری که خوردن مغز شروع می‌شود
+         * ساعت خوردن reset شود.
+         */
+        if (brainEatingZombies.add(zombie)) {
+            zombie.resetEatClock(context);
+        }
+
+        /*
+         * این باعث می‌شود ZombieActor
+         * انیمیشن EAT را نشان دهد.
+         */
+        zombie.setEating(true);
+
+        int damage =
+            zombie.consumeEatDamage(context);
+
+        if (damage > 0) {
+            brainHp[row] =
+                Math.max(
+                    0,
+                    brainHp[row] - damage
+                );
+        }
+
+        if (brainHp[row] <= 0) {
+            eatBrain(row);
+
+            brainEatingZombies.remove(zombie);
+
+            return true;
+        }
+
+        return false;
     }
 
 
@@ -285,19 +363,36 @@ public class IZombieManager implements LevelManager {
             return;
         }
 
-        if (!eatenBrains[row]) {
-            eatenBrains[row] = true;
-
-            Console.showMessage(
-                "The brain in row " + row + " was eaten."
-            );
+        if (eatenBrains[row]) {
+            return;
         }
+
+        brainHp[row] = 0;
+        eatenBrains[row] = true;
+
+        Console.showMessage(
+            "The brain in row "
+                + row
+                + " was eaten."
+        );
     }
 
     public boolean isBrainEaten(int row) {
         return row >= 0
             && row < eatenBrains.length
             && eatenBrains[row];
+    }
+
+    public int getBrainHp(int row) {
+        if (row < 0 || row >= brainHp.length) {
+            return 0;
+        }
+
+        return brainHp[row];
+    }
+
+    public int getBrainMaxHp() {
+        return BRAIN_MAX_HP;
     }
 
     public int getEatenBrainCount() {

@@ -138,8 +138,7 @@ public class GamePlayScreen implements Screen {
 
     private ConveyorBeltLayer conveyorBeltLayer;
     private BrainLayer brainLayer;
-    private static final String BRAIN_PAM_PATH =
-        "PLANT/BRAINSTEM/BRAINSTEM.PAM";
+
 
 
     public GamePlayScreen(

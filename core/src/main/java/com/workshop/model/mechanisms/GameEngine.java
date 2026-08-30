@@ -196,12 +196,17 @@ public class GameEngine {
                 && !zombie.isMovingBackward()
                 && zombie.getX() <= LOSS_X) {
 
-                iZombieManager.eatBrain(
-                    zombie.getRow()
-                );
+                boolean brainWasEaten =
+                    iZombieManager.attackBrain(
+                        zombie,
+                        ctx
+                    );
 
-                ctx.getAliveZombies()
-                    .remove(zombie);
+                if (brainWasEaten) {
+                    killAllZombiesInRow(
+                        zombie.getRow()
+                    );
+                }
 
                 continue;
             }
@@ -776,5 +781,28 @@ public class GameEngine {
 
     public LawnMower[] getLawnMowers() {return lawnMowers;}
 
+    private void killAllZombiesInRow(int row) {
 
+        List<Zombie> zombies =
+            new ArrayList<>(
+                ctx.getAliveZombies()
+            );
+
+        for (Zombie zombie : zombies) {
+
+            if (zombie.getRow() != row) {
+                continue;
+            }
+
+            if (zombie.isDead()) {
+                continue;
+            }
+
+            zombie.setEating(false);
+
+            zombie.takeArmorPiercingDamage(
+                zombie.getHp() + 1
+            );
+        }
+    }
 }

@@ -39,6 +39,16 @@ public final class UserSnapshot {
     }
 
     public void applyTo(User user) {
+        user.setUsername(username);
+        user.setPassword(passwordHash);
+        user.setNickName(nickName);
+        user.setEmail(email);
+        user.setGender(
+            "female".equalsIgnoreCase(gender)
+                ? Gender.FEMALE
+                : Gender.MALE
+        );
+
         user.setCoins(coins);
         user.setGems(gems);
         user.setMaxMewPoint(maxMewPoint);

@@ -7,6 +7,9 @@ import com.workshop.model.menus.MenuType;
 import com.workshop.model.user.Security;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
+import com.workshop.net.GameClient;
+import com.workshop.net.NetResponse;
+import com.workshop.net.UserSnapshot;
 
 public class ProfileMenu extends BaseMenu {
     private UserManager um;
@@ -28,11 +31,31 @@ public class ProfileMenu extends BaseMenu {
     }
 
     public String changeNickname(String newNickname) {
-        if (!um.isNickNameValid(newNickname)) return "Invalid nickname.";
-        if (newNickname.equals(currentUser.getNickName())) return "Nickname is equal to the current nickname";
+        if (!um.isNickNameValid(newNickname)) {
+            return "Invalid nickname.";
+        }
 
-        currentUser.setNickName(newNickname);
+        if (newNickname.equals(currentUser.getNickName())) {
+            return "Nickname is equal to the current nickname";
+        }
+
+        GameClient client = GameClient.get();
+
+        if (!client.isConnected()) {
+            return "Server is unavailable.";
+        }
+
+        NetResponse response = client.updateNickname(newNickname);
+
+        if (!response.ok) {
+            return response.message;
+        }
+
+        UserSnapshot snapshot = UserSnapshot.fromWire(response.payload);
+        snapshot.applyTo(currentUser);
+
         DataManager.getInstance().saveUser();
+
         return "Nickname successfully changed.";
     }
 

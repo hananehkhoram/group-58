@@ -79,6 +79,10 @@ public final class GameClient {
         return response;
     }
 
+    public synchronized NetResponse updateNickname(String newNickname) {
+        return request("UPDATE_NICKNAME", newNickname);
+    }
+
     public synchronized void logout() {
         if (isConnected()) {
             request("LOGOUT");
