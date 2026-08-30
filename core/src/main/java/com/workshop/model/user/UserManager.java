@@ -157,6 +157,9 @@ public class UserManager {//singelton
     public User getCurrentUser() {
         return currentUser;
     }
+    public List<User> getUsers() {
+        return new ArrayList<>(users);
+    }
 
     public void addPlantFood(int amount) {
         currentUser.setPlantFoodCount(currentUser.getPlantFoodCount() + amount);

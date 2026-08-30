@@ -21,6 +21,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.workshop.PvzGame;
 import com.workshop.controller.repository.DataManager;
 import com.workshop.model.user.User;
+import com.workshop.model.user.UserManager;
 import com.workshop.net.GameClient;
 import com.workshop.net.UserSnapshot;
 
@@ -139,6 +140,8 @@ public class LeaderBoardScreen implements Screen {
 
         TextButton button =
             new TextButton(text, skin, "default");
+
+        headerButtons.put(column, button);
 
         button.addListener(new ClickListener(Input.Buttons.LEFT) {
             @Override
@@ -289,24 +292,23 @@ public class LeaderBoardScreen implements Screen {
 
     private List<User> loadUsers() {
         GameClient client = GameClient.get();
+
         if (client.isConnected()) {
-            List<User> fromServer = new ArrayList<>();
-            for (UserSnapshot snap : client.getLeaderboard()) {
+            List<User> users = new ArrayList<>();
+
+            for (UserSnapshot snapshot : client.getLeaderboard()) {
                 User user = new User();
-                user.setUsername(snap.username);
-                snap.applyTo(user);
-                fromServer.add(user);
+                user.setUsername(snapshot.username);
+
+                snapshot.applyTo(user);
+
+                users.add(user);
             }
-            if (!fromServer.isEmpty()) {
-                return fromServer;
-            }
+
+            return users;
         }
-        return new ArrayList<>(
-            DataManager.getInstance()
-                .users
-                .getUserMap()
-                .values()
-        );
+
+        return UserManager.getInstance().getUsers();
     }
 
     private static int networkBonusOrHidden(User user) {
