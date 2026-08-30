@@ -885,6 +885,9 @@ public class GamePlayScreen implements Screen {
                 PlantCardActor.Mode.SLOT
             );
 
+            // --- خط اضافه شده: تنظیم حالت بوست روی کارت در گیم‌پلی ---
+            card.setBoosted(plant.isPlantFoodActive());
+
             seedBankCards.add(card);
 
             card.setOnClick(clickedCard -> {
@@ -919,9 +922,7 @@ public class GamePlayScreen implements Screen {
             lastConveyorSignature =
                 getConveyorSignature(conveyorManager);
         }
-
     }
-
     private void buildZombieBank(Skin skin) {
         if (!isIZombieLevel()) {
             return;
