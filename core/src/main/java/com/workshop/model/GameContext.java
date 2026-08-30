@@ -424,6 +424,34 @@ public class GameContext {
         Console.showMessage("Plant "+p.getName()+" at "+p.getCol()+", "+p.getRow()+" is destroyed.");
     }
 
+    public boolean hasZombieOrProjectileAt(int row, int col) {
+        boolean zombiePresent = aliveZombies.stream()
+            .anyMatch(z -> z != null && !z.isDead() && z.getRow() == row && (int) z.getX() == col);
+
+        if (zombiePresent) {
+            return true;
+        }
+
+        return projectiles.stream()
+            .anyMatch(p -> p != null && p.isFromZombie() && p.getRow() == row && (int) p.getX() == col);
+    }
+
+    public boolean checkAndTriggerSunBean(Plant self, int sunAmount) {
+        if (self == null || self.isDead()) {
+            return false;
+        }
+
+        int row = self.getRow();
+        int col = self.getCol();
+
+        if (hasZombieOrProjectileAt(row, col)) {
+            addSun(sunAmount);
+            return true;
+        }
+
+        return false;
+    }
+
     public void addZombie(Zombie z) {
         z.setSpawnTick(timeManager.getTotalTicks());
         aliveZombies.add(z);

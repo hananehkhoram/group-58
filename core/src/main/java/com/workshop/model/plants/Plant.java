@@ -26,13 +26,13 @@ public class Plant implements Damageable {
 
     private boolean hasLilyPadUnderneath;
 
-
     private List<StatEffect>[] statUpgrades;
     private List<BehaviorEffect>[] behaviorUpgrades;
 
     private Double actionInterval;
     private double rechargeTime;
     private int lastActionSecond = 0;   // timeManaging
+    private int plantTimeSecond = 0;    // زمان کاشت گیاه بر حسب ثانیه
     private boolean actionComplete;
 
     private int level;
@@ -199,6 +199,9 @@ public class Plant implements Damageable {
     public void setLastActionSecond(int lastActionSecond)
     { this.lastActionSecond = lastActionSecond; }
 
+    public int getPlantTimeSecond() { return plantTimeSecond; }
+    public void setPlantTimeSecond(int plantTimeSecond) { this.plantTimeSecond = plantTimeSecond; }
+
     public void markActionComplete() {
         actionComplete = true;
     }
@@ -272,5 +275,4 @@ public class Plant implements Damageable {
         this.isCatified = catified;
         this.catifiedBy = catified ? caster : null;
     }
-
 }

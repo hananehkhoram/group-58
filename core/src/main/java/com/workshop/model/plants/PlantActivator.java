@@ -31,7 +31,9 @@ public final class PlantActivator {
             BulletType bulletType = BulletType.valueOf(p.get("bulletType"));
             String interval = actionIntervalAsWholeSeconds(plant);
             int damage = parseBaseDamage(plant);
+            shooters.activate(plant, ctx);
             shooters.shoot(damage, amount, interval, shootType, bulletType, plant, engine);
+
 
         } else if (ability instanceof Lobber lobber) {
             LobType lobType = LobType.valueOf(p.get("lobType"));

@@ -1908,6 +1908,10 @@ public class GamePlayScreen implements Screen {
         );
 
         if (after != null && after != before) {
+            // ثبت زمان کاشت گیاه در لحظه موفقیت عملیات کاشت
+            int currentSecond = gameContext.getTimeManager().getTotalSeconds();
+            after.setPlantTimeSecond(currentSecond);
+
             clearPlantSelection();
             updateHud();
             return;
@@ -1915,8 +1919,8 @@ public class GamePlayScreen implements Screen {
 
         boolean graveBuster = selectedPlantForPlacement.getAbilityParams() != null
             && "GRAVE_DESTROY".equals(
-                selectedPlantForPlacement.getAbilityParams().get("explosiveType")
-            );
+            selectedPlantForPlacement.getAbilityParams().get("explosiveType")
+        );
         boolean onGrave = row >= 0
             && row < gameContext.getGraveGrid().length
             && column >= 0
@@ -1931,7 +1935,6 @@ public class GamePlayScreen implements Screen {
                 : "Can't plant there."
         );
     }
-
     private void showPlantCooldownError(String plantName) {
         int seconds = (int) Math.ceil(
             gameContext.getRemainingCooldownSeconds(plantName)
