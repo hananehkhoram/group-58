@@ -8,7 +8,6 @@ import com.workshop.controller.repository.DataManager;
 import com.workshop.model.MiniGame.Beghouled.BeghouldGame;
 import com.workshop.model.MiniGame.Zombotany.Zombotany;
 import com.workshop.model.level.Level;
-import com.workshop.model.level.LevelType;
 import com.workshop.model.season.Grave;
 import com.workshop.model.season.Season;
 import com.workshop.model.user.User;
@@ -242,32 +241,40 @@ public class PvzGame extends Game {
 
         GameContext newCtx = menuManager.getCtx();
 
-        for (Plant selectedPlant : selectedPlants) {
-            Plant freshPlant =
-                newCtx.getPlantFactory().create(
-                    selectedPlant.getName()
+        if (!level.skipsPlantSelection()) {
+            for (Plant selectedPlant : selectedPlants) {
+                Plant freshPlant =
+                    newCtx.getPlantFactory().create(
+                        selectedPlant.getName()
+                    );
+
+                freshPlant.setPlantFoodActive(
+                    selectedPlant.isPlantFoodActive()
                 );
 
-            freshPlant.setPlantFoodActive(
-                selectedPlant.isPlantFoodActive()
-            );
-
-            newCtx.getActivePlants().add(freshPlant);
+                newCtx.getActivePlants().add(freshPlant);
+            }
         }
 
-        season.onLevelStart(newCtx);
+        beginBattleWithoutSelection(newCtx);
+    }
+
+    private void beginBattleWithoutSelection(GameContext ctx) {
+        Season season = ctx.getSeason();
+        Level level = ctx.getLevel();
+
+        season.onLevelStart(ctx);
 
         for (Grave grave : season.getInitialGraves(level)) {
-            newCtx.placeGrave(
+            ctx.placeGrave(
                 grave,
                 grave.getRow(),
                 grave.getCol()
             );
         }
 
-        newCtx.setBattleStarted(true);
-
-        showGamePlay(newCtx);
+        ctx.setBattleStarted(true);
+        showGamePlay(ctx);
     }
 
     public void showGame() {
@@ -279,15 +286,8 @@ public class PvzGame extends Game {
                 menuManager.startBattle(level, season);
                 GameContext ctx = menuManager.getCtx();
 
-                if (level.getLevelType() == LevelType.CONVEYOR_BELT) {
-                    season.onLevelStart(ctx);
-
-                    for (Grave g : season.getInitialGraves(level)) {
-                        ctx.placeGrave(g, g.getRow(), g.getCol());
-                    }
-
-                    ctx.setBattleStarted(true);
-                    showGamePlay(ctx);
+                if (level.skipsPlantSelection()) {
+                    beginBattleWithoutSelection(ctx);
                 } else {
                     showPlantSelection(ctx);
                 }
@@ -514,7 +514,11 @@ public class PvzGame extends Game {
 
         GameContext ctx = menuManager.getCtx();
 
-        showPlantSelection(ctx);
+        if (level.skipsPlantSelection()) {
+            beginBattleWithoutSelection(ctx);
+        } else {
+            showPlantSelection(ctx);
+        }
     }
 
     @Override

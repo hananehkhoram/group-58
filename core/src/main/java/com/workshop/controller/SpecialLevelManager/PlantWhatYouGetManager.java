@@ -12,7 +12,7 @@ public class PlantWhatYouGetManager implements LevelManager{
 
     @Override
     public boolean canPlant(String plantName, GameContext context) {
-        if (plantName.equalsIgnoreCase("Sunflower")) {
+        if (isSunflower(plantName)) {
             Console.showMessage("You cannot plant Sunflowers in this level!\n");
             return false;
         }
@@ -36,5 +36,13 @@ public class PlantWhatYouGetManager implements LevelManager{
     @Override
     public boolean disableSkySun() {
         return true;
+    }
+
+    public static boolean isSunflower(String plantName) {
+        if (plantName == null) {
+            return false;
+        }
+        String compact = plantName.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+        return compact.contains("sunflower");
     }
 }

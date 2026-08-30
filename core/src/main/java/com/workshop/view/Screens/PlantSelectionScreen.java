@@ -18,7 +18,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.workshop.controller.repository.Textures;
+import com.workshop.controller.SpecialLevelManager.PlantWhatYouGetManager;
 import com.workshop.model.GameContext;
+import com.workshop.model.level.LevelType;
 import com.workshop.model.menus.allmenus.CollectionMenu;
 import com.workshop.model.menus.allmenus.PlantSelectionMenu;
 import com.workshop.model.plants.Plant;
@@ -345,11 +347,18 @@ public class PlantSelectionScreen implements Screen {
 
             card.setOnClick(c -> {
                 focusedPlant = plant;
+                if (isSunflowerBanned(plant)) {
+                    Toast.showError(stage, skin, "You cannot select Sunflower in this level!");
+                    refreshAll();
+                    return;
+                }
                 if (isPlantSelected(plant)) {
                     menuLogic.removePlant(plant.getName());
                 } else if (ctx.getActivePlants().size() < MAX_SELECTED_PLANTS) {
-                    menuLogic.addPlant(plant.getName());
-                    if (plant.isPlantFoodActive()) {
+                    String result = menuLogic.addPlant(plant.getName());
+                    if (result != null && result.startsWith("You cannot select")) {
+                        Toast.showError(stage, skin, result);
+                    } else if (plant.isPlantFoodActive()) {
                         Plant newlyAdded = getActivePlantInstance(plant);
                         if (newlyAdded != null) newlyAdded.setPlantFoodActive(true);
                     }
@@ -409,6 +418,12 @@ public class PlantSelectionScreen implements Screen {
 
     private boolean isPlantSelected(Plant plant) {
         return ctx.getActivePlants().stream().anyMatch(p -> p.getName().equalsIgnoreCase(plant.getName()));
+    }
+
+    private boolean isSunflowerBanned(Plant plant) {
+        return ctx.getLevel() != null
+            && ctx.getLevel().getLevelType() == LevelType.PLANT_WHAT_YOU_GET
+            && PlantWhatYouGetManager.isSunflower(plant.getName());
     }
 
     private Plant getActivePlantInstance(Plant plant) {

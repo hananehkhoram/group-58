@@ -184,6 +184,7 @@ public class GameContext {
     private LevelManager levelManager;
     private boolean activeWaveInProgress = false;
     private boolean manualStartCommandReceived = false;
+    private long manualWaveStartTick = 0;
     private boolean battleStarted = false;
 
     private int multiKillPatternCount = 0;
@@ -564,6 +565,10 @@ public class GameContext {
         return playerWon;
     }
 
+    public boolean isSetupPhase() {
+        return isSetupPhase;
+    }
+
     public void setSetupPhase(boolean v) {
         this.isSetupPhase = v;
     }
@@ -630,6 +635,14 @@ public class GameContext {
 
     public void triggerManualWaveStart() {
         this.manualStartCommandReceived = true;
+        this.isSetupPhase = false;
+        if (timeManager != null) {
+            this.manualWaveStartTick = timeManager.getTotalTicks();
+        }
+    }
+
+    public long getManualWaveStartTick() {
+        return manualWaveStartTick;
     }
     public void recordPlantKill(Plant killer) {
         if (killer == null) return;

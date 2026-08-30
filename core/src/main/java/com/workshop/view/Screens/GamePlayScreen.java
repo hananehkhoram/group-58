@@ -71,6 +71,7 @@ public class GamePlayScreen implements Screen {
     private Label plantFoodAmountLabel;
     private Label waveLabel;
     private ProgressBar zombieProgressBar;
+    private TextButton startZombiesButton;
 
     private final Image leftBackground;
     private final Image centerBackground;
@@ -623,6 +624,29 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(hudTable);
 
+        if (level.getLevelType() == LevelType.PLANT_WHAT_YOU_GET) {
+            String buttonStyle = skin.has("green", TextButton.TextButtonStyle.class)
+                ? "green"
+                : "default";
+            startZombiesButton = new TextButton("Let's Rock!", skin, buttonStyle);
+            startZombiesButton.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    event.stop();
+                    gameContext.triggerManualWaveStart();
+                    startZombiesButton.setVisible(false);
+                }
+            });
+            Table startTable = new Table();
+            startTable.setFillParent(true);
+            startTable.bottom();
+            startTable.add(startZombiesButton)
+                .padBottom(36)
+                .width(280)
+                .height(64);
+            stage.addActor(startTable);
+        }
+
         SunAnimationLayer sunAnimationLayer =
             new SunAnimationLayer(
                 gameContext,
@@ -782,6 +806,11 @@ public class GamePlayScreen implements Screen {
     }
 
     private void updateHud() {
+        if (startZombiesButton != null) {
+            startZombiesButton.setVisible(
+                gameplayStarted && !gameContext.isManualStartCommandReceived()
+            );
+        }
         sunAmountLabel.setText(
             String.valueOf(gameContext.getSunAmount())
         );

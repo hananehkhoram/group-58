@@ -116,7 +116,12 @@ public class GameEngine {
         }
 
         if (ctx.getCurrentWaveIndex() == 0) {
-            if (ctx.getTimeManager().getTotalTicks() < waves[0].getWaveDelay()) {
+            boolean startImmediately =
+                ctx.getLevel().getLevelType()
+                    == com.workshop.model.level.LevelType.PLANT_WHAT_YOU_GET;
+            long delayStart = ctx.getManualWaveStartTick();
+            int delay = startImmediately ? 0 : waves[0].getWaveDelay();
+            if (ctx.getTimeManager().getTotalTicks() < delayStart + delay) {
                 return;
             }
             ctx.recordFirstWaveStart();

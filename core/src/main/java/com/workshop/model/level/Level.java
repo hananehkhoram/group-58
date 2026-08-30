@@ -101,6 +101,10 @@ public class Level {
         return forcedPlants;
     }
 
+    public boolean skipsPlantSelection() {
+        return levelType == LevelType.CONVEYOR_BELT;
+    }
+
     public static class PrePlacedPlant {
         private final Plant plantTemplate;
         private final int row;
