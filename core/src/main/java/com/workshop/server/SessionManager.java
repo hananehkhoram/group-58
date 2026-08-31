@@ -26,4 +26,13 @@ public final class SessionManager {
     public List<String> onlineUsernames() {
         return new ArrayList<>(online.keySet());
     }
+
+    public void rebind(
+        String oldUsername,
+        String newUsername,
+        ClientHandler handler
+    ) {
+        online.remove(oldUsername.toLowerCase(), handler);
+        online.put(newUsername.toLowerCase(), handler);
+    }
 }

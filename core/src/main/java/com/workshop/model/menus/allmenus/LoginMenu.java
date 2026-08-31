@@ -9,6 +9,7 @@ import com.workshop.model.user.UserManager;
 import com.workshop.net.GameClient;
 import com.workshop.net.NetResponse;
 import com.workshop.net.UserSnapshot;
+import com.workshop.model.user.SecurityQuestions;
 
 public class LoginMenu extends BaseMenu {
     private UserManager um;
@@ -17,7 +18,9 @@ public class LoginMenu extends BaseMenu {
     private enum ResetState { NONE, AWAITING_SECURITY_ANSWER, AWAITING_NEW_PASSWORD }
 
     private ResetState currentState = ResetState.NONE;
-    private User targetUser = null;
+    private String recoveryUsername;
+    private String recoveryEmail;
+    private String recoveryAnswer;
 
     public LoginMenu(GameContext ctx) {
         super(ctx, MenuType.LOGIN);
@@ -73,48 +76,113 @@ public class LoginMenu extends BaseMenu {
         user.setStayedLogin(stayLoggedIn != null);
     }
 
-    public String answerSecurityQuestion(String answer){
+    public String answerSecurityQuestion(String answer) {
         if (currentState != ResetState.AWAITING_SECURITY_ANSWER) {
             return "You are not in the password recovery process.";
         }
 
-        if (targetUser.getSecurityAnswer().equalsIgnoreCase(answer)) {
-            this.currentState = ResetState.AWAITING_NEW_PASSWORD;
-            return "Answer is correct! Please enter your new password using: new password -p <password>";
-        } else {
-            resetRecovery();
-            return "Error: Incorrect answer! Password recovery canceled.";
+        if (answer == null || answer.isBlank()) {
+            return "Security answer cannot be empty.";
         }
+
+        NetResponse response =
+            GameClient.get().forgotPasswordAnswer(
+                recoveryUsername,
+                recoveryEmail,
+                answer
+            );
+
+        if (!response.ok) {
+            resetRecovery();
+            return response.message;
+        }
+
+        recoveryAnswer = answer;
+        currentState = ResetState.AWAITING_NEW_PASSWORD;
+
+        return "Answer is correct! Please enter your new password.";
     }
-    public String updatePassword(String newPassword){
+
+    public String updatePassword(String newPassword) {
         if (currentState != ResetState.AWAITING_NEW_PASSWORD) {
             return "Error: You cannot change password right now.";
         }
-        if (!um.isPasswordValid(newPassword)) return "Invalid password format.";
-        String passwordValidation = um.isPasswordStrong(newPassword);
-        if (!passwordValidation.equals("ok")) return passwordValidation;
 
-        um.changePassword(newPassword,targetUser);
-        DataManager.getInstance().saveUser();
+        if (!um.isPasswordValid(newPassword)) {
+            return "Invalid password format.";
+        }
+
+        String validation = um.isPasswordStrong(newPassword);
+
+        if (!"ok".equals(validation)) {
+            return validation;
+        }
+
+        NetResponse response =
+            GameClient.get().forgotPasswordReset(
+                recoveryUsername,
+                recoveryEmail,
+                recoveryAnswer,
+                newPassword
+            );
+
+        if (!response.ok) {
+            return response.message;
+        }
+
         resetRecovery();
+
         return "Password changed successfully.";
     }
 
-    public String startForgetPasswordProcess(String username, String email) {
-        if (!um.doesUserExist(username)) return "User does not exist!";
-        User user = um.findUserByName(username);
-        if (!um.isEmailCorrect(email,username)) return "Email is incorrect.";
+    public String startForgetPasswordProcess(
+        String username,
+        String email
+    ) {
+        GameClient client = GameClient.get();
 
-        this.targetUser = user;
-        this.currentState = ResetState.AWAITING_SECURITY_ANSWER;
+        if (!client.isConnected()) {
+            return "Server is unavailable.";
+        }
 
-        return "Security Question: " + user.getSecurityQuestion().getQuestionText() +
-                "\nPlease enter your answer using: answer -a <answer>";
+        NetResponse response =
+            client.forgotPasswordStart(username, email);
+
+        if (!response.ok) {
+            return response.message;
+        }
+
+        int questionId;
+
+        try {
+            questionId = Integer.parseInt(response.payload);
+        } catch (NumberFormatException e) {
+            return "Invalid security question.";
+        }
+
+        SecurityQuestions question =
+            SecurityQuestions.getQuestionById(questionId);
+
+        if (question == null) {
+            return "Invalid security question.";
+        }
+
+        recoveryUsername = username;
+        recoveryEmail = email;
+        recoveryAnswer = null;
+
+        currentState = ResetState.AWAITING_SECURITY_ANSWER;
+
+        return "Security Question: "
+            + question.getQuestionText()
+            + "\nPlease enter your answer.";
     }
 
     private void resetRecovery() {
-        this.currentState = ResetState.NONE;
-        this.targetUser = null;
+        currentState = ResetState.NONE;
+        recoveryUsername = null;
+        recoveryEmail = null;
+        recoveryAnswer = null;
     }
 
 }

@@ -22,11 +22,34 @@ public class ProfileMenu extends BaseMenu {
     }
 
     public String changeUsername(String newUsername) {
-        if (!um.isUsernameValid(newUsername)) return "Invalid username format.";
-        if (newUsername.equals(currentUser.getUsername())) return "Username is equal to the current username";
+        if (!um.isUsernameValid(newUsername)) {
+            return "Invalid username format.";
+        }
 
-        currentUser.setUsername(newUsername);
+        if (newUsername.equalsIgnoreCase(currentUser.getUsername())) {
+            return "Username is equal to the current username";
+        }
+
+        GameClient client = GameClient.get();
+
+        if (!client.isConnected()) {
+            return "Server is unavailable.";
+        }
+
+        NetResponse response = client.updateUsername(newUsername);
+
+        if (!response.ok) {
+            return response.message == null
+                ? "Failed to update username."
+                : response.message;
+        }
+
+        if (response.payload != null && !response.payload.isBlank()) {
+            UserSnapshot.fromWire(response.payload).applyTo(currentUser);
+        }
+
         DataManager.getInstance().saveUser();
+
         return "Username successfully changed.";
     }
 
@@ -53,28 +76,74 @@ public class ProfileMenu extends BaseMenu {
     }
 
     public String changeEmail(String newEmail) {
-        if (!um.isEmailValid(newEmail)) return "Invalid email format.";
-        if (newEmail.equals(currentUser.getEmail())) return "Email is equal to the current email";
+        if (!um.isEmailValid(newEmail)) {
+            return "Invalid email format.";
+        }
 
-        currentUser.setEmail(newEmail);
+        if (newEmail.equals(currentUser.getEmail())) {
+            return "Email is equal to the current email";
+        }
+
+        GameClient client = GameClient.get();
+
+        if (!client.isConnected()) {
+            return "Server is unavailable.";
+        }
+
+        NetResponse response = client.updateEmail(newEmail);
+
+        if (!response.ok) {
+            return response.message == null
+                ? "Failed to update email."
+                : response.message;
+        }
+
+        if (response.payload != null && !response.payload.isBlank()) {
+            UserSnapshot.fromWire(response.payload).applyTo(currentUser);
+        }
+
         DataManager.getInstance().saveUser();
+
         return "Email successfully changed.";
     }
 
     public String changePassword(String oldPassword, String newPassword) {
-        String hashedPassword = Security.hashPassword(newPassword);
-        if (hashedPassword.equals(Security.hashPassword(oldPassword)))
-            return "Password is equal to the current password";
-        if (!um.doesPasswordsMatch(currentUser.getPassword(),Security.hashPassword(oldPassword))) {
-            return "Password is incorrect.";
+        if (!um.isPasswordValid(newPassword)) {
+            return "Invalid password format.";
         }
-        if (!um.isPasswordValid(newPassword)) return "Invalid password format.";
+
         String passwordValidation = um.isPasswordStrong(newPassword);
-        if (!passwordValidation.equals("ok")) return passwordValidation;
+        if (!passwordValidation.equals("ok")) {
+            return passwordValidation;
+        }
 
+        if (oldPassword != null && oldPassword.equals(newPassword)) {
+            return "Password is equal to the current password";
+        }
 
-        currentUser.setPassword(hashedPassword);
+        GameClient client = GameClient.get();
+
+        if (!client.isConnected()) {
+            return "Server is unavailable.";
+        }
+
+        NetResponse response = client.updatePassword(
+            oldPassword,
+            newPassword
+        );
+
+        if (!response.ok) {
+            return response.message == null
+                ? "Failed to update password."
+                : response.message;
+        }
+
+        currentUser.setPassword(
+            Security.hashPassword(newPassword)
+        );
+
         DataManager.getInstance().saveUser();
+
         return "Password successfully changed.";
     }
 

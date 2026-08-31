@@ -18,6 +18,8 @@ public final class UserSnapshot {
     public int dailyQuests;
     public int otherQuests;
     public boolean hasNetworkBonusScore;
+    public int securityQuestionId;
+    public String securityAnswerHash;
 
     public static UserSnapshot fromUser(User user) {
         UserSnapshot snap = new UserSnapshot();
@@ -39,9 +41,22 @@ public final class UserSnapshot {
     }
 
     public void applyTo(User user) {
+        if (username != null && !username.isBlank()) {
+            user.setUsername(username);
+        }
+
+        if (username != null && !username.isBlank()) {
+            user.setUsername(username);
+        }
+
         if (nickName != null && !nickName.isBlank()) {
             user.setNickName(nickName);
         }
+
+        if (email != null && !email.isBlank()) {
+            user.setEmail(email);
+        }
+
         user.setCoins(coins);
         user.setGems(gems);
         user.setMaxMewPoint(maxMewPoint);
@@ -59,7 +74,8 @@ public final class UserSnapshot {
             String.valueOf(coins), String.valueOf(gems), String.valueOf(maxMewPoint),
             String.valueOf(lastLevel), String.valueOf(lastSeason),
             String.valueOf(minigamesCompleted), String.valueOf(dailyQuests),
-            String.valueOf(otherQuests), hasNetworkBonusScore ? "1" : "0"
+            String.valueOf(otherQuests), hasNetworkBonusScore ? "1" : "0",
+            String.valueOf(securityQuestionId), securityAnswerHash
         );
     }
 
@@ -80,6 +96,13 @@ public final class UserSnapshot {
         snap.dailyQuests = Integer.parseInt(p[11]);
         snap.otherQuests = Integer.parseInt(p[12]);
         snap.hasNetworkBonusScore = "1".equals(p[13]);
+        snap.securityQuestionId =
+            p.length > 14 && !p[14].isBlank()
+                ? Integer.parseInt(p[14])
+                : 0;
+
+        snap.securityAnswerHash =
+            p.length > 15 ? p[15] : "";
         return snap;
     }
 

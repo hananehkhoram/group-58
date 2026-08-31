@@ -70,4 +70,21 @@ public final class UserStore {
             throw new RuntimeException("Could not save server users", e);
         }
     }
+
+    public synchronized UserSnapshot rename(
+        String oldUsername,
+        String newUsername
+    ) {
+        UserSnapshot snap = users.remove(oldUsername.toLowerCase());
+
+        if (snap == null) {
+            return null;
+        }
+
+        snap.username = newUsername;
+        users.put(newUsername.toLowerCase(), snap);
+        save();
+
+        return snap;
+    }
 }

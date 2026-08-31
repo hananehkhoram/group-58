@@ -174,6 +174,49 @@ public final class GameClient {
         return request("UPDATE_NICKNAME", newNickname == null ? "" : newNickname);
     }
 
+    public synchronized NetResponse updateEmail(String newEmail) {
+        if (!isConnected()) {
+            return NetResponse.offline();
+        }
+
+        return request(
+            "UPDATE_EMAIL",
+            newEmail == null ? "" : newEmail
+        );
+    }
+
+    public synchronized NetResponse updateUsername(String newUsername) {
+        if (!isConnected()) {
+            return NetResponse.offline();
+        }
+
+        NetResponse response = request(
+            "UPDATE_USERNAME",
+            newUsername == null ? "" : newUsername
+        );
+
+        if (response.ok) {
+            loggedUsername = newUsername;
+        }
+
+        return response;
+    }
+
+    public synchronized NetResponse updatePassword(
+        String oldPassword,
+        String newPassword
+    ) {
+        if (!isConnected()) {
+            return NetResponse.offline();
+        }
+
+        return request(
+            "UPDATE_PASSWORD",
+            oldPassword,
+            newPassword
+        );
+    }
+
     public synchronized NetResponse submitBonusScore(int score) {
         return request("SUBMIT_BONUS_SCORE", String.valueOf(score));
     }
@@ -292,6 +335,76 @@ public final class GameClient {
         all[0] = type;
         System.arraycopy(parts, 0, all, 1, parts.length);
         return all;
+    }
+
+    public synchronized NetResponse setSecurityQuestion(
+        String username,
+        String password,
+        int questionId,
+        String answer
+    ) {
+        if (!isConnected()) {
+            return NetResponse.offline();
+        }
+
+        return request(
+            "SET_SECURITY",
+            username,
+            password,
+            String.valueOf(questionId),
+            answer
+        );
+    }
+
+    public synchronized NetResponse forgotPasswordStart(
+        String username,
+        String email
+    ) {
+        if (!isConnected()) {
+            return NetResponse.offline();
+        }
+
+        return request(
+            "FORGOT_START",
+            username,
+            email
+        );
+    }
+
+    public synchronized NetResponse forgotPasswordReset(
+        String username,
+        String email,
+        String answer,
+        String newPassword
+    ) {
+        if (!isConnected()) {
+            return NetResponse.offline();
+        }
+
+        return request(
+            "FORGOT_RESET",
+            username,
+            email,
+            answer,
+            newPassword
+        );
+    }
+
+    public synchronized NetResponse forgotPasswordAnswer(
+        String username,
+        String email,
+        String answer
+    ) {
+        if (!isConnected()) {
+            return NetResponse.offline();
+        }
+
+        return request(
+            "FORGOT_ANSWER",
+            username,
+            email,
+            answer
+        );
     }
 
     public String getLoggedUsername() {

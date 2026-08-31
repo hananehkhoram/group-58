@@ -9,8 +9,12 @@ import com.workshop.model.user.UserManager;
 import com.workshop.net.GameClient;
 import com.workshop.net.NetResponse;
 
+
 public class RegisterMenu extends BaseMenu {
     private UserManager um;
+    private String pendingUsername;
+    private String pendingPassword;
+
     public RegisterMenu(GameContext ctx) {
         super(ctx, MenuType.REGISTER);
         this.um = UserManager.getInstance();
@@ -52,20 +56,52 @@ public class RegisterMenu extends BaseMenu {
             sb.append(question.getId()).append(": ").append(question.getQuestionText()).append("\n");
         }
 
+        pendingUsername = username;
+        pendingPassword = password;
+
         return sb.toString();
 
     }
-    public String pickQuestion(int questionNumber,String answer,String answerConfirm){
-        SecurityQuestions selectedQuestion = SecurityQuestions.getQuestionById(questionNumber);
+    public String pickQuestion(
+        int questionNumber,
+        String answer,
+        String answerConfirm
+    ) {
+        SecurityQuestions selectedQuestion =
+            SecurityQuestions.getQuestionById(questionNumber);
 
         if (selectedQuestion == null) {
             return "Invalid question number! Please choose a valid number.";
         }
-        if (!answer.equalsIgnoreCase(answerConfirm)){
+
+        if (!answer.equalsIgnoreCase(answerConfirm)) {
             return "Answers don't mach!please try again.\n";
         }
-        um.addQuestion(selectedQuestion,answer);
+
+        if (answer.isBlank()) {
+            return "Security answer cannot be empty.";
+        }
+
+        GameClient client = GameClient.get();
+
+        if (client.isConnected()) {
+            NetResponse response = client.setSecurityQuestion(
+                pendingUsername,
+                pendingPassword,
+                questionNumber,
+                answer
+            );
+
+            if (!response.ok) {
+                return response.message;
+            }
+        }
+
+        um.addQuestion(selectedQuestion, answer);
         DataManager.getInstance().saveUser();
+
+        pendingUsername = null;
+        pendingPassword = null;
 
         return "Registered successfully.";
     }
