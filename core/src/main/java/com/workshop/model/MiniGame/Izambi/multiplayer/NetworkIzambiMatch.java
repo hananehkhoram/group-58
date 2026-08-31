@@ -4,20 +4,6 @@ import com.workshop.controller.MenuManager;
 import com.workshop.model.MiniGame.Izambi.IZombieManager;
 import com.workshop.model.MiniGame.Izambi.Izambi;
 
-/**
- * Drives one side of a networked "I, Zombie" match.
- * <p>
- * Only the HOST runs the real simulation (a normal {@link Izambi} +
- * GameEngine): it applies both its own local placements and the placements
- * relayed from the guest, ticks the engine every frame, decides win/lose,
- * and periodically broadcasts an {@link IzambiSnapshot}. The GUEST never
- * simulates anything locally — it renders the latest snapshot it received
- * and sends its own placements to the host as {@link IzambiAction}s.
- * <p>
- * This split avoids any risk of the two sides' simulations drifting apart,
- * at the cost of the guest seeing the game a couple hundred milliseconds
- * behind the host.
- */
 public final class NetworkIzambiMatch {
 
     public static final int MATCH_DURATION_SECONDS = 120;
@@ -25,6 +11,7 @@ public final class NetworkIzambiMatch {
     private static final int PLANT_PASSIVE_INCOME = 25;
     private static final float PLANT_INCOME_INTERVAL_SECONDS = 12f;
     private static final float STATE_BROADCAST_INTERVAL = 0.2f;
+    private static final float TICK_DURATION = 0.1f;
 
     private final boolean isHost;
     private final MatchRole localRole;
@@ -35,6 +22,7 @@ public final class NetworkIzambiMatch {
     private float elapsedSeconds;
     private float incomeAccumulator;
     private float broadcastAccumulator;
+    private float timeAccumulator;
 
     private boolean ended;
     private MatchRole winner;
@@ -47,7 +35,6 @@ public final class NetworkIzambiMatch {
         this.transport = transport;
     }
 
-    /** Only meaningful on the host: starts the real simulation. */
     public void startHost(MenuManager menuManager, int levelNumber) {
         if (!isHost) {
             return;
@@ -58,6 +45,7 @@ public final class NetworkIzambiMatch {
         elapsedSeconds = 0f;
         incomeAccumulator = 0f;
         broadcastAccumulator = 0f;
+        timeAccumulator = 0f;
         ended = false;
         winner = null;
     }
@@ -69,11 +57,16 @@ public final class NetworkIzambiMatch {
         if (isHost) {
             updateHost(delta);
         }
-        // Guest has nothing to simulate; it just waits for state pushes.
     }
 
     private void updateHost(float delta) {
-        izambi.getGameEngine().update(delta);
+        timeAccumulator += delta;
+
+        while (timeAccumulator >= TICK_DURATION && !ended) {
+            izambi.getCtx().getTimeManager().advanceTime(1);
+            izambi.getGameEngine().update(TICK_DURATION);
+            timeAccumulator -= TICK_DURATION;
+        }
 
         elapsedSeconds += delta;
         incomeAccumulator += delta;
@@ -129,12 +122,6 @@ public final class NetworkIzambiMatch {
         return Math.max(0, MATCH_DURATION_SECONDS - (int) elapsedSeconds);
     }
 
-    /**
-     * Attempts to place the local player's unit (a plant if localRole is
-     * PLANT, a zombie if ZOMBIE). On the host this applies immediately; on
-     * the guest this just asks the host to do it and returns true if the
-     * request was sent (not whether it was accepted).
-     */
     public boolean placeLocal(String unitName, int row, int column) {
         if (ended) {
             return false;
@@ -146,7 +133,6 @@ public final class NetworkIzambiMatch {
         return true;
     }
 
-    /** Host-only: applies a placement relayed from the guest. */
     public void onRemoteAction(String wire) {
         if (!isHost || ended) {
             return;
@@ -172,7 +158,6 @@ public final class NetworkIzambiMatch {
         return izambi.placeZombie(unitName, row, column, costOverride);
     }
 
-    /** Guest-only: applies a state snapshot pushed by the host. */
     public void onRemoteState(String wire) {
         if (isHost) {
             return;
