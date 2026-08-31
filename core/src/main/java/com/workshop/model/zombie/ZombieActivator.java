@@ -22,8 +22,15 @@ public class ZombieActivator {
         applyDarkAgesBehaviors(id, behaviors);
         applyModernAndMiscBehaviors(id, behaviors);
         applyZombotanyBehaviors(id, behaviors);
+        applyBossBehaviors(id, behaviors);
 
         return behaviors;
+    }
+
+    private static void applyBossBehaviors(String id, Map<String, Behaviors> behaviors) {
+        if (BossZombieRegistry.isBossId(id)) {
+            behaviors.put("zombossSummon", new ZombossSummon());
+        }
     }
 
     private static void applyArmorBehaviors(String id, Zombie zombie, Map<String, Behaviors> behaviors) {

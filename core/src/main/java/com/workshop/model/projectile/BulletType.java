@@ -23,5 +23,6 @@ public enum BulletType {
     /** Disables the target and blocks other projectiles from passing (Octopus zombie's throw). */
     OCTOPUS,
     BOWLING_NUT,
-    HOMING
+    HOMING,
+    MISSILE
 }

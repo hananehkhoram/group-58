@@ -562,6 +562,9 @@ public class Zombie implements Damageable {
     public boolean isBoss() {
         return isBoss;
     }
+    public void setBoss(boolean boss) {
+        this.isBoss = boss;
+    }
     public void setRow (int r){this.y = r;}
     public boolean searchEffect(Effects effect) {
         if (effect == null || this.effects == null) return false;

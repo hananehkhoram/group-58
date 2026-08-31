@@ -37,9 +37,7 @@ public class GameContext {
     private int currentWaveIndex = 0;
     private boolean gameEnded = false;
     private boolean playerWon = false;
-    private int waveDurationRemaining = 0;//بر حسب تیک
     private boolean waveSpawningFinished = false;
-    private int remainingZombiesToSpawn = 0;
     private List<Projectile> projectiles = new ArrayList<>();
     private TimeManager timeManager;
     private Map<String, Integer> producedSuns = new HashMap<>();
@@ -103,12 +101,7 @@ public class GameContext {
     public String pollAnnouncement() {
         return pendingAnnouncements.pollFirst();
     }
-
-    // Same idea as pendingAnnouncements, but for one-shot sound cues (e.g. the lawn
-    // mower starting up) — model code pushes a sound key here, the active gameplay
-    // screen drains it and actually plays the audio.
     private final Deque<String> pendingSoundCues = new ArrayDeque<>();
-
     public void playSound(String soundKey) {
         if (soundKey != null && !soundKey.isBlank()) {
             pendingSoundCues.addLast(soundKey);
