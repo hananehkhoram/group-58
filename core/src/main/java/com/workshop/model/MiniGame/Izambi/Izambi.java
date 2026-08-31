@@ -26,6 +26,10 @@ import com.workshop.model.user.UserManager;
 public class Izambi {
     private static final int INITIAL_SUN = 150;
 
+    // Multiplayer-only starting sun for the zombie side. Kept separate from
+    // INITIAL_SUN so single-player I-Zombie pacing is untouched.
+    private static final int MULTIPLAYER_INITIAL_ZOMBIE_SUN = 300;
+
 
     private static final int SUN_PRODUCER_COLUMN = 8;
 
@@ -55,6 +59,21 @@ public class Izambi {
         "Cabbage-pult",
         "Wall-nut"
     };
+
+    // Rebalanced zombie prices for the 2-player match only: the single-
+    // player IZombieManager table (5/10/15/5/8) is tuned for one person
+    // buying many cheap zombies against static pre-placed plants, which is
+    // wildly unfair once a real plant-player is paying real plant prices
+    // (50-200) on the other side. These land in the same 50-200 range,
+    // keeping the original cost ordering (Imp/Default cheapest, bucket
+    // head priciest).
+    private static final Map<String, Integer> MULTIPLAYER_ZOMBIE_COSTS = Map.of(
+        "Imp", 50,
+        "Default", 75,
+        "Ra", 100,
+        "cone head", 150,
+        "bucket head", 200
+    );
 
     private static Izambi activeInstance;
 
@@ -171,7 +190,7 @@ public class Izambi {
         ctx.setGameEngine(gameEngine);
         ctx.setExternalWinLossHandling(true);
 
-        ctx.setSunAmount(INITIAL_SUN);
+        ctx.setSunAmount(MULTIPLAYER_INITIAL_ZOMBIE_SUN);
 
         initSunProducerZombies();
 
@@ -217,6 +236,16 @@ public class Izambi {
         return MULTIPLAYER_PLANT_POOL.clone();
     }
 
+    /** Zombie costs rebalanced for the 2-player match (see the constant's comment). */
+    public static Map<String, Integer> getMultiplayerZombieCosts() {
+        return MULTIPLAYER_ZOMBIE_COSTS;
+    }
+
+    public static int getMultiplayerZombieCost(String canonicalZombieName) {
+        Integer cost = MULTIPLAYER_ZOMBIE_COSTS.get(canonicalZombieName);
+        return cost == null ? -1 : cost;
+    }
+
     public int getPlantCost(String plantName) {
         try {
             return new PlantFactory(DataManager.getInstance()).create(plantName).getSunCost();
@@ -237,6 +266,21 @@ public class Izambi {
         String requestedType,
         int row,
         int column
+    ) {
+        return placeZombie(requestedType, row, column, null);
+    }
+
+    /**
+     * Same as {@link #placeZombie(String, int, int)}, but lets the caller
+     * charge a different sun cost than {@code IZombieManager}'s own table
+     * (used by the 2-player match to rebalance zombie prices against plant
+     * prices without touching the single-player cost table).
+     */
+    public boolean placeZombie(
+        String requestedType,
+        int row,
+        int column,
+        Integer costOverride
     ) {
         if (ctx == null
             || iZombieManager == null
@@ -307,8 +351,9 @@ public class Izambi {
             return false;
         }
 
-        int cost =
-            iZombieManager.getZombieCost(zombieType);
+        int cost = costOverride != null
+            ? costOverride
+            : iZombieManager.getZombieCost(zombieType);
 
         if (ctx.getSunAmount() < cost) {
             Console.showMessage(

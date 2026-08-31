@@ -37,13 +37,15 @@ public final class IzambiSnapshot {
         public final double x;
         public final String name;
         public final int hpPercent;
+        public final boolean eating;
 
-        public EntityView(int id, int row, double x, String name, int hpPercent) {
+        public EntityView(int id, int row, double x, String name, int hpPercent, boolean eating) {
             this.id = id;
             this.row = row;
             this.x = x;
             this.name = name;
             this.hpPercent = hpPercent;
+            this.eating = eating;
         }
     }
 
@@ -85,7 +87,7 @@ public final class IzambiSnapshot {
                 ? 100
                 : (int) Math.round(100.0 * plant.getHp() / plant.getBaseHp());
             snap.plants.add(new EntityView(
-                System.identityHashCode(plant), plant.getRow(), plant.getCol(), plant.getName(), hpPercent
+                System.identityHashCode(plant), plant.getRow(), plant.getCol(), plant.getName(), hpPercent, false
             ));
         }
 
@@ -97,7 +99,8 @@ public final class IzambiSnapshot {
                 ? 100
                 : (int) Math.round(100.0 * zombie.getHp() / zombie.getMaxHp());
             snap.zombies.add(new EntityView(
-                System.identityHashCode(zombie), zombie.getRow(), zombie.getX(), zombie.getName(), hpPercent
+                System.identityHashCode(zombie), zombie.getRow(), zombie.getX(), zombie.getName(),
+                hpPercent, zombie.isEating()
             ));
         }
 
@@ -131,7 +134,8 @@ public final class IzambiSnapshot {
             }
             EntityView e = entities.get(i);
             sb.append(e.id).append(',').append(e.row).append(',').append(e.x)
-                .append(',').append(e.name).append(',').append(e.hpPercent);
+                .append(',').append(e.name).append(',').append(e.hpPercent)
+                .append(',').append(e.eating ? '1' : '0');
         }
         return sb.toString();
     }
@@ -171,7 +175,8 @@ public final class IzambiSnapshot {
             double x = Double.parseDouble(fields[2]);
             String name = fields[3];
             int hpPercent = Integer.parseInt(fields[4]);
-            result.add(new EntityView(id, row, x, name, hpPercent));
+            boolean eating = fields.length > 5 && "1".equals(fields[5]);
+            result.add(new EntityView(id, row, x, name, hpPercent, eating));
         }
         return result;
     }

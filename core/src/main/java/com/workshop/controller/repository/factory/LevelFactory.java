@@ -1,5 +1,6 @@
 package com.workshop.controller.repository.factory;
 
+import com.badlogic.gdx.Game;
 import com.workshop.controller.repository.DataManager;
 import com.workshop.controller.repository.PlantRepository;
 import com.workshop.model.GameContext;
@@ -16,12 +17,14 @@ import com.workshop.model.season.miniGameSeason.BeghouledSeason;
 import com.workshop.model.season.miniGameSeason.VaseSeason;
 import com.workshop.model.season.miniGameSeason.WallnutsSeason;
 import com.workshop.model.MiniGame.VaseGame.VaseType;
+import com.workshop.model.user.UserManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class LevelFactory {
+    public GameContext ctx;
 
     private static Plant p(String name) {
         PlantRepository repo = DataManager.getInstance().plants;
@@ -98,11 +101,9 @@ public class LevelFactory {
         ));
 
         levels.add(day1);
-
-        List<Plant> conveyorPool = List.of(p("Peashooter"), p("Sunflower"), p("Wall-nut"), p("Snow Pea"));
         levels.add(new Level("Ancient Egypt - Day 2", 5, 9,
                 generateWaves(6, 120, 200), LevelType.CONVEYOR_BELT, null,
-                null, null, conveyorPool, null));
+                null, null, null, null));
 
         List<Plant> forced = List.of(p("Peashooter"), p("Sunflower"), p("Wall-nut"));
         Level lockedLevel = new Level("Ancient Egypt - Day 3", 5, 9,
@@ -114,7 +115,8 @@ public class LevelFactory {
                 generateWaves(8, 180, 200), LevelType.BOSS_FIGHT, null));
 
         Level bonusLevel = new Level("Ancient Egypt - Bonus", 5, 9,
-                generateWaves(3, 60, 300), LevelType.BONUS, null);
+                generateWaves(3, 60, 300), LevelType.BONUS,
+                    null, null, null, null, null);
         levels.add(bonusLevel);
 
         return levels;

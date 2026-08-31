@@ -46,6 +46,16 @@ public final class GuestLawnMirror {
 
         ctx = new GameContext(level, season);
         ctx.setZombieFactory(new ZombieFactory(DataManager.getInstance()));
+
+        // GameContext's own constructor only auto-attaches a LevelManager
+        // for level types it recognizes (Izambie_MG isn't one of them, the
+        // real IZombieManager is normally wired in by Izambi.java) — without
+        // this, BrainLayer sees no IZombieManager and hides itself, and
+        // syncBrains() below has nothing to mark eaten rows on.
+        IZombieManager manager = new IZombieManager(levelIndex, level.getRows());
+        ctx.setLevelManager(manager);
+        manager.onLevelStart(ctx);
+
         ctx.setBattleStarted(true);
     }
 
@@ -140,6 +150,7 @@ public final class GuestLawnMirror {
 
             zombie.setRow(view.row);
             zombie.setX(view.x);
+            zombie.setEating(view.eating);
 
             int targetHp = zombie.getMaxHp() <= 0
                 ? 0

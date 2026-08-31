@@ -32,6 +32,8 @@ public class DataManager {
         switch (level.getLevelType()) {
             case CONVEYOR_BELT:
                 return new ConveyorBeltManager();
+            case BOSS_FIGHT:
+                return new ConveyorBeltManager();
             case SAVE_QUR_SEEDS:
                 return new SaveOurSeedsManager();
             case TIMED_WAR:
