@@ -135,6 +135,9 @@ public class GamePlayScreen implements Screen {
     private boolean pluckingMode = false;
     private Image shovelMousePreview;
     private Texture shovelCursorTexture;
+    private ImageButton plantFoodButton;
+    private Image plantFoodMousePreview;
+    private Texture plantFoodCursorTexture;
 
     private Table seedBankContainer;
 
@@ -205,6 +208,11 @@ public class GamePlayScreen implements Screen {
         shovelCursorTexture = new Texture(
             Gdx.files.internal("IMAGES/Menus/game/shovelOnMouse.png")
         );
+
+        plantFoodCursorTexture =
+            new Texture(
+                Gdx.files.internal("IMAGES/Menus/game/FoodPlantOnMouse.png")
+            );
 
         fullWorldWidth =
             leftTexture.getWidth()
@@ -563,9 +571,7 @@ public class GamePlayScreen implements Screen {
         sunCounter.add(sunIcon).size(56, 57).padRight(8);
         sunCounter.add(sunAmountLabel).minWidth(48).left();
 
-        Image plantFoodIcon = new Image(
-            skin.get("plantfood", ImageButton.ImageButtonStyle.class).imageUp
-        );
+        createPlantFoodButton();
 
         plantFoodAmountLabel = new Label(
             String.valueOf(currentPlantFoodCount()),
@@ -573,13 +579,29 @@ public class GamePlayScreen implements Screen {
         );
 
         Table plantFoodCounter = new Table();
-        plantFoodCounter.add(plantFoodIcon).size(48, 48).padRight(8);
-        plantFoodCounter.add(plantFoodAmountLabel).minWidth(48).left();
-        plantFoodCounter.addListener(new ClickListener() {
+
+        plantFoodCounter.add(plantFoodButton)
+            .size(48, 48)
+            .padRight(8);
+
+        plantFoodCounter.add(plantFoodAmountLabel)
+            .minWidth(48)
+            .left();
+
+        plantFoodButton.addListener(new ClickListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
+            public void clicked(
+                InputEvent event,
+                float x,
+                float y
+            ) {
                 event.stop();
+
                 togglePlantFoodFeedMode();
+
+                plantFoodButton.setChecked(
+                    plantFoodFeedMode
+                );
             }
         });
 
@@ -934,6 +956,77 @@ public class GamePlayScreen implements Screen {
         return new ImageButton(style);
     }
 
+    private void createPlantFoodButton() {
+
+        TextureRegion darkRegion =
+            Textures.regionOrNull(
+                "IMAGE_UI_HUD_EVENTBUTTON_EVENT_ICON_POTW_DOWN"
+            );
+
+        TextureRegion lightRegion =
+            Textures.regionOrNull(
+                "IMAGE_UI_HUD_EVENTBUTTON_EVENT_ICON_POTW_UP"
+            );
+
+        if (darkRegion == null) {
+            throw new IllegalStateException(
+                "Dark plant food image was not found: "
+                    + "IMAGE_UI_HUD_EVENTBUTTON_EVENT_ICON_POTW_DOWN"
+            );
+        }
+
+        if (lightRegion == null) {
+            throw new IllegalStateException(
+                "Light plant food image was not found: "
+                    + "IMAGE_UI_HUD_EVENTBUTTON_EVENT_ICON_POTW_UP"
+            );
+        }
+
+        TextureRegionDrawable darkDrawable =
+            new TextureRegionDrawable(darkRegion);
+
+        TextureRegionDrawable lightDrawable =
+            new TextureRegionDrawable(lightRegion);
+
+        ImageButton.ImageButtonStyle style =
+            new ImageButton.ImageButtonStyle();
+
+        // عادی: تیره
+        style.imageUp = darkDrawable;
+
+        // Hover: روشن
+        style.imageOver = lightDrawable;
+
+        // کلیک: روشن
+        style.imageDown = lightDrawable;
+
+        // Plant Food فعال: روشن می‌ماند
+        style.imageChecked = lightDrawable;
+
+        // فعال + Hover
+        style.imageCheckedOver = lightDrawable;
+
+        plantFoodButton =
+            new ImageButton(style);
+    }
+
+    private void clearPlantFoodFeedMode() {
+
+        plantFoodFeedMode = false;
+
+        if (plantFoodButton != null) {
+            plantFoodButton.setChecked(false);
+        }
+
+        if (plantFoodMousePreview != null) {
+            plantFoodMousePreview.remove();
+            plantFoodMousePreview = null;
+        }
+
+        restoreSystemCursor();
+    }
+
+
     private Group buildWaveFlagsOverlay(
         Skin skin,
         Level level,
@@ -1286,7 +1379,7 @@ public class GamePlayScreen implements Screen {
             }
         }
 
-        plantFoodFeedMode = false;
+        clearPlantFoodFeedMode();
         clearPlantSelection();
 
         selectedZombieTypeForPlacement =
@@ -1332,7 +1425,7 @@ public class GamePlayScreen implements Screen {
 
     private void selectPlant(PlantCardActor clickedCard) {
         clearPluckingMode();
-        plantFoodFeedMode = false;
+        clearPlantFoodFeedMode();
         selectedPlantForPlacement =
             clickedCard.getPlant();
 
@@ -2010,24 +2103,49 @@ public class GamePlayScreen implements Screen {
     }
 
     private void togglePlantFoodFeedMode() {
+
         if (currentPlantFoodCount() <= 0) {
-            plantFoodFeedMode = false;
-            Toast.showError(stage, PvzSkin.get(), "No plant food!");
+
+            clearPlantFoodFeedMode();
+
+            if (plantFoodButton != null) {
+                plantFoodButton.setChecked(false);
+            }
+
+            Toast.showError(
+                stage,
+                PvzSkin.get(),
+                "No plant food!"
+            );
+
             return;
         }
 
-        plantFoodFeedMode = !plantFoodFeedMode;
+        plantFoodFeedMode =
+            !plantFoodFeedMode;
 
         if (plantFoodFeedMode) {
+
             clearPluckingMode();
             clearPlantSelection();
             clearZombieSelection();
+
+            hideSystemCursor();
+            showPlantFoodOnMouse();
+
+            if (plantFoodButton != null) {
+                plantFoodButton.setChecked(true);
+            }
 
             Toast.showInfo(
                 stage,
                 PvzSkin.get(),
                 "Select a plant to feed"
             );
+
+        } else {
+
+            clearPlantFoodFeedMode();
         }
     }
 
@@ -2057,20 +2175,35 @@ public class GamePlayScreen implements Screen {
         }
 
         if (currentPlantFoodCount() <= 0) {
-            plantFoodFeedMode = false;
-            Toast.showError(stage, PvzSkin.get(), "No plant food!");
+            clearPlantFoodFeedMode();
+
+            Toast.showError(
+                stage,
+                PvzSkin.get(),
+                "No plant food!"
+            );
+
             return;
         }
 
         if (!UserManager.getInstance().usePlantFood(1)) {
-            plantFoodFeedMode = false;
-            Toast.showError(stage, PvzSkin.get(), "No plant food!");
+            clearPlantFoodFeedMode();
+
+            Toast.showError(
+                stage,
+                PvzSkin.get(),
+                "No plant food!"
+            );
+
             return;
         }
 
         plant.activatePlantFood(ctx);
-        plantFoodFeedMode = false;
+
+        clearPlantFoodFeedMode();
+
         updateHud();
+
         Toast.showSuccess(
             stage,
             PvzSkin.get(),
@@ -2458,19 +2591,19 @@ public class GamePlayScreen implements Screen {
             return;
         }
 
-        plantFoodFeedMode = false;
+        clearPlantFoodFeedMode();
 
         clearPlantSelection();
         clearZombieSelection();
+
+        hideSystemCursor();
+        showShovelOnMouse();
 
         pluckingMode = true;
 
         if (shovelButton != null) {
             shovelButton.setChecked(true);
         }
-
-        hideSystemCursor();
-        showShovelOnMouse();
 
         Toast.showInfo(
             stage,
@@ -2666,6 +2799,7 @@ public class GamePlayScreen implements Screen {
         updatePlantMousePreview();
         updateZombieMousePreview();
         updateShovelMousePreview();
+        updatePlantFoodMousePreview();
         updatePlantingHover();
         updateConveyorSeedBank();
 
@@ -2766,9 +2900,8 @@ public class GamePlayScreen implements Screen {
                     .getPlantFactory()
                     .create(plantName);
 
-            plantFoodFeedMode = false;
-            selectedPlantForPlacement =
-                plant;
+            clearPlantFoodFeedMode();
+            selectedPlantForPlacement = plant;
 
             for (PlantCardActor card
                 : seedBankCards) {
@@ -2790,6 +2923,64 @@ public class GamePlayScreen implements Screen {
                 e
             );
         }
+    }
+
+    private void showPlantFoodOnMouse() {
+
+        if (plantFoodMousePreview != null) {
+            plantFoodMousePreview.remove();
+            plantFoodMousePreview = null;
+        }
+
+        plantFoodMousePreview =
+            new Image(plantFoodCursorTexture);
+
+        float height = 42f;
+
+        float width =
+            height
+                * plantFoodCursorTexture.getWidth()
+                / plantFoodCursorTexture.getHeight();
+
+        plantFoodMousePreview.setSize(
+            width,
+            height
+        );
+
+        plantFoodMousePreview.setTouchable(
+            Touchable.disabled
+        );
+
+        stage.addActor(plantFoodMousePreview);
+
+        plantFoodMousePreview.toFront();
+    }
+
+    private void updatePlantFoodMousePreview() {
+
+        if (!plantFoodFeedMode
+            || plantFoodMousePreview == null) {
+            return;
+        }
+
+        mouseStagePosition.set(
+            Gdx.input.getX(),
+            Gdx.input.getY()
+        );
+
+        stage.screenToStageCoordinates(
+            mouseStagePosition
+        );
+
+        plantFoodMousePreview.setPosition(
+            mouseStagePosition.x
+                - plantFoodMousePreview.getWidth() * 0.15f,
+
+            mouseStagePosition.y
+                - plantFoodMousePreview.getHeight() * 0.85f
+        );
+
+        plantFoodMousePreview.toFront();
     }
 
     @Override
