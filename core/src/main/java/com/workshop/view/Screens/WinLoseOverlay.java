@@ -164,7 +164,7 @@ public class WinLoseOverlay {
         titleLabel.setText("VICTORY!");
 
         messageLabel.setText(
-            "You defeated the zombies!"
+            "Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz."
         );
 
         retryButton.setVisible(false);
@@ -177,7 +177,7 @@ public class WinLoseOverlay {
         titleLabel.setText("YOU LOST!");
 
         messageLabel.setText(
-            "The zombies ate your brain!"
+            "The zombies ate your brain! LOSER."
         );
 
         retryButton.setVisible(true);

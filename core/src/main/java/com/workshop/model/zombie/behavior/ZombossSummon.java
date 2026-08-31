@@ -19,11 +19,15 @@ public class ZombossSummon implements Behaviors {
 
     private static final int TICKS_PER_SECOND = 10;
     private static final double ACTION_COOLDOWN_SECONDS = 14.0;
+    private static final double INTRO_DURATION_SECONDS = 3.0;
     private static final int INSTANT_KILL_DAMAGE = 10000;
 
     private final Random random = new Random();
     private long lastActionTick = -1;
-    private ZombossState currentState = ZombossState.IDLE;
+    private ZombossState currentState = ZombossState.INTRO;
+
+    private boolean isSpawned = false;
+    private long spawnTick = -1;
 
     private boolean isDashing = false;
     private boolean isReturning = false;
@@ -34,21 +38,45 @@ public class ZombossSummon implements Behaviors {
     public void onTick(Zombie zombie, GameContext ctx) {
         if (ctx.getSeason() == null || zombie.isDead()) return;
 
+        long currentTick = ctx.getTimeManager().getTotalTicks();
+
+        // ۱. مدیریت مرحله اسپاون و انیمیشن اینترو (INTRO)
+        if (!isSpawned) {
+            handleSpawnIntro(zombie, ctx, currentTick);
+            return;
+        }
+
         if (isStunned(zombie)) {
             return;
         }
 
+        // ۲. مدیریت حرکت Dash
         if (isDashing || isReturning) {
             updateDashPosition(zombie, ctx);
             return;
         }
 
-        long currentTick = ctx.getTimeManager().getTotalTicks();
-        if (lastActionTick < 0) lastActionTick = currentTick;
-
+        // ۳. بررسی Cooldown برای اجرای قابلیت‌ها
         if (currentTick - lastActionTick >= (long) (ACTION_COOLDOWN_SECONDS * TICKS_PER_SECOND)) {
             executeRandomAbility(zombie, ctx);
             lastActionTick = currentTick;
+        }
+    }
+
+    private void handleSpawnIntro(Zombie boss, GameContext ctx, long currentTick) {
+        if (spawnTick < 0) {
+            spawnTick = currentTick;
+            this.currentState = ZombossState.INTRO;
+            ctx.announce(boss.getName() + " HAS ARRIVED!");
+        }
+
+        long elapsedTicks = currentTick - spawnTick;
+        long introDurationTicks = (long) (INTRO_DURATION_SECONDS * TICKS_PER_SECOND);
+
+        if (elapsedTicks >= introDurationTicks) {
+            this.isSpawned = true;
+            this.currentState = ZombossState.IDLE;
+            this.lastActionTick = currentTick;
         }
     }
 
@@ -58,6 +86,8 @@ public class ZombossSummon implements Behaviors {
 
         if (seasonName.contains("egypt") || bossId.contains("egypt")) {
             executeEgyptAction(boss, ctx);
+        } else if (seasonName.contains("beach") || bossId.contains("beach") || seasonName.contains("shark")) {
+            executeBeachAction(boss, ctx);
         } else {
             executeGenericAction(boss, ctx);
         }
@@ -78,6 +108,25 @@ public class ZombossSummon implements Behaviors {
                 break;
             case 3:
                 performEgyptDash(boss, ctx);
+                break;
+        }
+    }
+
+    private void executeBeachAction(Zombie boss, GameContext ctx) {
+        int action = random.nextInt(4);
+
+        switch (action) {
+            case 0:
+                moveBossToRandomRows(boss, ctx);
+                break;
+            case 1:
+                summonMinions(boss, ctx);
+                break;
+            case 2:
+                launchBeachSharks(boss, ctx);
+                break;
+            case 3:
+                executeBeachVortex(boss, ctx);
                 break;
         }
     }
@@ -165,6 +214,64 @@ public class ZombossSummon implements Behaviors {
         ctx.getProjectiles().add(missile);
         spawnRandomGraves(ctx, 2);
 
+        this.currentState = ZombossState.IDLE;
+    }
+
+    private void launchBeachSharks(Zombie boss, GameContext ctx) {
+        this.currentState = ZombossState.LAUNCHING_SHARKS;
+
+        int rows = ctx.getLevel().getRows();
+        int cols = ctx.getLevel().getColumns();
+        int sharkCount = 3;
+
+        for (int i = 0; i < sharkCount; i++) {
+            int r = random.nextInt(rows);
+            int c = random.nextInt(cols);
+
+            if (ctx.getSeason().isWaterCell(r, c, ctx)) {
+                Plant plantOnWater = ctx.getPlantGrid()[r][c];
+                if (plantOnWater != null && !plantOnWater.isDead()) {
+                    plantOnWater.takeDamage(INSTANT_KILL_DAMAGE);
+                }
+            }
+        }
+
+        ctx.announce(boss.getName() + " launched sharks from underwater!");
+        this.currentState = ZombossState.IDLE;
+    }
+
+    private void executeBeachVortex(Zombie boss, GameContext ctx) {
+        this.currentState = ZombossState.USING_VORTEX;
+
+        int topRow = (int) boss.getY();
+        int totalRows = ctx.getLevel().getRows();
+        topRow = Math.max(0, Math.min(topRow, totalRows - 2));
+        int bottomRow = topRow + 1;
+        int cols = ctx.getLevel().getColumns();
+
+        for (int r = topRow; r <= bottomRow; r++) {
+            for (int c = 0; c < cols; c++) {
+                Plant plant = ctx.getPlantGrid()[r][c];
+                if (plant != null && !plant.isDead()) {
+                    plant.takeDamage(INSTANT_KILL_DAMAGE);
+                }
+            }
+        }
+
+        List<Zombie> zombiesToRemove = new ArrayList<>();
+        for (Zombie z : ctx.getAliveZombies()) {
+            if (z == boss) continue;
+            int zRow = (int) z.getY();
+            if (zRow == topRow || zRow == bottomRow) {
+                zombiesToRemove.add(z);
+            }
+        }
+
+        for (Zombie z : zombiesToRemove) {
+            z.takeDamage(INSTANT_KILL_DAMAGE);
+        }
+
+        ctx.announce(boss.getName() + " activated the turbine, pulling plants and zombies!");
         this.currentState = ZombossState.IDLE;
     }
 

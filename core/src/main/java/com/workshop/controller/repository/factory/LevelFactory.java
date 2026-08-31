@@ -154,7 +154,7 @@ public class LevelFactory {
 
         Level deadlineLevel = new Level("Frozen Caves - Day 2", 5, 9,
                 generateWaves(6, 160, 200), LevelType.DEADLINE, null);
-        deadlineLevel.setDeadlineColumn(3);
+        deadlineLevel.setDeadlineColumn(2);
         levels.add(deadlineLevel);
 
         Level timedWarLevel = new Level("Frozen Caves - Day 3", 5, 9,

@@ -7,9 +7,23 @@ import com.workshop.model.plants.TargetingMode;
 import com.workshop.model.plants.plantFoodEffect.PlantFoodMode;
 import com.workshop.model.zombie.Zombie;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WallNut implements BaseAbility {
+
+    private static final long ONE_SECOND_TICKS = 10;
+    private static final long COOLDOWN_TICKS = 30;
+    private static final int MAX_SUN_BATCH = 5;
+
+    private static class SunState {
+        int count = 0;
+        long lastGenTick = -1;
+        long cooldownStartTick = -1;
+    }
+
+    private final Map<Plant, SunState> sunStates = new HashMap<>();
 
     public void triggerAbility(WallNutType wallNutType, int damage, Plant self, GameEngine engine) {
         switch (wallNutType) {
@@ -27,11 +41,23 @@ public class WallNut implements BaseAbility {
                 executeLaneAttract(self, engine.getCtx());
                 break;
             case SUN_GENERATING:
-                if (engine.getCtx().checkAndTriggerSunBean(self, 2)) {
+                if (hasZombieOrProjectileAt(self.getRow(), self.getCol(), engine.getCtx())) {
                     executeSunGenerating(self, engine.getCtx());
                 }
                 break;
         }
+    }
+
+    public boolean hasZombieOrProjectileAt(int row, int col, GameContext ctx) {
+        boolean zombiePresent = ctx.getAliveZombies().stream()
+            .anyMatch(z -> z != null && !z.isDead() && z.getRow() == row && (int) z.getX() == col);
+
+        if (zombiePresent) {
+            return true;
+        }
+
+        return ctx.getProjectiles().stream()
+            .anyMatch(p -> p != null && p.isFromZombie() && p.getRow() == row && (int) p.getX() == col);
     }
 
     public void wall(WallNutType wallNutType, Plant plant, GameContext ctx) {
@@ -97,7 +123,28 @@ public class WallNut implements BaseAbility {
     }
 
     private void executeSunGenerating(Plant self, GameContext ctx) {
-        ctx.produceSun(self.getCol(), self.getRow(), 2);
+        long currentTick = ctx.getTimeManager().getTotalTicks();
+        SunState state = sunStates.computeIfAbsent(self, k -> new SunState());
+        if (state.cooldownStartTick > 0) {
+            if (currentTick - state.cooldownStartTick >= COOLDOWN_TICKS) {
+                state.cooldownStartTick = -1;
+                state.count = 0;
+            } else {
+                return;
+            }
+        }
+
+        if (state.count < MAX_SUN_BATCH) {
+            if (state.lastGenTick < 0 || (currentTick - state.lastGenTick) >= ONE_SECOND_TICKS) {
+                ctx.produceSun(self.getCol(), self.getRow(), 1);
+                state.lastGenTick = currentTick;
+                state.count++;
+
+                if (state.count >= MAX_SUN_BATCH) {
+                    state.cooldownStartTick = currentTick;
+                }
+            }
+        }
     }
 
     private void plantFoodLaneRedirect(Plant self, GameContext ctx) {

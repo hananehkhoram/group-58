@@ -329,7 +329,7 @@ public class GamePlayScreen implements Screen {
         }
 
         if (level.getLevelType() == LevelType.DEADLINE) {
-            int deadlineColumn = 3;
+            int deadlineColumn = 2;
             float lineX = getGridX() + (deadlineColumn * getCellWidth());
 
             BowlingRedLineLayer redLineLayer = new BowlingRedLineLayer(

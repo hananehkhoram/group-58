@@ -18,6 +18,8 @@ import java.util.Random;
 
 public class Modifier implements BaseAbility {
 
+    private boolean hasImitated = false;
+
     public void modify(ModifierType modifierType, Plant plant, GameEngine engine) {
         int pRow = plant.getRow();
         int pCol = plant.getCol();
@@ -69,6 +71,7 @@ public class Modifier implements BaseAbility {
             case WATER_PLATFORM:
                 break;
             case COPY_PLANT:
+                if (hasImitated) break;
                 List<Plant> candidates = new ArrayList<>(ctx.getActivePlants());
                 candidates.removeIf(c -> c.getName().equalsIgnoreCase(plant.getName()));
                 if (!candidates.isEmpty()) {
@@ -82,6 +85,7 @@ public class Modifier implements BaseAbility {
                         ctx.getPlantGrid()[pRow][pCol] = newPlant;
                         ctx.getAlivePlants().add(newPlant);
                         ctx.recordPlantPlaced(newPlant, pRow, pCol);
+                        hasImitated = true;
                         Console.showMessage("Imitater successfully transformed into " + newPlant.getName() + " at (" + pCol + ", " + pRow + ")");
                     }
                 }
