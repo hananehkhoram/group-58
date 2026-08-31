@@ -29,6 +29,7 @@ public class GameContext {
     private final Plant[][] plantGrid;
     private List<Plant> alivePlants = new ArrayList<>();//گیاهای زنده روی زمین
     private final Grave[][] graveGrid;
+    private final long[][] burnUntilTick;
     private List<Plant> activePlants = new ArrayList<>();//گیاهای انتخاب شده
     private List<Zombie> activeZombies = new ArrayList<>();//zombies to spawn
     private List<Zombie> aliveZombies = new ArrayList<>();//زامبیای زنده رو زمین
@@ -219,6 +220,7 @@ public class GameContext {
         this.plantFactory = new PlantFactory(dm);
         this.plantGrid = new Plant[level.getRows()][level.getColumns()];
         this.graveGrid = new Grave[level.getRows()][level.getColumns()];
+        this.burnUntilTick = new long[level.getRows()][level.getColumns()];
         if (level.getWaves() != null) {
             for (com.workshop.model.mechanisms.Wave w : level.getWaves()) {
                 w.reset();
@@ -420,6 +422,41 @@ public class GameContext {
         this.totalLostPlants++;
         resetKillStreak();
         Console.showMessage("Plant "+p.getName()+" at "+p.getCol()+", "+p.getRow()+" is destroyed.");
+    }
+
+    public void igniteCell(int row, int col, double seconds) {
+        if (row < 0 || col < 0
+            || row >= burnUntilTick.length
+            || col >= burnUntilTick[row].length) {
+            return;
+        }
+        long now = timeManager != null ? timeManager.getTotalTicks() : 0L;
+        long until = now + Math.max(1L, Math.round(seconds * 10.0));
+        burnUntilTick[row][col] = Math.max(burnUntilTick[row][col], until);
+
+        Plant plant = plantGrid[row][col];
+        if (plant != null && !plant.isDead()) {
+            plant.takeDamage(10_000);
+        }
+    }
+
+    public boolean isBurnedCell(int row, int col) {
+        if (row < 0 || col < 0
+            || row >= burnUntilTick.length
+            || col >= burnUntilTick[row].length
+            || timeManager == null) {
+            return false;
+        }
+        return timeManager.getTotalTicks() < burnUntilTick[row][col];
+    }
+
+    public Zombie findAliveBoss() {
+        for (Zombie zombie : aliveZombies) {
+            if (zombie != null && zombie.isBoss() && !zombie.isDead()) {
+                return zombie;
+            }
+        }
+        return null;
     }
 
     public void addZombie(Zombie z) {

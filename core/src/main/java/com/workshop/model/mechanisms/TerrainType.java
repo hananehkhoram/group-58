@@ -9,5 +9,6 @@ public enum TerrainType {
     SLIPPERY_DOWN,
     WATER,
     LOW_TIDE,
-    NECROMANCY
+    NECROMANCY,
+    BURNED
 }

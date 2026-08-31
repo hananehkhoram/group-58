@@ -89,7 +89,7 @@ public class Lobber implements BaseAbility {
 
     private boolean isTargetInRow(int row, int col, GameContext ctx) {
         for (Zombie z : ctx.getAliveZombies()) {
-            if (!z.isDead() && z.getRow() == row && z.getX() >= col) {
+            if (!z.isDead() && z.occupiesRow(row) && z.getX() >= col) {
                 return true;
             }
         }

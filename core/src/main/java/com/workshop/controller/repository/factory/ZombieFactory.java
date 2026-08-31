@@ -34,10 +34,12 @@ public class ZombieFactory extends BaseFactory<Zombie> {
         newZombie.setBehaviors(ZombieActivator.buildBehaviors(newZombie));
         newZombie.setBoss(BossZombieRegistry.isBossId(newZombie.getId()));
 
-        newZombie.setHp((int) (newZombie.getHp() * increaseFactor));
+        if (!newZombie.isBoss()) {
+            newZombie.setHp((int) (newZombie.getHp() * increaseFactor));
+            newZombie.setEatDps(newZombie.getEatDps() * increaseFactor);
+            newZombie.setSpeed(newZombie.getSpeed() * increaseFactor);
+        }
         newZombie.setMaxHp(newZombie.getHp());
-        newZombie.setEatDps(newZombie.getEatDps() * increaseFactor);
-        newZombie.setSpeed(newZombie.getSpeed() * increaseFactor);
 
         return newZombie;
     }

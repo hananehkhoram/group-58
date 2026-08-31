@@ -8,6 +8,11 @@ public class Eating implements Behaviors {
 
     @Override
     public void onTick(Zombie zombie, GameContext ctx) {
+        if (zombie.isBoss() || zombie.isStunned()) {
+            zombie.setEating(false);
+            return;
+        }
+
         int row = zombie.getRow();
         int col = (int) zombie.getX();
 

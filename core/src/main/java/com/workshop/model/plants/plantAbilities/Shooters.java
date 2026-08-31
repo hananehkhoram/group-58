@@ -313,11 +313,7 @@ public class Shooters implements BaseAbility {
                 continue;
             }
 
-            if (zombie.getRow() != plant.getRow()) {
-                continue;
-            }
-
-            if (zombie.getX() >= plant.getX()) {
+            if (zombie.occupiesRow(plant.getRow()) && zombie.getX() >= plant.getX()) {
                 return true;
             }
         }

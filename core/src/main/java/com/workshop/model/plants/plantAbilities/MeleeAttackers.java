@@ -115,7 +115,7 @@ public class MeleeAttackers implements BaseAbility {
         if ("INSTANT_EAT".equals(meleeKind)) {
             int eaten = 0;
             for (Zombie z : ctx.getAliveZombies()) {
-                if (!z.isDead() && z.getRow() == pRow && z.getX() >= pCol) {
+                if (!z.isDead() && z.occupiesRow(pRow) && z.getX() >= pCol) {
                     z.takeDamage(Integer.MAX_VALUE);
                     eaten++;
                     if (eaten >= 3) break;

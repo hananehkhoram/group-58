@@ -30,9 +30,9 @@ public final class ConveyorBeltLayer extends Group implements Disposable {
     private static final float PAD_BOTTOM = 10f;
     private static final float BELT_INSET = 5f;
 
-    private static final float PLANT_SPEED = 55f;
+    private static final float PLANT_SPEED = 110f;
 
-    private static final float BELT_SCROLL_SPEED = 55f;
+    private static final float BELT_SCROLL_SPEED = 90f;
 
     private final ConveyorBeltManager conveyorManager;
     private final Skin skin;
