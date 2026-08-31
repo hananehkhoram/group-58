@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -12,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.workshop.controller.SpecialLevelManager.ConveyorBeltManager;
 import com.workshop.model.GameContext;
@@ -41,10 +43,13 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 
 import com.workshop.controller.MenuManager;
 import com.workshop.controller.commands.Planting;
+import com.workshop.controller.commands.Plucking;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.model.level.LevelType;
 import com.workshop.view.gameplay.DroppedSeedLayer;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.Pixmap;
 
 import java.util.ArrayList;
 
@@ -124,6 +129,12 @@ public class GamePlayScreen implements Screen {
         new Vector2();
 
     private final Planting plantingCommand;
+    private final Plucking pluckingCommand;
+    private ImageButton shovelButton;
+
+    private boolean pluckingMode = false;
+    private Image shovelMousePreview;
+    private Texture shovelCursorTexture;
 
     private Table seedBankContainer;
 
@@ -136,6 +147,9 @@ public class GamePlayScreen implements Screen {
 
     private ConveyorBeltLayer conveyorBeltLayer;
     private BrainLayer brainLayer;
+    private Cursor hiddenCursor;
+
+    private static final float SHOVEL_CURSOR_HEIGHT = 42f;
 
 
 
@@ -156,6 +170,9 @@ public class GamePlayScreen implements Screen {
 
         this.plantingCommand =
             new Planting(plantingMenuManager);
+
+        this.pluckingCommand =
+            new Plucking(plantingMenuManager);
 
         Season season = gameContext.getSeason();
         Level level = gameContext.getLevel();
@@ -185,6 +202,10 @@ public class GamePlayScreen implements Screen {
             Gdx.files.internal(paths.right)
         );
 
+        shovelCursorTexture = new Texture(
+            Gdx.files.internal("IMAGES/Menus/game/shovelOnMouse.png")
+        );
+
         fullWorldWidth =
             leftTexture.getWidth()
                 + centerTexture.getWidth()
@@ -202,6 +223,25 @@ public class GamePlayScreen implements Screen {
         );
 
         stage = new Stage(worldViewport);
+
+        Pixmap emptyPixmap =
+            new Pixmap(
+                1,
+                1,
+                Pixmap.Format.RGBA8888
+            );
+
+        emptyPixmap.setColor(0f, 0f, 0f, 0f);
+        emptyPixmap.fill();
+
+        hiddenCursor =
+            Gdx.graphics.newCursor(
+                emptyPixmap,
+                0,
+                0
+            );
+
+        emptyPixmap.dispose();
 
 
         worldCamera =
@@ -502,7 +542,7 @@ public class GamePlayScreen implements Screen {
         );
 
         ImageButton pauseTestButton =
-            new ImageButton(skin, "ingame_pause");
+            createPauseButton();
 
         pauseTestButton.addListener(new ChangeListener() {
             @Override
@@ -595,14 +635,22 @@ public class GamePlayScreen implements Screen {
         progressColumn.add(waveLabel).padTop(6);
 
         updateHud();
+        createShovelButton();
 
         Table hudTable = new Table();
         hudTable.setFillParent(true);
         hudTable.top();
         hudTable.pad(20);
         Table leftCounters = new Table();
-        leftCounters.add(sunRow).left().row();
-        leftCounters.add(plantFoodRow).left().padTop(6);
+
+        leftCounters.add(sunCounter)
+            .left()
+            .row();
+
+        leftCounters.add(plantFoodCounter)
+            .left()
+            .padTop(6)
+            .row();
 
         hudTable.add(leftCounters)
             .left()
@@ -613,8 +661,16 @@ public class GamePlayScreen implements Screen {
             .padLeft(20)
             .padRight(20);
 
-        hudTable.add(pauseTestButton)
-            .size(70, 70)
+        Table rightControls = new Table();
+
+        rightControls.add(shovelButton)
+            .size(50, 50)
+            .padRight(4);
+
+        rightControls.add(pauseTestButton)
+            .size(50, 50);
+
+        hudTable.add(rightControls)
             .right()
             .top();
 
@@ -717,6 +773,18 @@ public class GamePlayScreen implements Screen {
 
     }
 
+    private void hideSystemCursor() {
+        if (hiddenCursor != null) {
+            Gdx.graphics.setCursor(hiddenCursor);
+        }
+    }
+
+    private void restoreSystemCursor() {
+        Gdx.graphics.setSystemCursor(
+            Cursor.SystemCursor.Arrow
+        );
+    }
+
     private void buildConveyorBelt() {
         conveyorBeltLayer = new ConveyorBeltLayer(
             (ConveyorBeltManager) ctx.getLevelManager(),
@@ -750,6 +818,120 @@ public class GamePlayScreen implements Screen {
             }
         });
         return button;
+    }
+    private void createShovelButton() {
+
+        TextureRegion darkRegion =
+            Textures.regionOrNull(
+                "IMAGE_UI_HUD_INGAME_SHOVEL_BUTTON_DOWN"
+            );
+
+        TextureRegion lightRegion =
+            Textures.regionOrNull(
+                "IMAGE_UI_HUD_INGAME_SHOVEL_BUTTON"
+            );
+
+        if (darkRegion == null) {
+            throw new IllegalStateException(
+                "Dark shovel image was not found: "
+                    + "IMAGE_UI_HUD_INGAME_SHOVEL_BUTTON_DOWN"
+            );
+        }
+
+        if (lightRegion == null) {
+            throw new IllegalStateException(
+                "Light shovel image was not found: "
+                    + "IMAGE_UI_HUD_INGAME_SHOVEL_BUTTON"
+            );
+        }
+
+        TextureRegionDrawable darkDrawable =
+            new TextureRegionDrawable(darkRegion);
+
+        TextureRegionDrawable lightDrawable =
+            new TextureRegionDrawable(lightRegion);
+
+        ImageButton.ImageButtonStyle style =
+            new ImageButton.ImageButtonStyle();
+
+        // حالت عادی: تیره
+        style.imageUp = darkDrawable;
+
+        // موس روی دکمه: روشن
+        style.imageOver = lightDrawable;
+
+        // نگه داشتن کلیک: روشن
+        style.imageDown = lightDrawable;
+
+        // حالت برداشت فعال: روشن
+        style.imageChecked = lightDrawable;
+
+        // حالت برداشت فعال + hover: روشن
+        style.imageCheckedOver = lightDrawable;
+
+        shovelButton = new ImageButton(style);
+
+        shovelButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(
+                InputEvent event,
+                float x,
+                float y
+            ) {
+                event.stop();
+
+                togglePluckingMode();
+
+                shovelButton.setChecked(pluckingMode);
+            }
+        });
+    }
+
+    private ImageButton createPauseButton() {
+
+        TextureRegion darkRegion =
+            Textures.regionOrNull(
+                "IMAGE_UI_HUD_INGAME_PAUSE_BUTTON_DOWN"
+            );
+
+        TextureRegion lightRegion =
+            Textures.regionOrNull(
+                "IMAGE_UI_HUD_INGAME_PAUSE_BUTTON"
+            );
+
+        if (darkRegion == null) {
+            throw new IllegalStateException(
+                "Dark pause image was not found: "
+                    + "IMAGE_UI_HUD_INGAME_PAUSE_BUTTON_DOWN"
+            );
+        }
+
+        if (lightRegion == null) {
+            throw new IllegalStateException(
+                "Light pause image was not found: "
+                    + "IMAGE_UI_HUD_INGAME_PAUSE_BUTTON"
+            );
+        }
+
+        TextureRegionDrawable darkDrawable =
+            new TextureRegionDrawable(darkRegion);
+
+        TextureRegionDrawable lightDrawable =
+            new TextureRegionDrawable(lightRegion);
+
+        ImageButton.ImageButtonStyle style =
+            new ImageButton.ImageButtonStyle();
+
+        // حالت عادی: تیره
+        style.imageUp = darkDrawable;
+
+        // موس روی دکمه: روشن
+        style.imageOver = lightDrawable;
+
+        // موقع نگه داشتن کلیک: روشن
+        style.imageDown = lightDrawable;
+
+        return new ImageButton(style);
     }
 
     private Group buildWaveFlagsOverlay(
@@ -979,7 +1161,7 @@ public class GamePlayScreen implements Screen {
 
             cardsTable.add(card)
                 .size(100f, 58f)
-                .padBottom(60f)
+                .padBottom(5f)
                 .row();
         }
 
@@ -1076,6 +1258,7 @@ public class GamePlayScreen implements Screen {
     private void selectZombie(
         ZombieCardActor clickedCard
     ) {
+        clearPluckingMode();
         if (ctx.getLevelManager()
             instanceof IZombieManager manager) {
 
@@ -1148,6 +1331,7 @@ public class GamePlayScreen implements Screen {
     }
 
     private void selectPlant(PlantCardActor clickedCard) {
+        clearPluckingMode();
         plantFoodFeedMode = false;
         selectedPlantForPlacement =
             clickedCard.getPlant();
@@ -1690,6 +1874,14 @@ public class GamePlayScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
 
+                if (pluckingMode) {
+                    pluckPlantAtStage(
+                        event.getStageX(),
+                        event.getStageY()
+                    );
+                    return;
+                }
+
                 if (plantFoodFeedMode) {
                     feedPlantAtStage(event.getStageX(), event.getStageY());
                     return;
@@ -1825,9 +2017,17 @@ public class GamePlayScreen implements Screen {
         }
 
         plantFoodFeedMode = !plantFoodFeedMode;
+
         if (plantFoodFeedMode) {
+            clearPluckingMode();
             clearPlantSelection();
-            Toast.showInfo(stage, PvzSkin.get(), "Select a plant to feed");
+            clearZombieSelection();
+
+            Toast.showInfo(
+                stage,
+                PvzSkin.get(),
+                "Select a plant to feed"
+            );
         }
     }
 
@@ -2021,7 +2221,10 @@ public class GamePlayScreen implements Screen {
 
     private void updatePlantingHover() {
         if (selectedPlantForPlacement == null
-            && selectedZombieTypeForPlacement == null) {
+            && selectedZombieTypeForPlacement == null
+            && !plantFoodFeedMode
+            && !pluckingMode) {
+
             hoveredPlantRow = -1;
             hoveredPlantColumn = -1;
             return;
@@ -2086,13 +2289,47 @@ public class GamePlayScreen implements Screen {
             ShapeRenderer.ShapeType.Filled
         );
 
-        /*
-         * I-Zombie:
-         * کل ردیف زیر موس را Highlight کن.
-         */
-        if (selectedZombieTypeForPlacement != null
-            && ctx.getLevelManager()
-            instanceof IZombieManager manager) {
+        if (pluckingMode) {
+
+            Plant[][] grid =
+                ctx.getPlantGrid();
+
+            Plant plant =
+                grid[hoveredPlantRow]
+                    [hoveredPlantColumn];
+
+            boolean hasPlant =
+                plant != null
+                    && !plant.isDead();
+
+            if (hasPlant) {
+                shapeRenderer.setColor(
+                    1f,
+                    1f,
+                    1f,
+                    0.25f
+                );
+            } else {
+                shapeRenderer.setColor(
+                    1f,
+                    0.15f,
+                    0.15f,
+                    0.28f
+                );
+            }
+
+            shapeRenderer.rect(
+                cellX,
+                rowY,
+                getCellWidth(),
+                getCellHeight()
+            );
+        }
+        else if (
+            selectedZombieTypeForPlacement != null
+                && ctx.getLevelManager()
+                instanceof IZombieManager manager
+        ) {
 
             boolean validPlacement =
                 manager.isValidPlacement(
@@ -2214,6 +2451,182 @@ public class GamePlayScreen implements Screen {
         rebuildSeedBank();
     }
 
+    private void togglePluckingMode() {
+
+        if (pluckingMode) {
+            clearPluckingMode();
+            return;
+        }
+
+        plantFoodFeedMode = false;
+
+        clearPlantSelection();
+        clearZombieSelection();
+
+        pluckingMode = true;
+
+        if (shovelButton != null) {
+            shovelButton.setChecked(true);
+        }
+
+        hideSystemCursor();
+        showShovelOnMouse();
+
+        Toast.showInfo(
+            stage,
+            PvzSkin.get(),
+            "Select a plant to remove"
+        );
+    }
+
+    private void clearPluckingMode() {
+
+        boolean wasPlucking = pluckingMode;
+
+        pluckingMode = false;
+
+        if (shovelButton != null) {
+            shovelButton.setChecked(false);
+        }
+
+        if (shovelMousePreview != null) {
+            shovelMousePreview.remove();
+            shovelMousePreview = null;
+        }
+
+        if (wasPlucking) {
+            restoreSystemCursor();
+        }
+    }
+
+    private void showShovelOnMouse() {
+
+        if (shovelMousePreview != null) {
+            shovelMousePreview.remove();
+            shovelMousePreview = null;
+        }
+
+        shovelMousePreview =
+            new Image(shovelCursorTexture);
+
+        float height = SHOVEL_CURSOR_HEIGHT;
+
+        float width =
+            height
+                * shovelCursorTexture.getWidth()
+                / shovelCursorTexture.getHeight();
+
+        shovelMousePreview.setSize(
+            width,
+            height
+        );
+
+        shovelMousePreview.setTouchable(
+            Touchable.disabled
+        );
+
+        stage.addActor(shovelMousePreview);
+        shovelMousePreview.toFront();
+    }
+
+    private void updateShovelMousePreview() {
+
+        if (!pluckingMode
+            || shovelMousePreview == null) {
+            return;
+        }
+
+        mouseStagePosition.set(
+            Gdx.input.getX(),
+            Gdx.input.getY()
+        );
+
+        stage.screenToStageCoordinates(
+            mouseStagePosition
+        );
+
+        shovelMousePreview.setPosition(
+            mouseStagePosition.x
+                - shovelMousePreview.getWidth() * 0.15f,
+
+            mouseStagePosition.y
+                - shovelMousePreview.getHeight() * 0.85f
+        );
+
+        shovelMousePreview.toFront();
+    }
+
+    private void pluckPlantAtStage(
+        float stageX,
+        float stageY
+    ) {
+
+        if (stageX < getGridX()
+            || stageX >= getGridX() + getGridWidth()
+            || stageY < getGridY()
+            || stageY >= getGridY() + getGridHeight()) {
+
+            return;
+        }
+
+        int column =
+            (int) (
+                (stageX - getGridX())
+                    / getCellWidth()
+            );
+
+        int row =
+            (int) (
+                (getGridY()
+                    + getGridHeight()
+                    - stageY)
+                    / getCellHeight()
+            );
+
+        Plant[][] grid =
+            ctx.getPlantGrid();
+
+        if (row < 0
+            || row >= grid.length
+            || column < 0
+            || column >= grid[row].length) {
+
+            return;
+        }
+
+        Plant plant =
+            grid[row][column];
+
+        if (plant == null || plant.isDead()) {
+
+            Toast.showError(
+                stage,
+                PvzSkin.get(),
+                "No plant there."
+            );
+
+            return;
+        }
+
+        String plantName =
+            plant.getName();
+
+        pluckingCommand.execute(
+            new String[]{
+                String.valueOf(column),
+                String.valueOf(row)
+            }
+        );
+
+        clearPluckingMode();
+
+        Toast.showSuccess(
+            stage,
+            PvzSkin.get(),
+            "Removed " + plantName + "!"
+        );
+    }
+
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
@@ -2252,6 +2665,7 @@ public class GamePlayScreen implements Screen {
         updateHud();
         updatePlantMousePreview();
         updateZombieMousePreview();
+        updateShovelMousePreview();
         updatePlantingHover();
         updateConveyorSeedBank();
 
@@ -2345,6 +2759,7 @@ public class GamePlayScreen implements Screen {
     private void selectDroppedSeed(
         String plantName
     ) {
+        clearPluckingMode();
         try {
             Plant plant =
                 ctx
@@ -2398,10 +2813,18 @@ public class GamePlayScreen implements Screen {
 
     @Override
     public void hide() {
+        restoreSystemCursor();
     }
 
     @Override
     public void dispose() {
+        restoreSystemCursor();
+
+        if (hiddenCursor != null) {
+            hiddenCursor.dispose();
+            hiddenCursor = null;
+        }
+
         stage.dispose();
 
         Audio.stopMusic();
