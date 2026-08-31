@@ -42,6 +42,7 @@ public class ZombieRepository implements AssetRepository<Zombie>{
                 );
 
                 zombieDataMap.put(name, zombie);
+                System.out.println(name + " -> " + id);
             }
         } catch (IOException e) {
             throw new RuntimeException(

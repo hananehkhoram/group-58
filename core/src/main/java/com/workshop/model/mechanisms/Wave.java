@@ -121,6 +121,8 @@ public class Wave {
 
         Map<String, Zombie> pool = getAvailableZombiePool(ctx);
 
+        System.out.println(pool.keySet());
+
         if (pool.isEmpty()) {
             throw new IllegalStateException(
                 "No zombies are configured for level type: "

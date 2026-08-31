@@ -28,6 +28,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.workshop.model.user.UserManager;
 import com.workshop.view.Toast;
 import com.workshop.view.gameplay.*;
+import pvz.libpvz.pam.PamPlayer;
 import pvz.skin.PvzSkin;
 import com.workshop.controller.repository.Audio;
 import com.workshop.controller.repository.Textures;
@@ -181,6 +182,7 @@ public class GamePlayScreen implements Screen {
         Level level = gameContext.getLevel();
 
         Skin skin = PvzSkin.get();
+        testPeashooterParts();
 
         String iceBlockPam =
             "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_ZOMBIE/FROSTBITE_ICE_BLOCK_ZOMBIE.PAM";
@@ -2981,6 +2983,45 @@ public class GamePlayScreen implements Screen {
         );
 
         plantFoodMousePreview.toFront();
+    }
+
+    private void testPeashooterParts() {
+
+        PamPlayer pamPlayer =
+            Textures.getPamPlayer();
+
+        PamPlayer.AnimationPart root =
+            pamPlayer.getParts(
+                "768/INITIAL/PLANT/PEASHOOTER/PEASHOOTER.PAM"
+            );
+
+        printParts(root, "");
+    }
+
+
+    private void printParts(
+        PamPlayer.AnimationPart part,
+        String space
+    ) {
+
+        if (part == null) {
+            return;
+        }
+
+        Gdx.app.log(
+            "PEASHOOTER_PART",
+            space + part.name
+        );
+
+        if (part.children != null) {
+            for (Object child : part.children) {
+
+                printParts(
+                    (PamPlayer.AnimationPart) child,
+                    space + "  "
+                );
+            }
+        }
     }
 
     @Override

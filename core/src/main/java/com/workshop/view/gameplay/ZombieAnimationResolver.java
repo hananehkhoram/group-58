@@ -200,6 +200,10 @@ public final class ZombieAnimationResolver {
             return getBasicZombiePam(seasonName);
         }
 
+        if (zombie.getId().startsWith("ZombieZombotany")) {
+            return "ZOMBIE_TUTORIAL";
+        }
+
         if (zombie.getId() != null
             && !zombie.getId().isBlank()) {
 
