@@ -4,6 +4,7 @@ import com.workshop.controller.repository.factory.ZombieFactory;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.LevelType;
 import com.workshop.model.user.UserManager;
+import com.workshop.model.zombie.BossZombieRegistry;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.view.Console;
 
@@ -50,9 +51,35 @@ public class Wave {
 
         spawnZombies(ctx, calculateEffectiveBudget());
 
+        if (isLastWave && ctx.getLevel().getLevelType() == LevelType.BOSS_FIGHT) {
+            spawnBossZombie(ctx);
+        }
+
         initialTotalHp = spawnedZombies.stream()
             .mapToInt(Zombie::getHp)
             .sum();
+    }
+
+    private void spawnBossZombie(GameContext ctx) {
+        if (ctx.getSeason() == null) return;
+
+        String bossName = BossZombieRegistry.bossNameForSeason(ctx.getSeason().getName());
+        if (bossName == null) return;
+
+        Zombie bossTemplate = ctx.getDataManager().zombies.getZombieDataMap().get(bossName);
+        if (bossTemplate == null) return; // Zomboss's row not added to zombies.csv yet
+
+        ZombieFactory factory = new ZombieFactory(ctx.getDataManager());
+        Zombie boss = factory.create(bossName);
+
+        boss.setX(ctx.getLevel().getColumns());
+        boss.setY(ctx.getLevel().getRows() / 2);
+
+        ctx.addZombie(boss);
+        spawnedZombies.add(boss);
+
+        ctx.announce(boss.getName() + " has entered the battle!");
+        Console.showMessage(boss.getName() + " (Zomboss) has entered the battle!\n");
     }
 
     private void announceStart(GameContext ctx) {

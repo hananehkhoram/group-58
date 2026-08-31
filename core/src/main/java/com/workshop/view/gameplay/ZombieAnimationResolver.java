@@ -3,6 +3,7 @@ package com.workshop.view.gameplay;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.workshop.controller.repository.Textures;
+import com.workshop.model.season.AncientEgypt;
 import com.workshop.model.zombie.Zombie;
 
 import java.util.HashMap;
@@ -345,6 +346,8 @@ public final class ZombieAnimationResolver {
             return "768/INITIAL/ZOMBIE/ZOMBIE_EGYPT_RA/ZOMBIE_EGYPT_RA.PAM";
         } if (cleanToken.contains("BARRELROLLER")){
             return "768/FULL/ZOMBIE/ZOMBIE_PIRATE_BARREL_PUSHER/ZOMBIE_PIRATE_BARREL_PUSHER.PAM";
+        } if (cleanToken.contains("ZOMBOSS")){
+            return "768/INITIAL/ZOMBIE/ZOMBIE_EGYPT_ZOMBOSS/ZOMBIE_EGYPT_ZOMBOSS.PAM";
         }
 
         String exact = pamPaths.get(key);

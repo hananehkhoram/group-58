@@ -25,9 +25,8 @@ public class Projectile {
 
     private int killCount = 0;
 
-
-    private Damageable homingTarget;                 // فقط برای HOMING
-    private final Set<Damageable> alreadyHit = new HashSet<>(); // فقط برای PIERCING
+    private Damageable homingTarget;
+    private final Set<Damageable> alreadyHit = new HashSet<>();
 
     public Projectile(
         int damage,
@@ -144,7 +143,6 @@ public class Projectile {
             : visualVariant;
     }
 
-
     public void update(double time) {
         if (!isActive) return;
 
@@ -184,6 +182,10 @@ public class Projectile {
                 zombie.applyButter();
             }
         } else switch (bulletType) {
+            case MISSILE:
+                target.takeDamage(damage);
+                break;
+
             case FIRE:
                 if ("Imp Dragon".equals(target.name())) { break; }
                 target.takeDamage(damage * 2);
@@ -227,6 +229,7 @@ public class Projectile {
             isActive = false;
         }
     }
+
     public void setHomingTarget(Damageable target) {
         this.homingTarget = target;
     }
