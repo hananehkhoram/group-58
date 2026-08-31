@@ -12,10 +12,10 @@ public final class BossZombieRegistry {
     public static final String BIG_WAVE_BEACH_BOSS_ID = "ZombieBossBigWaveBeach";
     public static final String DARK_AGES_BOSS_ID = "ZombieBossDarkAges";
 
-    public static final String EGYPT_BOSS_NAME = "ZombossAncientEgypt";
-    public static final String FROZEN_CAVES_BOSS_NAME = "ZombossFrozenCaves";
-    public static final String BIG_WAVE_BEACH_BOSS_NAME = "ZombossBigWaveBeach";
-    public static final String DARK_AGES_BOSS_NAME = "ZombossDarkAges";
+    public static final String EGYPT_BOSS_NAME = "AncientEgyptZomboss";
+    public static final String FROZEN_CAVES_BOSS_NAME = "FrozenCavesZomboss";
+    public static final String BIG_WAVE_BEACH_BOSS_NAME = "BigWaveBeachZomboss";
+    public static final String DARK_AGES_BOSS_NAME = "DarkAgesZomboss";
 
     private static final Map<String, String> BOSS_NAME_BY_SEASON = Map.of(
         "Ancient Egypt", EGYPT_BOSS_NAME,

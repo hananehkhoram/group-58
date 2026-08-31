@@ -21,7 +21,7 @@ import com.workshop.model.MiniGame.Izambi.Izambi;
 public final class NetworkIzambiMatch {
 
     public static final int MATCH_DURATION_SECONDS = 120;
-    private static final int PLANT_STARTING_SUN = 150;
+    private static final int PLANT_STARTING_SUN = 300;
     private static final int PLANT_PASSIVE_INCOME = 25;
     private static final float PLANT_INCOME_INTERVAL_SECONDS = 12f;
     private static final float STATE_BROADCAST_INTERVAL = 0.2f;
@@ -167,7 +167,9 @@ public final class NetworkIzambiMatch {
             plantSun -= cost;
             return true;
         }
-        return izambi.placeZombie(unitName, row, column);
+        int rebalancedCost = Izambi.getMultiplayerZombieCost(unitName);
+        Integer costOverride = rebalancedCost >= 0 ? rebalancedCost : null;
+        return izambi.placeZombie(unitName, row, column, costOverride);
     }
 
     /** Guest-only: applies a state snapshot pushed by the host. */
@@ -205,7 +207,6 @@ public final class NetworkIzambiMatch {
         return isHost;
     }
 
-    /** Non-null only on the host: the real running simulation. */
     public Izambi getHostIzambi() {
         return izambi;
     }

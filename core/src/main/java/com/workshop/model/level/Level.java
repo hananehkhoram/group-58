@@ -4,6 +4,7 @@ package com.workshop.model.level;
 import com.workshop.model.mechanisms.Wave;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.season.Season;
+import com.workshop.model.user.UserManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,11 +55,16 @@ public class Level {
         this.season = season;
         this.bannedPlants = bannedPlants;
         if (conveyorPlantPool != null) {
-            this.conveyorPlantPool.addAll(conveyorPlantPool);
+            poolConveyor();
         }
         this.forcedPlants = forcedPlants;
         this.saveOurSeedsPlants = saveOurSeedsPlants;
     }
+
+    public void poolConveyor(){
+        if (levelType == LevelType.CONVEYOR_BELT || levelType == LevelType.BOSS_FIGHT){
+       conveyorPlantPool = UserManager.getInstance().getCurrentUser().getUnlockedPlantTypes();
+    }}
 
     public Level(String name, int rows, int columns, Wave[] waves, LevelType levelType, Season season) {
         this(name, rows, columns, waves, levelType, season, null, null, null,
@@ -86,6 +92,7 @@ public class Level {
     }
 
     public List<Plant> getConveyorPlantPool() {
+        poolConveyor();
         return conveyorPlantPool;
     }
 
@@ -102,8 +109,10 @@ public class Level {
     }
 
     public boolean skipsPlantSelection() {
-        return levelType == LevelType.CONVEYOR_BELT;
-    }
+        if (levelType == LevelType.CONVEYOR_BELT || levelType == LevelType.BOSS_FIGHT){
+            return true;
+        }
+        return false;    }
 
     public static class PrePlacedPlant {
         private final Plant plantTemplate;

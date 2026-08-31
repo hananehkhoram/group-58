@@ -170,9 +170,8 @@ public class CouchIzambiScreen extends GamePlayScreen {
 
         zombieBankCards.clear();
 
-        IZombieManager manager = new IZombieManager(0, 5);
         int count = 0;
-        for (var entry : manager.getAvailableZombieCosts().entrySet()) {
+        for (var entry : com.workshop.model.MiniGame.Izambi.Izambi.getMultiplayerZombieCosts().entrySet()) {
             if (count >= 5) break;
 
             Zombie zombie;

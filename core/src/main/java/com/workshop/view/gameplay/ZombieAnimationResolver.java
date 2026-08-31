@@ -347,7 +347,8 @@ public final class ZombieAnimationResolver {
         } if (cleanToken.contains("BARRELROLLER")){
             return "768/FULL/ZOMBIE/ZOMBIE_PIRATE_BARREL_PUSHER/ZOMBIE_PIRATE_BARREL_PUSHER.PAM";
         } if (cleanToken.contains("ZOMBOSS")){
-            return "768/INITIAL/ZOMBIE/ZOMBIE_EGYPT_ZOMBOSS/ZOMBIE_EGYPT_ZOMBOSS.PAM";
+            if (cleanToken.contains("ANCIENT")) return "768/INITIAL/ZOMBIE/ZOMBIE_EGYPT_ZOMBOSS/ZOMBIE_EGYPT_ZOMBOSS.PAM";
+            else if (cleanToken.contains("BEACH")) return "768/FULL/ZOMBIE/ZOMBIE_BEACH_ZOMBOSS/ZOMBIE_BEACH_ZOMBOSS.PAM";
         }
 
         String exact = pamPaths.get(key);
@@ -550,7 +551,6 @@ public final class ZombieAnimationResolver {
         if (name == null) {
             return "";
         }
-
         return name
             .replaceAll("[^A-Za-z0-9]", "")
             .toUpperCase();

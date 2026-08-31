@@ -337,8 +337,7 @@ public class NetworkIzambiScreen implements Screen {
                 cardsTable.add(card).size(100f, 58f).padBottom(60f).row();
             }
         } else {
-            IZombieManager costTable = new IZombieManager(0, 5);
-            for (Map.Entry<String, Integer> entry : costTable.getAvailableZombieCosts().entrySet()) {
+            for (Map.Entry<String, Integer> entry : Izambi.getMultiplayerZombieCosts().entrySet()) {
                 com.workshop.model.zombie.Zombie template;
                 try {
                     template = displayCtx.getZombieFactory().create(entry.getKey());

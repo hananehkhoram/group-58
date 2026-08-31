@@ -20,7 +20,7 @@ public final class CouchIzambiMatch {
     private boolean ended;
     private MatchRole winner;
 
-    private static final int PLANT_STARTING_SUN = 150;
+    private static final int PLANT_STARTING_SUN = 300;
     private static final int PLANT_PASSIVE_INCOME = 25;
     private static final float PLANT_INCOME_INTERVAL_SECONDS = 12f;
 
@@ -83,7 +83,9 @@ public final class CouchIzambiMatch {
         if (ended) {
             return false;
         }
-        return izambi.placeZombie(zombieName, row, column);
+        int rebalancedCost = Izambi.getMultiplayerZombieCost(zombieName);
+        Integer costOverride = rebalancedCost >= 0 ? rebalancedCost : null;
+        return izambi.placeZombie(zombieName, row, column, costOverride);
     }
 
     public int remainingSeconds() {
