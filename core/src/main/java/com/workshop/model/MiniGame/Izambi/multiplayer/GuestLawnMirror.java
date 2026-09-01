@@ -8,6 +8,9 @@ import com.workshop.model.GameContext;
 import com.workshop.model.MiniGame.Izambi.IZombieManager;
 import com.workshop.model.level.Level;
 import com.workshop.model.plants.Plant;
+import com.workshop.model.projectile.BulletType;
+import com.workshop.model.projectile.Projectile;
+import com.workshop.model.projectile.TrajectoryType;
 import com.workshop.model.season.Season;
 import com.workshop.model.season.miniGameSeason.IzombieSeason;
 import com.workshop.model.zombie.Zombie;
@@ -19,23 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Turns a stream of {@link IzambiSnapshot}s into a real (but never
- * simulated) {@link GameContext}, so the guest can render its opponent's
- * lawn with the exact same PAM-based layers the single-player screen uses
- * ({@code PlantAnimationLayer}, {@code ZombieAnimationLayer}, ...).
- * <p>
- * Plants/zombies are kept alive across snapshots and mutated in place
- * (position, HP) rather than recreated every tick, matched by the stable
- * {@code id} the host stamps on each entity — those layers cache one actor
- * per object identity, so reusing the same objects is what keeps movement
- * and animations smooth instead of popping every ~0.2s.
- */
 public final class GuestLawnMirror {
 
     private final GameContext ctx;
     private final Map<Integer, Plant> plantsById = new HashMap<>();
     private final Map<Integer, Zombie> zombiesById = new HashMap<>();
+    private final Map<Integer, Projectile> projectilesById = new HashMap<>();
     private final PlantFactory plantFactory = new PlantFactory(DataManager.getInstance());
 
     public GuestLawnMirror(int levelNumber) {
@@ -47,11 +39,6 @@ public final class GuestLawnMirror {
         ctx = new GameContext(level, season);
         ctx.setZombieFactory(new ZombieFactory(DataManager.getInstance()));
 
-        // GameContext's own constructor only auto-attaches a LevelManager
-        // for level types it recognizes (Izambie_MG isn't one of them, the
-        // real IZombieManager is normally wired in by Izambi.java) — without
-        // this, BrainLayer sees no IZombieManager and hides itself, and
-        // syncBrains() below has nothing to mark eaten rows on.
         IZombieManager manager = new IZombieManager(levelIndex, level.getRows());
         ctx.setLevelManager(manager);
         manager.onLevelStart(ctx);
@@ -71,6 +58,7 @@ public final class GuestLawnMirror {
         ctx.setSunAmount(snapshot.zombieSun);
         syncPlants(snapshot.plants);
         syncZombies(snapshot.zombies);
+        syncProjectiles(snapshot.projectiles);
         syncBrains(snapshot.brainsEaten);
     }
 
@@ -131,10 +119,10 @@ public final class GuestLawnMirror {
         }
     }
 
-    private void syncZombies(List<IzambiSnapshot.EntityView> views) {
+    private void syncZombies(List<IzambiSnapshot.ZombieView> views) {
         Set<Integer> seen = new HashSet<>();
 
-        for (IzambiSnapshot.EntityView view : views) {
+        for (IzambiSnapshot.ZombieView view : views) {
             seen.add(view.id);
 
             Zombie zombie = zombiesById.get(view.id);
@@ -151,6 +139,12 @@ public final class GuestLawnMirror {
             zombie.setRow(view.row);
             zombie.setX(view.x);
             zombie.setEating(view.eating);
+            zombie.setMirroredDeathState(view.ashed, view.ashFinished, view.deathAnimFinished);
+            zombie.setMirroredIceState(view.iced, view.initialFrozenBlock, view.iceHp);
+
+            if (view.armorHp >= 0 && zombie.getArmor() != null) {
+                zombie.getArmor().setArmorHp(view.armorHp);
+            }
 
             int targetHp = zombie.getMaxHp() <= 0
                 ? 0
@@ -165,6 +159,57 @@ public final class GuestLawnMirror {
                 continue;
             }
             ctx.getAliveZombies().remove(entry.getValue());
+            it.remove();
+        }
+    }
+
+    private void syncProjectiles(List<IzambiSnapshot.ProjectileView> views) {
+        Set<Integer> seen = new HashSet<>();
+
+        for (IzambiSnapshot.ProjectileView view : views) {
+            seen.add(view.id);
+
+            Projectile projectile = projectilesById.get(view.id);
+            if (projectile == null) {
+                BulletType bulletType;
+                TrajectoryType trajectory;
+                try {
+                    bulletType = BulletType.valueOf(view.bulletType);
+                    trajectory = TrajectoryType.valueOf(view.trajectory);
+                } catch (IllegalArgumentException ignored) {
+                    continue;
+                }
+
+                Plant ownerPlant = view.ownerPlantId >= 0 ? plantsById.get(view.ownerPlantId) : null;
+
+                projectile = new Projectile(
+                    0,
+                    view.x,
+                    view.y,
+                    view.row,
+                    0,
+                    bulletType,
+                    trajectory,
+                    view.isFromZombie,
+                    ownerPlant
+                );
+
+                projectilesById.put(view.id, projectile);
+                ctx.getProjectiles().add(projectile);
+            }
+
+            projectile.setMirroredPosition(view.x, view.y, view.row);
+        }
+
+        Iterator<Map.Entry<Integer, Projectile>> it = projectilesById.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Integer, Projectile> entry = it.next();
+            if (seen.contains(entry.getKey())) {
+                continue;
+            }
+            Projectile projectile = entry.getValue();
+            projectile.deactivate();
+            ctx.getProjectiles().remove(projectile);
             it.remove();
         }
     }

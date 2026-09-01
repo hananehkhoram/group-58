@@ -310,7 +310,7 @@ public class PlantCardActor extends Table {
         }
 
         String pamPath = "PLANT/" + rawName + "/" + rawName + ".PAM";
-        String[] clips = {"idle", "idle_stage1", "loop", "animation", "anim", "attack1", "idle1_1", "stage1_spawn"};
+        String[] clips = {"idle","idle_stage1_", "idle_stage1", "loop", "animation", "anim", "attack1", "idle1_1", "stage1_spawn"};
 
         Matrix4 oldTransform = batch.getTransformMatrix().cpy();
         if (scale != 1f) {

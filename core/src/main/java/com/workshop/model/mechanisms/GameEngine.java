@@ -12,6 +12,7 @@ import com.workshop.model.plants.Plant;
 import com.workshop.model.plants.TargetingMode;
 import com.workshop.model.projectile.TrajectoryType;
 import com.workshop.model.season.Grave;
+import com.workshop.model.zombie.Effects;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.model.zombie.behavior.Behaviors;
 import com.workshop.model.zombie.behavior.LaserShooting;
@@ -179,7 +180,6 @@ public class GameEngine {
 
         for (Zombie zombie : zombiesSnapshot) {
 
-            // ممکن است قبلاً توسط اتفاق دیگری حذف شده باشد
             if (!ctx.getAliveZombies().contains(zombie)) {
                 continue;
             }
@@ -190,8 +190,6 @@ public class GameEngine {
             );
 
             despawnIfWalkedOffLawn(zombie);
-
-            // ممکن است update باعث حذفش شده باشد
             if (!ctx.getAliveZombies().contains(zombie)) {
                 continue;
             }
@@ -199,6 +197,7 @@ public class GameEngine {
             if (iZombieManager != null
                 && !zombie.isDead()
                 && !zombie.isMovingBackward()
+                && !zombie.getEffect().contains(Effects.HYPNOTIZED)
                 && zombie.getX() <= LOSS_X) {
 
                 boolean brainWasEaten =
@@ -334,11 +333,21 @@ public class GameEngine {
                 ctx.getAlivePlants()
             );
 
+        int currentSecond = ctx.getTimeManager().getTotalSeconds();
         for (Plant p : plantsSnapshot) {
-
-            // ممکنه گیاه قبلاً توسط ability دیگری حذف شده باشه
             if (!ctx.getAlivePlants().contains(p)) {
                 continue;
+            }
+            if (p.getName() != null) {
+                String pName = p.getName().replace("-", "").toLowerCase();
+                if (pName.equals("puffshroom") || pName.equals("seashroom")) {
+                    if (p.getPlantTimeSecond() == 0) {
+                        p.setPlantTimeSecond(currentSecond);
+                    }
+                    if (currentSecond - p.getPlantTimeSecond() >= 60) {
+                        p.takeDamage(Integer.MAX_VALUE);
+                    }
+                }
             }
 
             PlantActivator.activate(
@@ -347,7 +356,6 @@ public class GameEngine {
                 this
             );
 
-            // خود ability ممکنه همین گیاه رو حذف کرده باشه
             if (!ctx.getAlivePlants().contains(p)) {
                 continue;
             }
@@ -367,7 +375,13 @@ public class GameEngine {
                 int col = p.getCol();
                 boolean restoreLilyPad = p.isHasLilyPadUnderneath();
 
-                ctx.getPlantGrid()[row][col] = null;
+                if (row >= 0 && col >= 0
+                    && row < ctx.getPlantGrid().length
+                    && col < ctx.getPlantGrid()[row].length
+                    && ctx.getPlantGrid()[row][col] == p) {
+                    ctx.getPlantGrid()[row][col] = null;
+                }
+                ctx.removePulledPlant(p);
 
                 if (ctx.getLevel().getLevelType()
                     == LevelType.Beghouled_MG
@@ -388,7 +402,6 @@ public class GameEngine {
             }
         }
     }
-
     public void removePlant(int row, int col) {
         Plant p = ctx.getPlantGrid()[row][col];
         if (p != null) {
@@ -455,6 +468,7 @@ public class GameEngine {
     private void handleZombieProjectile(Projectile p, Iterator<Projectile> it) {
         Plant target = ctx.getPlantGrid()[p.getRow()][(int) p.getX()];
         if (target != null && !target.isDead()) {
+            spawnProjectileHit(p);
             p.onHit(target);
             if (!p.isActive()) {
                 it.remove();
@@ -464,6 +478,7 @@ public class GameEngine {
 
     private void handlePlantProjectile(Projectile p, Iterator<Projectile> it) {
         if (checkPlantObstacle(p)) {
+            spawnProjectileHit(p);
             p.deactivate();
             it.remove();
             return;
@@ -476,9 +491,16 @@ public class GameEngine {
         }
     }
 
+    private void spawnProjectileHit(Projectile p) {
+        ctx.spawnProjectileHit(p.getRow(), p.getX(), p.getY());
+    }
+
     private void checkGraveHit(Projectile p, Iterator<Projectile> it) {
         int row = p.getRow();
         int col = (int) Math.floor(p.getX());
+        if (p.getBulletType() == BulletType.MAGIC || p.getTrajectory() == TrajectoryType.LOBBED) {
+            return;
+        }
 
         if (row < 0 || row >= ctx.getLevel().getRows()
             || col < 0 || col >= ctx.getLevel().getColumns()) {
@@ -493,6 +515,7 @@ public class GameEngine {
         grave.takeDamage(p.getDamage(), ctx);
 
         if (p.getTrajectory() != TrajectoryType.PIERCING) {
+            spawnProjectileHit(p);
             p.deactivate();
             it.remove();
         }
@@ -503,6 +526,10 @@ public class GameEngine {
         int pCol = (int) Math.floor(p.getX());
 
         if (pCol < 0 || pCol >= Level.COLS) return false;
+
+        if (p.getTrajectory() == TrajectoryType.LOBBED) {
+            return false;
+        }
 
         Plant plantInCell = ctx.getPlantGrid()[pRow][pCol];
         if (plantInCell == null || plantInCell.isDead()) return false;
@@ -549,6 +576,7 @@ public class GameEngine {
                 Submerge submerge = z.getSubmerge();
 
                 if (deflector != null && deflector.canDeflect(p)) {
+                    spawnProjectileHit(p);
                     deflector.deflect(p, ctx, z);
                     it.remove();
                     break;
@@ -558,9 +586,13 @@ public class GameEngine {
                     continue;
                 }
 
+                boolean firstHit = !p.hasAlreadyHit(z);
                 boolean aliveBeforeHit = !z.isDead();
                 long deadBefore = ctx.getAliveZombies().stream().filter(Zombie::isDead).count();
                 p.onHit(z);
+                if (firstHit) {
+                    spawnProjectileHit(p);
+                }
                 long deadAfter = ctx.getAliveZombies().stream().filter(Zombie::isDead).count();
                 long newlyKilled = deadAfter - deadBefore;
                 for (int i = 0; i < newlyKilled; i++) {
@@ -751,6 +783,15 @@ public class GameEngine {
                     result.add(all.get(random.nextInt(all.size())));
                 }
                 return result;
+            }
+            case IN_SAME_PLACE -> {
+                List<Zombie> inSameTile = new ArrayList<>();
+                for (Zombie z : sameRow) {
+                    if (Math.floor(z.getX()) == col) {
+                        inSameTile.add(z);
+                    }
+                }
+                return inSameTile;
             }
             default -> {
                 return sameRow;

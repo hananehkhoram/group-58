@@ -324,7 +324,7 @@ public class CollectionScreen implements Screen {
                         preferredClips.add("stage1_spawn");
                     }
 
-                    String[] defaultClips = {"idle", "idle_stage1", "loop", "animation", "anim", "attack", "idle1_1", "stage1_spawn"};
+                    String[] defaultClips = {"idle", "idle_stage1_","idle_stage1", "loop", "animation", "anim", "attack", "idle1_1", "stage1_spawn"};
                     for (String c : defaultClips) {
                         if (!preferredClips.contains(c)) {
                             preferredClips.add(c);

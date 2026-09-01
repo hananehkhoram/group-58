@@ -60,7 +60,7 @@ public class PlantSelectionMenu extends BaseMenu {
 
         if (inUserPlant == null) return "Plant is not unlocked.";
         if (isSunflowerBanned(inUserPlant.getName())) {
-            return "You cannot select Sunflower in this level.";
+            return "You cannot select Sun Producer in this level.";
         }
         for (Plant p : ctx.getActivePlants()) if (p.getName().equalsIgnoreCase(plantType)) return "Plant is already chosen.";
 

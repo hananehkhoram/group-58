@@ -9,6 +9,7 @@ import com.workshop.model.projectile.BowlingWallnut;
 import com.workshop.model.projectile.BulletType;
 import com.workshop.model.projectile.Projectile;
 import com.workshop.model.projectile.ProjectileVisualVariant;
+import com.workshop.model.projectile.TrajectoryType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -18,6 +19,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import pvz.libpvz.pam.PamPlayer;
 
@@ -28,6 +31,17 @@ public final class ProjectileAnimationResolver {
         "768/INITIAL/EFFECTS/T_FIRE_PEA/FIRE_PEASHOOTER.PAM",
         "768/INITIAL/EFFECTS/T_FIRE_PEA/T_FIRE_PEA.PAM"
     };
+    private static final String[] BOWLING_BULB_PAMS = {
+        "768/FULL/EFFECTS/BOWLINGBULB_PROJECTILE1/BOWLINGBULB_PROJECTILE1.PAM",
+        "768/FULL/EFFECTS/BOWLINGBULB_PROJECTILE2/BOWLINGBULB_PROJECTILE2.PAM",
+        "768/FULL/EFFECTS/BOWLINGBULB_PROJECTILE3/BOWLINGBULB_PROJECTILE3.PAM"
+    };
+    private static final String BOWLING_BULB_PLANTFOOD_PAM =
+        "768/FULL/EFFECTS/BOWLINGBULB_PLANTFOOD_PROJECTILE/BOWLINGBULB_PLANTFOOD_PROJECTILE.PAM";
+    private static final Pattern PROJECTILE_NUMBER = Pattern.compile(
+        "PROJECTILE(\\d+)",
+        Pattern.CASE_INSENSITIVE
+    );
     private static ProjectilePamCatalog sharedCatalog;
 
     private final ProjectilePamCatalog catalog;
@@ -68,6 +82,9 @@ public final class ProjectileAnimationResolver {
 
         ProjectileAnimationSpec spec = specFromPlantBody(projectile);
         if (spec == null) {
+            spec = specFromBowlingBulb(projectile);
+        }
+        if (spec == null) {
             spec = specFromFirePea(projectile);
         }
         if (spec == null) {
@@ -91,6 +108,10 @@ public final class ProjectileAnimationResolver {
         if (spec == null) {
             logMissing(projectile, cacheKey);
             return null;
+        }
+
+        if (projectile.getVisualVariant() == ProjectileVisualVariant.GIANT) {
+            spec = withScale(spec, spec.getScale() * 2.75f);
         }
 
         resolvedSpecs.put(cacheKey, spec);
@@ -157,7 +178,8 @@ public final class ProjectileAnimationResolver {
                 || upper.contains("EXPLODE")
                 || upper.contains("EXPLOSION")
                 || upper.contains("HIT")
-                || upper.contains("IMPACT")) {
+                || upper.contains("IMPACT")
+                || upper.contains("PLANTFOOD")) {
                 continue;
             }
             flight.add(match);
@@ -169,7 +191,50 @@ public final class ProjectileAnimationResolver {
         if (chosen.size() == 1) {
             return chosen.get(0).candidate.getPath();
         }
-        return null;
+        return pickCanonicalProjectilePath(chosen);
+    }
+
+    private static String pickCanonicalProjectilePath(List<Match> matches) {
+        if (matches == null || matches.isEmpty()) {
+            return null;
+        }
+
+        Match best = null;
+        int bestNumber = Integer.MAX_VALUE;
+        boolean bestNumbered = false;
+        for (Match match : matches) {
+            int number = projectileAssetNumber(match.candidate.getPath());
+            if (best == null) {
+                best = match;
+                bestNumber = number;
+                bestNumbered = number >= 0;
+                continue;
+            }
+            if (number < 0 && bestNumbered) {
+                best = match;
+                bestNumber = number;
+                bestNumbered = false;
+            } else if (number >= 0 && bestNumbered && number < bestNumber) {
+                best = match;
+                bestNumber = number;
+            }
+        }
+        return best == null ? null : best.candidate.getPath();
+    }
+
+    private static int projectileAssetNumber(String path) {
+        if (path == null) {
+            return -1;
+        }
+        Matcher matcher = PROJECTILE_NUMBER.matcher(path);
+        if (!matcher.find()) {
+            return -1;
+        }
+        try {
+            return Integer.parseInt(matcher.group(1));
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
     }
 
     private List<Match> collectMatches(
@@ -365,6 +430,55 @@ public final class ProjectileAnimationResolver {
         );
     }
 
+    private ProjectileAnimationSpec specFromBowlingBulb(Projectile projectile) {
+        Plant owner = projectile.getOwnerPlant();
+        if (owner == null || owner.getName() == null) {
+            return null;
+        }
+        String compact = ProjectilePamCatalog.compact(owner.getName());
+        if (!compact.contains("BOWLINGBULB")) {
+            return null;
+        }
+        if (projectile.getBulletType() != BulletType.BOWLING_NUT
+            && projectile.getTrajectory() != TrajectoryType.BOWLING) {
+            return null;
+        }
+
+        String path = projectile.getVisualVariant() == ProjectileVisualVariant.GIANT
+            ? BOWLING_BULB_PLANTFOOD_PAM
+            : BOWLING_BULB_PAMS[bowlingBulbTier(projectile)];
+        if (!pamFileExists(path)) {
+            for (String fallback : BOWLING_BULB_PAMS) {
+                if (pamFileExists(fallback)) {
+                    path = fallback;
+                    break;
+                }
+            }
+        }
+        if (!pamFileExists(path)) {
+            return null;
+        }
+
+        return new ProjectileAnimationSpec(
+            path,
+            pickProjectileClip(path),
+            1.15f,
+            0f,
+            0f
+        );
+    }
+
+    private static int bowlingBulbTier(Projectile projectile) {
+        int damage = projectile.getDamage();
+        if (damage >= 160) {
+            return 2;
+        }
+        if (damage >= 80) {
+            return 1;
+        }
+        return 0;
+    }
+
     private ProjectileAnimationSpec specFromFirePea(Projectile projectile) {
         if (!ProjectileLooks.isFirePeaLook(projectile)) {
             return null;
@@ -406,6 +520,22 @@ public final class ProjectileAnimationResolver {
             0f,
             0f,
             false
+        );
+    }
+
+    private static ProjectileAnimationSpec withScale(
+        ProjectileAnimationSpec spec,
+        float scale
+    ) {
+        return new ProjectileAnimationSpec(
+            spec.getPamPath(),
+            spec.getClip(),
+            spec.getPart(),
+            spec.getImageResourceId(),
+            scale,
+            spec.getOffsetX(),
+            spec.getOffsetY(),
+            spec.isFreezeFrame()
         );
     }
 
@@ -490,6 +620,7 @@ public final class ProjectileAnimationResolver {
             + "|" + projectile.getBulletType().name()
             + "|" + projectile.getTrajectory().name()
             + "|" + projectile.getVisualVariant().name()
+            + "|" + projectile.getDamage()
             + "|" + projectile.getClass().getName();
     }
 

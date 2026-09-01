@@ -2,6 +2,7 @@ package com.workshop.model.projectile;
 
 import com.workshop.model.level.Level;
 import com.workshop.model.plants.Plant;
+import com.workshop.model.zombie.Effects;
 import com.workshop.model.zombie.Zombie;
 
 import java.util.HashSet;
@@ -148,19 +149,16 @@ public class Projectile {
 
         switch (trajectory) {
             case HOMING:
-                if (homingTarget == null || homingTarget.isDead()) {
+                if (!moveTowardHomingTarget(time)) {
                     isActive = false;
-                    return;
-                }
-                double toTargetX = homingTarget.getX() - x;
-                double toTargetY = homingTarget.getRow() - y;
-                double dist = Math.hypot(toTargetX, toTargetY);
-                if (dist > 1e-6) {
-                    x += (toTargetX / dist) * speed * time;
-                    y += (toTargetY / dist) * speed * time;
-                    row = (int) Math.round(y);
                 }
                 break;
+            case LOBBED:
+                if (homingTarget != null && !homingTarget.isDead()) {
+                    moveTowardHomingTarget(time);
+                    break;
+                }
+                // fall through
             default:
                 x += dirX * speed * time;
                 if (dirY != 0) {
@@ -169,6 +167,12 @@ public class Projectile {
                 }
                 break;
         }
+    }
+
+    public void setMirroredPosition(double x, double y, int row) {
+        this.x = x;
+        this.y = y;
+        this.row = row;
     }
 
     public void onHit(Damageable target) {
@@ -216,6 +220,9 @@ public class Projectile {
                 break;
 
             case MAGIC:
+                if (target instanceof Zombie z) {
+                    z.getEffect().add(Effects.HYPNOTIZED);
+                }
             case SMOKE:
             case NORMAL:
             default:
@@ -228,6 +235,25 @@ public class Projectile {
         } else {
             isActive = false;
         }
+    }
+
+    public boolean hasAlreadyHit(Damageable target) {
+        return alreadyHit.contains(target);
+    }
+
+    private boolean moveTowardHomingTarget(double time) {
+        if (homingTarget == null || homingTarget.isDead()) {
+            return false;
+        }
+        double toTargetX = homingTarget.getX() - x;
+        double toTargetY = homingTarget.getRow() - y;
+        double dist = Math.hypot(toTargetX, toTargetY);
+        if (dist > 1e-6) {
+            x += (toTargetX / dist) * speed * time;
+            y += (toTargetY / dist) * speed * time;
+            row = (int) Math.round(y);
+        }
+        return true;
     }
 
     public void setHomingTarget(Damageable target) {

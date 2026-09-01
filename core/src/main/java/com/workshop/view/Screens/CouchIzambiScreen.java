@@ -364,10 +364,19 @@ public class CouchIzambiScreen extends GamePlayScreen {
 
         for (PlantCardActor card : seedBankCards) {
             card.updateAnimation(delta);
+            if (gameContext != null) {
+                card.setCooldownRemaining(gameContext.getRemainingCooldownSeconds(card.getPlant().getName()));
+            }
         }
 
         for (ZombieCardActor card : zombieBankCards) {
             card.updateAnimation(delta);
+            double cooldown = 0;
+            if (match.getIzambi() != null && match.getIzambi().getIZombieManager() != null) {
+                cooldown = match.getIzambi().getIZombieManager()
+                    .getRemainingZombieCooldownSeconds(card.getZombieType(), gameContext);
+            }
+            card.setCooldownRemaining(cooldown);
         }
 
         int plantSun = match.getPlantSun();

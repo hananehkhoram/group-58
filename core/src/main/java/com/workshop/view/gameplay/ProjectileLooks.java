@@ -128,8 +128,7 @@ final class ProjectileLooks {
             return new String[]{
                 "IMAGE_EFFECTS_SEASHROOM_PROJECTILE_SEASHROOM_PROJECTILE_36X35",
                 "IMAGE_EFFECTS_SEASHROOM_PROJECTILE_SEASHROOM_PROJECTILE_45X45",
-                "IMAGE_EFFECTS_SEASHROOM_PROJECTILE_SEASHROOM_PROJECTILE_43X33",
-                "IMAGE_EFFECTS_SEASHROOM_PROJECTILE_SEASHROOM_PROJECTILE_128X47"
+                "IMAGE_EFFECTS_SEASHROOM_PROJECTILE_SEASHROOM_PROJECTILE_43X33"
             };
         }
 
@@ -138,6 +137,32 @@ final class ProjectileLooks {
                 "IMAGE_EFFECTS_T_PUFFSHROOM_PROJECTILE_T_PUFFSHROOM_PROJECTILE_23X22",
                 "IMAGE_EFFECTS_T_PUFFSHROOM_PROJECTILE_T_PUFFSHROOM_PROJECTILE_22X21",
                 "IMAGE_EFFECTS_T_PUFFSHROOM_PROJECTILE_T_PUFFSHROOM_PROJECTILE_16X16"
+            };
+        }
+
+        if (compact.contains("FUMESHROOM")) {
+            return new String[]{
+                "IMAGE_EFFECTS_FUMESHROOM_BUBBLES_FUMESHROOM_BUBBLES_21X17",
+                "IMAGE_EFFECTS_FUMESHROOM_BUBBLES_FUMESHROOM_BUBBLES_18X19",
+                "IMAGE_EFFECTS_FUMESHROOM_BUBBLES_FUMESHROOM_BUBBLES_17X19",
+                "IMAGE_EFFECTS_FUMESHROOM_BUBBLES_FUMESHROOM_BUBBLES_52X52"
+            };
+        }
+
+        if (compact.contains("ROTOBAGA") || compact.contains("ROTORUTABAGA")) {
+            return new String[]{
+                "IMAGE_EFFECTS_T_ROTORUTABAGA_PROJECTILE1_T_ROTORUTABAGA_PROJECTILE1_29X28",
+                "IMAGE_EFFECTS_T_ROTORUTABAGA_PROJECTILE1_T_ROTORUTABAGA_PROJECTILE1_18X18",
+                "IMAGE_EFFECTS_T_ROTORUTABAGA_PROJECTILE1_T_ROTORUTABAGA_PROJECTILE1_18X31"
+            };
+        }
+
+        if (compact.contains("CACTUS")) {
+            return new String[]{
+                "IMAGE_EFFECTS_T_CACTUS_PROJECTILE_T_CACTUS_PROJECTILE_52X35",
+                "IMAGE_EFFECTS_CACTUS_PROJECTILE_CACTUS_PROJECTILE_52X35",
+                "IMAGE_EFFECTS_T_CACTUS_PROJECTILE_T_CACTUS_PROJECTILE_70X32",
+                "IMAGE_EFFECTS_T_CACTUS_PROJECTILE_T_CACTUS_PROJECTILE_11X11"
             };
         }
 
@@ -180,6 +205,9 @@ final class ProjectileLooks {
         }
         if (compact.contains("FIREPEA")) {
             return 2.0f;
+        }
+        if (compact.contains("CACTUS")) {
+            return 1.35f;
         }
         return 1f;
     }

@@ -505,7 +505,55 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(zombieAnimationLayer);
 
+        stage.addActor(new EgyptSummonFxLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
+        stage.addActor(new IceSummonFxLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
         stage.addActor(new ProjectileHitFxLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
+        stage.addActor(new EgyptMissileLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
+        stage.addActor(new IceMissileLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
+        stage.addActor(new BeachZombossFxLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
+        stage.addActor(new DarkZombossFxLayer(
             gameContext,
             getGridX(),
             getGridY(),
@@ -595,9 +643,17 @@ public class GamePlayScreen implements Screen {
             skin
         );
 
+        boolean debugMode = UserManager.getInstance().getCurrentUser() != null
+            && UserManager.getInstance().getCurrentUser().isDebugMode();
+
         Table sunCounter = new Table();
-        sunCounter.add(sunIcon).size(56, 57).padRight(8);
-        sunCounter.add(sunAmountLabel).minWidth(48).left();
+        sunCounter.add(wrapWithDebugAdd(
+            sunIcon,
+            skin,
+            debugMode,
+            () -> gameContext.addSun(50)
+        )).size(56, 57).padRight(6);
+        sunCounter.add(sunAmountLabel).left();
 
         createPlantFoodButton();
 
@@ -608,12 +664,20 @@ public class GamePlayScreen implements Screen {
 
         Table plantFoodCounter = new Table();
 
-        plantFoodCounter.add(plantFoodButton)
-            .size(48, 48)
-            .padRight(8);
+        plantFoodCounter.add(wrapWithDebugAdd(
+            plantFoodButton,
+            skin,
+            debugMode,
+            () -> {
+                com.workshop.model.user.User user =
+                    UserManager.getInstance().getCurrentUser();
+                if (user != null) {
+                    user.setPlantFoodCount(user.getPlantFoodCount() + 1);
+                }
+            }
+        )).size(48, 48).padRight(6);
 
         plantFoodCounter.add(plantFoodAmountLabel)
-            .minWidth(48)
             .left();
 
         plantFoodButton.addListener(new ClickListener() {
@@ -632,27 +696,6 @@ public class GamePlayScreen implements Screen {
                 );
             }
         });
-
-        Table sunRow = new Table();
-        sunRow.add(sunCounter).left();
-
-        Table plantFoodRow = new Table();
-        plantFoodRow.add(plantFoodCounter).left();
-
-        boolean debugMode = UserManager.getInstance().getCurrentUser() != null
-            && UserManager.getInstance().getCurrentUser().isDebugMode();
-        if (debugMode) {
-            sunRow.add(createDebugAddButton(skin, () ->
-                gameContext.addSun(50)
-            )).size(40, 40).padLeft(12);
-            plantFoodRow.add(createDebugAddButton(skin, () -> {
-                com.workshop.model.user.User user =
-                    UserManager.getInstance().getCurrentUser();
-                if (user != null) {
-                    user.setPlantFoodCount(user.getPlantFoodCount() + 1);
-                }
-            })).size(40, 40).padLeft(12);
-        }
 
         zombieProgressBar = new ProgressBar(
             0f,
@@ -707,6 +750,7 @@ public class GamePlayScreen implements Screen {
 
         Table hudTable = new Table();
         hudTable.setFillParent(true);
+        hudTable.setTouchable(Touchable.childrenOnly);
         hudTable.top();
         hudTable.pad(20);
         Table leftCounters = new Table();
@@ -865,6 +909,32 @@ public class GamePlayScreen implements Screen {
     private int currentPlantFoodCount() {
         com.workshop.model.user.User user = UserManager.getInstance().getCurrentUser();
         return user != null ? user.getPlantFoodCount() : 0;
+    }
+
+    private Actor wrapWithDebugAdd(
+        Actor target,
+        Skin skin,
+        boolean debugMode,
+        Runnable onAdd
+    ) {
+        if (!debugMode) {
+            return target;
+        }
+
+        com.badlogic.gdx.scenes.scene2d.ui.Stack stack =
+            new com.badlogic.gdx.scenes.scene2d.ui.Stack();
+        stack.add(target);
+
+        Table overlay = new Table();
+        overlay.setFillParent(true);
+        overlay.setTouchable(Touchable.childrenOnly);
+        overlay.bottom().right();
+        overlay.add(createDebugAddButton(skin, onAdd))
+            .size(22, 22)
+            .pad(0);
+
+        stack.add(overlay);
+        return stack;
     }
 
     private ImageButton createDebugAddButton(Skin skin, Runnable onAdd) {
@@ -1360,6 +1430,7 @@ public class GamePlayScreen implements Screen {
             .height(worldHeight - 40f)
             .top();
 
+        seedBankTable.setTouchable(Touchable.childrenOnly);
         stage.addActor(seedBankTable);
 
         if (ctx.getLevelManager()

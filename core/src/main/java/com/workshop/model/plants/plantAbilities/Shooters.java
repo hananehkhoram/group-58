@@ -8,6 +8,7 @@ import com.workshop.model.plants.enums.ShootType;
 import com.workshop.model.plants.plantFoodEffect.PlantFoodMode;
 import com.workshop.model.projectile.BulletType;
 import com.workshop.model.projectile.Projectile;
+import com.workshop.model.projectile.ProjectileVisualVariant;
 import com.workshop.model.projectile.TrajectoryType;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.model.zombie.behavior.Armor;
@@ -20,10 +21,21 @@ public class Shooters implements BaseAbility {
     private static final double DEFAULT_PROJECTILE_SPEED = 1.0;
     private static final double PEA_MOUTH_X_FROM_CENTER = 0.34;
     private static final double PEA_MOUTH_Y_FROM_CENTER = 0.10;
+    private static final int BARRAGE_VOLLEYS = 28;
+    private static final int GIANT_PEA_DAMAGE_MULTIPLIER = 20;
+
+    private int barrageVolleysLeft;
+    private int barrageGiantLeft;
+    private int barrageDamage;
+    private int barrageAmount;
+    private ShootType barrageShootType;
+    private BulletType barrageBulletType;
 
     @Override
     public void activate(Plant self, GameContext ctx) {
         if (self == null || ctx == null) return;
+
+        tickPlantFoodBarrage(self, ctx);
 
         if ("PuffShroom".equalsIgnoreCase(self.getName())) {
             int currentSecond = ctx.getTimeManager().getTotalSeconds();
@@ -48,12 +60,14 @@ public class Shooters implements BaseAbility {
             canFireNow = currentSecond - self.getLastActionSecond() >= intervalOfPlant;
         }
         if (!canFireNow) return;
-        if (self.hasPendingShots()) return;
+        if (isBarraging() || self.hasPendingShots()) return;
 
         if (shootType == ShootType.STRAIGHT
-            || shootType == ShootType.STRAIGHT_SEQUENTIAL) {
+            || shootType == ShootType.STRAIGHT_SEQUENTIAL
+            || shootType == ShootType.SHORT_RANGE
+            || shootType == ShootType.PIERCING) {
 
-            if (!hasZombieAhead(self, ctx)) {
+            if (!hasTargetAhead(self, ctx)) {
                 return;
             }
         }
@@ -107,14 +121,14 @@ public class Shooters implements BaseAbility {
     private List<Projectile> createTriLane(int damage, BulletType bulletType, Plant self, GameContext ctx) {
         int originRow = self.getRow();
         int totalRows = ctx.getPlantGrid().length;
-        double startX = peaLaunchX(self, 1.0);
+        double startX = launchX(self, 1.0);
         double[] headOffsets = {-0.32, 0.0, 0.32};
         int[] laneDeltas = {-1, 0, 1};
         List<Projectile> shots = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
             int targetRow = Math.max(0, Math.min(totalRows - 1, originRow + laneDeltas[i]));
-            double startY = peaLaunchY(originRow + headOffsets[i], self);
+            double startY = launchY(originRow + headOffsets[i], self);
             shots.add(new Projectile(
                 damage,
                 startX,
@@ -150,12 +164,22 @@ public class Shooters implements BaseAbility {
 
         int shotsPerLane = (shootType == ShootType.STRAIGHT_SEQUENTIAL) ? Math.max(1, amount) : 1;
 
+        boolean radial = shootType == ShootType.QUAD_DIAGONAL
+            || shootType == ShootType.STAR_BURST;
+
         List<Projectile> shots = new ArrayList<>();
         for (int row : lanes) {
             for (double[] dir : directions) {
                 for (int i = 0; i < shotsPerLane; i++) {
-                    double startX = peaLaunchX(self, dir[0]) + dir[0] * 0.3 * i;
-                    double startY = peaLaunchY(row + dir[1] * 0.3 * i, self);
+                    double startX;
+                    double startY;
+                    if (radial) {
+                        startX = self.getX() + 0.5 + dir[0] * 0.32;
+                        startY = row + dir[1] * 0.20;
+                    } else {
+                        startX = launchX(self, dir[0]) + dir[0] * 0.3 * i;
+                        startY = launchY(row, self) + dir[1] * 0.3 * i;
+                    }
                     shots.add(new Projectile(damage, startX, startY, row,
                         DEFAULT_PROJECTILE_SPEED, bulletType, trajectory, false, dir[0], dir[1], self));
                 }
@@ -246,28 +270,10 @@ public class Shooters implements BaseAbility {
         ShootType shootType = ShootType.valueOf(p.get("shootType"));
         BulletType bulletType = BulletType.valueOf(p.get("bulletType"));
         GameEngine engine = ctx.getGameEngine();
-        int damage = 20;
-        try {
-            if (self.getDamage() != null && !self.getDamage().isEmpty()) {
-                damage = Integer.parseInt(self.getDamage());
-            }
-        } catch (NumberFormatException ignored) {
-        }
+        int damage = parseDamage(self);
 
         switch (mode) {
-            case BARRAGE -> {
-                int burstShots = 8;
-                int empoweredDamage = damage * 2;
-                for (int i = 0; i < burstShots; i++) {
-                    if (shootType == ShootType.RANDOM_HOMING || shootType == ShootType.NEAREST_TARGET) {
-                        spawnNow(ctx, createHoming(empoweredDamage, bulletType, shootType, self, ctx, engine));
-                    } else if (shootType == ShootType.TRI_LANE) {
-                        spawnNow(ctx, createTriLane(empoweredDamage, bulletType, self, ctx));
-                    } else {
-                        spawnNow(ctx, createDirectional(empoweredDamage, amount, shootType, bulletType, self, ctx));
-                    }
-                }
-            }
+            case BARRAGE -> startBarrage(self, amount, shootType, bulletType, damage);
             case MULTI_TARGET_BURST -> {
                 if ("Magnet-shroom".equalsIgnoreCase(self.getName())) {
                     for (int i = 0; i < 3; i++) handleMagnetShroomAction(self, ctx);
@@ -292,32 +298,185 @@ public class Shooters implements BaseAbility {
         com.workshop.view.Console.showMessage("Plant Food: " + self.getName() + " unleashed a barrage!");
     }
 
-    private static double peaLaunchX(Plant self, double dirX) {
-        if (!self.isPeaFamily()) {
-            return self.getX();
+    private static int parseDamage(Plant self) {
+        String raw = self == null ? null : self.getDamage();
+        if (raw == null || raw.isBlank()) {
+            return 20;
         }
+        raw = raw.trim();
+        if (raw.contains("x")) {
+            raw = raw.substring(0, raw.indexOf('x'));
+        }
+        if (raw.contains("/")) {
+            raw = raw.split("/")[0];
+        }
+        try {
+            return Integer.parseInt(raw.trim());
+        } catch (NumberFormatException ignored) {
+            return 20;
+        }
+    }
+
+    private void startBarrage(
+        Plant self,
+        int amount,
+        ShootType shootType,
+        BulletType bulletType,
+        int damage
+    ) {
+        self.discardPendingShots();
+        barrageAmount = Math.max(1, amount);
+        barrageShootType = shootType;
+        barrageBulletType = bulletType;
+        barrageDamage = Math.max(1, damage);
+        barrageVolleysLeft = BARRAGE_VOLLEYS;
+        barrageGiantLeft = giantPeaCount(shootType, barrageAmount);
+        self.setPlantFoodActive(true);
+        self.startPlantFoodGlow((barrageVolleysLeft + barrageGiantLeft) * 0.1f + 0.4f);
+    }
+
+    private static int giantPeaCount(ShootType shootType, int amount) {
+        if (shootType == ShootType.STRAIGHT_SEQUENTIAL) {
+            return amount >= 4 ? 4 : 1;
+        }
+        return 0;
+    }
+
+    private boolean isBarraging() {
+        return barrageVolleysLeft > 0 || barrageGiantLeft > 0;
+    }
+
+    private void tickPlantFoodBarrage(Plant self, GameContext ctx) {
+        if (!isBarraging()) {
+            return;
+        }
+
+        GameEngine engine = ctx.getGameEngine();
+        List<Projectile> shots;
+        if (barrageVolleysLeft > 0) {
+            shots = createBarrageVolley(self, ctx, engine);
+            barrageVolleysLeft--;
+        } else {
+            shots = createGiantPea(self, barrageDamage * GIANT_PEA_DAMAGE_MULTIPLIER);
+            barrageGiantLeft--;
+        }
+
+        if (!shots.isEmpty()) {
+            spawnNow(ctx, shots);
+            ctx.queuePlantAttackAnimation(self);
+        }
+
+        if (!isBarraging()) {
+            self.setPlantFoodActive(false);
+        }
+    }
+
+    private List<Projectile> createBarrageVolley(
+        Plant self,
+        GameContext ctx,
+        GameEngine engine
+    ) {
+        int empoweredDamage = barrageDamage * 2;
+        if (barrageShootType == ShootType.RANDOM_HOMING
+            || barrageShootType == ShootType.NEAREST_TARGET) {
+            return createHoming(
+                empoweredDamage,
+                barrageBulletType,
+                barrageShootType,
+                self,
+                ctx,
+                engine
+            );
+        }
+        if (barrageShootType == ShootType.TRI_LANE) {
+            return createTriLane(empoweredDamage, barrageBulletType, self, ctx);
+        }
+        return createDirectional(
+            empoweredDamage,
+            barrageAmount,
+            barrageShootType,
+            barrageBulletType,
+            self,
+            ctx
+        );
+    }
+
+    private List<Projectile> createGiantPea(Plant self, int damage) {
+        double startX = launchX(self, 1.0);
+        double startY = launchY(self.getRow(), self);
+        return List.of(new Projectile(
+            damage,
+            startX,
+            startY,
+            self.getRow(),
+            DEFAULT_PROJECTILE_SPEED,
+            barrageBulletType,
+            TrajectoryType.STRAIGHT,
+            false,
+            1.0,
+            0.0,
+            self,
+            ProjectileVisualVariant.GIANT
+        ));
+    }
+
+    private static double launchX(Plant self, double dirX) {
         double facing = dirX < 0 ? -1.0 : 1.0;
-        return self.getX() + 0.5 + facing * PEA_MOUTH_X_FROM_CENTER;
+        return self.getX() + 0.5 + facing * mouthXFromCenter(self);
     }
 
-    private static double peaLaunchY(double rowY, Plant self) {
-        if (!self.isPeaFamily()) {
-            return rowY;
-        }
-        return rowY - PEA_MOUTH_Y_FROM_CENTER;
+    private static double launchY(double rowY, Plant self) {
+        return rowY - mouthYFromCenter(self);
     }
 
-    private boolean hasZombieAhead(Plant plant, GameContext ctx) {
-        for (Zombie zombie : ctx.getAliveZombies()) {
-            if (zombie == null || zombie.isDead()) {
-                continue;
-            }
-
-            if (zombie.occupiesRow(plant.getRow()) && zombie.getX() >= plant.getX()) {
-                return true;
-            }
+    private static double mouthXFromCenter(Plant self) {
+        if (self.isPeaFamily()) {
+            return PEA_MOUTH_X_FROM_CENTER;
         }
+        String compact = compactPlantName(self);
+        if (compact.contains("PUFFSHROOM")) {
+            return 0.34;
+        }
+        if (compact.contains("SEASHROOM")) {
+            return 0.32;
+        }
+        if (compact.contains("FUMESHROOM")) {
+            return 0.40;
+        }
+        if (compact.contains("CACTUS")) {
+            return 0.36;
+        }
+        return 0.28;
+    }
 
-        return false;
+    private static double mouthYFromCenter(Plant self) {
+        if (self.isPeaFamily()) {
+            return PEA_MOUTH_Y_FROM_CENTER;
+        }
+        String compact = compactPlantName(self);
+        if (compact.contains("PUFFSHROOM")) {
+            return 0.08;
+        }
+        if (compact.contains("SEASHROOM")) {
+            return -0.10;
+        }
+        if (compact.contains("FUMESHROOM")) {
+            return 0.30;
+        }
+        if (compact.contains("CACTUS")) {
+            return 0.22;
+        }
+        return 0.10;
+    }
+
+    private static String compactPlantName(Plant self) {
+        if (self == null || self.getName() == null) {
+            return "";
+        }
+        return self.getName().replaceAll("[^A-Za-z0-9]", "").toUpperCase();
+    }
+
+    private boolean hasTargetAhead(Plant plant, GameContext ctx) {
+        return ctx.hasHostileAhead(plant.getRow(), plant.getX());
     }
 }

@@ -10,5 +10,6 @@ public enum TargetingMode {
     ALL_IN_ROW,
     NEAREST,
     RANDOM,
-    NONE
+    NONE,
+    IN_SAME_PLACE
 }

@@ -28,6 +28,7 @@ public class GameContext {
     private final Season season;
     private final Plant[][] plantGrid;
     private List<Plant> alivePlants = new ArrayList<>();//گیاهای زنده روی زمین
+    private final List<Plant> pulledPlants = new ArrayList<>();
     private final Grave[][] graveGrid;
     private final long[][] burnUntilTick;
     private List<Plant> activePlants = new ArrayList<>();//گیاهای انتخاب شده
@@ -84,21 +85,6 @@ public class GameContext {
     public Integer pollWindRow() {
         return pendingWindRows.pollFirst();
     }
-
-    private boolean pendingSandstorm;
-
-    public void announceSandstorm() {
-        pendingSandstorm = true;
-    }
-
-    public boolean pollSandstorm() {
-        if (!pendingSandstorm) {
-            return false;
-        }
-        pendingSandstorm = false;
-        return true;
-    }
-
     public String pollAnnouncement() {
         return pendingAnnouncements.pollFirst();
     }
@@ -128,10 +114,183 @@ public class GameContext {
         return pendingExplosions.pollFirst();
     }
 
+    public static final class BeachSharkSpawn {
+        public final int row;
+        public final int col;
+
+        public BeachSharkSpawn(int row, int col) {
+            this.row = row;
+            this.col = col;
+        }
+    }
+
+    private final Deque<BeachSharkSpawn> pendingBeachSharks = new ArrayDeque<>();
+    private int beachVortexTopRow = -1;
+    private int beachVortexBottomRow = -1;
+
+    public void spawnBeachShark(int row, int col) {
+        pendingBeachSharks.addLast(new BeachSharkSpawn(row, col));
+        shakeScreen(8f, 0.22f);
+    }
+
+    public BeachSharkSpawn pollBeachShark() {
+        return pendingBeachSharks.pollFirst();
+    }
+
+    public static final class EgyptMissileSpawn {
+        public final int row;
+        public final int col;
+        public final float flightSeconds;
+
+        public EgyptMissileSpawn(int row, int col, float flightSeconds) {
+            this.row = row;
+            this.col = col;
+            this.flightSeconds = flightSeconds;
+        }
+    }
+
+    private final Deque<EgyptMissileSpawn> pendingEgyptMissiles = new ArrayDeque<>();
+
+    public void spawnEgyptMissile(int row, int col, float flightSeconds) {
+        pendingEgyptMissiles.addLast(new EgyptMissileSpawn(row, col, flightSeconds));
+    }
+
+    public EgyptMissileSpawn pollEgyptMissile() {
+        return pendingEgyptMissiles.pollFirst();
+    }
+
+    public static final class EgyptSummonSpawn {
+        public final int row;
+        public final double x;
+
+        public EgyptSummonSpawn(int row, double x) {
+            this.row = row;
+            this.x = x;
+        }
+    }
+
+    private final Deque<EgyptSummonSpawn> pendingEgyptSummons = new ArrayDeque<>();
+
+    public void spawnEgyptSummon(int row, double x) {
+        pendingEgyptSummons.addLast(new EgyptSummonSpawn(row, x));
+    }
+
+    public EgyptSummonSpawn pollEgyptSummon() {
+        return pendingEgyptSummons.pollFirst();
+    }
+
+    public static final class IceMissileSpawn {
+        public final int row;
+        public final int col;
+        public final float flightSeconds;
+
+        public IceMissileSpawn(int row, int col, float flightSeconds) {
+            this.row = row;
+            this.col = col;
+            this.flightSeconds = flightSeconds;
+        }
+    }
+
+    private final Deque<IceMissileSpawn> pendingIceMissiles = new ArrayDeque<>();
+
+    public void spawnIceMissile(int row, int col, float flightSeconds) {
+        pendingIceMissiles.addLast(new IceMissileSpawn(row, col, flightSeconds));
+    }
+
+    public IceMissileSpawn pollIceMissile() {
+        return pendingIceMissiles.pollFirst();
+    }
+
+    public static final class IceSummonSpawn {
+        public final int row;
+        public final int col;
+
+        public IceSummonSpawn(int row, int col) {
+            this.row = row;
+            this.col = col;
+        }
+    }
+
+    private final Deque<IceSummonSpawn> pendingIceSummons = new ArrayDeque<>();
+
+    public void spawnIceSummon(int row, int col) {
+        pendingIceSummons.addLast(new IceSummonSpawn(row, col));
+    }
+
+    public IceSummonSpawn pollIceSummon() {
+        return pendingIceSummons.pollFirst();
+    }
+
+    public static final class DarkFireballSpawn {
+        public final int row;
+        public final int col;
+        public final float flightSeconds;
+
+        public DarkFireballSpawn(int row, int col, float flightSeconds) {
+            this.row = row;
+            this.col = col;
+            this.flightSeconds = flightSeconds;
+        }
+    }
+
+    private final Deque<DarkFireballSpawn> pendingDarkFireballs = new ArrayDeque<>();
+
+    public void spawnDarkFireball(int row, int col, float flightSeconds) {
+        pendingDarkFireballs.addLast(new DarkFireballSpawn(row, col, flightSeconds));
+    }
+
+    public DarkFireballSpawn pollDarkFireball() {
+        return pendingDarkFireballs.pollFirst();
+    }
+
+    public static final class DarkFireBreathSpawn {
+        public final int topRow;
+        public final int bottomRow;
+        public final float durationSeconds;
+
+        public DarkFireBreathSpawn(int topRow, int bottomRow, float durationSeconds) {
+            this.topRow = topRow;
+            this.bottomRow = bottomRow;
+            this.durationSeconds = durationSeconds;
+        }
+    }
+
+    private final Deque<DarkFireBreathSpawn> pendingDarkFireBreaths = new ArrayDeque<>();
+
+    public void spawnDarkFireBreath(int topRow, int bottomRow, float durationSeconds) {
+        pendingDarkFireBreaths.addLast(new DarkFireBreathSpawn(topRow, bottomRow, durationSeconds));
+    }
+
+    public DarkFireBreathSpawn pollDarkFireBreath() {
+        return pendingDarkFireBreaths.pollFirst();
+    }
+
+    public void setBeachVortexRows(int topRow, int bottomRow) {
+        this.beachVortexTopRow = topRow;
+        this.beachVortexBottomRow = bottomRow;
+    }
+
+    public void clearBeachVortex() {
+        this.beachVortexTopRow = -1;
+        this.beachVortexBottomRow = -1;
+    }
+
+    public boolean hasBeachVortex() {
+        return beachVortexTopRow >= 0 && beachVortexBottomRow >= beachVortexTopRow;
+    }
+
+    public int getBeachVortexTopRow() {
+        return beachVortexTopRow;
+    }
+
+    public int getBeachVortexBottomRow() {
+        return beachVortexBottomRow;
+    }
+
     private final Deque<ProjectileHitFx> pendingProjectileHits = new ArrayDeque<>();
 
-    public void spawnProjectileHit(int row, double x) {
-        pendingProjectileHits.addLast(new ProjectileHitFx(row, x));
+    public void spawnProjectileHit(int row, double x, double y) {
+        pendingProjectileHits.addLast(new ProjectileHitFx(row, x, y));
     }
 
     public ProjectileHitFx pollProjectileHit() {
@@ -147,11 +306,6 @@ public class GameContext {
     }
 
     private final Deque<ZombiePartFx> pendingZombieParts = new ArrayDeque<>();
-
-    public void dropZombiePart(int row, double x, ZombiePartFx.Kind kind) {
-        dropZombiePart(row, x, kind, null);
-    }
-
     public void dropZombiePart(
         int row,
         double x,
@@ -204,8 +358,6 @@ public class GameContext {
     private int lawnMowerKillsThisLevel = 0;
     private String heldSeed = null;
     private BeghouledManager beghouledManager;
-
-    private int zombiesKilledByLawnMowerThisLevel = 0;
     private com.workshop.controller.repository.factory.ZombieFactory zombieFactory;
 
     private GameEngine gameEngine;
@@ -523,6 +675,20 @@ public class GameContext {
         return alivePlants;
     }
 
+    public List<Plant> getPulledPlants() {
+        return pulledPlants;
+    }
+
+    public void addPulledPlant(Plant plant) {
+        if (plant != null && !pulledPlants.contains(plant)) {
+            pulledPlants.add(plant);
+        }
+    }
+
+    public void removePulledPlant(Plant plant) {
+        pulledPlants.remove(plant);
+    }
+
     public List<Zombie> getActiveZombies() {
         return activeZombies;
     }
@@ -541,6 +707,32 @@ public class GameContext {
 
     public Grave[][] getGraveGrid() {
         return graveGrid;
+    }
+
+    public boolean hasHostileAhead(int row, double fromX) {
+        for (Zombie zombie : getAliveZombies()) {
+            if (zombie == null || zombie.isDead()) {
+                continue;
+            }
+            if (zombie.occupiesRow(row) && zombie.getX() >= fromX) {
+                return true;
+            }
+        }
+        if (graveGrid == null || row < 0 || row >= graveGrid.length) {
+            return false;
+        }
+        Grave[] lane = graveGrid[row];
+        if (lane == null) {
+            return false;
+        }
+        int startCol = (int) Math.floor(fromX) + 1;
+        startCol = Math.max(0, startCol);
+        for (int c = startCol; c < lane.length; c++) {
+            if (lane[c] != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public int getSunAmount() {

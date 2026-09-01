@@ -44,7 +44,7 @@ public class Modifier implements BaseAbility {
                 break;
 
             case HYPNOTIZE:
-                List<Zombie> targets = engine.findTargets(pRow, pCol, TargetingMode.NONE);
+                List<Zombie> targets = engine.findTargets(pRow, pCol, TargetingMode.IN_SAME_PLACE);
                 if (targets != null && !targets.isEmpty()) {
                     Zombie eater = targets.get(0);
                     eater.getEffect().add(Effects.HYPNOTIZED);

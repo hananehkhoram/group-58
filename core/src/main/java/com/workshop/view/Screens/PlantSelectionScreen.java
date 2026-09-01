@@ -219,7 +219,7 @@ public class PlantSelectionScreen implements Screen {
     }
 
     private void renderPlantWithClipFallback(Batch batch, String plantName, float time, float x, float y, boolean grayedOut) {
-        String[] clips = {"idle", "idle_stage1", "intro", "animation", "anim"};
+        String[] clips = {"idle","idle_stage1_", "idle_stage1", "intro", "animation", "anim"};
         for (String clip : clips) {
             try {
                 ScreenResourceManager.drawPlantAnimation(
@@ -348,7 +348,7 @@ public class PlantSelectionScreen implements Screen {
             card.setOnClick(c -> {
                 focusedPlant = plant;
                 if (isSunflowerBanned(plant)) {
-                    Toast.showError(stage, skin, "You cannot select Sunflower in this level!");
+                    Toast.showError(stage, skin, "You cannot select Sun Producer in this level!");
                     refreshAll();
                     return;
                 }

@@ -67,13 +67,21 @@ public class Izambi {
     // (50-200) on the other side. These land in the same 50-200 range,
     // keeping the original cost ordering (Imp/Default cheapest, bucket
     // head priciest).
-    private static final Map<String, Integer> MULTIPLAYER_ZOMBIE_COSTS = Map.of(
-        "Imp", 50,
-        "Default", 75,
-        "Ra", 100,
-        "cone head", 150,
-        "bucket head", 200
-    );
+    // LinkedHashMap (not Map.of) so iteration order is fixed and
+    // deterministic — every screen that lists these zombies (cards,
+    // keyboard-index mapping in couch mode, etc.) must see the exact same
+    // order, or a card and its keyboard shortcut can point at different
+    // zombies.
+    private static final Map<String, Integer> MULTIPLAYER_ZOMBIE_COSTS;
+    static {
+        Map<String, Integer> costs = new java.util.LinkedHashMap<>();
+        costs.put("Imp", 50);
+        costs.put("Default", 75);
+        costs.put("Ra", 100);
+        costs.put("cone head", 150);
+        costs.put("bucket head", 200);
+        MULTIPLAYER_ZOMBIE_COSTS = Collections.unmodifiableMap(costs);
+    }
 
     private static Izambi activeInstance;
 
@@ -214,6 +222,10 @@ public class Izambi {
             return false;
         }
 
+        if (ctx.isOnCooldown(plantName)) {
+            return false;
+        }
+
         Plant plant;
         try {
             plant = new PlantFactory(DataManager.getInstance()).create(plantName);
@@ -229,6 +241,7 @@ public class Izambi {
         plant.setRow(row);
         plant.setCol(column);
         ctx.getAlivePlants().add(plant);
+        ctx.setCooldown(plantName, plant.getRechargeTime());
         return true;
     }
 
@@ -270,12 +283,6 @@ public class Izambi {
         return placeZombie(requestedType, row, column, null);
     }
 
-    /**
-     * Same as {@link #placeZombie(String, int, int)}, but lets the caller
-     * charge a different sun cost than {@code IZombieManager}'s own table
-     * (used by the 2-player match to rebalance zombie prices against plant
-     * prices without touching the single-player cost table).
-     */
     public boolean placeZombie(
         String requestedType,
         int row,

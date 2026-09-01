@@ -222,13 +222,9 @@ public class NetworkIzambiScreen implements Screen {
 
         stage.addActor(new PlantAnimationLayer(displayCtx, getGridX(), getGridY(), getGridWidth(), getGridHeight()));
 
-        if (isHost) {
-            // Projectiles only exist as real objects on the host's live
-            // context; the guest's mirror doesn't track them.
-            stage.addActor(new ProjectileAnimationLayer(
-                displayCtx, getGridX(), getGridY(), getGridWidth(), getGridHeight()
-            ));
-        }
+        stage.addActor(new ProjectileAnimationLayer(
+            displayCtx, getGridX(), getGridY(), getGridWidth(), getGridHeight()
+        ));
 
         stage.addActor(new BrainLayer(displayCtx, getGridX(), getGridY(), getGridWidth(), getGridHeight()));
         stage.addActor(new ZombieAnimationLayer(displayCtx, getGridX(), getGridY(), getGridWidth(), getGridHeight()));
@@ -384,7 +380,11 @@ public class NetworkIzambiScreen implements Screen {
                 );
                 card.setOnClick(this::selectPlantCard);
                 plantCards.add(card);
-                cardsTable.add(card).size(100f, 58f).padBottom(60f).row();
+                // Matches the single-player seed bank's spacing exactly
+                // (GamePlayScreen.buildSeedBank uses padBottom(5f); the
+                // zombie bank below uses 60f — using 60f for plants too was
+                // why the two banks looked inconsistent side by side).
+                cardsTable.add(card).size(100f, 58f).padBottom(5f).row();
             }
         } else {
             for (Map.Entry<String, Integer> entry : Izambi.getMultiplayerZombieCosts().entrySet()) {
@@ -408,7 +408,6 @@ public class NetworkIzambiScreen implements Screen {
         bank.add(cardsTable).top().padTop(15f);
         stage.addActor(bank);
     }
-
     private void selectPlantCard(PlantCardActor clicked) {
         selectedPlant = clicked.getPlant();
         for (PlantCardActor card : plantCards) {
@@ -522,9 +521,16 @@ public class NetworkIzambiScreen implements Screen {
 
         for (PlantCardActor card : plantCards) {
             card.updateAnimation(delta);
+            card.setCooldownRemaining(displayCtx.getRemainingCooldownSeconds(card.getPlant().getName()));
         }
         for (ZombieCardActor card : zombieCards) {
             card.updateAnimation(delta);
+            double cooldown = 0;
+            if (isHost) {
+                cooldown = match.getHostIzambi().getIZombieManager()
+                    .getRemainingZombieCooldownSeconds(card.getZombieType(), displayCtx);
+            }
+            card.setCooldownRemaining(cooldown);
         }
 
         if (match.isEnded() && !endHandled) {

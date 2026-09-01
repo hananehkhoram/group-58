@@ -15,21 +15,20 @@ public final class CouchIzambiMatch {
     private Izambi izambi;
     private int plantSun;
     private float elapsedSeconds;
-    private float incomeAccumulator;
+    private float timeAccumulator;
 
     private boolean ended;
     private MatchRole winner;
 
     private static final int PLANT_STARTING_SUN = 300;
-    private static final int PLANT_PASSIVE_INCOME = 25;
-    private static final float PLANT_INCOME_INTERVAL_SECONDS = 12f;
+    private static final float TICK_DURATION = 0.1f;
 
     public void start(MenuManager menuManager, int levelNumber) {
         izambi = new Izambi();
         izambi.startMultiplayerMatch(menuManager, levelNumber);
         plantSun = PLANT_STARTING_SUN;
         elapsedSeconds = 0f;
-        incomeAccumulator = 0f;
+        timeAccumulator = 0f;
         ended = false;
         winner = null;
     }
@@ -38,14 +37,24 @@ public final class CouchIzambiMatch {
         if (ended) {
             return;
         }
-        izambi.getGameEngine().update(delta);
+
+        int sunBeforeTick = izambi.getCtx().getSunAmount();
+
+        timeAccumulator += delta;
+        while (timeAccumulator >= TICK_DURATION && !ended) {
+            izambi.getCtx().getTimeManager().advanceTime(1);
+            izambi.getGameEngine().update(TICK_DURATION);
+            timeAccumulator -= TICK_DURATION;
+        }
+
+        // Same "mirror whatever the producers made" trick as the networked
+        // match: keeps both players' sun fair without hand-tuned constants.
+        int sunGained = izambi.getCtx().getSunAmount() - sunBeforeTick;
+        if (sunGained > 0) {
+            plantSun += sunGained;
+        }
 
         elapsedSeconds += delta;
-        incomeAccumulator += delta;
-        while (incomeAccumulator >= PLANT_INCOME_INTERVAL_SECONDS) {
-            incomeAccumulator -= PLANT_INCOME_INTERVAL_SECONDS;
-            plantSun += PLANT_PASSIVE_INCOME;
-        }
 
         IZombieManager manager = izambi.getIZombieManager();
         if (manager.areAllBrainsEaten()) {

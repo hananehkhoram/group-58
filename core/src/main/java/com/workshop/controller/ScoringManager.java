@@ -2,6 +2,7 @@ package com.workshop.controller;
 
 import com.workshop.model.GameContext;
 import com.workshop.model.Scoring.ScoringPattern;
+import com.workshop.model.level.LevelType;
 import com.workshop.model.user.User;
 import com.workshop.model.zombie.Zombie;
 
@@ -10,7 +11,7 @@ import java.util.List;
 
 public class ScoringManager {
 
-    private static final long QUICK_KILL_TICK_THRESHOLD = 30; // 3 ثانیه
+    private static final long QUICK_KILL_TICK_THRESHOLD = 100;
 
     private static final int PRECISION_OVERKILL_MARGIN = 5;
 
@@ -20,20 +21,25 @@ public class ScoringManager {
 
         if (deathsThisTick.size() >= 2) {
             ctx.incrementSimultaneousKillPattern();
+            if (ctx.getLevel().getLevelType() == LevelType.BONUS) ctx.announce("Simultaneous Kill: " +ScoringPattern.SIMULTANEOUS_KILL.getPoints()+ "meow points!");
+
         }
 
         long now = ctx.getTimeManager().getTotalTicks();
         for (Zombie z : deathsThisTick) {
             if (now - z.getSpawnTick() <= QUICK_KILL_TICK_THRESHOLD) {
                 ctx.incrementQuickKillPattern();
+                if (ctx.getLevel().getLevelType() == LevelType.BONUS) ctx.announce("Quick Kill: "+ ScoringPattern.QUICK_KILL.getPoints()+ "meow points!");
             }
 
-            int overkill = -z.getHp(); // hp زیر صفر رفته؛ هرچی منفی‌تر یعنی آسیب بیشتر هدر رفته
+            int overkill = -z.getHp();
             if (overkill <= PRECISION_OVERKILL_MARGIN) {
                 ctx.incrementPrecisionFinishPattern();
+                if (ctx.getLevel().getLevelType() == LevelType.BONUS) ctx.announce("Precision Finish: " +ScoringPattern.PRECISION_FINISH.getPoints() + "meow points!");
             }
 
             ctx.bumpKillStreak();
+            if (ctx.getLevel().getLevelType() == LevelType.BONUS) ctx.announce("Kill Streak: " + ScoringPattern.MULTI_KILL.getPoints()+ "meow points!");
         }
     }
 
@@ -41,6 +47,8 @@ public class ScoringManager {
     public static void onProjectileKill(GameContext ctx, int killCountForThisProjectile) {
         if (killCountForThisProjectile >= 2) {
             ctx.incrementMultiKillPattern();
+            if (ctx.getLevel().getLevelType() == LevelType.BONUS) ctx.announce("Multi Kill: " +ScoringPattern.MULTI_KILL.getPoints()+ "meow points!");
+
         }
     }
 

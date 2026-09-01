@@ -8,5 +8,6 @@ package com.workshop.model.projectile;
  */
 public enum ProjectileVisualVariant {
     DEFAULT,
-    BUTTER
+    BUTTER,
+    GIANT
 }

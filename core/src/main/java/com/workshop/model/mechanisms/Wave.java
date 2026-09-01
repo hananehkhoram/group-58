@@ -8,10 +8,7 @@ import com.workshop.model.zombie.BossZombieRegistry;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.view.Console;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Wave {
@@ -51,7 +48,7 @@ public class Wave {
 
         spawnZombies(ctx, calculateEffectiveBudget());
 
-        if (isLastWave && ctx.getLevel().getLevelType() == LevelType.BOSS_FIGHT) {
+        if (shouldSpawnBoss(ctx)) {
             spawnBossZombie(ctx);
         }
 
@@ -60,14 +57,43 @@ public class Wave {
             .sum();
     }
 
+    private boolean shouldSpawnBoss(GameContext ctx) {
+        if (ctx.getLevel() == null || ctx.getLevel().getLevelType() != LevelType.BOSS_FIGHT) {
+            return false;
+        }
+        if (bossAlreadyPresent(ctx)) {
+            return false;
+        }
+        return waveNumber == 1 || isLastWave;
+    }
+
+    private static boolean bossAlreadyPresent(GameContext ctx) {
+        for (Zombie zombie : ctx.getAliveZombies()) {
+            if (zombie != null && !zombie.isDead() && zombie.isBoss()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void spawnBossZombie(GameContext ctx) {
         if (ctx.getSeason() == null) return;
 
         String bossName = BossZombieRegistry.bossNameForSeason(ctx.getSeason().getName());
-        if (bossName == null) return;
+        if (bossName == null) {
+            Console.showMessage(
+                "No Zomboss is registered for chapter: " + ctx.getSeason().getName() + "\n"
+            );
+            return;
+        }
 
         Zombie bossTemplate = ctx.getDataManager().zombies.getZombieDataMap().get(bossName);
-        if (bossTemplate == null) return; // Zomboss's row not added to zombies.csv yet
+        if (bossTemplate == null) {
+            Console.showMessage(
+                "Zomboss '" + bossName + "' is missing from zombies.csv.\n"
+            );
+            return;
+        }
 
         ZombieFactory factory = new ZombieFactory(ctx.getDataManager());
         Zombie boss = factory.create(bossName);
@@ -99,19 +125,26 @@ public class Wave {
     }
 
     private int calculateEffectiveBudget() {
+
         double budget = waveCost;
 
         for (int i = 2; i <= waveNumber; i++) {
+
             boolean isFinalStep = (i == waveNumber && isLastWave);
+
             budget *= isFinalStep ? FINAL_WAVE_MULTIPLIER : WAVE_DIFFICULTY_GROWTH;
+
         }
 
         int difficultyLevel = UserManager.getInstance().getCurrentUser().getDifficultyLevel();
-        budget *= (BASE_DIFFICULTY / difficultyLevel);
 
-        return (int) Math.max(1, Math.round(budget));
+        double difficultyMultiplier = (double) difficultyLevel / BASE_DIFFICULTY;
+
+        budget *= difficultyMultiplier;
+
+        return (int) Math.max(waveCost, Math.round(budget));
+
     }
-
     private void spawnZombies(GameContext ctx, int budget) {
         if (ctx.getSeason() == null) {
             return;
@@ -123,13 +156,14 @@ public class Wave {
 
         Map<String, Zombie> pool = getAvailableZombiePool(ctx);
 
-        System.out.println(pool.keySet());
-
         if (pool.isEmpty()) {
-            throw new IllegalStateException(
-                "No zombies are configured for level type: "
-                    + ctx.getLevel().getLevelType()
+            pool = fallbackZombiePool(ctx);
+        }
+        if (pool.isEmpty()) {
+            Console.showMessage(
+                "No zombies are configured for this chapter; skipping spawn.\n"
             );
+            return;
         }
 
         int minCost = pool.values().stream()
@@ -177,43 +211,43 @@ public class Wave {
     }
 
     private Map<String, Zombie> getAvailableZombiePool(GameContext ctx) {
-        Map<String, Zombie> allZombies =
-            ctx.getDataManager()
-                .zombies
-                .getZombieDataMap();
+        Map<String, Zombie> allZombies = ctx.getDataManager().zombies.getZombieDataMap();
 
         if (ctx.getLevel().getLevelType() == LevelType.Zombotany_MG) {
-            return allZombies
-                .entrySet()
-                .stream()
+            return allZombies.entrySet().stream()
                 .filter(entry -> isZombotanyZombie(entry.getValue()))
-                .collect(Collectors.toMap(
-                    Map.Entry::getKey,
-                    Map.Entry::getValue
-                ));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+
+        if (ctx.getLevel().getLevelType() == LevelType.BONUS) {
+            return allZombies.entrySet().stream()
+                .filter(entry -> !BossZombieRegistry.isBossId(entry.getValue().getId())
+                    && !BossZombieRegistry.isBossName(entry.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+
+        if (ctx.getSeason() == null) {
+            return Collections.emptyMap();
         }
 
         String seasonName = ctx.getSeason().getName();
-
-        return allZombies
-            .entrySet()
-            .stream()
-            .filter(entry ->
-                !BossZombieRegistry.isBossId(entry.getValue().getId())
-                    && !BossZombieRegistry.isBossName(entry.getKey())
-                    && ctx.getDataManager()
-                    .zombies
-                    .isAvailableInChapter(
-                        entry.getKey(),
-                        seasonName
-                    )
-            )
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue
-            ));
+        return allZombies.entrySet().stream()
+            .filter(entry -> !BossZombieRegistry.isBossId(entry.getValue().getId())
+                && !BossZombieRegistry.isBossName(entry.getKey())
+                && ctx.getDataManager().zombies.isAvailableInChapter(entry.getKey(), seasonName))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    private Map<String, Zombie> fallbackZombiePool(GameContext ctx) {
+        Map<String, Zombie> allZombies = ctx.getDataManager().zombies.getZombieDataMap();
+        if (allZombies == null || allZombies.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return allZombies.entrySet().stream()
+            .filter(entry -> !BossZombieRegistry.isBossId(entry.getValue().getId())
+                && !BossZombieRegistry.isBossName(entry.getKey()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
     private void placeZombie(GameContext ctx, Zombie zombie, Random random) {
         int lane = random.nextInt(ctx.getLevel().getRows());
         double col = ctx.getLevel().getColumns();

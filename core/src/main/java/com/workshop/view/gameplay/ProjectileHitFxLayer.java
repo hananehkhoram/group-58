@@ -18,23 +18,21 @@ import pvz.libpvz.pam.PamPlayer;
 public final class ProjectileHitFxLayer extends Group {
 
     private static final String[] PAM_CANDIDATES = {
-        "768/INITIAL/EFFECTS/PEA_SPLATS/PEA_SPLATS.PAM",
-        "768/FULL/EFFECTS/PEA_SPLATS/PEA_SPLATS.PAM",
-        "768/INITIAL/EFFECTS/PEASPLATS/PEASPLATS.PAM",
-        "768/INITIAL/EFFECTS/T_PEA_SPLATS/T_PEA_SPLATS.PAM",
-        "768/INITIAL/EFFECTS/PEA_SPLAT/PEA_SPLAT.PAM",
-        "768/INITIAL/EFFECTS/SPLATS/SPLATS.PAM",
-        "768/INITIAL/EFFECTS/GENERIC_EXPLOSION_FRONT/GENERIC_EXPLOSION_FRONT.PAM"
+        "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM",
+        "768/INITIAL/EFFECTS/SPLAT_PEA/SPLAT_PEA.PAM",
+        "768/FULL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM",
+        "768/FULL/EFFECTS/SPLAT_PEA/SPLAT_PEA.PAM"
     };
 
     private static final String[] SPRITE_CANDIDATES = {
+        "IMAGE_EFFECTS_T_SPLAT_PEA",
+        "IMAGE_EFFECTS_SPLAT_PEA",
         "IMAGE_EFFECTS_PEA_SPLATS",
         "IMAGE_PLANT_PEASHOOTER_PEASHOOTER_23X23"
     };
 
-    private static final float HEIGHT_TO_CELL_RATIO = 0.55f;
-    private static final float FALLBACK_LIFETIME = 0.28f;
-    private static final float Y_LIFT_TO_CELL_RATIO = 0.18f;
+    private static final float HEIGHT_TO_CELL_RATIO = 0.62f;
+    private static final float FALLBACK_LIFETIME = 0.35f;
 
     private static String resolvedPamPath;
     private static String resolvedClip;
@@ -69,7 +67,7 @@ public final class ProjectileHitFxLayer extends Group {
         while ((fx = gameContext.pollProjectileHit()) != null) {
             addActor(new HitActor(
                 getHitX(fx.x),
-                getHitY(fx.row)
+                getHitY(fx.y)
             ));
         }
         super.act(delta);
@@ -79,12 +77,11 @@ public final class ProjectileHitFxLayer extends Group {
         return gridX + (float) column * getCellWidth();
     }
 
-    private float getHitY(int row) {
+    private float getHitY(double rowY) {
         return gridY
             + gridHeight
-            - row * getCellHeight()
-            - getCellHeight() / 2f
-            + getCellHeight() * Y_LIFT_TO_CELL_RATIO;
+            - (float) rowY * getCellHeight()
+            - getCellHeight() / 2f;
     }
 
     private float getCellWidth() {
@@ -124,12 +121,12 @@ public final class ProjectileHitFxLayer extends Group {
                 resolved = true;
             }
 
-            float fade = Math.max(0f, 1f - stateTime / lifetime);
-            batch.setColor(1f, 1f, 1f, parentAlpha * fade);
-
             if (resolvedPamPath != null && resolvedClip != null) {
+                batch.setColor(1f, 1f, 1f, parentAlpha);
                 drawPam(batch);
             } else if (resolvedSpriteId != null) {
+                float fade = Math.max(0f, 1f - stateTime / lifetime);
+                batch.setColor(1f, 1f, 1f, parentAlpha * fade);
                 drawSprite(batch);
             }
 
@@ -189,7 +186,7 @@ public final class ProjectileHitFxLayer extends Group {
                     resolvedClip
                 );
                 if (duration > 0.05f) {
-                    lifetime = Math.min(0.45f, duration);
+                    lifetime = Math.min(0.55f, Math.max(0.22f, duration));
                 }
                 Rectangle bounds = pamPlayer.bounds(resolvedPamPath, resolvedClip);
                 if (bounds != null && bounds.height > 0f) {
@@ -250,6 +247,15 @@ public final class ProjectileHitFxLayer extends Group {
                 if (clip != null && preferred.equalsIgnoreCase(clip.trim())) {
                     return clip;
                 }
+            }
+        }
+        for (String clip : clips) {
+            if (clip == null) {
+                continue;
+            }
+            String lower = clip.toLowerCase();
+            if (lower.contains("splat") || lower.contains("hit") || lower.contains("anim")) {
+                return clip;
             }
         }
         return clips.get(0);

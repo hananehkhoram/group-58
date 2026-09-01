@@ -3,7 +3,10 @@ package com.workshop.model.level;
 
 import com.workshop.model.mechanisms.Wave;
 import com.workshop.model.plants.Plant;
+import com.workshop.model.plants.PlantFamily;
+import com.workshop.model.plants.Tag;
 import com.workshop.model.season.Season;
+import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
 
 import java.util.ArrayList;
@@ -63,7 +66,10 @@ public class Level {
 
     public void poolConveyor(){
         if (levelType == LevelType.CONVEYOR_BELT || levelType == LevelType.BOSS_FIGHT){
-       conveyorPlantPool = UserManager.getInstance().getCurrentUser().getUnlockedPlantTypes();
+            List<Plant> candidates = UserManager.getInstance().getCurrentUser().getUnlockedPlantTypes();
+            candidates.removeIf(plant -> plant.getFamily().equals(PlantFamily.SUN_PRODUCER)
+                || plant.getTags().contains(Tag.SUN));
+       conveyorPlantPool = candidates;
     }}
 
     public Level(String name, int rows, int columns, Wave[] waves, LevelType levelType, Season season) {

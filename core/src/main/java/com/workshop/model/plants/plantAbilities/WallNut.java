@@ -13,17 +13,9 @@ import java.util.Map;
 
 public class WallNut implements BaseAbility {
 
-    private static final long ONE_SECOND_TICKS = 10;
     private static final long COOLDOWN_TICKS = 30;
-    private static final int MAX_SUN_BATCH = 5;
-
-    private static class SunState {
-        int count = 0;
-        long lastGenTick = -1;
-        long cooldownStartTick = -1;
-    }
-
-    private final Map<Plant, SunState> sunStates = new HashMap<>();
+    private static final int SUN_VALUE = 5;
+    private final Map<Plant, Long> lastSunGenTicks = new HashMap<>();
 
     public void triggerAbility(WallNutType wallNutType, int damage, Plant self, GameEngine engine) {
         switch (wallNutType) {
@@ -94,7 +86,7 @@ public class WallNut implements BaseAbility {
     }
 
     private void executeReflective(int damage, Plant self, GameEngine engine) {
-        List<Zombie> attackers = engine.findTargets(self.getRow(), self.getCol(), TargetingMode.NONE);
+        List<Zombie> attackers = engine.findTargets(self.getRow(), self.getCol(), TargetingMode.IN_SAME_PLACE);
         if (attackers != null && !attackers.isEmpty()) {
             for (Zombie z : attackers) {
                 z.takeDamage(damage);
@@ -103,7 +95,8 @@ public class WallNut implements BaseAbility {
     }
 
     private void executeLaneRedirect(Plant self, GameEngine engine) {
-        List<Zombie> biters = engine.findTargets(self.getRow(), self.getCol(), TargetingMode.NONE);
+        if (self.getHp() > 1) {return;}
+        List<Zombie> biters = engine.findTargets(self.getRow(), self.getCol(), TargetingMode.IN_SAME_PLACE);
         if (biters != null && !biters.isEmpty()) {
             int maxRows = engine.getCtx().getLevel().getRows();
             for (Zombie z : biters) {
@@ -116,7 +109,7 @@ public class WallNut implements BaseAbility {
         int pRow = self.getRow();
         int pCol = self.getCol();
         for (Zombie z : ctx.getAliveZombies()) {
-            if (!z.isDead() && Math.abs(z.getRow() - pRow) == 1 && Math.abs(z.getX() - pCol) <= 1.0) {
+            if (!z.isDead() && Math.abs(z.getRow() - pRow) == 1) {
                 z.setY(pRow);
             }
         }
@@ -124,26 +117,11 @@ public class WallNut implements BaseAbility {
 
     private void executeSunGenerating(Plant self, GameContext ctx) {
         long currentTick = ctx.getTimeManager().getTotalTicks();
-        SunState state = sunStates.computeIfAbsent(self, k -> new SunState());
-        if (state.cooldownStartTick > 0) {
-            if (currentTick - state.cooldownStartTick >= COOLDOWN_TICKS) {
-                state.cooldownStartTick = -1;
-                state.count = 0;
-            } else {
-                return;
-            }
-        }
+        Long lastGenTick = lastSunGenTicks.get(self);
 
-        if (state.count < MAX_SUN_BATCH) {
-            if (state.lastGenTick < 0 || (currentTick - state.lastGenTick) >= ONE_SECOND_TICKS) {
-                ctx.produceSun(self.getCol(), self.getRow(), 1);
-                state.lastGenTick = currentTick;
-                state.count++;
-
-                if (state.count >= MAX_SUN_BATCH) {
-                    state.cooldownStartTick = currentTick;
-                }
-            }
+        if (lastGenTick == null || (currentTick - lastGenTick) >= COOLDOWN_TICKS) {
+            ctx.produceSun(self.getCol(), self.getRow(), SUN_VALUE);
+            lastSunGenTicks.put(self, currentTick);
         }
     }
 

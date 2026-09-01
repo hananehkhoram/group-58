@@ -19,8 +19,6 @@ import pvz.libpvz.pam.PamPlayer;
 
 public final class ProjectileAnimationLayer extends Group {
 
-    private static final float SHOOTER_MUZZLE_X_RATIO = 0.20f;
-    private static final float SHOOTER_MUZZLE_Y_RATIO = 0.18f;
     private static final float LOB_LAUNCH_X_RATIO = 0.50f;
     private static final float LOB_LAUNCH_Y_RATIO = 0.62f;
     private static final float LOB_APEX_Y_RATIO = 1.25f;
@@ -117,11 +115,6 @@ public final class ProjectileAnimationLayer extends Group {
         if (projectile.getTrajectory() == TrajectoryType.LOBBED) {
             drawX += lobOffsetX(projectile);
             drawY += lobOffsetY(projectile);
-        } else if (projectile.getOwnerPlant() != null
-            && projectile.getTrajectory() == TrajectoryType.STRAIGHT
-            && !projectile.getOwnerPlant().isPeaFamily()) {
-            drawX += getCellWidth() * SHOOTER_MUZZLE_X_RATIO;
-            drawY += getCellHeight() * SHOOTER_MUZZLE_Y_RATIO;
         }
 
         drawX += spec.getOffsetX();

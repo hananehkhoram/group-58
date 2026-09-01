@@ -115,7 +115,7 @@ public class LevelFactory {
                 generateWaves(8, 180, 200), LevelType.BOSS_FIGHT, null));
 
         Level bonusLevel = new Level("Ancient Egypt - Bonus", 5, 9,
-                generateWaves(3, 60, 300), LevelType.BONUS,
+                generateWaves(3, 120, 300), LevelType.BONUS,
                     null, null, null, null, null);
         levels.add(bonusLevel);
 

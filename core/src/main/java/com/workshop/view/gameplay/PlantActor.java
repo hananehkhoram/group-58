@@ -48,6 +48,8 @@ public final class PlantActor extends Actor {
     private static final String PLANTFOOD_GLOW_PAM =
         "768/INITIAL/EFFECTS/PLANTFOOD_FX/PLANTFOOD_FX.PAM";
     private static final float PLANTFOOD_GLOW_HEIGHT_TO_CELL_RATIO = 1.7f;
+    private static final String PULLED_PAM =
+        "768/FULL/EFFECTS/ZOMBOSS_PLANT_PULLED/ZOMBOSS_PLANT_PULLED.PAM";
 
     // iceHp شروعش برای یخ‌زدگیِ کامل، ۶۰۰ است (رجوع کنید به
     // Plant.increaseFreezeLevel()).
@@ -68,6 +70,9 @@ public final class PlantActor extends Actor {
     private boolean plantFoodGlowClipResolved;
     private Float plantFoodGlowScale;
     private float plantFoodGlowTime;
+    private String resolvedPulledClip;
+    private boolean pulledClipResolved;
+    private Float pulledScale;
 
     private PlantAnimationState currentState =
         PlantAnimationState.IDLE;
@@ -205,6 +210,9 @@ public final class PlantActor extends Actor {
         Matrix4 oldTransform = batch.getTransformMatrix().cpy();
         Matrix4 transform = new Matrix4(oldTransform);
         transform.translate(x, y, 0);
+        if (plant.isBeingPulled()) {
+            transform.rotate(0f, 0f, 1f, stateTime * 220f);
+        }
         transform.scale(scale, scale, 1f);
         transform.translate(-x, -y, 0);
         batch.setTransformMatrix(transform);
@@ -254,9 +262,16 @@ public final class PlantActor extends Actor {
                 }
             } else if (currentState == PlantAnimationState.ATTACK) {
                 if (stateTime >= attackClipDuration()) {
-                    currentState = PlantAnimationState.IDLE;
-                    stateTime = 0f;
-                    spitReleaseIndex = 0;
+                    if (hasPlantFoodBodyClip() && plant.isShowingPlantFoodGlow()) {
+                        play(PlantAnimationState.PLANTFOOD);
+                    } else if (plant.isPlantFoodActive()) {
+                        stateTime = 0f;
+                        spitReleaseIndex = 0;
+                    } else {
+                        currentState = PlantAnimationState.IDLE;
+                        stateTime = 0f;
+                        spitReleaseIndex = 0;
+                    }
                 }
             }
         }
@@ -268,7 +283,7 @@ public final class PlantActor extends Actor {
         plant.tickPlantFoodGlow(delta);
         if (plant.isShowingPlantFoodGlow()) {
             plantFoodGlowTime += delta;
-            if (animationSpec.hasClip(PlantAnimationState.PLANTFOOD)
+            if (hasPlantFoodBodyClip()
                 && currentState != PlantAnimationState.PLANTFOOD) {
                 play(PlantAnimationState.PLANTFOOD);
             }
@@ -315,6 +330,10 @@ public final class PlantActor extends Actor {
                     loop
                 );
             });
+        }
+
+        if (plant.isBeingPulled()) {
+            drawPulledOverlay(batch, parentAlpha);
         }
 
         if (plant.isIced()) {
@@ -450,6 +469,39 @@ public final class PlantActor extends Actor {
         batch.setTransformMatrix(oldTransform);
     }
 
+    private void drawPulledOverlay(Batch batch, float parentAlpha) {
+        if (!pulledClipResolved) {
+            resolvedPulledClip = resolveClip(
+                "PlantActor(pulled)",
+                PULLED_PAM,
+                "animation"
+            );
+            pulledClipResolved = true;
+        }
+        if (resolvedPulledClip == null) {
+            return;
+        }
+        if (pulledScale == null) {
+            Rectangle bounds = pamPlayer.bounds(PULLED_PAM, resolvedPulledClip);
+            if (bounds != null && bounds.height > 0f) {
+                pulledScale = (cellHeight * 1.15f) / bounds.height;
+            } else {
+                pulledScale = 1f;
+            }
+        }
+        batch.setColor(1f, 1f, 1f, parentAlpha);
+        drawScaled(
+            batch,
+            PULLED_PAM,
+            resolvedPulledClip,
+            stateTime,
+            getX(),
+            getY(),
+            true,
+            pulledScale
+        );
+    }
+
     private void drawIceBlock(Batch batch, float parentAlpha) {
         if (!iceBlockClipResolved) {
             resolvedIceBlockClip = resolveClip(
@@ -579,8 +631,19 @@ public final class PlantActor extends Actor {
             return false;
         }
 
+        animationSpec.ensureClipsBound(pamPlayer);
         if (!animationSpec.hasClip(state)) {
             return false;
+        }
+
+        if (state == PlantAnimationState.ATTACK
+            && hasPlantFoodBodyClip()
+            && plant.isShowingPlantFoodGlow()) {
+            if (currentState != PlantAnimationState.PLANTFOOD) {
+                currentState = PlantAnimationState.PLANTFOOD;
+                stateTime = 0f;
+            }
+            return true;
         }
 
         // اگر همین animation در حال اجراست، دوباره از صفر شروعش نکن.
@@ -597,11 +660,26 @@ public final class PlantActor extends Actor {
         return true;
     }
 
+    private boolean hasPlantFoodBodyClip() {
+        String clip = animationSpec.getClip(PlantAnimationState.PLANTFOOD);
+        if (clip == null) {
+            return false;
+        }
+        String compact = clip.toLowerCase();
+        return compact.contains("plantfood") || compact.contains("plant_food");
+    }
+
     int dueShotReleases() {
         if (currentState != PlantAnimationState.ATTACK) {
             return 0;
         }
         float spitAt = attackClipDuration() * plant.attackReleaseRatio();
+        if (stateTime < spitAt) {
+            return 0;
+        }
+        if (!plant.releasesShotsSequentially()) {
+            return Math.max(0, plant.pendingShotCount());
+        }
         int due = 0;
         while (spitReleaseIndex + due < 8
             && stateTime >= spitAt + (spitReleaseIndex + due) * SEQUENTIAL_SPIT_GAP) {
