@@ -52,9 +52,9 @@ public class MeleeAttackers implements BaseAbility {
         int pRow = plant.getRow();
         int pCol = plant.getCol();
 
-        List<Zombie> targets = engine.findTargets(pRow, pCol, TargetingMode.NONE);
+        List<Zombie> targets = engine.findTargets(pRow, pCol, TargetingMode.IN_SAME_PLACE);
         if (targets == null || targets.isEmpty()) {
-            targets = engine.findTargets(pRow, pCol + 1, TargetingMode.NONE);
+            targets = engine.findTargets(pRow, pCol + 1, TargetingMode.IN_SAME_PLACE);
         }
 
         if (targets != null && !targets.isEmpty()) {
@@ -89,7 +89,7 @@ public class MeleeAttackers implements BaseAbility {
         for (int r = pRow - 1; r <= pRow + 1; r++) {
             for (int c = pCol - 1; c <= pCol + 1; c++) {
                 if (r >= 0 && r < maxRows && c >= 0 && c < maxCols) {
-                    List<Zombie> targets = engine.findTargets(r, c, TargetingMode.NONE);
+                    List<Zombie> targets = engine.findTargets(r, c, TargetingMode.IN_SAME_PLACE);
                     if (targets != null && !targets.isEmpty()) {
                         for (Zombie z : targets) {
                             boolean aliveBefore = !z.isDead();

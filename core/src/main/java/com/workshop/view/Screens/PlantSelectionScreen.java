@@ -219,7 +219,7 @@ public class PlantSelectionScreen implements Screen {
     }
 
     private void renderPlantWithClipFallback(Batch batch, String plantName, float time, float x, float y, boolean grayedOut) {
-        String[] clips = {"idle", "idle_stage1", "intro", "animation", "anim"};
+        String[] clips = {"idle","idle_stage1_", "idle_stage1", "intro", "animation", "anim"};
         for (String clip : clips) {
             try {
                 ScreenResourceManager.drawPlantAnimation(

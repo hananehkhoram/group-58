@@ -86,7 +86,7 @@ public class WallNut implements BaseAbility {
     }
 
     private void executeReflective(int damage, Plant self, GameEngine engine) {
-        List<Zombie> attackers = engine.findTargets(self.getRow(), self.getCol(), TargetingMode.NONE);
+        List<Zombie> attackers = engine.findTargets(self.getRow(), self.getCol(), TargetingMode.IN_SAME_PLACE);
         if (attackers != null && !attackers.isEmpty()) {
             for (Zombie z : attackers) {
                 z.takeDamage(damage);
@@ -95,7 +95,8 @@ public class WallNut implements BaseAbility {
     }
 
     private void executeLaneRedirect(Plant self, GameEngine engine) {
-        List<Zombie> biters = engine.findTargets(self.getRow(), self.getCol(), TargetingMode.NONE);
+        if (self.getHp() > 1) {return;}
+        List<Zombie> biters = engine.findTargets(self.getRow(), self.getCol(), TargetingMode.IN_SAME_PLACE);
         if (biters != null && !biters.isEmpty()) {
             int maxRows = engine.getCtx().getLevel().getRows();
             for (Zombie z : biters) {

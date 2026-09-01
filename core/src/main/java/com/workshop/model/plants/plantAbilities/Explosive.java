@@ -22,7 +22,7 @@ public class Explosive implements BaseAbility {
             int r = pos[0];
             int c = pos[1];
 
-            List<Zombie> targets = engine.findTargets(r, c, TargetingMode.NONE);
+            List<Zombie> targets = engine.findTargets(r, c, TargetingMode.IN_SAME_PLACE);
             if (targets != null && !targets.isEmpty()) {
                 for (Zombie target : targets) {
                     target.takeExplosionDamage(damage);
@@ -39,6 +39,7 @@ public class Explosive implements BaseAbility {
 
         switch (type) {
             case INSTANT_AOE:
+                if (plant.getName().equalsIgnoreCase("Explode-o-nut") && plant.getHp() > 1) break;
                 applyAreaDamageAndRemove(get3x3Tiles(pRow, pCol, ctx), damage, plant, engine);
                 break;
             case LANE_FIRE:
