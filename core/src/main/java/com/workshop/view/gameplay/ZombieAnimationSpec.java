@@ -13,6 +13,9 @@ public final class ZombieAnimationSpec {
     private final Map<ZombieAnimationState, String> armlessClips =
         new EnumMap<>(ZombieAnimationState.class);
 
+    private float attackTimeOffset;
+    private boolean attackLoops;
+
     public ZombieAnimationSpec(String pamPath, String idleClip) {
         this.pamPath = pamPath;
         clips.put(ZombieAnimationState.IDLE, idleClip);
@@ -89,5 +92,21 @@ public final class ZombieAnimationSpec {
 
     public void setAshPamPath(String ashPamPath) {
         this.ashPamPath = ashPamPath;
+    }
+
+    public float getAttackTimeOffset() {
+        return attackTimeOffset;
+    }
+
+    public void setAttackTimeOffset(float attackTimeOffset) {
+        this.attackTimeOffset = Math.max(0f, attackTimeOffset);
+    }
+
+    public boolean attackLoops() {
+        return attackLoops;
+    }
+
+    public void setAttackLoops(boolean attackLoops) {
+        this.attackLoops = attackLoops;
     }
 }

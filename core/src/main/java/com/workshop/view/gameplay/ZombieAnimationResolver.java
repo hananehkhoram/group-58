@@ -151,6 +151,8 @@ public final class ZombieAnimationResolver {
             );
         }
 
+        bindActionClips(spec, pamPath, clips);
+
         String dieClip = findClip(clips, "die");
         if (dieClip == null) {
             dieClip = findClip(clips, "death");
@@ -182,6 +184,10 @@ public final class ZombieAnimationResolver {
                 + walkClip
                 + " | eat: "
                 + eatClip
+                + " | attack: "
+                + spec.getClip(ZombieAnimationState.ATTACK)
+                + " | stun: "
+                + spec.getClip(ZombieAnimationState.STUN)
         );
 
         resolvedSpecs.put(key, spec);
@@ -227,6 +233,153 @@ public final class ZombieAnimationResolver {
         }
 
         return zombieName;
+    }
+
+    private void bindActionClips(
+        ZombieAnimationSpec spec,
+        String pamPath,
+        List<String> clips
+    ) {
+        String stun = findFirstNamedClip(clips, "stun", "hurt");
+        if (stun != null) {
+            spec.setClip(ZombieAnimationState.STUN, stun);
+        }
+
+        String intro = findFirstNamedClip(
+            clips,
+            "intro", "enter", "appear", "spawn"
+        );
+        if (intro != null) {
+            spec.setClip(ZombieAnimationState.INTRO, intro);
+        }
+
+        String attack = longestActionClip(pamPath, clips);
+        float attackDur = clipDuration(pamPath, attack);
+        String idle = spec.getIdleClip();
+        float idleDur = clipDuration(pamPath, idle);
+
+        // Labels ending with $ are stop-markers. libPVZ treats them as
+        // 1-frame clips, so the real attack often sits at the tail of idle.
+        if (attack != null && attackDur >= 0.45f) {
+            spec.setClip(ZombieAnimationState.ATTACK, attack);
+            spec.setAttackTimeOffset(0f);
+            spec.setAttackLoops(false);
+        } else if (idle != null && idleDur >= 2.2f) {
+            spec.setClip(ZombieAnimationState.ATTACK, idle);
+            spec.setAttackTimeOffset(Math.max(0f, idleDur - 2.4f));
+            spec.setAttackLoops(false);
+        } else if (attack != null) {
+            spec.setClip(ZombieAnimationState.ATTACK, attack);
+            spec.setAttackTimeOffset(0f);
+            spec.setAttackLoops(false);
+        }
+
+        Gdx.app.log(
+            "ZombieAnimationResolver",
+            "action clips pam=" + pamPath
+                + " attack=" + spec.getClip(ZombieAnimationState.ATTACK)
+                + " dur=" + attackDur
+                + " offset=" + spec.getAttackTimeOffset()
+                + " idleDur=" + idleDur
+                + " all=" + clips
+        );
+    }
+
+    private String longestActionClip(String pamPath, List<String> clips) {
+        if (clips == null) {
+            return null;
+        }
+        String best = null;
+        float bestDur = -1f;
+        for (String clip : clips) {
+            if (!isUsableAnimClip(clip)) {
+                continue;
+            }
+            String key = normalize(clip);
+            if (key.equals("IDLE")
+                || key.equals("ALMANACIDLE")
+                || key.contains("INTRO")
+                || key.contains("DIE")
+                || key.contains("DEATH")
+                || key.equals("STUN")
+                || key.contains("HURT")) {
+                continue;
+            }
+            if (!(key.contains("WIND")
+                || key.contains("ATTACK")
+                || key.contains("LAUNCH")
+                || key.contains("SPECIAL")
+                || key.contains("STOMP")
+                || key.contains("FIRE")
+                || key.contains("SUMMON")
+                || key.contains("CHARGE")
+                || key.contains("THROW"))) {
+                continue;
+            }
+            float duration = clipDuration(pamPath, clip);
+            if (duration > bestDur) {
+                bestDur = duration;
+                best = clip;
+            }
+        }
+        return best;
+    }
+
+    private float clipDuration(String pamPath, String clip) {
+        if (pamPath == null || clip == null) {
+            return 0f;
+        }
+        try {
+            return Textures.getPamPlayer().clipDurationSeconds(pamPath, clip);
+        } catch (RuntimeException ignored) {
+            return 0f;
+        }
+    }
+
+    private String findFirstNamedClip(List<String> clips, String... names) {
+        for (String name : names) {
+            String exact = findExactClip(clips, name);
+            if (isUsableAnimClip(exact)) {
+                return exact;
+            }
+        }
+        for (String name : names) {
+            if (name.length() < 4) {
+                continue;
+            }
+            String found = findUsableContainingClip(clips, name);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
+    }
+
+    private String findUsableContainingClip(List<String> clips, String expectedName) {
+        if (clips == null) {
+            return null;
+        }
+        String needle = normalize(expectedName);
+        for (String clip : clips) {
+            if (!isUsableAnimClip(clip)) {
+                continue;
+            }
+            if (normalize(clip).contains(needle)) {
+                return clip;
+            }
+        }
+        return null;
+    }
+
+    private boolean isUsableAnimClip(String clip) {
+        if (clip == null || clip.isBlank()) {
+            return false;
+        }
+        String n = clip.toLowerCase();
+        if (n.startsWith("play_") || n.contains("damage") || n.contains("silhouette")) {
+            return false;
+        }
+        return !normalize(clip).equals("IDLE") && !normalize(clip).equals("ALMANACIDLE");
     }
 
     private String resolveArmoredPam(Zombie zombie) {

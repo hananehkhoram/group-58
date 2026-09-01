@@ -81,6 +81,13 @@ public final class ExplosionFxLayer extends Group {
                 addBurst(fx.row, fx.col, GENERIC_BACK_PAM, 1.8f, 1.15f);
                 addBurst(fx.row, fx.col, GENERIC_FRONT_PAM, 1.8f, 1.15f);
             }
+            case ICEAGE_MISSILE -> addBurst(
+                fx.row,
+                fx.col,
+                "768/FULL/EFFECTS/ZOMBOSS_MISSILE_EXPLOSION_ICEAGE/ZOMBOSS_MISSILE_EXPLOSION_ICEAGE.PAM",
+                2.2f,
+                1.25f
+            );
         }
     }
 

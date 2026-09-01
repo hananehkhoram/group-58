@@ -9,7 +9,8 @@ public final class ExplosionFx {
         GRAPESHOT(16f, 0.40f),
         JALAPENO(14f, 0.38f),
         DOOM(28f, 0.55f),
-        GENERIC(12f, 0.30f);
+        GENERIC(12f, 0.30f),
+        ICEAGE_MISSILE(14f, 0.32f);
 
         public final float shakeIntensity;
         public final float shakeDuration;

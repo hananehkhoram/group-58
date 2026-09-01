@@ -286,23 +286,46 @@ public final class ZombieActor extends Actor {
         if (zombie.isEating()) {
             nextState = ZombieAnimationState.EAT;
         } else if (zombie.isBoss()) {
-            ZombossSummon zomboss = zombie.getZomboss();
-            boolean moving = zomboss != null && zomboss.isPhysicallyMoving();
-            nextState = moving
-                ? ZombieAnimationState.WALK
-                : ZombieAnimationState.IDLE;
+            nextState = bossAnimationState(zombie.getZomboss());
         } else {
             nextState = ZombieAnimationState.WALK;
         }
 
         if (!animationSpec.hasClip(nextState, zombie.hasLostArm())) {
-            nextState = ZombieAnimationState.IDLE;
+            if (nextState == ZombieAnimationState.ATTACK
+                && animationSpec.hasClip(ZombieAnimationState.IDLE)) {
+                nextState = ZombieAnimationState.ATTACK;
+                if (animationSpec.getClip(ZombieAnimationState.ATTACK) == null) {
+                    animationSpec.setClip(
+                        ZombieAnimationState.ATTACK,
+                        animationSpec.getIdleClip()
+                    );
+                }
+            } else {
+                nextState = ZombieAnimationState.IDLE;
+            }
         }
 
         if (currentState != nextState) {
             currentState = nextState;
             stateTime = 0f;
         }
+    }
+
+    private ZombieAnimationState bossAnimationState(ZombossSummon zomboss) {
+        if (zomboss == null) {
+            return ZombieAnimationState.IDLE;
+        }
+        if (zomboss.isPhysicallyMoving()) {
+            return ZombieAnimationState.WALK;
+        }
+        return switch (zomboss.getCurrentState()) {
+            case INTRO -> ZombieAnimationState.INTRO;
+            case STUNNED -> ZombieAnimationState.STUN;
+            case WALKING, DASHING -> ZombieAnimationState.WALK;
+            case IDLE -> ZombieAnimationState.IDLE;
+            default -> ZombieAnimationState.ATTACK;
+        };
     }
 
     private void resolveSandstormClip() {
@@ -423,14 +446,25 @@ public final class ZombieActor extends Actor {
             clip = animationSpec.getIdleClip();
         }
 
+        boolean loop = currentState != ZombieAnimationState.ATTACK
+            && currentState != ZombieAnimationState.INTRO
+            && currentState != ZombieAnimationState.DIE;
+        if (currentState == ZombieAnimationState.ATTACK && animationSpec.attackLoops()) {
+            loop = true;
+        }
+        float clipTime = stateTime;
+        if (currentState == ZombieAnimationState.ATTACK) {
+            clipTime += animationSpec.getAttackTimeOffset();
+        }
+
         drawScaled(
             batch,
             animationSpec.getPamPath(),
             clip,
-            stateTime,
+            clipTime,
             getX(),
             getY(),
-            true
+            loop
         );
 
         ZombieArmorLooks.draw(

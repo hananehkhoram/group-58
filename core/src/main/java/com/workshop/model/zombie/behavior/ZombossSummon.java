@@ -20,6 +20,7 @@ public class ZombossSummon implements Behaviors {
 
     private static final double ACTION_COOLDOWN_SECONDS = 5.0;
     private static final double INTRO_DURATION_SECONDS = 1.2;
+    private static final double ACTION_ANIM_SECONDS = 2.6;
     private static final double BURN_DURATION_SECONDS = 4.0;
     private static final int INSTANT_KILL_DAMAGE = 10000;
     private static final double TICK_SECONDS = 0.1;
@@ -32,6 +33,7 @@ public class ZombossSummon implements Behaviors {
     private long spawnTick = -1;
     private double introElapsed;
     private double actionElapsed;
+    private double actionAnimRemaining;
     private boolean pendingFirstAction = true;
     private boolean announcedStun;
 
@@ -53,6 +55,7 @@ public class ZombossSummon implements Behaviors {
 
         if (isStunned(zombie)) {
             this.currentState = ZombossState.STUNNED;
+            this.actionAnimRemaining = 0;
             this.isDashing = false;
             this.isReturning = false;
             if (!announcedStun) {
@@ -62,12 +65,17 @@ public class ZombossSummon implements Behaviors {
             actionElapsed += TICK_SECONDS;
             return;
         }
+        if (currentState == ZombossState.STUNNED) {
+            this.currentState = ZombossState.IDLE;
+        }
         announcedStun = false;
 
         if (isDashing || isReturning) {
             updateDashPosition(zombie, ctx);
             return;
         }
+
+        tickActionAnim();
 
         actionElapsed += TICK_SECONDS;
         if (pendingFirstAction || actionElapsed >= ACTION_COOLDOWN_SECONDS) {
@@ -199,16 +207,15 @@ public class ZombossSummon implements Behaviors {
         int totalRows = ctx.getLevel().getRows();
         if (totalRows < 2) return;
 
-        this.currentState = ZombossState.WALKING;
+        beginAction(ZombossState.WALKING);
         int newTopRow = random.nextInt(totalRows - 1);
         boss.setY(newTopRow);
 
         ctx.announce(boss.getName() + " moved to rows " + newTopRow + " and " + (newTopRow + 1) + "!");
-        this.currentState = ZombossState.IDLE;
     }
 
     private void summonMinions(Zombie boss, GameContext ctx) {
-        this.currentState = ZombossState.SUMMONING_ZOMBIES;
+        beginAction(ZombossState.SUMMONING_ZOMBIES);
         Map<String, Zombie> pool = ctx.getDataManager().zombies.getZombieDataMap();
         String seasonName = ctx.getSeason().getName();
 
@@ -229,12 +236,10 @@ public class ZombossSummon implements Behaviors {
                 spawnMinion(ctx, name, ctx.getLevel().getColumns(), random.nextInt(ctx.getLevel().getRows()));
             }
         }
-
-        this.currentState = ZombossState.IDLE;
     }
 
     private void fireEgyptMissile(Zombie boss, GameContext ctx) {
-        this.currentState = ZombossState.FIRING_MISSILE;
+        beginAction(ZombossState.FIRING_MISSILE);
 
         int[] cell = pickRandomCell(ctx);
         destroyPlantAt(ctx, cell[0], cell[1]);
@@ -242,11 +247,10 @@ public class ZombossSummon implements Behaviors {
         spawnRandomGraves(ctx, 2);
 
         ctx.announce(boss.getName() + " launched a missile!");
-        this.currentState = ZombossState.IDLE;
     }
 
     private void launchDragonFireballs(Zombie boss, GameContext ctx) {
-        this.currentState = ZombossState.LAUNCHING_FIREBALLS;
+        beginAction(ZombossState.LAUNCHING_FIREBALLS);
 
         int rows = ctx.getLevel().getRows();
         int cols = ctx.getLevel().getColumns();
@@ -273,11 +277,10 @@ public class ZombossSummon implements Behaviors {
         }
 
         ctx.announce(boss.getName() + " rained fireballs!");
-        this.currentState = ZombossState.IDLE;
     }
 
     private void burnOccupiedRows(Zombie boss, GameContext ctx) {
-        this.currentState = ZombossState.BURNING_ROWS;
+        beginAction(ZombossState.BURNING_ROWS);
 
         int topRow = bossTopRow(boss, ctx);
         int bottomRow = topRow + 1;
@@ -291,22 +294,20 @@ public class ZombossSummon implements Behaviors {
         }
 
         ctx.announce(boss.getName() + " scorched both lanes!");
-        this.currentState = ZombossState.IDLE;
     }
 
     private void fireIceMissile(Zombie boss, GameContext ctx) {
-        this.currentState = ZombossState.FIRING_ICE_MISSILE;
+        beginAction(ZombossState.FIRING_ICE_MISSILE);
 
         int[] cell = pickRandomCell(ctx);
         destroyPlantAt(ctx, cell[0], cell[1]);
-        ctx.spawnExplosion(cell[0], cell[1], ExplosionFx.Kind.GENERIC);
+        ctx.spawnExplosion(cell[0], cell[1], ExplosionFx.Kind.ICEAGE_MISSILE);
 
         ctx.announce(boss.getName() + " launched an ice missile!");
-        this.currentState = ZombossState.IDLE;
     }
 
     private void blastIcyWind(Zombie boss, GameContext ctx) {
-        this.currentState = ZombossState.ICY_WIND;
+        beginAction(ZombossState.ICY_WIND);
 
         int rows = ctx.getLevel().getRows();
         int first = random.nextInt(rows);
@@ -321,7 +322,6 @@ public class ZombossSummon implements Behaviors {
         }
 
         ctx.announce(boss.getName() + " blasted icy wind!");
-        this.currentState = ZombossState.IDLE;
     }
 
     private void applyIcyWind(GameContext ctx, int row) {
@@ -344,7 +344,7 @@ public class ZombossSummon implements Behaviors {
     }
 
     private void freezeRandomColumn(Zombie boss, GameContext ctx) {
-        this.currentState = ZombossState.FREEZING_COLUMN;
+        beginAction(ZombossState.FREEZING_COLUMN);
 
         int rows = ctx.getLevel().getRows();
         int cols = ctx.getLevel().getColumns();
@@ -367,11 +367,10 @@ public class ZombossSummon implements Behaviors {
         }
 
         ctx.announce(boss.getName() + " froze column " + column + "!");
-        this.currentState = ZombossState.IDLE;
     }
 
     private void launchBeachSharks(Zombie boss, GameContext ctx) {
-        this.currentState = ZombossState.LAUNCHING_SHARKS;
+        beginAction(ZombossState.LAUNCHING_SHARKS);
 
         int rows = ctx.getLevel().getRows();
         int cols = ctx.getLevel().getColumns();
@@ -387,11 +386,10 @@ public class ZombossSummon implements Behaviors {
         }
 
         ctx.announce(boss.getName() + " launched sharks from underwater!");
-        this.currentState = ZombossState.IDLE;
     }
 
     private void executeBeachVortex(Zombie boss, GameContext ctx) {
-        this.currentState = ZombossState.USING_VORTEX;
+        beginAction(ZombossState.USING_VORTEX);
 
         int topRow = bossTopRow(boss, ctx);
         int bottomRow = topRow + 1;
@@ -416,7 +414,6 @@ public class ZombossSummon implements Behaviors {
         }
 
         ctx.announce(boss.getName() + " activated the turbine, pulling plants and zombies!");
-        this.currentState = ZombossState.IDLE;
     }
 
     private void spawnRandomGraves(GameContext ctx, int count) {
@@ -477,6 +474,24 @@ public class ZombossSummon implements Behaviors {
                 this.currentState = ZombossState.IDLE;
             }
         }
+    }
+
+    private void tickActionAnim() {
+        if (currentState == ZombossState.IDLE
+            || currentState == ZombossState.INTRO
+            || currentState == ZombossState.STUNNED
+            || currentState == ZombossState.DASHING) {
+            return;
+        }
+        actionAnimRemaining -= TICK_SECONDS;
+        if (actionAnimRemaining <= 0) {
+            this.currentState = ZombossState.IDLE;
+        }
+    }
+
+    private void beginAction(ZombossState state) {
+        this.currentState = state;
+        this.actionAnimRemaining = ACTION_ANIM_SECONDS;
     }
 
     public ZombossState getCurrentState() {

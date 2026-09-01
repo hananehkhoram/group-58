@@ -5,5 +5,8 @@ public enum ZombieAnimationState {
     WALK,
     EAT,
     DIE,
-    ASH
+    ASH,
+    ATTACK,
+    STUN,
+    INTRO
 }
