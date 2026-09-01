@@ -29,6 +29,7 @@ public class Tile {
         return grid;
     }
 
+
     public int getX() {
         return x;
     }

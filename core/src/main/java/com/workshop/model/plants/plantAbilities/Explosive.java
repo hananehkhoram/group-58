@@ -3,6 +3,7 @@ package com.workshop.model.plants.plantAbilities;
 import com.workshop.model.GameContext;
 import com.workshop.model.mechanisms.ExplosionFx;
 import com.workshop.model.mechanisms.GameEngine;
+import com.workshop.model.mechanisms.TerrainType;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.plants.TargetingMode;
 import com.workshop.model.plants.plantFoodEffect.PlantFoodMode;
@@ -158,9 +159,16 @@ public class Explosive implements BaseAbility {
     }
 
     private void executeFreezeTrap(Plant plant, GameEngine engine) {
+
         List<Zombie> stepZombies = engine.findTargets(plant.getRow(), plant.getCol(), TargetingMode.NONE);
-        if (stepZombies != null && !stepZombies.isEmpty()) {
-            Zombie firstZombie = stepZombies.get(0);
+        List<Zombie> inSameTile = new ArrayList<>();
+        for (Zombie z : stepZombies) {
+            if (Math.floor(z.getX()) == plant.getCol()) {
+                inSameTile.add(z);
+            }
+        }
+        if (inSameTile != null && !inSameTile.isEmpty()) {
+            Zombie firstZombie = inSameTile.get(0);
             firstZombie.applySlowOrFreeze();
             engine.removePlant(plant.getRow(), plant.getCol());
         }

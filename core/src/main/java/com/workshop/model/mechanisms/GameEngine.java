@@ -334,11 +334,21 @@ public class GameEngine {
                 ctx.getAlivePlants()
             );
 
+        int currentSecond = ctx.getTimeManager().getTotalSeconds();
         for (Plant p : plantsSnapshot) {
-
-            // ممکنه گیاه قبلاً توسط ability دیگری حذف شده باشه
             if (!ctx.getAlivePlants().contains(p)) {
                 continue;
+            }
+            if (p.getName() != null) {
+                String pName = p.getName().replace("-", "").toLowerCase();
+                if (pName.equals("puffshroom") || pName.equals("seashroom")) {
+                    if (p.getPlantTimeSecond() == 0) {
+                        p.setPlantTimeSecond(currentSecond);
+                    }
+                    if (currentSecond - p.getPlantTimeSecond() >= 60) {
+                        p.takeDamage(Integer.MAX_VALUE);
+                    }
+                }
             }
 
             PlantActivator.activate(
@@ -347,7 +357,6 @@ public class GameEngine {
                 this
             );
 
-            // خود ability ممکنه همین گیاه رو حذف کرده باشه
             if (!ctx.getAlivePlants().contains(p)) {
                 continue;
             }
@@ -394,7 +403,6 @@ public class GameEngine {
             }
         }
     }
-
     public void removePlant(int row, int col) {
         Plant p = ctx.getPlantGrid()[row][col];
         if (p != null) {
