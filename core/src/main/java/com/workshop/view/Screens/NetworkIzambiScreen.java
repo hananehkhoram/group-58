@@ -33,13 +33,7 @@ import com.workshop.model.plants.Plant;
 import com.workshop.net.GameClient;
 import com.workshop.net.MatchListener;
 import com.workshop.view.Toast;
-import com.workshop.view.gameplay.BowlingRedLineLayer;
-import com.workshop.view.gameplay.BrainLayer;
-import com.workshop.view.gameplay.ExplosionFxLayer;
-import com.workshop.view.gameplay.PlantAnimationLayer;
-import com.workshop.view.gameplay.ProjectileAnimationLayer;
-import com.workshop.view.gameplay.ZombieAnimationLayer;
-import com.workshop.view.gameplay.ZombieGibLayer;
+import com.workshop.view.gameplay.*;
 import pvz.skin.PvzSkin;
 
 import java.util.ArrayList;
@@ -103,6 +97,27 @@ public class NetworkIzambiScreen implements Screen {
         "UI/REACTIONS/emoji_0.png",
         "UI/REACTIONS/emoji_1.png",
         "UI/REACTIONS/emoji_2.png"
+    };
+
+    private static final String[][] STICKER_PATHS = {
+
+        {
+            "UI/REACTIONS/sticker_0/0.png",
+            "UI/REACTIONS/sticker_0/1.png",
+            "UI/REACTIONS/sticker_0/2.png"
+        },
+
+        {
+            "UI/REACTIONS/sticker_1/0.png",
+            "UI/REACTIONS/sticker_1/1.png",
+            "UI/REACTIONS/sticker_1/2.png"
+        },
+
+        {
+            "UI/REACTIONS/sticker_2/0.png",
+            "UI/REACTIONS/sticker_2/1.png",
+            "UI/REACTIONS/sticker_2/2.png"
+        }
     };
 
     public NetworkIzambiScreen(
@@ -294,6 +309,41 @@ public class NetworkIzambiScreen implements Screen {
         }
 
         hud.add(emojiTable)
+            .right()
+            .padTop(8f)
+            .row();
+
+        Table stickerTable = new Table();
+
+        for(int i = 0; i < STICKER_PATHS.length; i++){
+
+            final int stickerIndex = i;
+
+            TextButton button =
+                new TextButton(
+                    "Sticker " + (i+1),
+                    skin,
+                    "purple"
+                );
+
+            button.addListener(new ChangeListener(){
+
+                @Override
+                public void changed(
+                    ChangeEvent event,
+                    Actor actor
+                ){
+                    sendStickerReaction(stickerIndex);
+                }
+            });
+
+            stickerTable.add(button)
+                .width(120f)
+                .height(45f)
+                .pad(4f);
+        }
+
+        hud.add(stickerTable)
             .right()
             .padTop(8f)
             .row();
@@ -535,6 +585,25 @@ public class NetworkIzambiScreen implements Screen {
         ).start();
     }
 
+    private void sendStickerReaction(int index){
+
+        if(index < 0 || index >= STICKER_PATHS.length){
+            return;
+        }
+
+        String payload =
+            "STICKER:" + index;
+
+        new Thread(() ->
+            GameClient.get()
+                .sendMatchReaction(
+                    matchId,
+                    payload
+                ),
+            "sticker-reaction-sender"
+        ).start();
+    }
+
     private void handleReaction(String payload) {
         if (payload == null || payload.isBlank()) {
             return;
@@ -575,6 +644,28 @@ public class NetworkIzambiScreen implements Screen {
                 // Invalid emoji reaction.
             }
         }
+
+        if(payload.startsWith("STICKER:")){
+
+            String indexText =
+                payload.substring("STICKER:".length());
+
+            try{
+
+                int index =
+                    Integer.parseInt(indexText);
+
+                if(index < 0 ||
+                    index >= STICKER_PATHS.length){
+                    return;
+                }
+
+                showStickerReaction(index);
+
+            }catch(NumberFormatException ignored){
+
+            }
+        }
     }
 
     private void showEmojiReaction(int index) {
@@ -601,6 +692,53 @@ public class NetworkIzambiScreen implements Screen {
                 Actions.run(() -> {
                     image.remove();
                     texture.dispose();
+                })
+            )
+        );
+    }
+
+    private void showStickerReaction(int index){
+
+        Texture[] frames =
+            new Texture[STICKER_PATHS[index].length];
+
+
+        for(int i = 0; i < frames.length; i++){
+
+            frames[i] =
+                new Texture(
+                    Gdx.files.internal(
+                        STICKER_PATHS[index][i]
+                    )
+                );
+        }
+
+
+        StickerActor sticker =
+            new StickerActor(frames);
+
+
+        sticker.setSize(
+            120,
+            120
+        );
+
+
+        sticker.setPosition(
+            stage.getViewport().getWorldWidth() - 1000,
+            stage.getViewport().getWorldHeight() - 300
+        );
+
+
+        stage.addActor(sticker);
+
+
+        sticker.addAction(
+            Actions.sequence(
+                Actions.delay(3f),
+                Actions.run(() -> {
+                    sticker.remove();
+                    sticker.dispose();
                 })
             )
         );

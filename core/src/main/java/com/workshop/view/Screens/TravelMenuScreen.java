@@ -164,13 +164,13 @@ public class TravelMenuScreen implements Screen {
                     miniGameId = 2; // Wallnuts
                 }
                 else if (j == 2) {
-                    miniGameId = 3; // Izombie
+                    miniGameId = 5; // Izombie 5
                 }
                 else if (j == 3) {
-                    miniGameId = 4; // Beghouled
+                    miniGameId = 3; // Beghouled
                 }
                 else if (j == 4) {
-                    miniGameId = 5; // Zombotany
+                    miniGameId = 4; // Zombotany 3
                 }
 
                 String levelName = "";

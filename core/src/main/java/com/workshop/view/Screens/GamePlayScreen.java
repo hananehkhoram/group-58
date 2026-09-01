@@ -419,6 +419,20 @@ public class GamePlayScreen implements Screen {
             stage.addActor(vaseAnimationLayer);
         }
 
+        if (level.getLevelType() == LevelType.Beghouled_MG) {
+
+            BeghouledLayer beghouledLayer =
+                new BeghouledLayer(
+                    gameContext,
+                    getGridX(),
+                    getGridY(),
+                    getGridWidth(),
+                    getGridHeight()
+                );
+
+            stage.addActor(beghouledLayer);
+        }
+
         DroppedSeedLayer droppedSeedLayer =
             new DroppedSeedLayer(
                 gameContext,
@@ -2855,6 +2869,10 @@ public class GamePlayScreen implements Screen {
         updateIntroCamera(delta);
         updateGameplayStartDelay(delta);
         applyScreenShake(delta);
+
+        if (ctx.getBeghouldManager() != null) {
+            ctx.getBeghouldManager().update(delta);
+        }
 
         if (gameplayStarted
             && !pauseOverlay.isVisible()

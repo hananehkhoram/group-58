@@ -85,10 +85,21 @@ public final class PlantAnimationLayer extends Group {
                     addActor(actor);
                 }
 
-                actor.setPosition(
-                    getCellCenterX(column),
-                    getCellCenterY(row)
-                );
+                if (gameContext.getBeghouldManager() != null) {
+
+                    actor.smoothMoveTo(
+                        getCellCenterX(column),
+                        getCellCenterY(row)
+                    );
+
+                } else {
+
+                    actor.moveTo(
+                        getCellCenterX(column),
+                        getCellCenterY(row)
+                    );
+                }
+
                 actor.setZIndex(row);
             }
         }

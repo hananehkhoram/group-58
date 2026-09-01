@@ -21,7 +21,12 @@ import pvz.libpvz.textures.TextureBank;
 
 public class PlantCardActor extends Table {
 
-    public enum Mode { GRID, SLOT, CONVEYOR }
+    public enum Mode {
+        GRID,
+        SLOT,
+        CONVEYOR,
+        UPGRADE
+    }
 
     public interface OnClick {
         void clicked(PlantCardActor card);
@@ -48,6 +53,7 @@ public class PlantCardActor extends Table {
     private static NinePatchDrawable cardBackground;
     private static NinePatchDrawable cardBackgroundFocused;
     private static NinePatchDrawable cardBackgroundBoosted;
+    private Integer customCost = null;
 
     public PlantCardActor(Plant plant, PamPlayer pamPlayer, TextureBank textureBank, Skin skin, Mode mode) {
         this.plant = plant;
@@ -62,6 +68,10 @@ public class PlantCardActor extends Table {
 
     public void updateAnimation(float delta) {
         this.animTime += delta;
+    }
+
+    public void setCustomCost(int cost){
+        this.customCost = cost;
     }
 
     private static NinePatchDrawable buildRoundedBackground(Color fill, Color border) {
@@ -226,6 +236,18 @@ public class PlantCardActor extends Table {
 
             add(pamContainer).size(90f, 65f).center().row();
             add(footerTable).fillX().padLeft(6f).padRight(6f).padBottom(4f).row();
+        } else if (mode == Mode.UPGRADE) {
+
+            add(pamContainer)
+                .size(10f,10f)
+                .center()
+                .padTop(-50f)
+                .padLeft(-20f)
+                .row();
+
+            add(buildSunCostGroup())
+                .center()
+                .padBottom(5f);
         } else {
             Table slotRow = new Table();
             slotRow.align(Align.center);
@@ -321,8 +343,15 @@ public class PlantCardActor extends Table {
             group.add(sunIcon).size(mode == Mode.SLOT ? 22f : 18f).padRight(2f);
         }
 
-        Label sunLbl = createSafeLabel(String.valueOf(plant.getSunCost()), "big");
-        sunLbl.setFontScale(mode == Mode.SLOT ? 0.3f : 0.4f);
+        int cost =
+            customCost != null
+                ? customCost
+                : plant.getSunCost();
+
+        Label sunLbl = createSafeLabel(
+            String.valueOf(cost),
+            "big"
+        );        sunLbl.setFontScale(mode == Mode.SLOT ? 0.3f : 0.4f);
 
         if (isBoosted) {
             sunLbl.setColor(new Color(0.2f, 0.1f, 0.0f, 1f));
