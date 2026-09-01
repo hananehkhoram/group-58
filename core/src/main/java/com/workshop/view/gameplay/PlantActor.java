@@ -82,6 +82,10 @@ public final class PlantActor extends Actor {
     private Float resolvedAttackDuration;
     private Float graveBusterAttackDuration;
     private int spitReleaseIndex;
+    private float targetX;
+    private float targetY;
+    private boolean moving;
+    private static final float MOVE_SPEED = 500f;
 
     public PlantActor(
         Plant plant,
@@ -113,6 +117,25 @@ public final class PlantActor extends Actor {
         if (plant.isGraveDestroyer()) {
             currentState = PlantAnimationState.ATTACK;
         }
+    }
+
+    public void moveTo(float x, float y){
+
+        setPosition(x, y);
+        moving = false;
+    }
+
+    public void smoothMoveTo(float x, float y){
+
+        targetX = x;
+        targetY = y;
+
+        if(!moving && getX() == 0 && getY() == 0){
+            setPosition(x, y);
+            return;
+        }
+
+        moving = true;
     }
 
     private float getScale() {
@@ -205,6 +228,23 @@ public final class PlantActor extends Actor {
     @Override
     public void act(float delta) {
         super.act(delta);
+
+        if(moving){
+
+            float newX = moveTowards(
+                getX(),
+                targetX,
+                MOVE_SPEED * delta
+            );
+
+            float newY = moveTowards(
+                getY(),
+                targetY,
+                MOVE_SPEED * delta
+            );
+
+            setPosition(newX,newY);
+        }
 
         hitFlash.update(delta);
 
@@ -688,5 +728,19 @@ public final class PlantActor extends Actor {
 
     public Plant getPlant() {
         return plant;
+    }
+
+    private float moveTowards(
+        float current,
+        float target,
+        float maxDelta
+    ){
+
+        if(Math.abs(target-current) <= maxDelta){
+            return target;
+        }
+
+        return current +
+            Math.signum(target-current) * maxDelta;
     }
 }

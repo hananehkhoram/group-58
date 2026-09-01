@@ -22,6 +22,16 @@ public class BeghouledManager {
     private int targetMatches;
     private int currentMatches;
 
+    private boolean waitingForSwapAnimation = false;
+    private float swapTimer = 0f;
+
+    private int pendingX1;
+    private int pendingY1;
+    private int pendingX2;
+    private int pendingY2;
+
+    private int remainingMatchIcons;
+
     private static class MatchInfo {
         private final Set<Integer> matchedCells = new HashSet<>();
         private int combinationCount;
@@ -46,6 +56,7 @@ public class BeghouledManager {
         this.engine = engine;
         this.targetMatches = targetMatches;
         this.currentMatches = 0;
+        this.remainingMatchIcons = targetMatches;
 
         this.craterGrid =
             new boolean[ctx.getLevel().getRows()]
@@ -62,7 +73,7 @@ public class BeghouledManager {
             case 1 -> List.of(
                 "Peashooter",
                 "Wall-nut",
-                "Sunflower",
+                "Chomper",
                 "Cabbage-pult",
                 "Snow Pea"
             );
@@ -71,14 +82,12 @@ public class BeghouledManager {
                 "Peashooter",
                 "Wall-nut",
                 "Kernel-pult",
-                "Melon-pult",
                 "Snow Pea"
             );
 
             case 3 -> List.of(
                 "Repeater",
                 "Wall-nut",
-                "Fume-shroom",
                 "Cabbage-pult",
                 "Snow Pea"
             );
@@ -101,6 +110,8 @@ public class BeghouledManager {
                         activePlantTypes.get(
                             rand.nextInt(activePlantTypes.size())
                         );
+
+                    System.out.println("TRY CREATE PLANT = " + randomPlant);
 
                     placePlantDirect(
                         r,
@@ -139,7 +150,15 @@ public class BeghouledManager {
 
         swapPlants(x1, y1, x2, y2);
 
-        MatchInfo matches = findMatches();
+        waitingForSwapAnimation = true;
+        swapTimer = 0.25f;
+
+        pendingX1 = x1;
+        pendingY1 = y1;
+        pendingX2 = x2;
+        pendingY2 = y2;
+
+        /*MatchInfo matches = findMatches();
 
         boolean swapCreatedMatch =
             matches.contains(y1, x1, ctx.getLevel().getColumns())
@@ -154,7 +173,7 @@ public class BeghouledManager {
         applyGravityAndRefill();
         handleCascades();
 
-        checkWinCondition();
+        checkWinCondition();*/
         return true;
     }
 
@@ -386,6 +405,10 @@ public class BeghouledManager {
             }
         }
 
+        System.out.println(
+            "COMBINATION COUNT = " + result.combinationCount
+        );
+
         return result;
     }
 
@@ -417,6 +440,12 @@ public class BeghouledManager {
         );
 
         currentMatches += matches.combinationCount;
+
+        remainingMatchIcons -= matches.combinationCount;
+
+        if(remainingMatchIcons < 0){
+            remainingMatchIcons = 0;
+        }
 
         removeMatches(matches);
     }
@@ -616,6 +645,76 @@ public class BeghouledManager {
         return currentMatches;
     }
 
+    public static class UpgradeOption {
+
+        private final String fromPlant;
+        private final String toPlant;
+        private final int cost;
+
+        public UpgradeOption(
+            String fromPlant,
+            String toPlant,
+            int cost
+        ) {
+            this.fromPlant = fromPlant;
+            this.toPlant = toPlant;
+            this.cost = cost;
+        }
+
+        public String getFromPlant() {
+            return fromPlant;
+        }
+
+        public String getToPlant() {
+            return toPlant;
+        }
+
+        public int getCost() {
+            return cost;
+        }
+    }
+
+
+    public List<UpgradeOption> getAvailableUpgradeOptions() {
+
+        List<UpgradeOption> result =
+            new ArrayList<>();
+
+        Set<String> added =
+            new HashSet<>();
+
+
+        for (String plantName : activePlantTypes) {
+
+            String key =
+                plantName.toLowerCase(Locale.ROOT);
+
+            if (!added.add(key)) {
+                continue;
+            }
+
+
+            Object[] upgrade =
+                upgradeTable.get(key);
+
+            if (upgrade == null) {
+                continue;
+            }
+
+
+            result.add(
+                new UpgradeOption(
+                    plantName,
+                    (String) upgrade[0],
+                    ((Number) upgrade[1]).intValue()
+                )
+            );
+        }
+
+
+        return result;
+    }
+
     public int getTargetMatches() {
         return targetMatches;
     }
@@ -629,30 +728,39 @@ public class BeghouledManager {
             case 1 -> {
                 upgrades.put(
                     "peashooter",
-                    new Object[]{"Repeater", 500}
+                    new Object[]{"Repeater", 200}
                 );
+
                 upgrades.put(
                     "repeater",
                     new Object[]{"Mega Gatling Pea", 1500}
                 );
+
                 upgrades.put(
                     "wall-nut",
-                    new Object[]{"Tall-nut", 500}
+                    new Object[]{"Tall-nut", 125}
                 );
+
+                upgrades.put(
+                    "chomper",
+                    new Object[]{"Fume-shroom", 100}
+                );
+
+                upgrades.put(
+                    "snow pea",
+                    new Object[]{"Peashooter", 100}
+                );
+
                 upgrades.put(
                     "cabbage-pult",
-                    new Object[]{"Melon-pult", 1000}
-                );
-                upgrades.put(
-                    "melon-pult",
-                    new Object[]{"Winter Melon", 750}
+                    new Object[]{"Kernel-pult", 100}
                 );
             }
 
             case 2 -> {
                 upgrades.put(
                     "peashooter",
-                    new Object[]{"Repeater", 500}
+                    new Object[]{"Repeater", 100}
                 );
                 upgrades.put(
                     "wall-nut",
@@ -693,6 +801,57 @@ public class BeghouledManager {
         }
 
         return upgrades;
+    }
+
+
+    public void update(float delta){
+
+        if(!waitingForSwapAnimation){
+            return;
+        }
+
+        swapTimer -= delta;
+
+        if(swapTimer > 0){
+            return;
+        }
+
+
+        waitingForSwapAnimation = false;
+
+
+        MatchInfo matches = findMatches();
+
+        boolean swapCreatedMatch =
+            matches.contains(
+                pendingY1,
+                pendingX1,
+                ctx.getLevel().getColumns()
+            )
+                ||
+                matches.contains(
+                    pendingY2,
+                    pendingX2,
+                    ctx.getLevel().getColumns()
+                );
+
+
+        if(!swapCreatedMatch){
+
+            swapPlants(
+                pendingX1,
+                pendingY1,
+                pendingX2,
+                pendingY2
+            );
+
+            return;
+        }
+
+
+        resolveMatches(matches,false);
+        applyGravityAndRefill();
+        handleCascades();
     }
 
 }

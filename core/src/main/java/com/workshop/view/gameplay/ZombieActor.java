@@ -907,7 +907,6 @@ public final class ZombieActor extends Actor {
     }
 
     private void drawSquashHead(Batch batch) {
-        System.out.println("[SQUASH DRAW TEST]");
 
         String pamPath =
             "768/INITIAL/PLANT/SQUASH/SQUASH.PAM";
@@ -1076,12 +1075,6 @@ public final class ZombieActor extends Actor {
         if (part == null) {
             return;
         }
-
-        System.out.println(
-            "[ZOMBIE_PART] "
-                + space
-                + part.name
-        );
 
         if (part.children != null) {
             for (Object child : part.children) {

@@ -71,15 +71,6 @@ public final class PlantAnimationLayer extends Group {
                 }
 
                 placePlantActor(plant, activePlants, column, row);
-
-                Plant cover = plant.getCoverPlant();
-                if (cover != null && !cover.isDead()) {
-                    placePlantActor(cover, activePlants, column, row);
-                    PlantActor coverActor = plantActors.get(cover);
-                    if (coverActor != null) {
-                        coverActor.toFront();
-                    }
-                }
             }
         }
 
@@ -104,17 +95,49 @@ public final class PlantAnimationLayer extends Group {
         activePlants.add(plant);
 
         PlantActor actor = plantActors.get(plant);
+
         if (actor == null) {
             actor = createPlantActor(plant);
+
             if (actor == null) {
                 return;
             }
+
             plantActors.put(plant, actor);
             addActor(actor);
+
+            // اولین بار که ساخته شد مستقیم سر جایش قرار بگیرد
+            actor.setPosition(
+                getCellCenterX(column),
+                getCellCenterY(row)
+            );
+
+        } else {
+
+            // فقط در Beghouled حرکت نرم داشته باشد
+            if (gameContext.getBeghouldManager() != null) {
+
+                actor.smoothMoveTo(
+                    getCellCenterX(column),
+                    getCellCenterY(row)
+                );
+
+            } else {
+
+                actor.moveTo(
+                    getCellCenterX(column),
+                    getCellCenterY(row)
+                );
+            }
         }
 
-        actor.setPosition(getCellCenterX(column), getCellCenterY(row));
-        actor.setZIndex(Math.max(0, (int) Math.round(row)));
+
+        actor.setZIndex(
+            Math.max(
+                0,
+                (int)Math.round(row)
+            )
+        );
     }
 
     private PlantActor createPlantActor(Plant plant) {
@@ -184,9 +207,7 @@ public final class PlantAnimationLayer extends Group {
             PlantActor actor = plantActors.get(plant);
 
             if (actor != null) {
-                if (!actor.play(PlantAnimationState.ATTACK)) {
-                    plant.releaseAllPendingShots(gameContext);
-                }
+                actor.play(PlantAnimationState.ATTACK);
             } else {
                 plant.releaseAllPendingShots(gameContext);
             }
