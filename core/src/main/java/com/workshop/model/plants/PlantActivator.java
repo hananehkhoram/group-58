@@ -20,7 +20,7 @@ public final class PlantActivator {
         BaseAbility ability = plant.getBaseAbility();
         Map<String, String> p = plant.getAbilityParams();
 
-        if (plant.isIced() || plant.isOctopused() || plant.isCatified()) {
+        if (plant.isIced() || plant.isOctopused() || plant.isCatified() || plant.isBeingPulled()) {
             return;
         }
 

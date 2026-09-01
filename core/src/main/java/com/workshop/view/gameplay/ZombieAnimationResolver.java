@@ -244,34 +244,44 @@ public final class ZombieAnimationResolver {
         String pamPath,
         List<String> clips
     ) {
-        String stun = findFirstNamedClip(clips, "stun", "hurt");
+        String stun = findFirstNamedClip(clips, "stun_loop", "stun_start", "stun", "hurt");
         if (stun != null) {
             spec.setClip(ZombieAnimationState.STUN, stun);
         }
+
+        String idle = spec.getIdleClip();
+        float idleDur = clipDuration(pamPath, idle);
 
         String intro = findFirstNamedClip(
             clips,
             "intro", "enter", "appear", "spawn"
         );
+        if (intro != null && clipDuration(pamPath, intro) < 0.4f) {
+            intro = idle;
+        }
         if (intro != null) {
             spec.setClip(ZombieAnimationState.INTRO, intro);
         }
 
         String attack = longestActionClip(pamPath, clips);
         float attackDur = clipDuration(pamPath, attack);
-        String idle = spec.getIdleClip();
-        float idleDur = clipDuration(pamPath, idle);
+        boolean beachZomboss = isBeachZombossPam(pamPath);
 
         // Labels ending with $ are stop-markers. libPVZ treats them as
-        // 1-frame clips, so the real attack often sits at the tail of idle.
+        // 1-frame clips, so Frozen Cave's real attack sits at the tail of idle.
+        // Beach Zomboss idle-tail is the submerge, so that offset hides the boss.
         if (attack != null && attackDur >= 0.45f) {
             spec.setClip(ZombieAnimationState.ATTACK, attack);
             spec.setAttackTimeOffset(0f);
             spec.setAttackLoops(false);
-        } else if (idle != null && idleDur >= 2.2f) {
+        } else if (!beachZomboss && idle != null && idleDur >= 2.2f) {
             spec.setClip(ZombieAnimationState.ATTACK, idle);
-            spec.setAttackTimeOffset(Math.max(0f, idleDur - 2.4f));
+            spec.setAttackTimeOffset(Math.max(0f, idleDur - 3.0f));
             spec.setAttackLoops(false);
+        } else if (idle != null) {
+            spec.setClip(ZombieAnimationState.ATTACK, idle);
+            spec.setAttackTimeOffset(0f);
+            spec.setAttackLoops(true);
         } else if (attack != null) {
             spec.setClip(ZombieAnimationState.ATTACK, attack);
             spec.setAttackTimeOffset(0f);
@@ -317,7 +327,14 @@ public final class ZombieAnimationResolver {
                 || key.contains("FIRE")
                 || key.contains("SUMMON")
                 || key.contains("CHARGE")
-                || key.contains("THROW"))) {
+                || key.contains("THROW")
+                || key.contains("SHARK")
+                || key.contains("VORTEX")
+                || key.contains("TURBINE")
+                || key.contains("SUCK")
+                || key.contains("SPIN")
+                || key.contains("PULL")
+                || key.contains("CHOMP"))) {
                 continue;
             }
             float duration = clipDuration(pamPath, clip);
@@ -918,6 +935,13 @@ public final class ZombieAnimationResolver {
             }
         }
         return found;
+    }
+
+    private boolean isBeachZombossPam(String pamPath) {
+        if (pamPath == null) {
+            return false;
+        }
+        return pamPath.replace('\\', '/').toUpperCase().contains("BEACH_ZOMBOSS");
     }
 
     private String normalize(String name) {

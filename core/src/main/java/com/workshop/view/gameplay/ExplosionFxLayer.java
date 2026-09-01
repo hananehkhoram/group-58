@@ -65,28 +65,53 @@ public final class ExplosionFxLayer extends Group {
 
     private void spawn(ExplosionFx fx) {
         switch (fx.kind) {
-            case POTATO -> addBurst(fx.row, fx.col, POTATO_PAM, 1.6f, 1.15f);
-            case PRIMAL_POTATO -> addBurst(fx.row, fx.col, PRIMAL_POTATO_PAM, 2.1f, 1.25f);
+            case POTATO -> addBurst(fx.row, fx.col, POTATO_PAM, 1.6f, 1.15f, null);
+            case PRIMAL_POTATO -> addBurst(fx.row, fx.col, PRIMAL_POTATO_PAM, 2.1f, 1.25f, null);
             case CHERRY -> {
-                addBurst(fx.row, fx.col, CHERRY_REAR_PAM, 2.4f, 1.2f);
-                addBurst(fx.row, fx.col, CHERRY_TOP_PAM, 2.4f, 1.2f);
+                addBurst(fx.row, fx.col, CHERRY_REAR_PAM, 2.4f, 1.2f, null);
+                addBurst(fx.row, fx.col, CHERRY_TOP_PAM, 2.4f, 1.2f, null);
             }
-            case GRAPESHOT -> addBurst(fx.row, fx.col, GRAPESHOT_PAM, 2.2f, 1.2f);
+            case GRAPESHOT -> addBurst(fx.row, fx.col, GRAPESHOT_PAM, 2.2f, 1.2f, null);
             case JALAPENO -> spawnLaneFire(fx.row);
             case DOOM -> {
-                addBurst(fx.row, fx.col, GENERIC_BACK_PAM, 3.4f, 1.5f);
-                addBurst(fx.row, fx.col, GENERIC_FRONT_PAM, 3.4f, 1.5f);
+                addBurst(fx.row, fx.col, GENERIC_BACK_PAM, 3.4f, 1.5f, null);
+                addBurst(fx.row, fx.col, GENERIC_FRONT_PAM, 3.4f, 1.5f, null);
             }
             case GENERIC -> {
-                addBurst(fx.row, fx.col, GENERIC_BACK_PAM, 1.8f, 1.15f);
-                addBurst(fx.row, fx.col, GENERIC_FRONT_PAM, 1.8f, 1.15f);
+                addBurst(fx.row, fx.col, GENERIC_BACK_PAM, 1.8f, 1.15f, null);
+                addBurst(fx.row, fx.col, GENERIC_FRONT_PAM, 1.8f, 1.15f, null);
             }
             case ICEAGE_MISSILE -> addBurst(
                 fx.row,
                 fx.col,
                 "768/FULL/EFFECTS/ZOMBOSS_MISSILE_EXPLOSION_ICEAGE/ZOMBOSS_MISSILE_EXPLOSION_ICEAGE.PAM",
                 2.2f,
-                1.25f
+                1.25f,
+                null
+            );
+            case BEACH_SHARK -> addBurst(
+                fx.row,
+                fx.col,
+                "768/FULL/EFFECTS/ZOMBOSS_SHARK_PROJECTILE/ZOMBOSS_SHARK_PROJECTILE.PAM",
+                1.85f,
+                1.35f,
+                "attack"
+            );
+            case TURBINE_WIND -> addBurst(
+                fx.row,
+                fx.col,
+                "768/FULL/EFFECTS/ZOMBOSS_TURBINE_WIND/ZOMBOSS_TURBINE_WIND.PAM",
+                2.4f,
+                1.6f,
+                "animation"
+            );
+            case PLANT_PULLED -> addBurst(
+                fx.row,
+                fx.col,
+                "768/FULL/EFFECTS/ZOMBOSS_PLANT_PULLED/ZOMBOSS_PLANT_PULLED.PAM",
+                1.4f,
+                0.9f,
+                "animation"
             );
         }
     }
@@ -94,17 +119,25 @@ public final class ExplosionFxLayer extends Group {
     private void spawnLaneFire(int row) {
         int columns = gameContext.getLevel().getColumns();
         for (int col = 0; col < columns; col++) {
-            addBurst(row, col, JALAPENO_PAM, 1.35f, 1.35f);
+            addBurst(row, col, JALAPENO_PAM, 1.35f, 1.35f, null);
         }
     }
 
-    private void addBurst(int row, int col, String pamPath, float sizeInCells, float lifetime) {
+    private void addBurst(
+        int row,
+        int col,
+        String pamPath,
+        float sizeInCells,
+        float lifetime,
+        String preferredClip
+    ) {
         addActor(new BurstActor(
             getCellCenterX(col),
             getCellCenterY(row),
             getCellHeight() * sizeInCells,
             pamPath,
-            lifetime
+            lifetime,
+            preferredClip
         ));
     }
 
@@ -135,12 +168,22 @@ public final class ExplosionFxLayer extends Group {
         private float scale = 1f;
         private float stateTime;
 
-        BurstActor(float centerX, float centerY, float targetHeight, String pamPath, float lifetime) {
+        private final String preferredClip;
+
+        BurstActor(
+            float centerX,
+            float centerY,
+            float targetHeight,
+            String pamPath,
+            float lifetime,
+            String preferredClip
+        ) {
             this.centerX = centerX;
             this.centerY = centerY;
             this.targetHeight = targetHeight;
             this.pamPath = pamPath;
             this.lifetime = lifetime;
+            this.preferredClip = preferredClip;
         }
 
         @Override
@@ -182,11 +225,19 @@ public final class ExplosionFxLayer extends Group {
                 Gdx.app.error("ExplosionFxLayer", "No clips for " + pamPath);
                 return;
             }
-            if (clips.contains("animation")) {
+            if (preferredClip != null) {
+                for (String candidate : clips) {
+                    if (preferredClip.equalsIgnoreCase(candidate)) {
+                        clip = candidate;
+                        break;
+                    }
+                }
+            }
+            if (clip == null && clips.contains("animation")) {
                 clip = "animation";
-            } else if (clips.contains("idle")) {
+            } else if (clip == null && clips.contains("idle")) {
                 clip = "idle";
-            } else {
+            } else if (clip == null) {
                 clip = clips.get(0);
             }
 

@@ -148,19 +148,16 @@ public class Projectile {
 
         switch (trajectory) {
             case HOMING:
-                if (homingTarget == null || homingTarget.isDead()) {
+                if (!moveTowardHomingTarget(time)) {
                     isActive = false;
-                    return;
-                }
-                double toTargetX = homingTarget.getX() - x;
-                double toTargetY = homingTarget.getRow() - y;
-                double dist = Math.hypot(toTargetX, toTargetY);
-                if (dist > 1e-6) {
-                    x += (toTargetX / dist) * speed * time;
-                    y += (toTargetY / dist) * speed * time;
-                    row = (int) Math.round(y);
                 }
                 break;
+            case LOBBED:
+                if (homingTarget != null && !homingTarget.isDead()) {
+                    moveTowardHomingTarget(time);
+                    break;
+                }
+                // fall through
             default:
                 x += dirX * speed * time;
                 if (dirY != 0) {
@@ -234,6 +231,21 @@ public class Projectile {
         } else {
             isActive = false;
         }
+    }
+
+    private boolean moveTowardHomingTarget(double time) {
+        if (homingTarget == null || homingTarget.isDead()) {
+            return false;
+        }
+        double toTargetX = homingTarget.getX() - x;
+        double toTargetY = homingTarget.getRow() - y;
+        double dist = Math.hypot(toTargetX, toTargetY);
+        if (dist > 1e-6) {
+            x += (toTargetX / dist) * speed * time;
+            y += (toTargetY / dist) * speed * time;
+            row = (int) Math.round(y);
+        }
+        return true;
     }
 
     public void setHomingTarget(Damageable target) {

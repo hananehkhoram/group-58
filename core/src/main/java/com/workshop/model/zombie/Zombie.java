@@ -29,6 +29,7 @@ public class Zombie implements Damageable {
     private Map<String, Object> extraParams;
     private double x, y;
     private boolean isBoss = false;
+    private boolean beingSucked = false;
 
     private long spawnTick;
 
@@ -186,7 +187,7 @@ public class Zombie implements Damageable {
 
         boolean airborne = getJumper() != null && !getJumper().isLanded();
 
-        if (!isEating && !airborne && !isBoss && stunRemaining <= 0) {
+        if (!isEating && !airborne && !isBoss && stunRemaining <= 0 && !beingSucked) {
             double effectiveSpeed = speed;
 
             // کاهش سرعت حرکت زامبی هنگام یخ‌زدگی (کاهش به میزان ۵۰٪)
@@ -627,6 +628,14 @@ public class Zombie implements Damageable {
     }
     public void setBoss(boolean boss) {
         this.isBoss = boss;
+    }
+
+    public void setBeingSucked(boolean beingSucked) {
+        this.beingSucked = beingSucked;
+    }
+
+    public boolean isBeingSucked() {
+        return beingSucked;
     }
     public void setRow (int r){this.y = r;}
     public boolean searchEffect(Effects effect) {

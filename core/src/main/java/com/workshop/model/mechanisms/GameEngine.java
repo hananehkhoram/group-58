@@ -367,7 +367,13 @@ public class GameEngine {
                 int col = p.getCol();
                 boolean restoreLilyPad = p.isHasLilyPadUnderneath();
 
-                ctx.getPlantGrid()[row][col] = null;
+                if (row >= 0 && col >= 0
+                    && row < ctx.getPlantGrid().length
+                    && col < ctx.getPlantGrid()[row].length
+                    && ctx.getPlantGrid()[row][col] == p) {
+                    ctx.getPlantGrid()[row][col] = null;
+                }
+                ctx.removePulledPlant(p);
 
                 if (ctx.getLevel().getLevelType()
                     == LevelType.Beghouled_MG

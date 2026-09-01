@@ -66,34 +66,46 @@ public final class PlantAnimationLayer extends Group {
 
                 Plant plant = plantGrid[row][column];
 
-                if (plant == null || plant.isDead()) {
+                if (plant == null || plant.isDead() || plant.isBeingPulled()) {
                     continue;
                 }
 
-                activePlants.add(plant);
-
-                PlantActor actor = plantActors.get(plant);
-
-                if (actor == null) {
-                    actor = createPlantActor(plant);
-
-                    if (actor == null) {
-                        continue;
-                    }
-
-                    plantActors.put(plant, actor);
-                    addActor(actor);
-                }
-
-                actor.setPosition(
-                    getCellCenterX(column),
-                    getCellCenterY(row)
-                );
-                actor.setZIndex(row);
+                placePlantActor(plant, activePlants, column, row);
             }
         }
 
+        for (Plant plant : gameContext.getPulledPlants()) {
+            if (plant == null || plant.isDead()) {
+                continue;
+            }
+            double drawCol = plant.getVisualX() != null ? plant.getVisualX() : plant.getCol();
+            double drawRow = plant.getVisualY() != null ? plant.getVisualY() : plant.getRow();
+            placePlantActor(plant, activePlants, drawCol, drawRow);
+        }
+
         removeMissingPlants(activePlants);
+    }
+
+    private void placePlantActor(
+        Plant plant,
+        Set<Plant> activePlants,
+        double column,
+        double row
+    ) {
+        activePlants.add(plant);
+
+        PlantActor actor = plantActors.get(plant);
+        if (actor == null) {
+            actor = createPlantActor(plant);
+            if (actor == null) {
+                return;
+            }
+            plantActors.put(plant, actor);
+            addActor(actor);
+        }
+
+        actor.setPosition(getCellCenterX(column), getCellCenterY(row));
+        actor.setZIndex(Math.max(0, (int) Math.round(row)));
     }
 
     private PlantActor createPlantActor(Plant plant) {
@@ -137,22 +149,22 @@ public final class PlantAnimationLayer extends Group {
         return gridHeight / gameContext.getLevel().getRows();
     }
 
-    private float getCellCenterX(int column) {
+    private float getCellCenterX(double column) {
         float cellWidth =
             gridWidth / gameContext.getLevel().getColumns();
 
         return gridX
-            + column * cellWidth
+            + (float) column * cellWidth
             + cellWidth / 2f;
     }
 
-    private float getCellCenterY(int row) {
+    private float getCellCenterY(double row) {
         float cellHeight =
             gridHeight / gameContext.getLevel().getRows();
 
         return gridY
             + gridHeight
-            - row * cellHeight
+            - (float) row * cellHeight
             - cellHeight / 2f;
     }
 

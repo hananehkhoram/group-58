@@ -434,6 +434,16 @@ public class GamePlayScreen implements Screen {
             droppedSeedLayer
         );
 
+        stage.addActor(new BeachZombossFxLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight(),
+            true,
+            false
+        ));
+
         PlantAnimationLayer plantAnimationLayer =
             new PlantAnimationLayer(
                 gameContext,
@@ -479,6 +489,16 @@ public class GamePlayScreen implements Screen {
                 getGridHeight()
             ));
         }
+
+        stage.addActor(new BeachZombossFxLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight(),
+            false,
+            true
+        ));
 
         ZombieAnimationLayer zombieAnimationLayer =
             new ZombieAnimationLayer(

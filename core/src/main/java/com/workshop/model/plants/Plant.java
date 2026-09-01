@@ -45,6 +45,9 @@ public class Plant implements Damageable {
     private int row, col;
     private boolean plantFoodActive = false;
     private float plantFoodGlowRemaining;
+    private Double visualX;
+    private Double visualY;
+    private boolean beingPulled;
 
     private int freezeLevel = 0;
     private double iceHp = 0;
@@ -95,7 +98,11 @@ public class Plant implements Damageable {
     }
 
     public void startPlantFoodGlow() {
-        plantFoodGlowRemaining = 2.8f;
+        startPlantFoodGlow(2.8f);
+    }
+
+    public void startPlantFoodGlow(float seconds) {
+        plantFoodGlowRemaining = Math.max(0.4f, seconds);
     }
 
     public void tickPlantFoodGlow(float delta) {
@@ -208,6 +215,24 @@ public class Plant implements Damageable {
 
     public int getCol() { return col; }
     public void setCol(int col) { this.col = col; }
+
+    public void setVisualPosition(double x, double y) {
+        this.visualX = x;
+        this.visualY = y;
+        this.beingPulled = true;
+    }
+
+    public Double getVisualX() {
+        return visualX;
+    }
+
+    public Double getVisualY() {
+        return visualY;
+    }
+
+    public boolean isBeingPulled() {
+        return beingPulled;
+    }
 
     public int getLastActionSecond() { return lastActionSecond; }
     public void armPendingShots(List<Projectile> shots, long armedTick) {

@@ -28,6 +28,7 @@ public class GameContext {
     private final Season season;
     private final Plant[][] plantGrid;
     private List<Plant> alivePlants = new ArrayList<>();//گیاهای زنده روی زمین
+    private final List<Plant> pulledPlants = new ArrayList<>();
     private final Grave[][] graveGrid;
     private final long[][] burnUntilTick;
     private List<Plant> activePlants = new ArrayList<>();//گیاهای انتخاب شده
@@ -111,6 +112,51 @@ public class GameContext {
 
     public ExplosionFx pollExplosion() {
         return pendingExplosions.pollFirst();
+    }
+
+    public static final class BeachSharkSpawn {
+        public final int row;
+        public final int col;
+
+        public BeachSharkSpawn(int row, int col) {
+            this.row = row;
+            this.col = col;
+        }
+    }
+
+    private final Deque<BeachSharkSpawn> pendingBeachSharks = new ArrayDeque<>();
+    private int beachVortexTopRow = -1;
+    private int beachVortexBottomRow = -1;
+
+    public void spawnBeachShark(int row, int col) {
+        pendingBeachSharks.addLast(new BeachSharkSpawn(row, col));
+        shakeScreen(8f, 0.22f);
+    }
+
+    public BeachSharkSpawn pollBeachShark() {
+        return pendingBeachSharks.pollFirst();
+    }
+
+    public void setBeachVortexRows(int topRow, int bottomRow) {
+        this.beachVortexTopRow = topRow;
+        this.beachVortexBottomRow = bottomRow;
+    }
+
+    public void clearBeachVortex() {
+        this.beachVortexTopRow = -1;
+        this.beachVortexBottomRow = -1;
+    }
+
+    public boolean hasBeachVortex() {
+        return beachVortexTopRow >= 0 && beachVortexBottomRow >= beachVortexTopRow;
+    }
+
+    public int getBeachVortexTopRow() {
+        return beachVortexTopRow;
+    }
+
+    public int getBeachVortexBottomRow() {
+        return beachVortexBottomRow;
     }
 
     private final Deque<ProjectileHitFx> pendingProjectileHits = new ArrayDeque<>();
@@ -494,6 +540,20 @@ public class GameContext {
 
     public List<Plant> getAlivePlants() {
         return alivePlants;
+    }
+
+    public List<Plant> getPulledPlants() {
+        return pulledPlants;
+    }
+
+    public void addPulledPlant(Plant plant) {
+        if (plant != null && !pulledPlants.contains(plant)) {
+            pulledPlants.add(plant);
+        }
+    }
+
+    public void removePulledPlant(Plant plant) {
+        pulledPlants.remove(plant);
     }
 
     public List<Zombie> getActiveZombies() {

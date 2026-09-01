@@ -93,6 +93,10 @@ public final class ProjectileAnimationResolver {
             return null;
         }
 
+        if (projectile.getVisualVariant() == ProjectileVisualVariant.GIANT) {
+            spec = withScale(spec, spec.getScale() * 2.75f);
+        }
+
         resolvedSpecs.put(cacheKey, spec);
         return spec;
     }
@@ -406,6 +410,22 @@ public final class ProjectileAnimationResolver {
             0f,
             0f,
             false
+        );
+    }
+
+    private static ProjectileAnimationSpec withScale(
+        ProjectileAnimationSpec spec,
+        float scale
+    ) {
+        return new ProjectileAnimationSpec(
+            spec.getPamPath(),
+            spec.getClip(),
+            spec.getPart(),
+            spec.getImageResourceId(),
+            scale,
+            spec.getOffsetX(),
+            spec.getOffsetY(),
+            spec.isFreezeFrame()
         );
     }
 

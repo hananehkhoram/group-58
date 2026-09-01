@@ -367,18 +367,7 @@ public final class ZombieActor extends Actor {
         }
 
         if (!animationSpec.hasClip(nextState, zombie.hasLostArm())) {
-            if (nextState == ZombieAnimationState.ATTACK
-                && animationSpec.hasClip(ZombieAnimationState.IDLE)) {
-                nextState = ZombieAnimationState.ATTACK;
-                if (animationSpec.getClip(ZombieAnimationState.ATTACK) == null) {
-                    animationSpec.setClip(
-                        ZombieAnimationState.ATTACK,
-                        animationSpec.getIdleClip()
-                    );
-                }
-            } else {
-                nextState = ZombieAnimationState.IDLE;
-            }
+            nextState = ZombieAnimationState.IDLE;
         }
 
         if (currentState != nextState) {
@@ -398,7 +387,7 @@ public final class ZombieActor extends Actor {
             case INTRO -> ZombieAnimationState.INTRO;
             case STUNNED -> ZombieAnimationState.STUN;
             case WALKING, DASHING -> ZombieAnimationState.WALK;
-            case IDLE -> ZombieAnimationState.IDLE;
+            case IDLE, USING_VORTEX, LAUNCHING_SHARKS -> ZombieAnimationState.IDLE;
             default -> ZombieAnimationState.ATTACK;
         };
     }

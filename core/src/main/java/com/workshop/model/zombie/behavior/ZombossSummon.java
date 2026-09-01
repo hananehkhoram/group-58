@@ -11,6 +11,7 @@ import com.workshop.model.zombie.Zombie;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -42,6 +43,24 @@ public class ZombossSummon implements Behaviors {
     private double dashTargetX = 0;
     private double originalX = 0;
 
+    private final List<Plant> vortexPlants = new ArrayList<>();
+    private final List<Zombie> vortexZombies = new ArrayList<>();
+    private double vortexTargetX;
+    private double vortexWindRemaining;
+    private final List<PendingShark> pendingSharks = new ArrayList<>();
+
+    private static final class PendingShark {
+        final int row;
+        final int col;
+        double remaining;
+
+        PendingShark(int row, int col, double remaining) {
+            this.row = row;
+            this.col = col;
+            this.remaining = remaining;
+        }
+    }
+
     @Override
     public void onTick(Zombie zombie, GameContext ctx) {
         if (ctx.getSeason() == null || zombie.isDead()) return;
@@ -54,6 +73,8 @@ public class ZombossSummon implements Behaviors {
         }
 
         if (isStunned(zombie)) {
+            tickPendingSharks(ctx);
+            tickVortex(ctx);
             this.currentState = ZombossState.STUNNED;
             this.actionAnimRemaining = 0;
             this.isDashing = false;
@@ -75,7 +96,14 @@ public class ZombossSummon implements Behaviors {
             return;
         }
 
+        tickPendingSharks(ctx);
+        tickVortex(ctx);
+
         tickActionAnim();
+
+        if (isBeachTelegraphBusy()) {
+            return;
+        }
 
         actionElapsed += TICK_SECONDS;
         if (pendingFirstAction || actionElapsed >= ACTION_COOLDOWN_SECONDS) {
@@ -141,7 +169,7 @@ public class ZombossSummon implements Behaviors {
     }
 
     private void executeBeachAction(Zombie boss, GameContext ctx) {
-        int action = random.nextInt(4);
+        int action = random.nextInt(6);
 
         switch (action) {
             case 0:
@@ -151,9 +179,10 @@ public class ZombossSummon implements Behaviors {
                 summonMinions(boss, ctx);
                 break;
             case 2:
+            case 3:
                 launchBeachSharks(boss, ctx);
                 break;
-            case 3:
+            default:
                 executeBeachVortex(boss, ctx);
                 break;
         }
@@ -371,49 +400,170 @@ public class ZombossSummon implements Behaviors {
 
     private void launchBeachSharks(Zombie boss, GameContext ctx) {
         beginAction(ZombossState.LAUNCHING_SHARKS);
+        pendingSharks.clear();
 
+        List<int[]> waterPlants = new ArrayList<>();
+        Plant[][] grid = ctx.getPlantGrid();
         int rows = ctx.getLevel().getRows();
         int cols = ctx.getLevel().getColumns();
-        int sharkCount = 3;
-
-        for (int i = 0; i < sharkCount; i++) {
-            int r = random.nextInt(rows);
-            int c = random.nextInt(cols);
-
-            if (ctx.getSeason().isWaterCell(r, c, ctx)) {
-                destroyPlantAt(ctx, r, c);
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                if (!ctx.getSeason().isWaterCell(r, c, ctx)) {
+                    continue;
+                }
+                Plant plant = grid[r][c];
+                if (plant != null && !plant.isDead() && !plant.isBeingPulled()) {
+                    waterPlants.add(new int[]{r, c});
+                }
             }
+        }
+
+        List<int[]> waterCells = new ArrayList<>();
+        if (waterPlants.isEmpty()) {
+            for (int r = 0; r < rows; r++) {
+                for (int c = 0; c < cols; c++) {
+                    if (ctx.getSeason().isWaterCell(r, c, ctx)) {
+                        waterCells.add(new int[]{r, c});
+                    }
+                }
+            }
+            java.util.Collections.shuffle(waterCells, random);
+            for (int i = 0; i < Math.min(3, waterCells.size()); i++) {
+                waterPlants.add(waterCells.get(i));
+            }
+        }
+
+        java.util.Collections.shuffle(waterPlants, random);
+        int sharkCount = Math.min(3, waterPlants.size());
+        for (int i = 0; i < sharkCount; i++) {
+            int[] cell = waterPlants.get(i);
+            ctx.spawnBeachShark(cell[0], cell[1]);
+            pendingSharks.add(new PendingShark(cell[0], cell[1], 1.15 + i * 0.12));
         }
 
         ctx.announce(boss.getName() + " launched sharks from underwater!");
     }
 
+    private void tickPendingSharks(GameContext ctx) {
+        if (pendingSharks.isEmpty()) {
+            return;
+        }
+        Iterator<PendingShark> it = pendingSharks.iterator();
+        while (it.hasNext()) {
+            PendingShark shark = it.next();
+            shark.remaining -= TICK_SECONDS;
+            if (shark.remaining > 0) {
+                continue;
+            }
+            destroyPlantAt(ctx, shark.row, shark.col);
+            it.remove();
+        }
+    }
+
     private void executeBeachVortex(Zombie boss, GameContext ctx) {
         beginAction(ZombossState.USING_VORTEX);
+        vortexPlants.clear();
+        vortexZombies.clear();
+        vortexTargetX = boss.getX();
+        vortexWindRemaining = 2.8;
 
         int topRow = bossTopRow(boss, ctx);
         int bottomRow = topRow + 1;
-        int cols = ctx.getLevel().getColumns();
+        ctx.setBeachVortexRows(topRow, bottomRow);
 
-        for (int r = topRow; r <= bottomRow; r++) {
-            for (int c = 0; c < cols; c++) {
-                destroyPlantAt(ctx, r, c);
-            }
-        }
-
-        List<Zombie> zombiesToRemove = new ArrayList<>();
-        for (Zombie z : ctx.getAliveZombies()) {
-            if (z == boss) continue;
-            if (z.occupiesRow(topRow) || z.occupiesRow(bottomRow)) {
-                zombiesToRemove.add(z);
-            }
-        }
-
-        for (Zombie z : zombiesToRemove) {
-            z.takeDamage(INSTANT_KILL_DAMAGE);
-        }
+        pullAllPlantsInRow(ctx, topRow);
+        pullAllPlantsInRow(ctx, bottomRow);
+        pullZombiesInRows(boss, ctx, topRow, bottomRow);
 
         ctx.announce(boss.getName() + " activated the turbine, pulling plants and zombies!");
+    }
+
+    private void pullAllPlantsInRow(GameContext ctx, int row) {
+        Plant[][] grid = ctx.getPlantGrid();
+        if (row < 0 || row >= grid.length) {
+            return;
+        }
+        for (int c = 0; c < grid[row].length; c++) {
+            Plant plant = grid[row][c];
+            if (plant == null || plant.isDead() || plant.isBeingPulled()) {
+                continue;
+            }
+            grid[row][c] = null;
+            plant.setVisualPosition(c, row);
+            ctx.addPulledPlant(plant);
+            vortexPlants.add(plant);
+        }
+    }
+
+    private void pullZombiesInRows(Zombie boss, GameContext ctx, int topRow, int bottomRow) {
+        for (Zombie zombie : new ArrayList<>(ctx.getAliveZombies())) {
+            if (zombie == null || zombie == boss || zombie.isBoss() || zombie.isDead()) {
+                continue;
+            }
+            if (!zombie.occupiesRow(topRow) && !zombie.occupiesRow(bottomRow)) {
+                continue;
+            }
+            zombie.setBeingSucked(true);
+            vortexZombies.add(zombie);
+        }
+    }
+
+    private void tickVortex(GameContext ctx) {
+        if (vortexWindRemaining > 0) {
+            vortexWindRemaining -= TICK_SECONDS;
+        }
+        if (vortexPlants.isEmpty() && vortexZombies.isEmpty()) {
+            if (vortexWindRemaining <= 0 && ctx.hasBeachVortex()) {
+                ctx.clearBeachVortex();
+            }
+            return;
+        }
+        double pullSpeed = 0.11;
+        Iterator<Plant> plants = vortexPlants.iterator();
+        while (plants.hasNext()) {
+            Plant plant = plants.next();
+            if (plant == null || plant.isDead()) {
+                ctx.removePulledPlant(plant);
+                plants.remove();
+                continue;
+            }
+            double x = plant.getVisualX() == null ? plant.getCol() : plant.getVisualX();
+            double y = plant.getVisualY() == null ? plant.getRow() : plant.getVisualY();
+            x += pullSpeed;
+            plant.setVisualPosition(x, y);
+            if (x >= vortexTargetX - 0.55) {
+                ctx.spawnExplosion(
+                    plant.getRow(),
+                    Math.max(0, (int) Math.round(Math.min(x, ctx.getLevel().getColumns() - 1))),
+                    ExplosionFx.Kind.PLANT_PULLED
+                );
+                plant.takeDamage(INSTANT_KILL_DAMAGE);
+                ctx.removePulledPlant(plant);
+                plants.remove();
+            }
+        }
+
+        Iterator<Zombie> zombies = vortexZombies.iterator();
+        while (zombies.hasNext()) {
+            Zombie zombie = zombies.next();
+            if (zombie == null || zombie.isDead()) {
+                if (zombie != null) {
+                    zombie.setBeingSucked(false);
+                }
+                zombies.remove();
+                continue;
+            }
+            zombie.setX(zombie.getX() + pullSpeed);
+            if (zombie.getX() >= vortexTargetX - 0.55) {
+                zombie.setBeingSucked(false);
+                zombie.takeDamage(INSTANT_KILL_DAMAGE);
+                zombies.remove();
+            }
+        }
+
+        if (vortexPlants.isEmpty() && vortexZombies.isEmpty() && vortexWindRemaining <= 0) {
+            ctx.clearBeachVortex();
+        }
     }
 
     private void spawnRandomGraves(GameContext ctx, int count) {
@@ -483,10 +633,19 @@ public class ZombossSummon implements Behaviors {
             || currentState == ZombossState.DASHING) {
             return;
         }
+        if (isBeachTelegraphBusy()) {
+            return;
+        }
         actionAnimRemaining -= TICK_SECONDS;
         if (actionAnimRemaining <= 0) {
             this.currentState = ZombossState.IDLE;
         }
+    }
+
+    private boolean isBeachTelegraphBusy() {
+        return !vortexPlants.isEmpty()
+            || !vortexZombies.isEmpty()
+            || !pendingSharks.isEmpty();
     }
 
     private void beginAction(ZombossState state) {

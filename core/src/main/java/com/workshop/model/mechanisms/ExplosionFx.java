@@ -10,7 +10,10 @@ public final class ExplosionFx {
         JALAPENO(14f, 0.38f),
         DOOM(28f, 0.55f),
         GENERIC(12f, 0.30f),
-        ICEAGE_MISSILE(14f, 0.32f);
+        ICEAGE_MISSILE(14f, 0.32f),
+        BEACH_SHARK(8f, 0.22f),
+        TURBINE_WIND(6f, 0.20f),
+        PLANT_PULLED(5f, 0.16f);
 
         public final float shakeIntensity;
         public final float shakeDuration;
