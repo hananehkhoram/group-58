@@ -283,12 +283,6 @@ public class Izambi {
         return placeZombie(requestedType, row, column, null);
     }
 
-    /**
-     * Same as {@link #placeZombie(String, int, int)}, but lets the caller
-     * charge a different sun cost than {@code IZombieManager}'s own table
-     * (used by the 2-player match to rebalance zombie prices against plant
-     * prices without touching the single-player cost table).
-     */
     public boolean placeZombie(
         String requestedType,
         int row,

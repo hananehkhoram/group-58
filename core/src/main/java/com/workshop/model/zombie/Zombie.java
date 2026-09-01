@@ -27,7 +27,6 @@ public class Zombie implements Damageable {
     private Map<String, Behaviors> behaviors;
     private List<Effects> effects = new ArrayList<>();
     private Map<String, Object> extraParams;
-    private List<Season> seasonsAvailable;
     private double x, y;
     private boolean isBoss = false;
 
@@ -106,7 +105,6 @@ public class Zombie implements Damageable {
     private boolean pendingArmDrop;
     private boolean pendingHeadDrop;
     private final java.util.ArrayDeque<ArmorType> pendingArmorPops = new java.util.ArrayDeque<>();
-    private int lastArmorStage = -1;
 
     public Zombie() {
         this.effects = new ArrayList<>();
@@ -165,7 +163,8 @@ public class Zombie implements Damageable {
             setEating(false);
         }
 
-        if (initialFrozenBlock || isIced) {
+        // فقط بلاک یخ اولیه جلوی حرکت را به‌طور کامل می‌گیرد
+        if (initialFrozenBlock) {
             return;
         }
 
@@ -190,6 +189,12 @@ public class Zombie implements Damageable {
 
         if (!isEating && !airborne && !isBoss && stunRemaining <= 0) {
             double effectiveSpeed = speed;
+
+            // کاهش سرعت حرکت زامبی هنگام یخ‌زدگی (کاهش به میزان ۵۰٪)
+            if (isIced) {
+                effectiveSpeed *= 0.5;
+            }
+
             x += movingBackward ? effectiveSpeed * deltaTime : -effectiveSpeed * deltaTime;
         }
     }
@@ -316,20 +321,6 @@ public class Zombie implements Damageable {
         return (b instanceof Armor) ? (Armor) b : null;
     }
 
-    public boolean removeArmorOfType(ArmorType type) {
-        Armor primary = getArmor();
-        if (primary != null && primary.getArmorType() == type && !primary.isDestroyed()) {
-            primary.destroy();
-            return true;
-        }
-        Armor secondary = getSecondaryArmor();
-        if (secondary != null && secondary.getArmorType() == type && !secondary.isDestroyed()) {
-            secondary.destroy();
-            return true;
-        }
-        return false;
-    }
-
     public boolean isDead() { return hp <= 0; }
 
     @Override
@@ -451,11 +442,6 @@ public class Zombie implements Damageable {
     public ArmorType pollArmorPop() {
         return pendingArmorPops.pollFirst();
     }
-
-    public boolean consumeArmorPop() {
-        return pollArmorPop() != null;
-    }
-
     public boolean consumeArmDrop() {
         if (!pendingArmDrop) {
             return false;
@@ -475,55 +461,15 @@ public class Zombie implements Damageable {
     public boolean hasLostArm() {
         return lostArm;
     }
-
-    public boolean hasLostHead() {
-        return lostHead;
-    }
-
     public boolean isDeathAnimFinished() {
         return deathAnimFinished;
     }
-
     public void markDeathAnimFinished() {
         deathAnimFinished = true;
     }
-
     public int getMaxHp() {
         return maxHp > 0 ? maxHp : Math.max(hp, 1);
     }
-
-    public int getArmorDamageStage() {
-        Armor armor = getArmor();
-        if (armor == null || armor.isDestroyed()) {
-            return -1;
-        }
-        float fraction = (float) armor.getArmorHP() / Math.max(1, armor.getArmorType().baseHealth);
-        if (fraction > 0.66f) {
-            return 0;
-        }
-        if (fraction > 0.33f) {
-            return 1;
-        }
-        return 2;
-    }
-
-    public boolean consumeArmorStageChange() {
-        int stage = getArmorDamageStage();
-        if (stage < 0) {
-            lastArmorStage = stage;
-            return false;
-        }
-        if (lastArmorStage < 0) {
-            lastArmorStage = stage;
-            return false;
-        }
-        if (stage != lastArmorStage) {
-            lastArmorStage = stage;
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public void meltIce() {
         if (isIced) {
@@ -623,14 +569,10 @@ public class Zombie implements Damageable {
         }
     }
 
-    public boolean isButtered() {
-        return butterRemaining > 0;
-    }
     public boolean isInitialFrozenBlock() {
         return initialFrozenBlock;
     }
     public boolean isEnteredViaSandstorm() { return enteredViaSandstorm; }
-    public void setEnteredViaSandstorm(boolean enteredViaSandstorm) { this.enteredViaSandstorm = enteredViaSandstorm; }
     public boolean isEating() { return isEating; }
     public long getSpawnTick() {return spawnTick;}
 

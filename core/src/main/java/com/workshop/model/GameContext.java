@@ -84,21 +84,6 @@ public class GameContext {
     public Integer pollWindRow() {
         return pendingWindRows.pollFirst();
     }
-
-    private boolean pendingSandstorm;
-
-    public void announceSandstorm() {
-        pendingSandstorm = true;
-    }
-
-    public boolean pollSandstorm() {
-        if (!pendingSandstorm) {
-            return false;
-        }
-        pendingSandstorm = false;
-        return true;
-    }
-
     public String pollAnnouncement() {
         return pendingAnnouncements.pollFirst();
     }
@@ -129,11 +114,6 @@ public class GameContext {
     }
 
     private final Deque<ProjectileHitFx> pendingProjectileHits = new ArrayDeque<>();
-
-    public void spawnProjectileHit(int row, double x) {
-        pendingProjectileHits.addLast(new ProjectileHitFx(row, x));
-    }
-
     public ProjectileHitFx pollProjectileHit() {
         return pendingProjectileHits.pollFirst();
     }
@@ -147,11 +127,6 @@ public class GameContext {
     }
 
     private final Deque<ZombiePartFx> pendingZombieParts = new ArrayDeque<>();
-
-    public void dropZombiePart(int row, double x, ZombiePartFx.Kind kind) {
-        dropZombiePart(row, x, kind, null);
-    }
-
     public void dropZombiePart(
         int row,
         double x,
@@ -204,8 +179,6 @@ public class GameContext {
     private int lawnMowerKillsThisLevel = 0;
     private String heldSeed = null;
     private BeghouledManager beghouledManager;
-
-    private int zombiesKilledByLawnMowerThisLevel = 0;
     private com.workshop.controller.repository.factory.ZombieFactory zombieFactory;
 
     private GameEngine gameEngine;
