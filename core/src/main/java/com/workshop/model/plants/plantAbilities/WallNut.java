@@ -15,8 +15,6 @@ public class WallNut implements BaseAbility {
 
     private static final long COOLDOWN_TICKS = 30;
     private static final int SUN_VALUE = 5;
-
-    // نگهداری آخرین تیکی که هر گیاه خورشید تولید کرده است
     private final Map<Plant, Long> lastSunGenTicks = new HashMap<>();
 
     public void triggerAbility(WallNutType wallNutType, int damage, Plant self, GameEngine engine) {
@@ -110,7 +108,7 @@ public class WallNut implements BaseAbility {
         int pRow = self.getRow();
         int pCol = self.getCol();
         for (Zombie z : ctx.getAliveZombies()) {
-            if (!z.isDead() && Math.abs(z.getRow() - pRow) == 1 && Math.abs(z.getX() - pCol) <= 1.0) {
+            if (!z.isDead() && Math.abs(z.getRow() - pRow) == 1) {
                 z.setY(pRow);
             }
         }

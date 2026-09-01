@@ -108,7 +108,7 @@ public class Explosive implements BaseAbility {
     }
 
     private void executeCrush(int damage, Plant plant, GameEngine engine) {
-        List<Zombie> targets = engine.findTargets(plant.getRow(), plant.getCol(), TargetingMode.NONE);
+        List<Zombie> targets = engine.findTargets(plant.getRow(), plant.getCol(), TargetingMode.IN_SAME_PLACE);
         if (targets != null && !targets.isEmpty()) {
             Zombie firstZombie = targets.get(0);
             firstZombie.takeDamage(damage);
@@ -119,11 +119,17 @@ public class Explosive implements BaseAbility {
     private void executeTimedMine(ExplosiveType type, int damage, Plant plant, GameEngine engine) {
         GameContext ctx = engine.getCtx();
         int currentSecond = ctx.getTimeManager().getTotalSeconds();
+
+        // اگر زمان کاشت ثبت نشده، الان زمان فعلی را ثبت کن
+        if (plant.getLastActionSecond() <= 0) {
+            plant.setLastActionSecond(currentSecond);
+            return;
+        }
+
         int timeAlive = currentSecond - plant.getLastActionSecond();
         int delay = (type == ExplosiveType.TIMED_MINE_AOE) ? 5 : 15;
-
         if (timeAlive >= delay) {
-            List<Zombie> contactZombies = engine.findTargets(plant.getRow(), plant.getCol(), TargetingMode.NONE);
+            List<Zombie> contactZombies = engine.findTargets(plant.getRow(), plant.getCol(), TargetingMode.IN_SAME_PLACE);
             if (contactZombies != null && !contactZombies.isEmpty()) {
                 List<int[]> areaTiles = new ArrayList<>();
                 if (type == ExplosiveType.TIMED_MINE) {
@@ -135,7 +141,6 @@ public class Explosive implements BaseAbility {
             }
         }
     }
-
     private void executeShrapnel(int damage, Plant plant, GameEngine engine) {
         GameContext ctx = engine.getCtx();
         int pRow = plant.getRow();
@@ -160,15 +165,9 @@ public class Explosive implements BaseAbility {
 
     private void executeFreezeTrap(Plant plant, GameEngine engine) {
 
-        List<Zombie> stepZombies = engine.findTargets(plant.getRow(), plant.getCol(), TargetingMode.NONE);
-        List<Zombie> inSameTile = new ArrayList<>();
-        for (Zombie z : stepZombies) {
-            if (Math.floor(z.getX()) == plant.getCol()) {
-                inSameTile.add(z);
-            }
-        }
-        if (inSameTile != null && !inSameTile.isEmpty()) {
-            Zombie firstZombie = inSameTile.get(0);
+        List<Zombie> stepZombies = engine.findTargets(plant.getRow(), plant.getCol(), TargetingMode.IN_SAME_PLACE);
+        if (stepZombies != null && !stepZombies.isEmpty()) {
+            Zombie firstZombie = stepZombies.get(0);
             firstZombie.applySlowOrFreeze();
             engine.removePlant(plant.getRow(), plant.getCol());
         }
@@ -243,7 +242,7 @@ public class Explosive implements BaseAbility {
     public void waterExplosion(Plant plant, GameContext ctx, GameEngine engine) {
         int r = plant.getRow();
         int c = plant.getCol();
-        List<Zombie> targets = engine.findTargets(r, c, TargetingMode.NONE);
+        List<Zombie> targets = engine.findTargets(r, c, TargetingMode.NEAREST);
         if (targets != null && !targets.isEmpty()) {
             Zombie target = targets.get(0);
             target.takeDamage(9999);

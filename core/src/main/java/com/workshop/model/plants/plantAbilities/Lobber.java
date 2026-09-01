@@ -37,7 +37,8 @@ public class Lobber implements BaseAbility {
 
         if (currentSecond - plant.getLastActionSecond() >= intervalOfPlant) {
 
-            if (!isTargetInRow(plant.getRow(), plant.getCol(), ctx)) {
+            Zombie targetZombie = findFirstZombieInRow(plant.getRow(), plant.getCol(), ctx);
+            if (targetZombie == null) {
                 return;
             }
 
@@ -63,9 +64,13 @@ public class Lobber implements BaseAbility {
                 case AOE_FIRE -> createProjectile(plant, damage, BulletType.FIRE);
                 default -> null;
             };
+
             if (shot == null) {
                 return;
             }
+
+            shot.setHomingTarget(targetZombie);
+
             plant.armPendingShots(
                 List.of(shot),
                 ctx.getTimeManager().getTotalTicks()
@@ -74,7 +79,20 @@ public class Lobber implements BaseAbility {
             plant.setLastActionSecond(currentSecond);
         }
     }
+    private Zombie findFirstZombieInRow(int row, int col, GameContext ctx) {
+        Zombie closest = null;
+        double minX = Double.MAX_VALUE;
 
+        for (Zombie z : ctx.getAliveZombies()) {
+            if (z != null && !z.isDead() && z.occupiesRow(row) && z.getX() >= col) {
+                if (z.getX() < minX) {
+                    minX = z.getX();
+                    closest = z;
+                }
+            }
+        }
+        return closest;
+    }
     private Projectile createProjectile(
         Plant plant,
         int damage,

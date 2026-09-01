@@ -1,6 +1,7 @@
 package com.workshop.model.mechanisms;
 
 import com.workshop.model.level.Level;
+import com.workshop.model.zombie.Effects;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.view.Console;
 
@@ -54,7 +55,7 @@ public class LawnMower {
 
     public void trigger(Zombie z) {
         if (!isActivated || !isAvailable) return;
-        if (z.getHp() <= 0 || z.isBoss()) return;
+        if (z.getHp() <= 0 || z.isBoss() || z.getEffect().contains(Effects.HYPNOTIZED)) return;
         if (!checkTrigger(z)) return;
 
         z.setHp(0);

@@ -69,13 +69,13 @@ public class MeleeAttackers implements BaseAbility {
     }
 
     private Zombie findTargetFrontOrBack(int r, int c, GameEngine engine) {
-        List<Zombie> front = engine.findTargets(r, c + 1, TargetingMode.NONE);
+        List<Zombie> front = engine.findTargets(r, c + 1, TargetingMode.IN_SAME_PLACE);
         if (front != null && !front.isEmpty()) return front.get(0);
 
-        List<Zombie> current = engine.findTargets(r, c, TargetingMode.NONE);
+        List<Zombie> current = engine.findTargets(r, c, TargetingMode.IN_SAME_PLACE);
         if (current != null && !current.isEmpty()) return current.get(0);
 
-        List<Zombie> back = engine.findTargets(r, c - 1, TargetingMode.NONE);
+        List<Zombie> back = engine.findTargets(r, c - 1, TargetingMode.IN_SAME_PLACE);
         if (back != null && !back.isEmpty()) return back.get(0);
 
         return null;
