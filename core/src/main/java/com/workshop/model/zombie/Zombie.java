@@ -483,6 +483,20 @@ public class Zombie implements Damageable {
         }
     }
 
+    public void meltIce(double amount){
+        if (isIced){
+            iceHp -= amount;
+            if (iceHp <= 0){
+                iceHp = 0;
+                isIced = false;
+                initialFrozenBlock = false;
+                if (effects != null) {
+                    effects.remove(Effects.FROZEN);
+                }
+            }
+        }
+    }
+
     @Override
     public void applySlowOrFreeze() {
         if (!isIced) {
