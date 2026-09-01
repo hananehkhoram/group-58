@@ -1,5 +1,6 @@
 package com.workshop.model.zombie.behavior;
 
+import com.workshop.controller.repository.factory.PlantFactory;
 import com.workshop.controller.repository.factory.ZombieFactory;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
@@ -89,17 +90,21 @@ public class Shooting implements Behaviors {
             return;
         }
 
+        Plant peashooterVisualOwner =
+            new PlantFactory(ctx.getDataManager())
+                .create("Peashooter");
+
         Projectile projectile =
             new Projectile(
                 20,
                 zombie.getX(),
-                zombie.getRow(),
+                zombie.getRow() - 0.5,
                 zombie.getRow(),
                 1.0,
                 BulletType.NORMAL,
                 TrajectoryType.STRAIGHT,
                 true,
-                null
+                peashooterVisualOwner
             );
 
         ctx.getProjectiles().add(projectile);

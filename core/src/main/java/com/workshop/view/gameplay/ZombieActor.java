@@ -58,6 +58,22 @@ public final class ZombieActor extends Actor {
     private ZombieAnimationState currentState =
         ZombieAnimationState.IDLE;
 
+    private boolean isZombotanyPeashooter() {
+        return "ZombieZombotanyPeashooter".equals(zombie.getId());
+    }
+
+    private boolean isZombotanySquash() {
+        return "ZombieZombotanySquash".equals(zombie.getId());
+    }
+
+    private boolean isZombotanyWallnut() {
+        return "ZombieZombotanyWallnut".equals(zombie.getId());
+    }
+
+    private boolean isZombotanyJalapeno() {
+        return "ZombieZombotanyJalapeno".equals(zombie.getId());
+    }
+
     private float stateTime;
     private String resolvedAshClip;
     private boolean ashClipResolved;
@@ -88,6 +104,8 @@ public final class ZombieActor extends Actor {
         this.wearingArmor = hasLiveArmor();
 
         this.wasIceVisible = isIceVisible();
+        printZombieParts();
+        printSquashParts();
     }
 
     private float getScale() {
@@ -144,6 +162,58 @@ public final class ZombieActor extends Actor {
         drawScaled(batch, pamPath, clip, time, x, y, loop, scale, null);
     }
 
+    private void drawOverlayScaled(
+        Batch batch,
+        String pamPath,
+        String clip,
+        float time,
+        float x,
+        float y,
+        boolean loop
+    ) {
+
+        Rectangle bounds = pamPlayer.bounds(
+            pamPath,
+            clip
+        );
+
+        float scale = 1f;
+
+        if (bounds != null && bounds.height > 0f) {
+            scale =
+                (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO)
+                    / bounds.height;
+        }
+
+        Matrix4 oldTransform =
+            batch.getTransformMatrix().cpy();
+
+        Matrix4 transform =
+            new Matrix4(oldTransform);
+
+        transform.translate(x, y, 0);
+        transform.scale(scale, scale, 1f);
+        transform.translate(-x, -y, 0);
+
+        batch.setTransformMatrix(transform);
+
+        try {
+            pamPlayer.draw(
+                batch,
+                pamPath,
+                clip,
+                time,
+                x,
+                y,
+                loop,
+                null
+            );
+        } catch(Throwable ignored) {
+        }
+
+        batch.setTransformMatrix(oldTransform);
+    }
+
     private void drawScaled(
         Batch batch,
         String pamPath,
@@ -194,16 +264,21 @@ public final class ZombieActor extends Actor {
             );
         }
 
-        if (props == null || props.isEmpty()) {
-            return arm == null || arm.isEmpty() ? null : arm;
+        Map<String, Boolean> zombotany = zombotanyHiddenParts();
+
+        Map<String, Boolean> merged = new HashMap<>();
+
+        if (props != null) {
+            merged.putAll(props);
         }
-        if (arm == null || arm.isEmpty()) {
-            return props;
+        if (arm != null) {
+            merged.putAll(arm);
+        }
+        if (zombotany != null) {
+            merged.putAll(zombotany);
         }
 
-        Map<String, Boolean> merged = new HashMap<>(props);
-        merged.putAll(arm);
-        return merged;
+        return merged.isEmpty() ? null : merged;
     }
 
     private float getSandstormScale() {
@@ -467,6 +542,22 @@ public final class ZombieActor extends Actor {
             loop
         );
 
+        if (isZombotanyPeashooter()) {
+            drawPeashooterHead(batch);
+        }
+
+        if (isZombotanySquash()) {
+            drawSquashHead(batch);
+        }
+
+        if (isZombotanyWallnut()) {
+            drawWallnutHead(batch);
+        }
+
+        if (isZombotanyJalapeno()) {
+            drawJalapenoHead(batch);
+        }
+
         ZombieArmorLooks.draw(
             batch,
             zombie,
@@ -676,5 +767,300 @@ public final class ZombieActor extends Actor {
         }
 
         wasIceVisible = iceVisible;
+    }
+
+    private void drawPeashooterHead(Batch batch) {
+        String pamPath =
+            "768/INITIAL/PLANT/PEASHOOTER/PEASHOOTER.PAM";
+
+        String clip = zombie.isEating() ? "attack" : "idle";
+
+        Rectangle bounds = pamPlayer.bounds(pamPath, clip);
+
+        float scale = 1f;
+        if (bounds != null && bounds.height > 0f) {
+            scale =
+                (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO)
+                    / bounds.height;
+        }
+
+        scale *= 0.72f;
+
+        float x = getX() + cellHeight * 0.02f;
+        float y = getY() + cellHeight * 0.25f;
+
+        Matrix4 oldTransform =
+            batch.getTransformMatrix().cpy();
+
+        Matrix4 transform =
+            new Matrix4(oldTransform);
+
+        float scaleX = (zombie.getSpeed() < 0) ? -scale : scale;
+
+        transform.translate(x, y, 0);
+        transform.scale(-scale, scale, 1f);
+        transform.translate(-x, -y, 0);
+
+        batch.setTransformMatrix(transform);
+
+        try {
+            pamPlayer.drawPart(
+                batch, pamPath, clip, stateTime, x, y,
+                "peashooter_head_base"
+            );
+
+            pamPlayer.drawPart(
+                batch, pamPath, clip, stateTime, x, y,
+                "peashooter_eye"
+            );
+
+            pamPlayer.drawPart(
+                batch, pamPath, clip, stateTime, x, y,
+                "peashooter_mouth"
+            );
+        } catch (Throwable ignored) {
+        }
+
+        batch.setTransformMatrix(oldTransform);
+    }
+
+    private void drawJalapenoHead(Batch batch) {
+
+        String pamPath =
+            "768/INITIAL/PLANT/JALAPENO/JALAPENO.PAM";
+
+        String clip = "idle";
+
+        Rectangle bounds = pamPlayer.bounds(
+            pamPath,
+            clip
+        );
+
+        float scale = 1f;
+
+        if (bounds != null && bounds.height > 0f) {
+            scale =
+                (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO)
+                    / bounds.height;
+        }
+
+        scale *= 0.42f;
+
+        float x = getX() + cellHeight * 0.03f;
+        float y = getY() + cellHeight * 0.18f + 30;
+
+        Matrix4 oldTransform =
+            batch.getTransformMatrix().cpy();
+
+        Matrix4 transform =
+            new Matrix4(oldTransform);
+
+        transform.translate(x, y, 0);
+        transform.scale(-scale, scale, 1f);
+        transform.translate(-x, -y, 0);
+
+        batch.setTransformMatrix(transform);
+
+        try {
+            pamPlayer.drawPart(
+                batch,
+                pamPath,
+                clip,
+                stateTime,
+                x,
+                y,
+                "root"
+            );
+        } catch (Throwable ignored) {
+        }
+
+        batch.setTransformMatrix(oldTransform);
+    }
+
+    private void drawSquashHead(Batch batch) {
+        System.out.println("[SQUASH DRAW TEST]");
+
+        String pamPath =
+            "768/INITIAL/PLANT/SQUASH/SQUASH.PAM";
+
+        String clip = "idle";
+
+        Rectangle bounds = pamPlayer.bounds(
+            pamPath,
+            clip
+        );
+
+        float scale = 1f;
+
+        if (bounds != null && bounds.height > 0f) {
+            scale =
+                (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO)
+                    / bounds.height;
+        }
+
+
+        scale *= 0.45f;
+
+
+        float x = getX() + cellHeight * 0.05f;
+        float y = getY() + cellHeight * 0.55f;
+
+
+        Matrix4 oldTransform =
+            batch.getTransformMatrix().cpy();
+
+
+        Matrix4 transform =
+            new Matrix4(oldTransform);
+
+
+        float scaleX = (zombie.getSpeed() < 0)
+            ? -scale
+            : scale;
+
+
+        transform.translate(x, y, 0);
+        transform.scale(-scaleX, scale, 1f);
+        transform.translate(-x, -y, 0);
+
+
+        batch.setTransformMatrix(transform);
+
+
+        try {
+
+            pamPlayer.drawPart(
+                batch,
+                pamPath,
+                clip,
+                stateTime,
+                x,
+                y,
+                "root"
+            );
+
+        } catch(Throwable ignored) {
+
+        }
+
+        batch.setTransformMatrix(oldTransform);
+    }
+
+    private void drawWallnutHead(Batch batch) {
+
+        String pamPath =
+            "PLANT/WALLNUT/WALLNUT.PAM";
+
+        String clip = "idle";
+
+        Rectangle bounds = pamPlayer.bounds(
+            pamPath,
+            clip
+        );
+
+        float scale = 1f;
+
+        if (bounds != null && bounds.height > 0f) {
+            scale =
+                (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO)
+                    / bounds.height;
+        }
+
+        scale *= 0.35f;
+
+        float x = getX() + cellHeight * 0.02f;
+        float y = getY() + cellHeight * 0.02f + 40;
+
+        Matrix4 oldTransform =
+            batch.getTransformMatrix().cpy();
+
+        Matrix4 transform =
+            new Matrix4(oldTransform);
+
+        float scaleX = -scale;
+
+        transform.translate(x, y, 0);
+        transform.scale(scaleX, scale, 1f);
+        transform.translate(-x, -y, 0);
+
+        batch.setTransformMatrix(transform);
+
+        try {
+            pamPlayer.drawPart(
+                batch,
+                pamPath,
+                clip,
+                stateTime,
+                x,
+                y,
+                "root"
+            );
+        } catch (Throwable ignored) {
+        }
+
+        batch.setTransformMatrix(oldTransform);
+    }
+
+    private Map<String, Boolean> zombotanyHiddenParts() {
+
+        if (!isZombotanyPeashooter()
+            && !isZombotanySquash()
+            && !"ZombieZombotanyWallnut".equals(zombie.getId())
+            && !"ZombieZombotanyJalapeno".equals(zombie.getId())) {
+            return null;
+        }
+
+        Map<String, Boolean> hidden = new HashMap<>();
+
+        hidden.put("zombie_skull", false);
+        hidden.put("zombie_jaw", false);
+        hidden.put("zombie_pupil", false);
+
+        return hidden;
+    }
+
+    private void printZombieParts() {
+
+        PamPlayer.AnimationPart root =
+            pamPlayer.getParts(
+                "768/INITIAL/ZOMBIE/ZOMBIE_TUTORIAL/ZOMBIE_TUTORIAL.PAM"
+            );
+
+        printPart(root, "");
+    }
+
+    private void printSquashParts() {
+
+        PamPlayer.AnimationPart root =
+            pamPlayer.getParts(
+                "768/INITIAL/PLANT/SQUASH/SQUASH.PAM"
+            );
+
+        printPart(root, "");
+    }
+
+
+    private void printPart(
+        PamPlayer.AnimationPart part,
+        String space
+    ) {
+        if (part == null) {
+            return;
+        }
+
+        System.out.println(
+            "[ZOMBIE_PART] "
+                + space
+                + part.name
+        );
+
+        if (part.children != null) {
+            for (Object child : part.children) {
+                printPart(
+                    (PamPlayer.AnimationPart) child,
+                    space + "  "
+                );
+            }
+        }
     }
 }

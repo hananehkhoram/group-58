@@ -13,17 +13,11 @@ import java.util.Map;
 
 public class WallNut implements BaseAbility {
 
-    private static final long ONE_SECOND_TICKS = 10;
     private static final long COOLDOWN_TICKS = 30;
-    private static final int MAX_SUN_BATCH = 5;
+    private static final int SUN_VALUE = 5;
 
-    private static class SunState {
-        int count = 0;
-        long lastGenTick = -1;
-        long cooldownStartTick = -1;
-    }
-
-    private final Map<Plant, SunState> sunStates = new HashMap<>();
+    // نگهداری آخرین تیکی که هر گیاه خورشید تولید کرده است
+    private final Map<Plant, Long> lastSunGenTicks = new HashMap<>();
 
     public void triggerAbility(WallNutType wallNutType, int damage, Plant self, GameEngine engine) {
         switch (wallNutType) {
@@ -124,26 +118,11 @@ public class WallNut implements BaseAbility {
 
     private void executeSunGenerating(Plant self, GameContext ctx) {
         long currentTick = ctx.getTimeManager().getTotalTicks();
-        SunState state = sunStates.computeIfAbsent(self, k -> new SunState());
-        if (state.cooldownStartTick > 0) {
-            if (currentTick - state.cooldownStartTick >= COOLDOWN_TICKS) {
-                state.cooldownStartTick = -1;
-                state.count = 0;
-            } else {
-                return;
-            }
-        }
+        Long lastGenTick = lastSunGenTicks.get(self);
 
-        if (state.count < MAX_SUN_BATCH) {
-            if (state.lastGenTick < 0 || (currentTick - state.lastGenTick) >= ONE_SECOND_TICKS) {
-                ctx.produceSun(self.getCol(), self.getRow(), 1);
-                state.lastGenTick = currentTick;
-                state.count++;
-
-                if (state.count >= MAX_SUN_BATCH) {
-                    state.cooldownStartTick = currentTick;
-                }
-            }
+        if (lastGenTick == null || (currentTick - lastGenTick) >= COOLDOWN_TICKS) {
+            ctx.produceSun(self.getCol(), self.getRow(), SUN_VALUE);
+            lastSunGenTicks.put(self, currentTick);
         }
     }
 

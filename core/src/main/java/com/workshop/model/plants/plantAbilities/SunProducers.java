@@ -21,6 +21,9 @@ public class SunProducers implements BaseAbility {
                 ctx.produceSun(plant.getCol(), plant.getRow(), amount, sunType);
                 com.workshop.view.Console.showMessage("plant " + plant.getName() +
                         " produced a one-time burst of sun at (" + plant.getRow() + ", " + plant.getCol() + ")");
+                plant.takeDamage(Integer.MAX_VALUE);
+                ctx.getAlivePlants().remove(plant);
+                ctx.getPlantGrid()[plant.getRow()][plant.getCol()] = null;
             }
             return;
         }
@@ -36,7 +39,7 @@ public class SunProducers implements BaseAbility {
             if (currentSecond - plant.getLastActionSecond() >= rateOfPlant ){
                 if (!ctx.isSunPresent(x , y)){
                     int finalAmount = amount;
-                    if (plant.getName().equalsIgnoreCase("Sun-shroom")) {
+                    if (plant.getName().equalsIgnoreCase("SunShroom")) {
                         if (plant.isPlantFoodActive() || plant.getLastActionSecond() >= rateOfPlant * 2) {
                             finalAmount = 75;
                         } else if (plant.getLastActionSecond() >= rateOfPlant) {
@@ -64,13 +67,13 @@ public class SunProducers implements BaseAbility {
         int bonusSun = switch (self.getName()) {
             case "Sunflower" -> 150;
             case "Twin Sunflower" -> 250;
-            case "Sun-shroom" -> 225;
+            case "SunShroom" -> 225;
             case "Primal Sunflower" -> 225;
             default -> 0;
         };
 
         if (bonusSun > 0) {
-            if (self.getName().equalsIgnoreCase("Sun-shroom")) {
+            if (self.getName().equalsIgnoreCase("SunShroom")) {
                 self.setPlantFoodActive(true);
             }
 

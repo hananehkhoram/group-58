@@ -348,7 +348,7 @@ public class PlantSelectionScreen implements Screen {
             card.setOnClick(c -> {
                 focusedPlant = plant;
                 if (isSunflowerBanned(plant)) {
-                    Toast.showError(stage, skin, "You cannot select Sunflower in this level!");
+                    Toast.showError(stage, skin, "You cannot select Sun Producer in this level!");
                     refreshAll();
                     return;
                 }

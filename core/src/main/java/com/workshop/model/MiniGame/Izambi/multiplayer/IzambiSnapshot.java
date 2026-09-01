@@ -3,30 +3,13 @@ package com.workshop.model.MiniGame.Izambi.multiplayer;
 import com.workshop.model.GameContext;
 import com.workshop.model.MiniGame.Izambi.IZombieManager;
 import com.workshop.model.plants.Plant;
+import com.workshop.model.projectile.Projectile;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.net.UserSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A lightweight, render-only snapshot of one tick of a 2-player "I, Zombie"
- * match. The host builds one of these from its live {@link GameContext}
- * after every simulation step and sends it to the guest.
- * <p>
- * Each entity carries a stable {@code id} (the host's
- * {@link System#identityHashCode} for that Plant/Zombie, stable for the
- * object's whole lifetime in this match) so the guest can keep reusing the
- * same mirrored Plant/Zombie objects across snapshots instead of recreating
- * them every tick — recreating them would make the real PAM-based rendering
- * layers (which cache one actor per object identity) think every unit is a
- * brand-new spawn on every update, breaking smooth animation.
- * <p>
- * "Sun Producer Zombie" units are deliberately left out: they're an
- * internal bookkeeping trick (a renamed, immobile zombie template) with no
- * real animation of their own, and the single-player screen doesn't show
- * them either.
- */
 public final class IzambiSnapshot {
 
     private static final String SUN_PRODUCER_NAME = "Sun Producer Zombie";
@@ -49,6 +32,73 @@ public final class IzambiSnapshot {
         }
     }
 
+    public static final class ZombieView {
+        public final int id;
+        public final int row;
+        public final double x;
+        public final String name;
+        public final int hpPercent;
+        public final boolean eating;
+        public final boolean ashed;
+        public final boolean ashFinished;
+        public final boolean deathAnimFinished;
+        public final boolean iced;
+        public final boolean initialFrozenBlock;
+        public final double iceHp;
+        public final int armorHp;
+
+        public ZombieView(
+            int id, int row, double x, String name, int hpPercent, boolean eating,
+            boolean ashed, boolean ashFinished, boolean deathAnimFinished,
+            boolean iced, boolean initialFrozenBlock, double iceHp, int armorHp
+        ) {
+            this.id = id;
+            this.row = row;
+            this.x = x;
+            this.name = name;
+            this.hpPercent = hpPercent;
+            this.eating = eating;
+            this.ashed = ashed;
+            this.ashFinished = ashFinished;
+            this.deathAnimFinished = deathAnimFinished;
+            this.iced = iced;
+            this.initialFrozenBlock = initialFrozenBlock;
+            this.iceHp = iceHp;
+            this.armorHp = armorHp;
+        }
+    }
+
+    public static final class ProjectileView {
+        public final int id;
+        public final int row;
+        public final double x;
+        public final double y;
+        public final String bulletType;
+        public final String trajectory;
+        public final boolean isFromZombie;
+        public final int ownerPlantId;
+
+        public ProjectileView(
+            int id,
+            int row,
+            double x,
+            double y,
+            String bulletType,
+            String trajectory,
+            boolean isFromZombie,
+            int ownerPlantId
+        ) {
+            this.id = id;
+            this.row = row;
+            this.x = x;
+            this.y = y;
+            this.bulletType = bulletType;
+            this.trajectory = trajectory;
+            this.isFromZombie = isFromZombie;
+            this.ownerPlantId = ownerPlantId;
+        }
+    }
+
     public int zombieSun;
     public int plantSun;
     public int remainingSeconds;
@@ -56,7 +106,8 @@ public final class IzambiSnapshot {
     public MatchRole winner;
     public boolean[] brainsEaten;
     public List<EntityView> plants = new ArrayList<>();
-    public List<EntityView> zombies = new ArrayList<>();
+    public List<ZombieView> zombies = new ArrayList<>();
+    public List<ProjectileView> projectiles = new ArrayList<>();
 
     public static IzambiSnapshot capture(
         GameContext ctx,
@@ -92,15 +143,50 @@ public final class IzambiSnapshot {
         }
 
         for (Zombie zombie : ctx.getAliveZombies()) {
-            if (zombie == null || zombie.isDead() || SUN_PRODUCER_NAME.equals(zombie.getName())) {
+            if (zombie == null || SUN_PRODUCER_NAME.equals(zombie.getName())) {
                 continue;
             }
+
             int hpPercent = zombie.getMaxHp() <= 0
                 ? 100
                 : (int) Math.round(100.0 * zombie.getHp() / zombie.getMaxHp());
-            snap.zombies.add(new EntityView(
-                System.identityHashCode(zombie), zombie.getRow(), zombie.getX(), zombie.getName(),
-                hpPercent, zombie.isEating()
+            hpPercent = Math.max(0, hpPercent);
+
+            int armorHp = zombie.getArmor() != null ? zombie.getArmor().getArmorHP() : -1;
+
+            snap.zombies.add(new ZombieView(
+                System.identityHashCode(zombie),
+                zombie.getRow(),
+                zombie.getX(),
+                zombie.getName(),
+                hpPercent,
+                zombie.isEating(),
+                zombie.isAshed(),
+                zombie.isAshFinished(),
+                zombie.isDeathAnimFinished(),
+                zombie.isIced(),
+                zombie.isInitialFrozenBlock(),
+                zombie.getIceHp(),
+                armorHp
+            ));
+        }
+
+        for (Projectile projectile : ctx.getProjectiles()) {
+            if (projectile == null || !projectile.isActive()) {
+                continue;
+            }
+            int ownerPlantId = projectile.getOwnerPlant() != null
+                ? System.identityHashCode(projectile.getOwnerPlant())
+                : -1;
+            snap.projectiles.add(new ProjectileView(
+                System.identityHashCode(projectile),
+                projectile.getRow(),
+                projectile.getX(),
+                projectile.getY(),
+                projectile.getBulletType().name(),
+                projectile.getTrajectory().name(),
+                projectile.isFromZombie(),
+                ownerPlantId
             ));
         }
 
@@ -122,7 +208,8 @@ public final class IzambiSnapshot {
             winner == null ? "" : winner.name(),
             brains.toString(),
             entitiesToWire(plants),
-            entitiesToWire(zombies)
+            zombiesToWire(zombies),
+            projectilesToWire(projectiles)
         );
     }
 
@@ -136,6 +223,42 @@ public final class IzambiSnapshot {
             sb.append(e.id).append(',').append(e.row).append(',').append(e.x)
                 .append(',').append(e.name).append(',').append(e.hpPercent)
                 .append(',').append(e.eating ? '1' : '0');
+        }
+        return sb.toString();
+    }
+
+    private static String zombiesToWire(List<ZombieView> zombies) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < zombies.size(); i++) {
+            if (i > 0) {
+                sb.append(';');
+            }
+            ZombieView z = zombies.get(i);
+            sb.append(z.id).append(',').append(z.row).append(',').append(z.x)
+                .append(',').append(z.name).append(',').append(z.hpPercent)
+                .append(',').append(z.eating ? '1' : '0')
+                .append(',').append(z.ashed ? '1' : '0')
+                .append(',').append(z.ashFinished ? '1' : '0')
+                .append(',').append(z.deathAnimFinished ? '1' : '0')
+                .append(',').append(z.iced ? '1' : '0')
+                .append(',').append(z.initialFrozenBlock ? '1' : '0')
+                .append(',').append(z.iceHp)
+                .append(',').append(z.armorHp);
+        }
+        return sb.toString();
+    }
+
+    private static String projectilesToWire(List<ProjectileView> entities) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < entities.size(); i++) {
+            if (i > 0) {
+                sb.append(';');
+            }
+            ProjectileView p = entities.get(i);
+            sb.append(p.id).append(',').append(p.row).append(',').append(p.x)
+                .append(',').append(p.y).append(',').append(p.bulletType)
+                .append(',').append(p.trajectory).append(',').append(p.isFromZombie ? '1' : '0')
+                .append(',').append(p.ownerPlantId);
         }
         return sb.toString();
     }
@@ -156,7 +279,8 @@ public final class IzambiSnapshot {
         }
 
         snap.plants = entitiesFromWire(p[6]);
-        snap.zombies = entitiesFromWire(p[7]);
+        snap.zombies = zombiesFromWire(p[7]);
+        snap.projectiles = p.length > 8 ? projectilesFromWire(p[8]) : new ArrayList<>();
         return snap;
     }
 
@@ -177,6 +301,61 @@ public final class IzambiSnapshot {
             int hpPercent = Integer.parseInt(fields[4]);
             boolean eating = fields.length > 5 && "1".equals(fields[5]);
             result.add(new EntityView(id, row, x, name, hpPercent, eating));
+        }
+        return result;
+    }
+
+    private static List<ZombieView> zombiesFromWire(String wire) {
+        List<ZombieView> result = new ArrayList<>();
+        if (wire == null || wire.isBlank()) {
+            return result;
+        }
+        for (String entry : wire.split(";", -1)) {
+            if (entry.isBlank()) {
+                continue;
+            }
+            String[] fields = entry.split(",", -1);
+            int id = Integer.parseInt(fields[0]);
+            int row = Integer.parseInt(fields[1]);
+            double x = Double.parseDouble(fields[2]);
+            String name = fields[3];
+            int hpPercent = Integer.parseInt(fields[4]);
+            boolean eating = "1".equals(fields[5]);
+            boolean ashed = "1".equals(fields[6]);
+            boolean ashFinished = "1".equals(fields[7]);
+            boolean deathAnimFinished = "1".equals(fields[8]);
+            boolean iced = "1".equals(fields[9]);
+            boolean initialFrozenBlock = "1".equals(fields[10]);
+            double iceHp = Double.parseDouble(fields[11]);
+            int armorHp = Integer.parseInt(fields[12]);
+            result.add(new ZombieView(
+                id, row, x, name, hpPercent, eating,
+                ashed, ashFinished, deathAnimFinished,
+                iced, initialFrozenBlock, iceHp, armorHp
+            ));
+        }
+        return result;
+    }
+
+    private static List<ProjectileView> projectilesFromWire(String wire) {
+        List<ProjectileView> result = new ArrayList<>();
+        if (wire == null || wire.isBlank()) {
+            return result;
+        }
+        for (String entry : wire.split(";", -1)) {
+            if (entry.isBlank()) {
+                continue;
+            }
+            String[] fields = entry.split(",", -1);
+            int id = Integer.parseInt(fields[0]);
+            int row = Integer.parseInt(fields[1]);
+            double x = Double.parseDouble(fields[2]);
+            double y = Double.parseDouble(fields[3]);
+            String bulletType = fields[4];
+            String trajectory = fields[5];
+            boolean isFromZombie = "1".equals(fields[6]);
+            int ownerPlantId = Integer.parseInt(fields[7]);
+            result.add(new ProjectileView(id, row, x, y, bulletType, trajectory, isFromZombie, ownerPlantId));
         }
         return result;
     }

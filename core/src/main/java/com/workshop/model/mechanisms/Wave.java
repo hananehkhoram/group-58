@@ -8,10 +8,7 @@ import com.workshop.model.zombie.BossZombieRegistry;
 import com.workshop.model.zombie.Zombie;
 import com.workshop.view.Console;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Wave {
@@ -123,6 +120,8 @@ public class Wave {
 
         Map<String, Zombie> pool = getAvailableZombiePool(ctx);
 
+        System.out.println(pool.keySet());
+
         if (pool.isEmpty()) {
             throw new IllegalStateException(
                 "No zombies are configured for level type: "
@@ -175,43 +174,32 @@ public class Wave {
     }
 
     private Map<String, Zombie> getAvailableZombiePool(GameContext ctx) {
-        Map<String, Zombie> allZombies =
-            ctx.getDataManager()
-                .zombies
-                .getZombieDataMap();
+        Map<String, Zombie> allZombies = ctx.getDataManager().zombies.getZombieDataMap();
 
         if (ctx.getLevel().getLevelType() == LevelType.Zombotany_MG) {
-            return allZombies
-                .entrySet()
-                .stream()
+            return allZombies.entrySet().stream()
                 .filter(entry -> isZombotanyZombie(entry.getValue()))
-                .collect(Collectors.toMap(
-                    Map.Entry::getKey,
-                    Map.Entry::getValue
-                ));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+
+        if (ctx.getLevel().getLevelType() == LevelType.BONUS) {
+            return allZombies.entrySet().stream()
+                .filter(entry -> !BossZombieRegistry.isBossId(entry.getValue().getId())
+                    && !BossZombieRegistry.isBossName(entry.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+
+        if (ctx.getSeason() == null) {
+            return Collections.emptyMap();
         }
 
         String seasonName = ctx.getSeason().getName();
-
-        return allZombies
-            .entrySet()
-            .stream()
-            .filter(entry ->
-                !BossZombieRegistry.isBossId(entry.getValue().getId())
-                    && !BossZombieRegistry.isBossName(entry.getKey())
-                    && ctx.getDataManager()
-                    .zombies
-                    .isAvailableInChapter(
-                        entry.getKey(),
-                        seasonName
-                    )
-            )
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue
-            ));
+        return allZombies.entrySet().stream()
+            .filter(entry -> !BossZombieRegistry.isBossId(entry.getValue().getId())
+                && !BossZombieRegistry.isBossName(entry.getKey())
+                && ctx.getDataManager().zombies.isAvailableInChapter(entry.getKey(), seasonName))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
-
     private void placeZombie(GameContext ctx, Zombie zombie, Random random) {
         int lane = random.nextInt(ctx.getLevel().getRows());
         double col = ctx.getLevel().getColumns();

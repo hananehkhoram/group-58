@@ -27,6 +27,10 @@ Prospector,100,190,0.16,200,-,ZombieProspector,,,,
 Piano,4000,840,0.12,450,-,ZombiePiano,,,,
 News Paper,200,460,0.22,700,Newspaper,ZombieNewspaper,,,,
 Barrel Roller,100,190,0.20000000000000001,300,-,ZombieDarkBarrelRoller,,,,
+Peashooter Zombie,100,190,0.185,200,-,ZombieZombotanyPeashooter
+Wall-nut Zombie,100,4000,0.185,400,-,ZombieZombotanyWallnut
+Jalapeno Zombie,100,190,0.185,250,-,ZombieZombotanyJalapeno
+Squash Zombie,100,190,0.40,300,-,ZombieZombotanySquash
 AncientEgyptZomboss,0,18000,0,999999,-,ZombieBossEgypt,,,,
 FrozenCavesZomboss,0,21000,0,999999,-,ZombieBossFrozenCaves,,,,
 BigWaveBeachZomboss,0,24000,0,999999,-,ZombieBossBigWaveBeach,,,,
