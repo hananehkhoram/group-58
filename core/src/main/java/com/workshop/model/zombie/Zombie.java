@@ -587,6 +587,26 @@ public class Zombie implements Damageable {
         eatDamageAccumulator -= wholeDamage;
         return wholeDamage;
     }
+
+    public void setMirroredIceState(boolean iced, boolean initialFrozenBlock, double iceHp) {
+        this.isIced = iced;
+        this.initialFrozenBlock = initialFrozenBlock;
+        this.iceHp = iceHp;
+        if (iced) {
+            if (!effects.contains(Effects.FROZEN)) {
+                effects.add(Effects.FROZEN);
+            }
+        } else {
+            effects.remove(Effects.FROZEN);
+        }
+    }
+
+    public void setMirroredDeathState(boolean ashed, boolean ashFinished, boolean deathAnimFinished) {
+        this.ashed = ashed;
+        this.ashFinished = ashFinished;
+        this.deathAnimFinished = deathAnimFinished;
+    }
+
     public double getSpeed() { return speed; }
     public int getWavePointCost() { return wavePointCost; }
     public int getWeight() { return weight; }

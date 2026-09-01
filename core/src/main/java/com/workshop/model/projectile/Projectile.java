@@ -171,6 +171,12 @@ public class Projectile {
         }
     }
 
+    public void setMirroredPosition(double x, double y, int row) {
+        this.x = x;
+        this.y = y;
+        this.row = row;
+    }
+
     public void onHit(Damageable target) {
         if (trajectory == TrajectoryType.PIERCING && alreadyHit.contains(target)) {
             return;

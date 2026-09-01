@@ -10,7 +10,6 @@ public class Armor implements Behaviors {
     private ArmorType armorType;
     private boolean metallic;
 
-    // Enrage fields (Newspaper zombie: EnragedDamageScale=4, EnragedSpeedScale=4)
     private boolean enrageable;
     private double enragedDamageScale;
     private double enragedSpeedScale;
@@ -33,7 +32,6 @@ public class Armor implements Behaviors {
         this.y = y;
     }
 
-    /** Constructor for Newspaper zombie. */
     public Armor(ArmorType armorType, int armorHP, boolean metallic,
                  double enragedDamageScale, double enragedSpeedScale, double x, double y) {
         this(armorType, armorHP, metallic, x, y);
@@ -57,7 +55,6 @@ public class Armor implements Behaviors {
             this.y = zombie.getRow();
         }
     }
-
 
     public int absorb(int damage) {
         armorHP -= damage;
@@ -131,9 +128,9 @@ public class Armor implements Behaviors {
         return nearest;
     }
 
-    // Getters & Setters
     public int getArmorHP() { return armorHP; }
     public ArmorType getArmorType() { return armorType; }
     public boolean isMetallic() { return metallic; }
 
+    public void setArmorHp(int armorHP) { this.armorHP = armorHP; }
 }
