@@ -27,6 +27,8 @@ public class Plant implements Damageable {
     private PlantFoodMode plantFoodMode;
 
     private boolean hasLilyPadUnderneath;
+    private Plant coveredPlant;
+    private Plant coverPlant;
 
     private List<StatEffect>[] statUpgrades;
     private List<BehaviorEffect>[] behaviorUpgrades;
@@ -342,6 +344,16 @@ public class Plant implements Damageable {
     public void setHasLilyPadUnderneath(boolean hasLilyPadUnderneath) {
         this.hasLilyPadUnderneath = hasLilyPadUnderneath;
     }
+
+    public boolean isStackableCover() {
+        return abilityParams != null && "STACKABLE_COVER".equals(abilityParams.get("wallNutType"));
+    }
+
+    public Plant getCoveredPlant() { return coveredPlant; }
+    public void setCoveredPlant(Plant coveredPlant) { this.coveredPlant = coveredPlant; }
+
+    public Plant getCoverPlant() { return coverPlant; }
+    public void setCoverPlant(Plant coverPlant) { this.coverPlant = coverPlant; }
 
     public boolean isLilyPad() {
         if (name != null && name.equalsIgnoreCase("Lily Pad")) {

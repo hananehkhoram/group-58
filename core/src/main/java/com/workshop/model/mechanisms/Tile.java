@@ -29,6 +29,7 @@ public class Tile {
         return grid;
     }
 
+
     public int getX() {
         return x;
     }
@@ -78,7 +79,25 @@ public class Tile {
     }
 
     public boolean setPlant(Plant plant) {
-        if (ctx.getPlantGrid()[y][x] != null) return false;
+        Plant existing = ctx.getPlantGrid()[y][x];
+
+        if (plant != null && plant.isStackableCover()) {
+            // Pumpkin: only plantable on top of an existing, not-already
+            // -covered plant — never on an empty tile.
+            if (existing == null || existing.getCoverPlant() != null) {
+                return false;
+            }
+            if (!isPlantable()) {
+                return false;
+            }
+            existing.setCoverPlant(plant);
+            plant.setCoveredPlant(existing);
+            plant.setRow(y);
+            plant.setCol(x);
+            return true;
+        }
+
+        if (existing != null) return false;
         if (!isPlantable()) return false;
         ctx.getPlantGrid()[y][x] = plant;
         return true;

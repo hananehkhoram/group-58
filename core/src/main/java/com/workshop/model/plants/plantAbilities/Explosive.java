@@ -3,6 +3,7 @@ package com.workshop.model.plants.plantAbilities;
 import com.workshop.model.GameContext;
 import com.workshop.model.mechanisms.ExplosionFx;
 import com.workshop.model.mechanisms.GameEngine;
+import com.workshop.model.mechanisms.TerrainType;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.plants.TargetingMode;
 import com.workshop.model.plants.plantFoodEffect.PlantFoodMode;
@@ -21,7 +22,7 @@ public class Explosive implements BaseAbility {
             int r = pos[0];
             int c = pos[1];
 
-            List<Zombie> targets = engine.findTargets(r, c, TargetingMode.NONE);
+            List<Zombie> targets = engine.findTargets(r, c, TargetingMode.IN_SAME_PLACE);
             if (targets != null && !targets.isEmpty()) {
                 for (Zombie target : targets) {
                     target.takeExplosionDamage(damage);
@@ -38,6 +39,7 @@ public class Explosive implements BaseAbility {
 
         switch (type) {
             case INSTANT_AOE:
+                if (plant.getName().equalsIgnoreCase("Explode-o-nut") && plant.getHp() > 1) break;
                 applyAreaDamageAndRemove(get3x3Tiles(pRow, pCol, ctx), damage, plant, engine);
                 break;
             case LANE_FIRE:
@@ -107,7 +109,7 @@ public class Explosive implements BaseAbility {
     }
 
     private void executeCrush(int damage, Plant plant, GameEngine engine) {
-        List<Zombie> targets = engine.findTargets(plant.getRow(), plant.getCol(), TargetingMode.NONE);
+        List<Zombie> targets = engine.findTargets(plant.getRow(), plant.getCol(), TargetingMode.IN_SAME_PLACE);
         if (targets != null && !targets.isEmpty()) {
             Zombie firstZombie = targets.get(0);
             firstZombie.takeDamage(damage);
@@ -118,11 +120,17 @@ public class Explosive implements BaseAbility {
     private void executeTimedMine(ExplosiveType type, int damage, Plant plant, GameEngine engine) {
         GameContext ctx = engine.getCtx();
         int currentSecond = ctx.getTimeManager().getTotalSeconds();
+
+        // اگر زمان کاشت ثبت نشده، الان زمان فعلی را ثبت کن
+        if (plant.getLastActionSecond() <= 0) {
+            plant.setLastActionSecond(currentSecond);
+            return;
+        }
+
         int timeAlive = currentSecond - plant.getLastActionSecond();
         int delay = (type == ExplosiveType.TIMED_MINE_AOE) ? 5 : 15;
-
         if (timeAlive >= delay) {
-            List<Zombie> contactZombies = engine.findTargets(plant.getRow(), plant.getCol(), TargetingMode.NONE);
+            List<Zombie> contactZombies = engine.findTargets(plant.getRow(), plant.getCol(), TargetingMode.IN_SAME_PLACE);
             if (contactZombies != null && !contactZombies.isEmpty()) {
                 List<int[]> areaTiles = new ArrayList<>();
                 if (type == ExplosiveType.TIMED_MINE) {
@@ -134,7 +142,6 @@ public class Explosive implements BaseAbility {
             }
         }
     }
-
     private void executeShrapnel(int damage, Plant plant, GameEngine engine) {
         GameContext ctx = engine.getCtx();
         int pRow = plant.getRow();
@@ -241,7 +248,7 @@ public class Explosive implements BaseAbility {
     public void waterExplosion(Plant plant, GameContext ctx, GameEngine engine) {
         int r = plant.getRow();
         int c = plant.getCol();
-        List<Zombie> targets = engine.findTargets(r, c, TargetingMode.NONE);
+        List<Zombie> targets = engine.findTargets(r, c, TargetingMode.NEAREST);
         if (targets != null && !targets.isEmpty()) {
             Zombie target = targets.get(0);
             target.takeDamage(9999);

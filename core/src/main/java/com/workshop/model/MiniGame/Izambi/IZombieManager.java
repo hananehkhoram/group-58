@@ -237,10 +237,6 @@ public class IZombieManager implements LevelManager {
             zombie.resetEatClock(context);
         }
 
-        /*
-         * این باعث می‌شود ZombieActor
-         * انیمیشن EAT را نشان دهد.
-         */
         zombie.setEating(true);
 
         int damage =

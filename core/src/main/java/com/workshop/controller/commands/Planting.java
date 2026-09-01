@@ -108,6 +108,18 @@ public class Planting implements Command {
         boolean water = ctx.getSeason().isWaterCell(y, x, ctx);
         Plant occupant = tile.getPlant();
         boolean onLilyPad = occupant != null && occupant.isLilyPad();
+        boolean coverTarget = template.isStackableCover() && occupant != null && occupant.getCoverPlant() == null;
+
+        if (template.isStackableCover()) {
+            if (occupant == null) {
+                Console.showMessage("This can only be planted on top of another plant.");
+                return false;
+            }
+            if (occupant.getCoverPlant() != null) {
+                Console.showMessage("That plant is already covered.");
+                return false;
+            }
+        }
 
         if (template.isLilyPad()) {
             if (!water) {
@@ -135,7 +147,7 @@ public class Planting implements Command {
                 Console.showMessage("Grave Buster can only be planted on a grave.");
                 return false;
             }
-        } else if (!tile.isPlantable() || (occupant != null && !onLilyPad)) {
+        } else if (!tile.isPlantable() || (occupant != null && !onLilyPad && !coverTarget)) {
             Console.showMessage("You can't plant here.");
             return false;
         }
@@ -161,8 +173,8 @@ public class Planting implements Command {
 
     private boolean handleBowlingMinigame(Plant template, String type, int x, int y, GameContext ctx, LevelManager levelManager, Plant plantToRemoveFromBelt) {
         boolean isValidNut = type.equalsIgnoreCase("Wall-nut") || type.equalsIgnoreCase("Explode-o-nut") ||
-                type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut") ||
-                type.equalsIgnoreCase("Cherry Bomb");
+            type.equalsIgnoreCase("Giant Wall-nut") || type.equalsIgnoreCase("Tall-nut") ||
+            type.equalsIgnoreCase("Cherry Bomb");
 
         if (!isValidNut) return false;
 
@@ -192,13 +204,22 @@ public class Planting implements Command {
         Plant newPlant = ctx.getPlantFactory().create(template.getName());
         Plant occupant = ctx.getPlantGrid()[y][x];
         boolean onLilyPad = occupant != null && occupant.isLilyPad();
-        if (onLilyPad) {
-            newPlant.setHasLilyPadUnderneath(true);
-            ctx.getAlivePlants().remove(occupant);
-            ctx.getPlantGrid()[y][x] = null;
+
+        if (newPlant.isStackableCover() && occupant != null) {
+            // Pumpkin sits over the existing plant instead of replacing it:
+            // Tile.setPlant() links the two together and deliberately
+            // leaves the covered plant in ctx.getPlantGrid() so it keeps
+            // acting normally (attacking, producing sun, etc).
+            engine.getTiles(x, y).setPlant(newPlant);
+        } else {
+            if (onLilyPad) {
+                newPlant.setHasLilyPadUnderneath(true);
+                ctx.getAlivePlants().remove(occupant);
+                ctx.getPlantGrid()[y][x] = null;
+            }
+            engine.getTiles(x, y).setPlant(newPlant);
+            ctx.getPlantGrid()[y][x] = newPlant;
         }
-        engine.getTiles(x, y).setPlant(newPlant);
-        ctx.getPlantGrid()[y][x] = newPlant;
         ctx.getAlivePlants().add(newPlant);
 
         applyPlantFoodBoost(template, newPlant, type, ctx);

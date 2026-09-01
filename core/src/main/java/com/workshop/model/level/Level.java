@@ -3,6 +3,8 @@ package com.workshop.model.level;
 
 import com.workshop.model.mechanisms.Wave;
 import com.workshop.model.plants.Plant;
+import com.workshop.model.plants.PlantFamily;
+import com.workshop.model.plants.Tag;
 import com.workshop.model.season.Season;
 import com.workshop.model.user.User;
 import com.workshop.model.user.UserManager;
@@ -65,7 +67,8 @@ public class Level {
     public void poolConveyor(){
         if (levelType == LevelType.CONVEYOR_BELT || levelType == LevelType.BOSS_FIGHT){
             List<Plant> candidates = UserManager.getInstance().getCurrentUser().getUnlockedPlantTypes();
-            candidates.removeIf(plant -> plant.getName().equalsIgnoreCase("Imitater"));
+            candidates.removeIf(plant -> plant.getFamily().equals(PlantFamily.SUN_PRODUCER)
+                || plant.getTags().contains(Tag.SUN));
        conveyorPlantPool = candidates;
     }}
 

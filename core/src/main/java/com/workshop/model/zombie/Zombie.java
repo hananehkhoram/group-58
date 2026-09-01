@@ -1,6 +1,7 @@
 package com.workshop.model.zombie;
 
 import com.workshop.model.GameContext;
+import com.workshop.model.level.Level;
 import com.workshop.model.mechanisms.LootItem;
 import com.workshop.model.projectile.Damageable;
 import com.workshop.model.season.Season;
@@ -143,6 +144,10 @@ public class Zombie implements Damageable {
             return;
         }
 
+        if (effects.contains(Effects.HYPNOTIZED) && this.x > Level.COLS) {
+            this.hp = 0;
+        }
+
         if (isBoss && isIced) {
             isIced = false;
             iceHp = 0;
@@ -159,6 +164,9 @@ public class Zombie implements Damageable {
                 if (effects != null) {
                     effects.remove(Effects.BUTTERED);
                 }
+            } else {
+                setEating(false);
+                return;
             }
         }
 
@@ -195,16 +203,15 @@ public class Zombie implements Damageable {
 
         if (!isEating && !airborne && !isBoss && stunRemaining <= 0 && !beingSucked) {
             double effectiveSpeed = speed;
-
-            // کاهش سرعت حرکت زامبی هنگام یخ‌زدگی (کاهش به میزان ۵۰٪)
             if (isIced) {
                 effectiveSpeed *= 0.5;
             }
             if (isButtered()) {
                 effectiveSpeed *= 0.45;
             }
+            boolean shouldMoveRight = movingBackward || effects.contains(Effects.HYPNOTIZED);
 
-            x += movingBackward ? effectiveSpeed * deltaTime : -effectiveSpeed * deltaTime;
+            x += shouldMoveRight ? effectiveSpeed * deltaTime : -effectiveSpeed * deltaTime;
         }
     }
 

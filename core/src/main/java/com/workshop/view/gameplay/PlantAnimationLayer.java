@@ -71,6 +71,15 @@ public final class PlantAnimationLayer extends Group {
                 }
 
                 placePlantActor(plant, activePlants, column, row);
+
+                Plant cover = plant.getCoverPlant();
+                if (cover != null && !cover.isDead()) {
+                    placePlantActor(cover, activePlants, column, row);
+                    PlantActor coverActor = plantActors.get(cover);
+                    if (coverActor != null) {
+                        coverActor.toFront();
+                    }
+                }
             }
         }
 

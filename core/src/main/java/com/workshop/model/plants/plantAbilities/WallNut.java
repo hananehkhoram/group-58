@@ -15,8 +15,6 @@ public class WallNut implements BaseAbility {
 
     private static final long COOLDOWN_TICKS = 30;
     private static final int SUN_VALUE = 5;
-
-    // نگهداری آخرین تیکی که هر گیاه خورشید تولید کرده است
     private final Map<Plant, Long> lastSunGenTicks = new HashMap<>();
 
     public void triggerAbility(WallNutType wallNutType, int damage, Plant self, GameEngine engine) {
@@ -88,7 +86,7 @@ public class WallNut implements BaseAbility {
     }
 
     private void executeReflective(int damage, Plant self, GameEngine engine) {
-        List<Zombie> attackers = engine.findTargets(self.getRow(), self.getCol(), TargetingMode.NONE);
+        List<Zombie> attackers = engine.findTargets(self.getRow(), self.getCol(), TargetingMode.IN_SAME_PLACE);
         if (attackers != null && !attackers.isEmpty()) {
             for (Zombie z : attackers) {
                 z.takeDamage(damage);
@@ -97,7 +95,8 @@ public class WallNut implements BaseAbility {
     }
 
     private void executeLaneRedirect(Plant self, GameEngine engine) {
-        List<Zombie> biters = engine.findTargets(self.getRow(), self.getCol(), TargetingMode.NONE);
+        if (self.getHp() > 1) {return;}
+        List<Zombie> biters = engine.findTargets(self.getRow(), self.getCol(), TargetingMode.IN_SAME_PLACE);
         if (biters != null && !biters.isEmpty()) {
             int maxRows = engine.getCtx().getLevel().getRows();
             for (Zombie z : biters) {
@@ -110,7 +109,7 @@ public class WallNut implements BaseAbility {
         int pRow = self.getRow();
         int pCol = self.getCol();
         for (Zombie z : ctx.getAliveZombies()) {
-            if (!z.isDead() && Math.abs(z.getRow() - pRow) == 1 && Math.abs(z.getX() - pCol) <= 1.0) {
+            if (!z.isDead() && Math.abs(z.getRow() - pRow) == 1) {
                 z.setY(pRow);
             }
         }

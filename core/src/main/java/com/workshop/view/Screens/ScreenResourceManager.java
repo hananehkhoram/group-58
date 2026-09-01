@@ -109,8 +109,8 @@ public final class ScreenResourceManager {
 
         String activeClip = (clip != null && !clip.trim().isEmpty()) ? clip : "idle";
         String[] clipsToTry = activeClip.equalsIgnoreCase("idle")
-            ? new String[]{"idle", "idle_stage1", "loop"}
-            : new String[]{activeClip, "idle", "idle_stage1", "loop"};
+            ? new String[]{"idle", "idle_stage1", "loop","idle_stage1_"}
+            : new String[]{activeClip, "idle", "idle_stage1", "loop","idle_stage1_"};
 
         for (String currentClip : clipsToTry) {
             try {

@@ -2,6 +2,7 @@ package com.workshop.model.projectile;
 
 import com.workshop.model.level.Level;
 import com.workshop.model.plants.Plant;
+import com.workshop.model.zombie.Effects;
 import com.workshop.model.zombie.Zombie;
 
 import java.util.HashSet;
@@ -219,6 +220,9 @@ public class Projectile {
                 break;
 
             case MAGIC:
+                if (target instanceof Zombie z) {
+                    z.getEffect().add(Effects.HYPNOTIZED);
+                }
             case SMOKE:
             case NORMAL:
             default:

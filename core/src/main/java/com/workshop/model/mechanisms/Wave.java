@@ -125,19 +125,26 @@ public class Wave {
     }
 
     private int calculateEffectiveBudget() {
+
         double budget = waveCost;
 
         for (int i = 2; i <= waveNumber; i++) {
+
             boolean isFinalStep = (i == waveNumber && isLastWave);
+
             budget *= isFinalStep ? FINAL_WAVE_MULTIPLIER : WAVE_DIFFICULTY_GROWTH;
+
         }
 
         int difficultyLevel = UserManager.getInstance().getCurrentUser().getDifficultyLevel();
-        budget *= (BASE_DIFFICULTY / difficultyLevel);
 
-        return (int) Math.max(1, Math.round(budget));
+        double difficultyMultiplier = (double) difficultyLevel / BASE_DIFFICULTY;
+
+        budget *= difficultyMultiplier;
+
+        return (int) Math.max(waveCost, Math.round(budget));
+
     }
-
     private void spawnZombies(GameContext ctx, int budget) {
         if (ctx.getSeason() == null) {
             return;
