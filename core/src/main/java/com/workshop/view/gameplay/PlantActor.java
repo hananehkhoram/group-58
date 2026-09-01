@@ -591,6 +591,7 @@ public final class PlantActor extends Actor {
             return false;
         }
 
+        animationSpec.ensureClipsBound(pamPlayer);
         if (!animationSpec.hasClip(state)) {
             return false;
         }
@@ -633,6 +634,12 @@ public final class PlantActor extends Actor {
             return 0;
         }
         float spitAt = attackClipDuration() * plant.attackReleaseRatio();
+        if (stateTime < spitAt) {
+            return 0;
+        }
+        if (!plant.releasesShotsSequentially()) {
+            return Math.max(0, plant.pendingShotCount());
+        }
         int due = 0;
         while (spitReleaseIndex + due < 8
             && stateTime >= spitAt + (spitReleaseIndex + due) * SEQUENTIAL_SPIT_GAP) {

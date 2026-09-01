@@ -31,3 +31,7 @@ Peashooter Zombie,100,190,0.185,200,-,ZombieZombotanyPeashooter
 Wall-nut Zombie,100,4000,0.185,400,-,ZombieZombotanyWallnut
 Jalapeno Zombie,100,190,0.185,250,-,ZombieZombotanyJalapeno
 Squash Zombie,100,190,0.40,300,-,ZombieZombotanySquash
+AncientEgyptZomboss,0,9000,0,9999,-,ZombieBossEgypt
+FrozenCavesZomboss,0,9000,0,9999,-,ZombieBossFrozenCaves
+BigWaveBeachZomboss,0,9000,0,9999,-,ZombieBossBigWaveBeach
+DarkAgesZomboss,0,9000,0,9999,-,ZombieBossDarkAges

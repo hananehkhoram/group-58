@@ -85,8 +85,24 @@ public final class ExplosionFxLayer extends Group {
                 fx.row,
                 fx.col,
                 "768/FULL/EFFECTS/ZOMBOSS_MISSILE_EXPLOSION_ICEAGE/ZOMBOSS_MISSILE_EXPLOSION_ICEAGE.PAM",
-                2.2f,
-                1.25f,
+                3.0f,
+                1.4f,
+                null
+            );
+            case EGYPT_MISSILE -> addBurst(
+                fx.row,
+                fx.col,
+                "768/INITIAL/EFFECTS/ZOMBOSS_MISSILE_EXPLOSION_EGYPT/ZOMBOSS_MISSILE_EXPLOSION_EGYPT.PAM",
+                3.1f,
+                1.45f,
+                null
+            );
+            case DARK_FIREBALL -> addBurst(
+                fx.row,
+                fx.col,
+                "768/FULL/EFFECTS/ZOMBOSS_MISSILE_EXPLOSION_DARK/ZOMBOSS_MISSILE_EXPLOSION_DARK.PAM",
+                2.6f,
+                1.35f,
                 null
             );
             case BEACH_SHARK -> addBurst(

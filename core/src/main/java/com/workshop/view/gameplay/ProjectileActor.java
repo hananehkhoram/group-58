@@ -7,7 +7,9 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.projectile.BowlingWallnut;
+import com.workshop.model.projectile.BulletType;
 import com.workshop.model.projectile.Projectile;
+import com.workshop.model.projectile.TrajectoryType;
 
 import pvz.libpvz.pam.PamPlayer;
 
@@ -159,6 +161,8 @@ public final class ProjectileActor extends Actor {
     }
 
     private boolean isBowlingPlant() {
-        return projectile instanceof BowlingWallnut;
+        return projectile instanceof BowlingWallnut
+            || projectile.getTrajectory() == TrajectoryType.BOWLING
+            || projectile.getBulletType() == BulletType.BOWLING_NUT;
     }
 }

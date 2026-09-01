@@ -3,130 +3,278 @@ package com.workshop.model.plants.plantAbilities;
 import com.workshop.model.GameContext;
 import com.workshop.model.mechanisms.GameEngine;
 import com.workshop.model.plants.Plant;
-import com.workshop.model.plants.TargetingMode;
 import com.workshop.model.plants.plantFoodEffect.PlantFoodMode;
 import com.workshop.model.zombie.Zombie;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MeleeAttackers implements BaseAbility {
 
+    private static final double FRONT_REACH = 1.55;
+    private static final double BACK_REACH = 1.45;
+    private static final double CHOMP_REACH = 1.7;
+    private static final int INSTANT_KILL = 10000;
+    private static final int CHOMPER_FOOD_EATS = 3;
+    private static final double CHOMPER_FOOD_REACH = 6.5;
+
+    private long lastActionTick = -1;
+    private long digestUntilTick = -1;
+    private int heavyStrikesLeft;
+    private int heavyStrikeDamage;
+    private int ticksUntilNextStrike;
+
     public void melee(String meleeKind, int damage, Plant plant, GameEngine engine) {
-        int pRow = plant.getRow();
-        int pCol = plant.getCol();
-        int currentSecond = engine.getCtx().getTimeManager().getTotalSeconds();
-
-        switch (meleeKind) {
-            case "FRONT_AND_BACK":
-                Zombie targetFB = findTargetFrontOrBack(pRow, pCol, engine);
-                if (targetFB != null) {
-                    boolean aliveBeforeFB = !targetFB.isDead();
-                    targetFB.takeDamage(damage);
-                    if ("Wasabi Whip".equalsIgnoreCase(plant.getName())) {
-                        targetFB.meltIce();
-                    }
-                    if (aliveBeforeFB && targetFB.isDead()) {
-                        engine.getCtx().recordPlantKill(plant);
-                    }
-                    plant.setLastActionSecond(currentSecond);
-                }
-                break;
-
-            case "AOE":
-            case "AOE_RAMP_UP":
-                boolean hitAnyone = applyAoEDamage(pRow, pCol, damage, plant, engine);
-                if (hitAnyone) {
-                    plant.setLastActionSecond(currentSecond);
-                }
-                break;
+        GameContext ctx = engine.getCtx();
+        tickDigest(ctx);
+        tickHeavyStrike(plant, ctx);
+        if (isDigesting(ctx) || isHeavyStriking()) {
+            return;
         }
-    }
-
-    public void instantEat(Plant plant, GameEngine engine) {
-        int currentSecond = engine.getCtx().getTimeManager().getTotalSeconds();
-
-        if (currentSecond - plant.getLastActionSecond() < 40) {
+        if (!cooldownReady(plant, ctx)) {
             return;
         }
 
-        int pRow = plant.getRow();
-        int pCol = plant.getCol();
+        boolean hit = switch (meleeKind == null ? "" : meleeKind) {
+            case "FRONT_AND_BACK" -> strikeFrontAndBack(plant, ctx, damage);
+            case "AOE" -> strikeAround(plant, ctx, damage, 1);
+            case "AOE_RAMP_UP" -> strikeRamp(plant, ctx);
+            default -> strikeFront(plant, ctx, damage);
+        };
 
-        List<Zombie> targets = engine.findTargets(pRow, pCol, TargetingMode.NONE);
-        if (targets == null || targets.isEmpty()) {
-            targets = engine.findTargets(pRow, pCol + 1, TargetingMode.NONE);
+        if (!hit) {
+            return;
+        }
+        ctx.queuePlantAttackAnimation(plant);
+        markActed(ctx);
+    }
+
+    public void instantEat(Plant plant, GameEngine engine) {
+        GameContext ctx = engine.getCtx();
+        tickDigest(ctx);
+        tickHeavyStrike(plant, ctx);
+        if (isDigesting(ctx) || isHeavyStriking()) {
+            return;
         }
 
-        if (targets != null && !targets.isEmpty()) {
-            Zombie target = targets.get(0);
-            boolean aliveBefore = !target.isDead();
-            target.takeDamage(Integer.MAX_VALUE);
-            if (aliveBefore && target.isDead()) {
-                engine.getCtx().recordPlantKill(plant);
+        Zombie prey = nearestPrey(plant, ctx, CHOMP_REACH);
+        if (prey == null || prey.isBoss()) {
+            return;
+        }
+
+        prey.takeDamage(INSTANT_KILL);
+        ctx.queuePlantAttackAnimation(plant);
+        markActed(ctx);
+        double digestSeconds = plant.getActionInterval() != null ? plant.getActionInterval() : 40.0;
+        digestUntilTick = ctx.getTimeManager().getTotalTicks()
+            + Math.max(10L, Math.round(digestSeconds * 10.0));
+    }
+
+    @Override
+    public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {
+        if (self == null || ctx == null || mode == null) {
+            return;
+        }
+        switch (mode) {
+            case HEAVY_STRIKE -> startHeavyStrike(self, ctx);
+            case MULTI_TARGET_BURST -> chompDistantZombies(self, ctx);
+            default -> {
             }
-            plant.setLastActionSecond(currentSecond);
         }
     }
 
-    private Zombie findTargetFrontOrBack(int r, int c, GameEngine engine) {
-        List<Zombie> front = engine.findTargets(r, c + 1, TargetingMode.NONE);
-        if (front != null && !front.isEmpty()) return front.get(0);
-
-        List<Zombie> current = engine.findTargets(r, c, TargetingMode.NONE);
-        if (current != null && !current.isEmpty()) return current.get(0);
-
-        List<Zombie> back = engine.findTargets(r, c - 1, TargetingMode.NONE);
-        if (back != null && !back.isEmpty()) return back.get(0);
-
-        return null;
+    private void startHeavyStrike(Plant self, GameContext ctx) {
+        heavyStrikeDamage = Math.max(20, parseStageDamage(self.getDamage(), 0) * 2);
+        heavyStrikesLeft = 8;
+        ticksUntilNextStrike = 0;
+        self.setPlantFoodActive(true);
+        self.startPlantFoodGlow(1.8f);
+        ctx.queuePlantAttackAnimation(self);
+        tickHeavyStrike(self, ctx);
     }
 
-    private boolean applyAoEDamage(int pRow, int pCol, int damage, Plant plant, GameEngine engine) {
+    private void tickHeavyStrike(Plant plant, GameContext ctx) {
+        if (!isHeavyStriking()) {
+            return;
+        }
+        if (ticksUntilNextStrike > 0) {
+            ticksUntilNextStrike--;
+            return;
+        }
+        strikeAround(plant, ctx, heavyStrikeDamage, 1);
+        ctx.queuePlantAttackAnimation(plant);
+        heavyStrikesLeft--;
+        ticksUntilNextStrike = 2;
+        if (!isHeavyStriking()) {
+            plant.setPlantFoodActive(false);
+        }
+    }
+
+    private void chompDistantZombies(Plant plant, GameContext ctx) {
+        int eaten = 0;
+        List<Zombie> prey = new ArrayList<>(ctx.getAliveZombies());
+        prey.sort((a, b) -> Double.compare(distance(plant, a), distance(plant, b)));
+        for (Zombie zombie : prey) {
+            if (zombie == null || zombie.isDead() || zombie.isBoss()) {
+                continue;
+            }
+            if (distance(plant, zombie) > CHOMPER_FOOD_REACH) {
+                continue;
+            }
+            zombie.takeDamage(INSTANT_KILL);
+            eaten++;
+            if (eaten >= CHOMPER_FOOD_EATS) {
+                break;
+            }
+        }
+        if (eaten > 0) {
+            ctx.queuePlantAttackAnimation(plant);
+            plant.startPlantFoodGlow(1.6f);
+        }
+    }
+
+    private boolean strikeFront(Plant plant, GameContext ctx, int damage) {
+        Zombie target = nearestPrey(plant, ctx, FRONT_REACH);
+        if (target == null) {
+            return false;
+        }
+        target.takeDamage(damage);
+        return true;
+    }
+
+    private boolean strikeFrontAndBack(Plant plant, GameContext ctx, int damage) {
         boolean hit = false;
-        int maxRows = engine.getCtx().getLevel().getRows();
-        int maxCols = engine.getCtx().getLevel().getColumns();
-
-        for (int r = pRow - 1; r <= pRow + 1; r++) {
-            for (int c = pCol - 1; c <= pCol + 1; c++) {
-                if (r >= 0 && r < maxRows && c >= 0 && c < maxCols) {
-                    List<Zombie> targets = engine.findTargets(r, c, TargetingMode.NONE);
-                    if (targets != null && !targets.isEmpty()) {
-                        for (Zombie z : targets) {
-                            boolean aliveBefore = !z.isDead();
-                            z.takeDamage(damage);
-                            if (aliveBefore && z.isDead()) {
-                                engine.getCtx().recordPlantKill(plant);
-                            }
-                            hit = true;
-                        }
-                    }
-                }
+        for (Zombie zombie : ctx.getAliveZombies()) {
+            if (!isInFrontOrBack(plant, zombie)) {
+                continue;
             }
+            zombie.takeDamage(damage);
+            hit = true;
         }
         return hit;
     }
 
-    @Override
-    public void activatePlantFood(Plant self, GameContext ctx, PlantFoodMode mode) {String meleeKind =
-            self.getAbilityParams().get("meleeKind");
-        int pRow = self.getRow();
-        int pCol = self.getCol();
-
-        if ("INSTANT_EAT".equals(meleeKind)) {
-            int eaten = 0;
-            for (Zombie z : ctx.getAliveZombies()) {
-                if (!z.isDead() && z.occupiesRow(pRow) && z.getX() >= pCol) {
-                    z.takeDamage(Integer.MAX_VALUE);
-                    eaten++;
-                    if (eaten >= 3) break;
-                }
+    private boolean strikeAround(Plant plant, GameContext ctx, int damage, int radius) {
+        boolean hit = false;
+        for (Zombie zombie : ctx.getAliveZombies()) {
+            if (zombie == null || zombie.isDead()) {
+                continue;
             }
-        } else {
-            for (Zombie z : ctx.getAliveZombies()) {
-                if (!z.isDead() && Math.abs(z.getRow() - pRow) <= 1 && Math.abs(z.getX() - pCol) <= 1) {
-                    z.takeDamage(1500);
-                }
+            if (Math.abs(zombie.getY() - plant.getRow()) > radius) {
+                continue;
+            }
+            if (Math.abs(zombie.getX() - plant.getCol()) > radius + 0.45) {
+                continue;
+            }
+            zombie.takeDamage(damage);
+            hit = true;
+        }
+        return hit;
+    }
+
+    private boolean strikeRamp(Plant plant, GameContext ctx) {
+        int stage = kiwibeastStage(plant, ctx);
+        int damage = parseStageDamage(plant.getDamage(), stage);
+        return strikeAround(plant, ctx, damage, 1 + stage);
+    }
+
+    private Zombie nearestPrey(Plant plant, GameContext ctx, double reach) {
+        Zombie best = null;
+        double bestX = Double.MAX_VALUE;
+        for (Zombie zombie : ctx.getAliveZombies()) {
+            if (zombie == null || zombie.isDead() || zombie.isBoss()) {
+                continue;
+            }
+            if (!zombie.occupiesRow(plant.getRow())) {
+                continue;
+            }
+            double x = zombie.getX();
+            if (x < plant.getCol() - 0.2 || x > plant.getCol() + reach) {
+                continue;
+            }
+            if (x < bestX) {
+                bestX = x;
+                best = zombie;
             }
         }
+        return best;
+    }
+
+    private boolean isInFrontOrBack(Plant plant, Zombie zombie) {
+        if (zombie == null || zombie.isDead()) {
+            return false;
+        }
+        if (!zombie.occupiesRow(plant.getRow())) {
+            return false;
+        }
+        double dx = zombie.getX() - plant.getCol();
+        return (dx >= -0.2 && dx <= FRONT_REACH)
+            || (dx < 0 && dx >= -BACK_REACH);
+    }
+
+    private boolean cooldownReady(Plant plant, GameContext ctx) {
+        long now = ctx.getTimeManager().getTotalTicks();
+        double interval = plant.getActionInterval() != null ? plant.getActionInterval() : 1.0;
+        long needed = Math.max(1L, Math.round(interval * 10.0));
+        return lastActionTick < 0 || now - lastActionTick >= needed;
+    }
+
+    private void markActed(GameContext ctx) {
+        lastActionTick = ctx.getTimeManager().getTotalTicks();
+    }
+
+    private void tickDigest(GameContext ctx) {
+        if (digestUntilTick < 0) {
+            return;
+        }
+        if (ctx.getTimeManager().getTotalTicks() >= digestUntilTick) {
+            digestUntilTick = -1;
+        }
+    }
+
+    private boolean isDigesting(GameContext ctx) {
+        return digestUntilTick >= 0 && ctx.getTimeManager().getTotalTicks() < digestUntilTick;
+    }
+
+    private boolean isHeavyStriking() {
+        return heavyStrikesLeft > 0;
+    }
+
+    private int kiwibeastStage(Plant plant, GameContext ctx) {
+        int age = ctx.getTimeManager().getTotalSeconds() - plant.getPlantTimeSecond();
+        if (age >= 72) {
+            return 2;
+        }
+        if (age >= 24) {
+            return 1;
+        }
+        return 0;
+    }
+
+    private static int parseStageDamage(String raw, int stage) {
+        if (raw == null || raw.isBlank()) {
+            return 15;
+        }
+        raw = raw.trim();
+        if (raw.contains("/")) {
+            String[] parts = raw.split("/");
+            int idx = Math.max(0, Math.min(stage, parts.length - 1));
+            try {
+                return Integer.parseInt(parts[idx].trim());
+            } catch (NumberFormatException ignored) {
+                return 15;
+            }
+        }
+        try {
+            return Integer.parseInt(raw);
+        } catch (NumberFormatException ignored) {
+            return 15;
+        }
+    }
+
+    private static double distance(Plant plant, Zombie zombie) {
+        double dRow = zombie.getY() - plant.getRow();
+        double dCol = zombie.getX() - plant.getCol();
+        return Math.hypot(dRow, dCol);
     }
 }

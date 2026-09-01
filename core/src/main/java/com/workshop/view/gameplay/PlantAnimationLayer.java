@@ -175,7 +175,9 @@ public final class PlantAnimationLayer extends Group {
             PlantActor actor = plantActors.get(plant);
 
             if (actor != null) {
-                actor.play(PlantAnimationState.ATTACK);
+                if (!actor.play(PlantAnimationState.ATTACK)) {
+                    plant.releaseAllPendingShots(gameContext);
+                }
             } else {
                 plant.releaseAllPendingShots(gameContext);
             }

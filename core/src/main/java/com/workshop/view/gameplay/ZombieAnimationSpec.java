@@ -15,6 +15,7 @@ public final class ZombieAnimationSpec {
 
     private float attackTimeOffset;
     private boolean attackLoops;
+    private float attackLoopSeconds;
 
     public ZombieAnimationSpec(String pamPath, String idleClip) {
         this.pamPath = pamPath;
@@ -108,5 +109,13 @@ public final class ZombieAnimationSpec {
 
     public void setAttackLoops(boolean attackLoops) {
         this.attackLoops = attackLoops;
+    }
+
+    public float getAttackLoopSeconds() {
+        return attackLoopSeconds;
+    }
+
+    public void setAttackLoopSeconds(float attackLoopSeconds) {
+        this.attackLoopSeconds = Math.max(0f, attackLoopSeconds);
     }
 }

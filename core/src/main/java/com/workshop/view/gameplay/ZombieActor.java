@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.workshop.model.zombie.Zombie;
+import com.workshop.model.zombie.behavior.ZombossState;
 import com.workshop.model.zombie.behavior.ZombossSummon;
 
 import java.util.HashMap;
@@ -228,7 +229,7 @@ public final class ZombieActor extends Actor {
         Matrix4 oldTransform = batch.getTransformMatrix().cpy();
         Matrix4 transform = new Matrix4(oldTransform);
 
-        float scaleX = (zombie.getSpeed() < 0) ? -scale : scale;
+        float scaleX = zombie.isFacingRight() ? -scale : scale;
 
         transform.translate(x, y, 0);
         transform.scale(scaleX, scale, 1f);
@@ -347,12 +348,18 @@ public final class ZombieActor extends Actor {
             return;
         }
 
-        if (zombie.isInitialFrozenBlock()) {
+        if (zombie.isInitialFrozenBlock() && !zombie.isBoss()) {
             return;
         }
 
         updateAnimationState();
-        stateTime += zombie.isStunned() ? delta * 0.2f : delta;
+        float animScale = 1f;
+        if (zombie.isStunned()) {
+            animScale = 0.2f;
+        } else if (zombie.isButtered()) {
+            animScale = 0.45f;
+        }
+        stateTime += delta * animScale;
     }
 
     private void updateAnimationState() {
@@ -387,9 +394,18 @@ public final class ZombieActor extends Actor {
             case INTRO -> ZombieAnimationState.INTRO;
             case STUNNED -> ZombieAnimationState.STUN;
             case WALKING, DASHING -> ZombieAnimationState.WALK;
-            case IDLE, USING_VORTEX, LAUNCHING_SHARKS -> ZombieAnimationState.IDLE;
+            case IDLE -> ZombieAnimationState.IDLE;
+            case USING_VORTEX, LAUNCHING_SHARKS -> ZombieAnimationState.ATTACK;
             default -> ZombieAnimationState.ATTACK;
         };
+    }
+
+    private boolean isBeachTurbinePose() {
+        if (!zombie.isBoss()) {
+            return false;
+        }
+        ZombossSummon zomboss = zombie.getZomboss();
+        return zomboss != null && zomboss.getCurrentState() == ZombossState.USING_VORTEX;
     }
 
     private void resolveSandstormClip() {
@@ -461,7 +477,7 @@ public final class ZombieActor extends Actor {
             return;
         }
 
-        if (zombie.isInitialFrozenBlock() || zombie.isIced()) {
+        if (!zombie.isBoss() && (zombie.isInitialFrozenBlock() || zombie.isIced())) {
             drawIceBlock(batch, parentAlpha);
             return;
         }
@@ -487,6 +503,13 @@ public final class ZombieActor extends Actor {
                 1f,
                 0.85f + flash * 0.15f,
                 0.2f + flash,
+                bodyAlpha
+            );
+        } else if (zombie.isButtered()) {
+            batch.setColor(
+                1f + flash,
+                0.88f + flash * 0.12f,
+                0.28f + flash,
                 bodyAlpha
             );
         } else {
@@ -519,6 +542,12 @@ public final class ZombieActor extends Actor {
         float clipTime = stateTime;
         if (currentState == ZombieAnimationState.ATTACK) {
             clipTime += animationSpec.getAttackTimeOffset();
+            float window = animationSpec.getAttackLoopSeconds();
+            if (window > 0.2f) {
+                clipTime = animationSpec.getAttackTimeOffset()
+                    + (stateTime % window);
+                loop = false;
+            }
         }
 
         drawScaled(
@@ -530,6 +559,17 @@ public final class ZombieActor extends Actor {
             getY(),
             loop
         );
+
+        if (isBeachTurbinePose()) {
+            BeachZombossFxLayer.drawOnBoss(
+                batch,
+                parentAlpha,
+                getX(),
+                getY() + cellHeight * 0.15f,
+                cellHeight * 4.1f,
+                stateTime
+            );
+        }
 
         if (isZombotanyPeashooter()) {
             drawPeashooterHead(batch);
@@ -735,8 +775,8 @@ public final class ZombieActor extends Actor {
     }
 
     private boolean isIceVisible() {
-        return zombie.isInitialFrozenBlock()
-            || zombie.isIced();
+        return !zombie.isBoss()
+            && (zombie.isInitialFrozenBlock() || zombie.isIced());
     }
 
     private void updateIceBreakState(float delta) {
@@ -784,7 +824,7 @@ public final class ZombieActor extends Actor {
         Matrix4 transform =
             new Matrix4(oldTransform);
 
-        float scaleX = (zombie.getSpeed() < 0) ? -scale : scale;
+        float scaleX = zombie.isFacingRight() ? -scale : scale;
 
         transform.translate(x, y, 0);
         transform.scale(-scale, scale, 1f);

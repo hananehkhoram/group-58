@@ -233,6 +233,10 @@ public class Projectile {
         }
     }
 
+    public boolean hasAlreadyHit(Damageable target) {
+        return alreadyHit.contains(target);
+    }
+
     private boolean moveTowardHomingTarget(double time) {
         if (homingTarget == null || homingTarget.isDead()) {
             return false;

@@ -38,12 +38,19 @@ public final class PlantAnimationSpec {
         }
         clipsBound = true;
         setClip(PlantAnimationState.IDLE, pickClip(available, "idle", "idle1", "idle_stage1", "loop"));
-        setClip(PlantAnimationState.ATTACK, pickClip(available, "attack", "attack1", "shoot", "special"));
-        setClip(PlantAnimationState.SPECIAL, pickClip(available, "special", "special1"));
-        setClip(PlantAnimationState.PLANTFOOD, pickClip(available, "plantfood", "plantfood1", "plant_food"));
+        String attack = pickClipOrNull(
+            available,
+            "attack", "attack1", "attack2", "attack3",
+            "punch", "bite", "chomp", "chew",
+            "smash", "whip", "hit", "strike", "melee",
+            "special", "special1", "shoot"
+        );
+        setClip(PlantAnimationState.ATTACK, attack);
+        setClip(PlantAnimationState.SPECIAL, pickClipOrNull(available, "special", "special1", "chew", "digest"));
+        setClip(PlantAnimationState.PLANTFOOD, pickClipOrNull(available, "plantfood", "plantfood1", "plant_food"));
     }
 
-    private static String pickClip(List<String> available, String... preferred) {
+    private static String pickClipOrNull(List<String> available, String... preferred) {
         if (available == null || available.isEmpty()) {
             return null;
         }
@@ -65,7 +72,24 @@ public final class PlantAnimationSpec {
             }
         }
 
-        return available.get(0);
+        for (String want : preferred) {
+            String needle = want.toLowerCase(Locale.ROOT);
+            for (String clip : available) {
+                if (clip != null && clip.toLowerCase(Locale.ROOT).contains(needle)) {
+                    return clip;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static String pickClip(List<String> available, String... preferred) {
+        String found = pickClipOrNull(available, preferred);
+        if (found != null) {
+            return found;
+        }
+        return available == null || available.isEmpty() ? null : available.get(0);
     }
 
     public String getPamPath() {

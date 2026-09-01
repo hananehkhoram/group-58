@@ -143,6 +143,15 @@ public class Zombie implements Damageable {
             return;
         }
 
+        if (isBoss && isIced) {
+            isIced = false;
+            iceHp = 0;
+            initialFrozenBlock = false;
+            if (effects != null) {
+                effects.remove(Effects.FROZEN);
+            }
+        }
+
         if (butterRemaining > 0) {
             butterRemaining -= deltaTime;
             if (butterRemaining <= 0) {
@@ -150,9 +159,6 @@ public class Zombie implements Damageable {
                 if (effects != null) {
                     effects.remove(Effects.BUTTERED);
                 }
-            } else {
-                setEating(false);
-                return;
             }
         }
 
@@ -194,6 +200,9 @@ public class Zombie implements Damageable {
             if (isIced) {
                 effectiveSpeed *= 0.5;
             }
+            if (isButtered()) {
+                effectiveSpeed *= 0.45;
+            }
 
             x += movingBackward ? effectiveSpeed * deltaTime : -effectiveSpeed * deltaTime;
         }
@@ -225,6 +234,10 @@ public class Zombie implements Damageable {
     public void setMovingBackward(boolean movingBackward)
     { this.movingBackward = movingBackward; }
     public boolean isMovingBackward() { return movingBackward; }
+
+    public boolean isFacingRight() {
+        return movingBackward || speed < 0;
+    }
 
     public void takeDamage(double damage) {
 
@@ -499,6 +512,9 @@ public class Zombie implements Damageable {
 
     @Override
     public void applySlowOrFreeze() {
+        if (isBoss) {
+            return;
+        }
         if (!isIced) {
             isIced = true;
             effects.add(Effects.FROZEN);
@@ -577,10 +593,17 @@ public class Zombie implements Damageable {
     public boolean isIced() { return isIced; }
 
     public void applyButter() {
+        if (isBoss) {
+            return;
+        }
         butterRemaining = BUTTER_STUN_SECONDS;
         if (effects != null && !effects.contains(Effects.BUTTERED)) {
             effects.add(Effects.BUTTERED);
         }
+    }
+
+    public boolean isButtered() {
+        return butterRemaining > 0;
     }
 
     public boolean isInitialFrozenBlock() {

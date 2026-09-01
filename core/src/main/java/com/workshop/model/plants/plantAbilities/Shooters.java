@@ -63,9 +63,11 @@ public class Shooters implements BaseAbility {
         if (isBarraging() || self.hasPendingShots()) return;
 
         if (shootType == ShootType.STRAIGHT
-            || shootType == ShootType.STRAIGHT_SEQUENTIAL) {
+            || shootType == ShootType.STRAIGHT_SEQUENTIAL
+            || shootType == ShootType.SHORT_RANGE
+            || shootType == ShootType.PIERCING) {
 
-            if (!hasZombieAhead(self, ctx)) {
+            if (!hasTargetAhead(self, ctx)) {
                 return;
             }
         }
@@ -119,14 +121,14 @@ public class Shooters implements BaseAbility {
     private List<Projectile> createTriLane(int damage, BulletType bulletType, Plant self, GameContext ctx) {
         int originRow = self.getRow();
         int totalRows = ctx.getPlantGrid().length;
-        double startX = peaLaunchX(self, 1.0);
+        double startX = launchX(self, 1.0);
         double[] headOffsets = {-0.32, 0.0, 0.32};
         int[] laneDeltas = {-1, 0, 1};
         List<Projectile> shots = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
             int targetRow = Math.max(0, Math.min(totalRows - 1, originRow + laneDeltas[i]));
-            double startY = peaLaunchY(originRow + headOffsets[i], self);
+            double startY = launchY(originRow + headOffsets[i], self);
             shots.add(new Projectile(
                 damage,
                 startX,
@@ -162,12 +164,22 @@ public class Shooters implements BaseAbility {
 
         int shotsPerLane = (shootType == ShootType.STRAIGHT_SEQUENTIAL) ? Math.max(1, amount) : 1;
 
+        boolean radial = shootType == ShootType.QUAD_DIAGONAL
+            || shootType == ShootType.STAR_BURST;
+
         List<Projectile> shots = new ArrayList<>();
         for (int row : lanes) {
             for (double[] dir : directions) {
                 for (int i = 0; i < shotsPerLane; i++) {
-                    double startX = peaLaunchX(self, dir[0]) + dir[0] * 0.3 * i;
-                    double startY = peaLaunchY(row + dir[1] * 0.3 * i, self);
+                    double startX;
+                    double startY;
+                    if (radial) {
+                        startX = self.getX() + 0.5 + dir[0] * 0.32;
+                        startY = row + dir[1] * 0.20;
+                    } else {
+                        startX = launchX(self, dir[0]) + dir[0] * 0.3 * i;
+                        startY = launchY(row, self) + dir[1] * 0.3 * i;
+                    }
                     shots.add(new Projectile(damage, startX, startY, row,
                         DEFAULT_PROJECTILE_SPEED, bulletType, trajectory, false, dir[0], dir[1], self));
                 }
@@ -390,8 +402,8 @@ public class Shooters implements BaseAbility {
     }
 
     private List<Projectile> createGiantPea(Plant self, int damage) {
-        double startX = peaLaunchX(self, 1.0);
-        double startY = peaLaunchY(self.getRow(), self);
+        double startX = launchX(self, 1.0);
+        double startY = launchY(self.getRow(), self);
         return List.of(new Projectile(
             damage,
             startX,
@@ -408,32 +420,63 @@ public class Shooters implements BaseAbility {
         ));
     }
 
-    private static double peaLaunchX(Plant self, double dirX) {
-        if (!self.isPeaFamily()) {
-            return self.getX();
-        }
+    private static double launchX(Plant self, double dirX) {
         double facing = dirX < 0 ? -1.0 : 1.0;
-        return self.getX() + 0.5 + facing * PEA_MOUTH_X_FROM_CENTER;
+        return self.getX() + 0.5 + facing * mouthXFromCenter(self);
     }
 
-    private static double peaLaunchY(double rowY, Plant self) {
-        if (!self.isPeaFamily()) {
-            return rowY;
-        }
-        return rowY - PEA_MOUTH_Y_FROM_CENTER;
+    private static double launchY(double rowY, Plant self) {
+        return rowY - mouthYFromCenter(self);
     }
 
-    private boolean hasZombieAhead(Plant plant, GameContext ctx) {
-        for (Zombie zombie : ctx.getAliveZombies()) {
-            if (zombie == null || zombie.isDead()) {
-                continue;
-            }
-
-            if (zombie.occupiesRow(plant.getRow()) && zombie.getX() >= plant.getX()) {
-                return true;
-            }
+    private static double mouthXFromCenter(Plant self) {
+        if (self.isPeaFamily()) {
+            return PEA_MOUTH_X_FROM_CENTER;
         }
+        String compact = compactPlantName(self);
+        if (compact.contains("PUFFSHROOM")) {
+            return 0.34;
+        }
+        if (compact.contains("SEASHROOM")) {
+            return 0.32;
+        }
+        if (compact.contains("FUMESHROOM")) {
+            return 0.40;
+        }
+        if (compact.contains("CACTUS")) {
+            return 0.36;
+        }
+        return 0.28;
+    }
 
-        return false;
+    private static double mouthYFromCenter(Plant self) {
+        if (self.isPeaFamily()) {
+            return PEA_MOUTH_Y_FROM_CENTER;
+        }
+        String compact = compactPlantName(self);
+        if (compact.contains("PUFFSHROOM")) {
+            return 0.08;
+        }
+        if (compact.contains("SEASHROOM")) {
+            return -0.10;
+        }
+        if (compact.contains("FUMESHROOM")) {
+            return 0.30;
+        }
+        if (compact.contains("CACTUS")) {
+            return 0.22;
+        }
+        return 0.10;
+    }
+
+    private static String compactPlantName(Plant self) {
+        if (self == null || self.getName() == null) {
+            return "";
+        }
+        return self.getName().replaceAll("[^A-Za-z0-9]", "").toUpperCase();
+    }
+
+    private boolean hasTargetAhead(Plant plant, GameContext ctx) {
+        return ctx.hasHostileAhead(plant.getRow(), plant.getX());
     }
 }

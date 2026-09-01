@@ -267,13 +267,26 @@ public final class ZombieAnimationResolver {
         float attackDur = clipDuration(pamPath, attack);
         boolean beachZomboss = isBeachZombossPam(pamPath);
 
-        // Labels ending with $ are stop-markers. libPVZ treats them as
-        // 1-frame clips, so Frozen Cave's real attack sits at the tail of idle.
-        // Beach Zomboss idle-tail is the submerge, so that offset hides the boss.
-        if (attack != null && attackDur >= 0.45f) {
+        String beachTurbine = beachZomboss
+            ? findFirstNamedClip(
+                clips,
+                "wind", "suck", "turbine", "vortex", "vacuum", "inhale", "special", "attack"
+            )
+            : null;
+
+        if (beachTurbine != null) {
+            spec.setClip(ZombieAnimationState.ATTACK, beachTurbine);
+            spec.setAttackTimeOffset(0f);
+            spec.setAttackLoops(true);
+        } else if (attack != null && attackDur >= 0.45f) {
             spec.setClip(ZombieAnimationState.ATTACK, attack);
             spec.setAttackTimeOffset(0f);
             spec.setAttackLoops(false);
+        } else if (beachZomboss && idle != null && idleDur >= 2.2f) {
+            spec.setClip(ZombieAnimationState.ATTACK, idle);
+            spec.setAttackTimeOffset(0.4f);
+            spec.setAttackLoops(true);
+            spec.setAttackLoopSeconds(Math.max(1.8f, idleDur - 3.4f));
         } else if (!beachZomboss && idle != null && idleDur >= 2.2f) {
             spec.setClip(ZombieAnimationState.ATTACK, idle);
             spec.setAttackTimeOffset(Math.max(0f, idleDur - 3.0f));

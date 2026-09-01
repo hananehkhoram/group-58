@@ -461,6 +461,7 @@ public class GameEngine {
     private void handleZombieProjectile(Projectile p, Iterator<Projectile> it) {
         Plant target = ctx.getPlantGrid()[p.getRow()][(int) p.getX()];
         if (target != null && !target.isDead()) {
+            spawnProjectileHit(p);
             p.onHit(target);
             if (!p.isActive()) {
                 it.remove();
@@ -470,6 +471,7 @@ public class GameEngine {
 
     private void handlePlantProjectile(Projectile p, Iterator<Projectile> it) {
         if (checkPlantObstacle(p)) {
+            spawnProjectileHit(p);
             p.deactivate();
             it.remove();
             return;
@@ -480,6 +482,10 @@ public class GameEngine {
         if (p.isActive()) {
             checkGraveHit(p, it);
         }
+    }
+
+    private void spawnProjectileHit(Projectile p) {
+        ctx.spawnProjectileHit(p.getRow(), p.getX(), p.getY());
     }
 
     private void checkGraveHit(Projectile p, Iterator<Projectile> it) {
@@ -499,6 +505,7 @@ public class GameEngine {
         grave.takeDamage(p.getDamage(), ctx);
 
         if (p.getTrajectory() != TrajectoryType.PIERCING) {
+            spawnProjectileHit(p);
             p.deactivate();
             it.remove();
         }
@@ -555,6 +562,7 @@ public class GameEngine {
                 Submerge submerge = z.getSubmerge();
 
                 if (deflector != null && deflector.canDeflect(p)) {
+                    spawnProjectileHit(p);
                     deflector.deflect(p, ctx, z);
                     it.remove();
                     break;
@@ -564,9 +572,13 @@ public class GameEngine {
                     continue;
                 }
 
+                boolean firstHit = !p.hasAlreadyHit(z);
                 boolean aliveBeforeHit = !z.isDead();
                 long deadBefore = ctx.getAliveZombies().stream().filter(Zombie::isDead).count();
                 p.onHit(z);
+                if (firstHit) {
+                    spawnProjectileHit(p);
+                }
                 long deadAfter = ctx.getAliveZombies().stream().filter(Zombie::isDead).count();
                 long newlyKilled = deadAfter - deadBefore;
                 for (int i = 0; i < newlyKilled; i++) {

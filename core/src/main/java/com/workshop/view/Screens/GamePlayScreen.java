@@ -434,16 +434,6 @@ public class GamePlayScreen implements Screen {
             droppedSeedLayer
         );
 
-        stage.addActor(new BeachZombossFxLayer(
-            gameContext,
-            getGridX(),
-            getGridY(),
-            getGridWidth(),
-            getGridHeight(),
-            true,
-            false
-        ));
-
         PlantAnimationLayer plantAnimationLayer =
             new PlantAnimationLayer(
                 gameContext,
@@ -490,16 +480,6 @@ public class GamePlayScreen implements Screen {
             ));
         }
 
-        stage.addActor(new BeachZombossFxLayer(
-            gameContext,
-            getGridX(),
-            getGridY(),
-            getGridWidth(),
-            getGridHeight(),
-            false,
-            true
-        ));
-
         ZombieAnimationLayer zombieAnimationLayer =
             new ZombieAnimationLayer(
                 gameContext,
@@ -511,7 +491,55 @@ public class GamePlayScreen implements Screen {
 
         stage.addActor(zombieAnimationLayer);
 
+        stage.addActor(new EgyptSummonFxLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
+        stage.addActor(new IceSummonFxLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
         stage.addActor(new ProjectileHitFxLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
+        stage.addActor(new EgyptMissileLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
+        stage.addActor(new IceMissileLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
+        stage.addActor(new BeachZombossFxLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
+
+        stage.addActor(new DarkZombossFxLayer(
             gameContext,
             getGridX(),
             getGridY(),

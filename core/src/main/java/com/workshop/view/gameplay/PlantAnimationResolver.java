@@ -79,6 +79,12 @@ public final class PlantAnimationResolver {
         }
 
         String pamPath = pamPaths.get(key);
+        if (pamPath == null) {
+            String alias = plantPamAlias(key);
+            if (alias != null) {
+                pamPath = pamPaths.get(alias);
+            }
+        }
 
         if (pamPath == null) {
             Gdx.app.error(
@@ -183,6 +189,19 @@ public final class PlantAnimationResolver {
         return name
             .replaceAll("[^A-Za-z0-9]", "")
             .toUpperCase();
+    }
+
+    private static String plantPamAlias(String normalizedName) {
+        if ("PHATBEET".equals(normalizedName)) {
+            return "PHATBEETS";
+        }
+        if ("WASABI".equals(normalizedName)) {
+            return "WASABIWHIP";
+        }
+        if ("ROTOBAGA".equals(normalizedName)) {
+            return "ROTORUTABAGA";
+        }
+        return null;
     }
 
     private void logAvailableClips(

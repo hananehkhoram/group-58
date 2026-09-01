@@ -37,7 +37,7 @@ public class Lobber implements BaseAbility {
 
         if (currentSecond - plant.getLastActionSecond() >= intervalOfPlant) {
 
-            if (!isTargetInRow(plant.getRow(), plant.getCol(), ctx)) {
+            if (!ctx.hasHostileAhead(plant.getRow(), plant.getCol())) {
                 return;
             }
 
@@ -101,15 +101,6 @@ public class Lobber implements BaseAbility {
             plant,
             visualVariant
         );
-    }
-
-    private boolean isTargetInRow(int row, int col, GameContext ctx) {
-        for (Zombie z : ctx.getAliveZombies()) {
-            if (!z.isDead() && z.occupiesRow(row) && z.getX() >= col) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override

@@ -159,10 +159,16 @@ public class Explosive implements BaseAbility {
 
     private void executeFreezeTrap(Plant plant, GameEngine engine) {
         List<Zombie> stepZombies = engine.findTargets(plant.getRow(), plant.getCol(), TargetingMode.NONE);
-        if (stepZombies != null && !stepZombies.isEmpty()) {
-            Zombie firstZombie = stepZombies.get(0);
-            firstZombie.applySlowOrFreeze();
+        if (stepZombies == null || stepZombies.isEmpty()) {
+            return;
+        }
+        for (Zombie zombie : stepZombies) {
+            if (zombie == null || zombie.isDead() || zombie.isBoss()) {
+                continue;
+            }
+            zombie.applySlowOrFreeze();
             engine.removePlant(plant.getRow(), plant.getCol());
+            return;
         }
     }
 
@@ -245,7 +251,9 @@ public class Explosive implements BaseAbility {
 
     public void ice(Plant plant, GameContext ctx, GameEngine engine) {
         for (Zombie z : ctx.getAliveZombies()) {
-            z.applySlowOrFreeze();
+            if (z != null && !z.isDead() && !z.isBoss()) {
+                z.applySlowOrFreeze();
+            }
         }
         engine.removePlant(plant.getRow(), plant.getCol());
     }
@@ -282,7 +290,9 @@ public class Explosive implements BaseAbility {
                     drownRandomWaterZombies(ctx, 3);
                 } else if ("FREEZE_TRAP".equals(type)) { // Iceberg Lettuce: یخ زدن تمام زامبی‌های موجود
                     for (Zombie z : ctx.getAliveZombies()) {
-                        if (!z.isDead()) z.applySlowOrFreeze();
+                        if (z != null && !z.isDead() && !z.isBoss()) {
+                            z.applySlowOrFreeze();
+                        }
                     }
                 }
                 break;

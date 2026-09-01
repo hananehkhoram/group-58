@@ -286,7 +286,24 @@ public class Plant implements Damageable {
         if (baseAbility instanceof Lobber) {
             return 0.52f;
         }
+        String compact = name == null ? "" : name.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
+        if (compact.contains("PUFFSHROOM") || compact.contains("SEASHROOM")) {
+            return 0.30f;
+        }
+        if (compact.contains("FUMESHROOM")) {
+            return 0.36f;
+        }
+        if (compact.contains("ROTOBAGA")) {
+            return 0.42f;
+        }
         return 0.45f;
+    }
+
+    public boolean releasesShotsSequentially() {
+        if (abilityParams == null) {
+            return false;
+        }
+        return "STRAIGHT_SEQUENTIAL".equals(abilityParams.get("shootType"));
     }
 
     public void setLastActionSecond(int lastActionSecond)
