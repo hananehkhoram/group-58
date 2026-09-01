@@ -3,7 +3,7 @@ package com.workshop.model.mechanisms;
 import com.workshop.model.GameContext;
 import com.workshop.model.MiniGame.VaseGame.Vase;
 import com.workshop.model.level.Level;
-import com.workshop.model.plants.*;
+import com.workshop.model.plants.Plant;
 
 public class Tile {
     private int x;
@@ -17,6 +17,16 @@ public class Tile {
         this.x = x;
         this.y = y;
         this.ctx = ctx;
+    }
+
+    public static Tile[][] buildTiles(GameContext ctx) {
+        Tile[][] grid = new Tile[Level.ROWS][Level.COLS];
+        for (int r = 0; r < Level.ROWS; r++) {
+            for (int c = 0; c < Level.COLS; c++) {
+                grid[r][c] = new Tile(c, r, ctx);
+            }
+        }
+        return grid;
     }
 
     public int getX() {
@@ -43,16 +53,16 @@ public class Tile {
             && ctx.getBeghouldManager().isCrater(y, x)) {
             return TerrainType.CRATER;
         }
-        if (ctx.getSeason().isNecromancyCell(y,x)) {
+        if (ctx.getSeason().isNecromancyCell(y, x)) {
             return TerrainType.NECROMANCY;
         }
         if (ctx.isBurnedCell(y, x)) {
             return TerrainType.BURNED;
         }
-        if (ctx.getSeason().isWaterCell(y,x, ctx)) {
+        if (ctx.getSeason().isWaterCell(y, x, ctx)) {
             return TerrainType.WATER;
         }
-        int slideTo = ctx.getSeason().getSliderNextRow(y,x);
+        int slideTo = ctx.getSeason().getSliderNextRow(y, x);
         if (slideTo < y) return TerrainType.SLIPPERY_UP;
         if (slideTo > y) return TerrainType.SLIPPERY_DOWN;
 
@@ -63,7 +73,9 @@ public class Tile {
         return TerrainType.NORMAL;
     }
 
-    public Plant getPlant() { return ctx.getPlantGrid()[y][x]; }
+    public Plant getPlant() {
+        return ctx.getPlantGrid()[y][x];
+    }
 
     public boolean setPlant(Plant plant) {
         if (ctx.getPlantGrid()[y][x] != null) return false;
@@ -71,7 +83,6 @@ public class Tile {
         ctx.getPlantGrid()[y][x] = plant;
         return true;
     }
-
 
     public boolean isPlantable() {
         if (vase != null && !vase.isBroken()) {
@@ -81,7 +92,9 @@ public class Tile {
 
         return t != TerrainType.GRAVE
             && t != TerrainType.CRATER
-            && t != TerrainType.BURNED;
+            && t != TerrainType.BURNED
+            && t != TerrainType.SLIPPERY_DOWN
+            && t != TerrainType.SLIPPERY_UP;
     }
 
     public void setDroppedSeed(String seedName, int lifespanTicks) {
@@ -109,16 +122,6 @@ public class Tile {
                 this.droppedSeed = null;
             }
         }
-    }
-
-    public static Tile[][] buildTiles(GameContext ctx) {
-        Tile[][] grid = new Tile[Level.ROWS][Level.COLS];
-        for (int r = 0; r < Level.ROWS; r++) {
-            for (int c = 0; c < Level.COLS; c++) {
-                grid[r][c] = new Tile(c,r, ctx);
-            }
-        }
-        return grid;
     }
 
     public void meltIce() {

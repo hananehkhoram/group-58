@@ -4,6 +4,8 @@ import com.workshop.controller.repository.DataManager;
 import com.workshop.controller.repository.factory.ZombieFactory;
 import com.workshop.model.GameContext;
 import com.workshop.model.level.Level;
+import com.workshop.model.mechanisms.TerrainType;
+import com.workshop.model.mechanisms.Tile;
 import com.workshop.model.plants.Plant;
 import com.workshop.model.plants.Tag;
 import com.workshop.model.zombie.Zombie;
@@ -13,24 +15,21 @@ import com.workshop.view.Console;
 import java.util.List;
 import java.util.Random;
 
-
 public class FrozenCaveChapter extends Season {
     private DataManager dm;
     private ZombieFactory zombieFactory;
     private final Random random = new Random();
 
-    // نگهداری جهت زمین‌های لیز: 1 برای پایین، -1 برای بالا، 0 برای بدون لیز
     private int[][] sliders;
 
     public FrozenCaveChapter(List<Level> levels) {
-        super("FrozenCave", levels,2);
+        super("FrozenCave", levels, 2);
         this.dm = DataManager.getInstance();
         this.zombieFactory = new ZombieFactory(dm);
     }
 
     @Override
     public boolean iceEffectiveOnZombies() { return false; }
-
 
     @Override
     public void onTick(GameContext ctx, double deltaTime) {
@@ -44,6 +43,19 @@ public class FrozenCaveChapter extends Season {
                 if (p != null && p.getFreezeLevel() == 3) {
                     if (hasFirePlantInNeighbors(grid, r, c, rows, cols)) {
                         p.damageIce(60 * deltaTime);
+                    }
+                }
+            }
+        }
+
+        for (Zombie zombie : ctx.getAliveZombies()) {
+            if (zombie != null && !zombie.isDead() && zombie.isInitialFrozenBlock()) {
+                int zCol = (int) Math.floor(zombie.getX());
+                int zRow = zombie.getRow();
+
+                if (zRow >= 0 && zRow < rows && zCol >= 0 && zCol < cols) {
+                    if (hasFirePlantInNeighborsOrSameTile(grid, zRow, zCol, rows, cols)) {
+                        zombie.meltIce(60 * deltaTime);
                     }
                 }
             }
@@ -131,6 +143,7 @@ public class FrozenCaveChapter extends Season {
 
         Console.simplePrint("Frozen Caves started: Ice sliders and frozen zombies placed!\n");
     }
+
     public void applyIcyWindToRow(GameContext ctx, int row) {
         ctx.announceWindRow(row);
 
@@ -160,6 +173,24 @@ public class FrozenCaveChapter extends Season {
         }
         return false;
     }
+
+    private boolean hasFirePlantInNeighborsOrSameTile(Plant[][] grid, int row, int col,
+                                                      int maxRow, int maxCol) {
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                int r = row + i;
+                int c = col + j;
+                if (r >= 0 && r < maxRow && c >= 0 && c < maxCol) {
+                    Plant neighbor = grid[r][c];
+                    if (neighbor != null && neighbor.hasTheTag(Tag.FIRE)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public int getSliderNextRow(int row, int col) {
         if (sliders != null && row >= 0 && row < sliders.length && col >= 0 && col < sliders[0].length) {
