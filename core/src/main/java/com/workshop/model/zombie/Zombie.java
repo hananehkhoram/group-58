@@ -163,7 +163,6 @@ public class Zombie implements Damageable {
             setEating(false);
         }
 
-        // فقط بلاک یخ اولیه جلوی حرکت را به‌طور کامل می‌گیرد
         if (initialFrozenBlock) {
             return;
         }

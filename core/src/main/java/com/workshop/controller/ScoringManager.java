@@ -2,6 +2,7 @@ package com.workshop.controller;
 
 import com.workshop.model.GameContext;
 import com.workshop.model.Scoring.ScoringPattern;
+import com.workshop.model.level.LevelType;
 import com.workshop.model.user.User;
 import com.workshop.model.zombie.Zombie;
 
@@ -20,7 +21,7 @@ public class ScoringManager {
 
         if (deathsThisTick.size() >= 2) {
             ctx.incrementSimultaneousKillPattern();
-            ctx.announce("Simultaneous Kill: " +ScoringPattern.SIMULTANEOUS_KILL.getPoints()+ "meow points!");
+            if (ctx.getLevel().getLevelType() == LevelType.BONUS) ctx.announce("Simultaneous Kill: " +ScoringPattern.SIMULTANEOUS_KILL.getPoints()+ "meow points!");
 
         }
 
@@ -28,17 +29,17 @@ public class ScoringManager {
         for (Zombie z : deathsThisTick) {
             if (now - z.getSpawnTick() <= QUICK_KILL_TICK_THRESHOLD) {
                 ctx.incrementQuickKillPattern();
-                ctx.announce("Quick Kill: "+ ScoringPattern.QUICK_KILL.getPoints()+ "meow points!");
+                if (ctx.getLevel().getLevelType() == LevelType.BONUS) ctx.announce("Quick Kill: "+ ScoringPattern.QUICK_KILL.getPoints()+ "meow points!");
             }
 
             int overkill = -z.getHp();
             if (overkill <= PRECISION_OVERKILL_MARGIN) {
                 ctx.incrementPrecisionFinishPattern();
-                ctx.announce("Precision Finish: " +ScoringPattern.PRECISION_FINISH.getPoints() + "meow points!");
+                if (ctx.getLevel().getLevelType() == LevelType.BONUS) ctx.announce("Precision Finish: " +ScoringPattern.PRECISION_FINISH.getPoints() + "meow points!");
             }
 
             ctx.bumpKillStreak();
-            ctx.announce("Kill Streak: " + ScoringPattern.MULTI_KILL.getPoints()+ "meow points!");
+            if (ctx.getLevel().getLevelType() == LevelType.BONUS) ctx.announce("Kill Streak: " + ScoringPattern.MULTI_KILL.getPoints()+ "meow points!");
         }
     }
 
@@ -46,7 +47,7 @@ public class ScoringManager {
     public static void onProjectileKill(GameContext ctx, int killCountForThisProjectile) {
         if (killCountForThisProjectile >= 2) {
             ctx.incrementMultiKillPattern();
-            ctx.announce("Multi Kill: " +ScoringPattern.MULTI_KILL.getPoints()+ "meow points!");
+            if (ctx.getLevel().getLevelType() == LevelType.BONUS) ctx.announce("Multi Kill: " +ScoringPattern.MULTI_KILL.getPoints()+ "meow points!");
 
         }
     }
