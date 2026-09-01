@@ -11,8 +11,8 @@ import java.util.List;
 public class ConveyorBeltManager implements LevelManager{
     private final List<Plant> conveyorBelt = new ArrayList<>();
     private double conveyorTimer = 0.0;
-    private static final double CONVEYOR_INTERVAL = 12.0;
-    private static final int MAX_CAPACITY = 5;
+    private static final double CONVEYOR_INTERVAL = 4.0;
+    private static final int MAX_CAPACITY = 6;
     private PlantFactory plantFactory;
 
     public ConveyorBeltManager() {
@@ -21,6 +21,8 @@ public class ConveyorBeltManager implements LevelManager{
 
     @Override
     public void onLevelStart(GameContext context) {
+        spawnPlantOnConveyor(context);
+        spawnPlantOnConveyor(context);
         spawnPlantOnConveyor(context);
     }
 

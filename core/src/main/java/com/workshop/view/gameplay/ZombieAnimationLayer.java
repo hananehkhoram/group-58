@@ -87,7 +87,9 @@ public final class ZombieAnimationLayer extends Group {
 
             actor.setPosition(
                 getZombieX(zombie),
-                getRowCenterY(zombie.getRow()) + 10f
+                getRowCenterY(zombie.getRow())
+                    - (zombie.isBoss() ? getCellHeight() * 0.5f : 0f)
+                    + 10f
             );
             actor.setZIndex(zombie.getRow());
         }

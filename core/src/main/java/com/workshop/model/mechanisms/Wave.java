@@ -72,8 +72,10 @@ public class Wave {
         ZombieFactory factory = new ZombieFactory(ctx.getDataManager());
         Zombie boss = factory.create(bossName);
 
-        boss.setX(ctx.getLevel().getColumns());
-        boss.setY(ctx.getLevel().getRows() / 2);
+        int rows = ctx.getLevel().getRows();
+        int topRow = Math.max(0, Math.min(rows / 2, Math.max(0, rows - 2)));
+        boss.setX(Math.max(0, ctx.getLevel().getColumns() - 1.15));
+        boss.setY(topRow);
 
         ctx.addZombie(boss);
         spawnedZombies.add(boss);
@@ -197,7 +199,9 @@ public class Wave {
             .entrySet()
             .stream()
             .filter(entry ->
-                ctx.getDataManager()
+                !BossZombieRegistry.isBossId(entry.getValue().getId())
+                    && !BossZombieRegistry.isBossName(entry.getKey())
+                    && ctx.getDataManager()
                     .zombies
                     .isAvailableInChapter(
                         entry.getKey(),

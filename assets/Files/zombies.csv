@@ -1,4 +1,4 @@
-﻿,EatDPS,Hitpoints,Speed,Wave Cost,Armor,ID,,Armor Type,Hitpoints,Metallic
+,EatDPS,Hitpoints,Speed,Wave Cost,Armor,ID,,Armor Type,Hitpoints,Metallic
 Default,100,190,0.185,100,,ZombieDefault,,Cone,370,no
 cone head,100,190,0.185,200,Cone,ZombieArmor1,,Bucket,1100,yes
 bucket head,100,190,0.185,400,Bucket,ZombieArmor2,,Brick,2200,no
@@ -27,11 +27,11 @@ Prospector,100,190,0.16,200,-,ZombieProspector,,,,
 Piano,4000,840,0.12,450,-,ZombiePiano,,,,
 News Paper,200,460,0.22,700,Newspaper,ZombieNewspaper,,,,
 Barrel Roller,100,190,0.20000000000000001,300,-,ZombieDarkBarrelRoller,,,,
-AncientEgyptZomboss,0,6000,0,999999,-,ZombieBossEgypt,,,,
-FrozenCavesZomboss,0,7000,0,999999,-,ZombieBossFrozenCaves,,,,
-BigWaveBeachZomboss,0,8000,0,999999,-,ZombieBossBigWaveBeach,,,,
-DarkAgesZomboss,0,10000,0,999999,-,ZombieBossDarkAges,,,,
 Peashooter Zombie,100,190,0.185,200,-,ZombieZombotanyPeashooter
 Wall-nut Zombie,100,4000,0.185,400,-,ZombieZombotanyWallnut
 Jalapeno Zombie,100,190,0.185,250,-,ZombieZombotanyJalapeno
 Squash Zombie,100,190,0.40,300,-,ZombieZombotanySquash
+AncientEgyptZomboss,0,18000,0,999999,-,ZombieBossEgypt,,,,
+FrozenCavesZomboss,0,21000,0,999999,-,ZombieBossFrozenCaves,,,,
+BigWaveBeachZomboss,0,24000,0,999999,-,ZombieBossBigWaveBeach,,,,
+DarkAgesZomboss,0,30000,0,999999,-,ZombieBossDarkAges

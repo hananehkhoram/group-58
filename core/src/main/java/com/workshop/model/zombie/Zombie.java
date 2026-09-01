@@ -37,7 +37,9 @@ public class Zombie implements Damageable {
     private boolean isIced = false;
     private double iceHp = 0;
     private static final double BUTTER_STUN_SECONDS = 4.0;
+    private static final double BOSS_STUN_SECONDS = 8.0;
     private double butterRemaining;
+    private double stunRemaining;
     private boolean initialFrozenBlock = false;
     private static final double SANDSTORM_DASH_SPEED = 3.6;
     private static final float SANDSTORM_LAND_SECONDS = 0.75f;
@@ -120,6 +122,7 @@ public class Zombie implements Damageable {
         this.wavePointCost = wavePointCost;
         this.weight = weight;
         this.maxHp = hp;
+        this.isBoss = BossZombieRegistry.isBossId(id);
         this.behaviors = ZombieActivator.buildBehaviors(this);
         this.effects = new  ArrayList<>();
     }
@@ -154,6 +157,14 @@ public class Zombie implements Damageable {
             }
         }
 
+        if (stunRemaining > 0) {
+            stunRemaining -= deltaTime;
+            if (stunRemaining < 0) {
+                stunRemaining = 0;
+            }
+            setEating(false);
+        }
+
         if (initialFrozenBlock || isIced) {
             return;
         }
@@ -177,7 +188,7 @@ public class Zombie implements Damageable {
 
         boolean airborne = getJumper() != null && !getJumper().isLanded();
 
-        if (!isEating && !airborne) {
+        if (!isEating && !airborne && !isBoss && stunRemaining <= 0) {
             double effectiveSpeed = speed;
             x += movingBackward ? effectiveSpeed * deltaTime : -effectiveSpeed * deltaTime;
         }
@@ -191,6 +202,14 @@ public class Zombie implements Damageable {
     public ProjectileDeflector getDeflector() {
         Behaviors b = behaviors.get("deflector");
         return (b instanceof ProjectileDeflector) ? (ProjectileDeflector) b : null;
+    }
+
+    public ZombossSummon getZomboss() {
+        if (behaviors == null) {
+            return null;
+        }
+        Behaviors b = behaviors.get("zombossSummon");
+        return (b instanceof ZombossSummon) ? (ZombossSummon) b : null;
     }
 
     public Submerge getSubmerge() {
@@ -252,8 +271,12 @@ public class Zombie implements Damageable {
             if (remaining <= 0) return;
         }
 
-        hp -= remaining;
-        noteBodyInjury();
+        if (isBoss) {
+            applyBossBodyDamage(remaining);
+        } else {
+            hp -= remaining;
+            noteBodyInjury();
+        }
         if (hp <= 0){
             Console.showMessage("Zombie of type "+this.getName() +
                 " is dead at " + this.getX() + ", " + this.getY());
@@ -321,6 +344,31 @@ public class Zombie implements Damageable {
         return (int) y;
     }
 
+    public boolean occupiesRow(int row) {
+        int top = (int) y;
+        if (!isBoss) {
+            return top == row;
+        }
+        return row == top || row == top + 1;
+    }
+
+    public int healthPhase() {
+        int cap = getMaxHp();
+        if (hp <= 0 || cap <= 0) {
+            return 0;
+        }
+        return (int) Math.ceil(hp * 3.0 / cap);
+    }
+
+    public void applyStun(double seconds) {
+        stunRemaining = Math.max(stunRemaining, seconds);
+        setEating(false);
+    }
+
+    public boolean isStunned() {
+        return stunRemaining > 0;
+    }
+
     @Override
     public void takeDamage(int amount) {
         takeDamage((double) amount);
@@ -328,8 +376,62 @@ public class Zombie implements Damageable {
 
     @Override
     public void takeArmorPiercingDamage(int amount) {
-        hp -= amount;
-        noteBodyInjury();
+        if (isBoss) {
+            applyBossBodyDamage(amount);
+        } else {
+            hp -= amount;
+            noteBodyInjury();
+        }
+    }
+
+    private void applyBossBodyDamage(int remaining) {
+        if (remaining <= 0) {
+            return;
+        }
+        int cap = getMaxHp();
+        int phase = healthPhase();
+        if (phase <= 0) {
+            hp -= remaining;
+            return;
+        }
+
+        if (isStunned()) {
+            hp = Math.max(phaseFloorHp(phase), hp - remaining);
+            return;
+        }
+
+        int newHp = hp - remaining;
+        int newPhase = phaseForHp(newHp, cap);
+        if (newPhase < phase) {
+            int droppedTo = phase - 1;
+            if (droppedTo <= 0) {
+                hp = newHp;
+                return;
+            }
+            hp = phaseCapHp(droppedTo);
+            applyStun(BOSS_STUN_SECONDS);
+            Console.showMessage(name + " is stunned!");
+            return;
+        }
+        hp = newHp;
+    }
+
+    private static int phaseForHp(int current, int cap) {
+        if (current <= 0 || cap <= 0) {
+            return 0;
+        }
+        return (int) Math.ceil(current * 3.0 / cap);
+    }
+
+    private int phaseCapHp(int phase) {
+        return Math.max(1, (int) Math.floor(getMaxHp() * phase / 3.0));
+    }
+
+    private int phaseFloorHp(int phase) {
+        if (phase <= 1) {
+            return 1;
+        }
+        return phaseCapHp(phase - 1) + 1;
     }
 
     private void noteBodyInjury() {

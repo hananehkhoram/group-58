@@ -154,7 +154,7 @@ public final class ProjectileAnimationLayer extends Group {
         float nearest = Float.MAX_VALUE;
 
         for (Zombie zombie : gameContext.getAliveZombies()) {
-            if (zombie == null || zombie.isDead() || zombie.getRow() != projectile.getRow()) {
+            if (zombie == null || zombie.isDead() || !zombie.occupiesRow(projectile.getRow())) {
                 continue;
             }
             if (zombie.getX() < launchX) {

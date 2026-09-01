@@ -217,6 +217,7 @@ public class GameEngine {
             }
 
             if (iZombieManager == null
+                && !zombie.isBoss()
                 && !zombie.isMovingBackward()
                 && zombie.getX() <= LOSS_X) {
 
@@ -322,7 +323,7 @@ public class GameEngine {
 
     public Zombie[] getRowZombies(int row) {
         return ctx.getAliveZombies().stream()
-            .filter(z -> z.getY() == row)
+            .filter(z -> z.occupiesRow(row))
             .toArray(Zombie[]::new);
     }
 
@@ -538,7 +539,12 @@ public class GameEngine {
             if (z.isDead()){
                 continue;
             }
-            if (z.getRow() == p.getRow() && p.getX() >= z.getX() - 0.2 && p.getX() <= z.getX() + 0.6) {
+            if (!z.occupiesRow(p.getRow())) {
+                continue;
+            }
+            double hitLeft = z.isBoss() ? z.getX() - 0.5 : z.getX() - 0.2;
+            double hitRight = z.isBoss() ? z.getX() + 1.6 : z.getX() + 0.6;
+            if (p.getX() >= hitLeft && p.getX() <= hitRight) {
                 ProjectileDeflector deflector = z.getDeflector();
                 Submerge submerge = z.getSubmerge();
 
@@ -715,7 +721,7 @@ public class GameEngine {
     public List<Zombie> findTargets(int row, int col, TargetingMode mode) {
         List<Zombie> sameRow = new ArrayList<>();
         for (Zombie z : ctx.getAliveZombies()) {
-            if ((int) z.getY() == row) sameRow.add(z);
+            if (z.occupiesRow(row)) sameRow.add(z);
         }
         switch (mode) {
             case FIRST_IN_LANE -> {
@@ -839,7 +845,7 @@ public class GameEngine {
 
         for (Zombie zombie : zombies) {
 
-            if (zombie.getRow() != row) {
+            if (!zombie.occupiesRow(row)) {
                 continue;
             }
 

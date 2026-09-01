@@ -23,6 +23,7 @@ import com.workshop.model.level.Level;
 import com.workshop.model.mechanisms.GameEngine;
 import com.workshop.model.season.DarkAgesSeason;
 import com.workshop.model.season.Season;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.workshop.model.user.UserManager;
@@ -75,6 +76,9 @@ public class GamePlayScreen implements Screen {
     private Label waveLabel;
     private ProgressBar zombieProgressBar;
     private TextButton startZombiesButton;
+    private boolean bossFightHud;
+    private Group waveFlagsOverlay;
+    private Group zombossSegmentOverlay;
 
     private final Image leftBackground;
     private final Image centerBackground;
@@ -356,6 +360,14 @@ public class GamePlayScreen implements Screen {
             );
 
         stage.addActor(waterLayer);
+
+        stage.addActor(new BurntTileLayer(
+            gameContext,
+            getGridX(),
+            getGridY(),
+            getGridWidth(),
+            getGridHeight()
+        ));
         if (level.getLevelType() == LevelType.Wallnuts_MG) {
             BowlingRedLineLayer redLineLayer = new BowlingRedLineLayer(
                 shapeRenderer,
@@ -641,21 +653,39 @@ public class GamePlayScreen implements Screen {
 
         float progressBarWidth = 273f;
         float progressBarHeight = 33f;
+        bossFightHud = level.getLevelType() == LevelType.BOSS_FIGHT;
 
         com.badlogic.gdx.scenes.scene2d.ui.Stack progressStack =
             new com.badlogic.gdx.scenes.scene2d.ui.Stack();
         progressStack.add(zombieProgressBar);
-        progressStack.add(
-            buildWaveFlagsOverlay(skin, level, progressBarWidth, progressBarHeight)
-        );
+        if (bossFightHud) {
+            zombieProgressBar.setColor(1f, 0.22f, 0.18f, 1f);
+            zombossSegmentOverlay = buildZombossSegmentOverlay(
+                progressBarWidth, progressBarHeight
+            );
+            progressStack.add(zombossSegmentOverlay);
+        } else {
+            waveFlagsOverlay = buildWaveFlagsOverlay(
+                skin, level, progressBarWidth, progressBarHeight
+            );
+            progressStack.add(waveFlagsOverlay);
+        }
 
         waveLabel = new Label("", skin);
         waveLabel.setFontScale(0.8f);
 
         Table progressColumn = new Table();
-        progressColumn.add(progressStack)
-            .size(progressBarWidth, progressBarHeight)
-            .row();
+        Table barRow = new Table();
+        if (bossFightHud) {
+            TextureRegion zombossIcon = Textures.regionOrNull(
+                "IMAGE_NPC_NARRATIONICONS_ZOMBOSS_NARRATIONICONS_ZOMBOSS_113X113"
+            );
+            if (zombossIcon != null) {
+                barRow.add(new Image(zombossIcon)).size(48, 48).padRight(8);
+            }
+        }
+        barRow.add(progressStack).size(progressBarWidth, progressBarHeight);
+        progressColumn.add(barRow).row();
         progressColumn.add(waveLabel).padTop(6);
 
         updateHud();
@@ -1079,6 +1109,27 @@ public class GamePlayScreen implements Screen {
         return overlay;
     }
 
+    private Group buildZombossSegmentOverlay(float barWidth, float barHeight) {
+        Group overlay = new Group();
+        overlay.setSize(barWidth, barHeight);
+        overlay.setTouchable(Touchable.disabled);
+
+        Pixmap pixmap = new Pixmap(5, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(0.08f, 0.04f, 0.04f, 1f);
+        pixmap.fill();
+        Texture dividerTexture = new Texture(pixmap);
+        pixmap.dispose();
+
+        for (int i = 1; i <= 2; i++) {
+            Image divider = new Image(dividerTexture);
+            float x = (barWidth * i / 3f) - 2.5f;
+            divider.setBounds(x, 1f, 5f, barHeight - 2f);
+            overlay.addActor(divider);
+        }
+
+        return overlay;
+    }
+
     private void updateHud() {
         if (startZombiesButton != null) {
             startZombiesButton.setVisible(
@@ -1091,6 +1142,32 @@ public class GamePlayScreen implements Screen {
         plantFoodAmountLabel.setText(
             String.valueOf(currentPlantFoodCount())
         );
+
+        if (bossFightHud) {
+            Zombie boss = ctx.findAliveBoss();
+            if (waveFlagsOverlay != null) {
+                waveFlagsOverlay.setVisible(false);
+            }
+            if (zombossSegmentOverlay != null) {
+                zombossSegmentOverlay.setVisible(true);
+            }
+            if (boss != null && !boss.isDead() && boss.getMaxHp() > 0) {
+                float remaining = boss.getHp() / (float) boss.getMaxHp();
+                zombieProgressBar.setValue(MathUtils.clamp(remaining, 0f, 1f));
+                waveLabel.setText(boss.isStunned() ? "Zomboss stunned!" : "Zomboss");
+            } else {
+                zombieProgressBar.setValue(1f);
+                waveLabel.setText("Zomboss");
+            }
+            return;
+        }
+
+        if (waveFlagsOverlay != null) {
+            waveFlagsOverlay.setVisible(true);
+        }
+        if (zombossSegmentOverlay != null) {
+            zombossSegmentOverlay.setVisible(false);
+        }
 
         com.workshop.model.mechanisms.Wave[] waves =
             ctx.getLevel().getWaves();
@@ -1882,10 +1959,10 @@ public class GamePlayScreen implements Screen {
 
             case "Dark Ages":
                 return new String[] {
-                    "JESTER",
-                    "WIZARD",
-                    "KING",
-                    "DRAGON"
+                    "ZOMBIE_DARK_JESTER",
+                    "ZOMBIE_WIZARD",
+                    "ZOMBIE_DARK_KING",
+                    "ZOMBIE_DARK_IMP_DRAGON"
                 };
 
             default:

@@ -46,6 +46,9 @@ public class Tile {
         if (ctx.getSeason().isNecromancyCell(y,x)) {
             return TerrainType.NECROMANCY;
         }
+        if (ctx.isBurnedCell(y, x)) {
+            return TerrainType.BURNED;
+        }
         if (ctx.getSeason().isWaterCell(y,x, ctx)) {
             return TerrainType.WATER;
         }
@@ -77,7 +80,8 @@ public class Tile {
         TerrainType t = getTerrainType();
 
         return t != TerrainType.GRAVE
-            && t != TerrainType.CRATER;
+            && t != TerrainType.CRATER
+            && t != TerrainType.BURNED;
     }
 
     public void setDroppedSeed(String seedName, int lifespanTicks) {

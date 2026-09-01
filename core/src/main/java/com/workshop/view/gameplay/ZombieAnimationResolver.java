@@ -18,6 +18,17 @@ public final class ZombieAnimationResolver {
     private static final String PAM_PREFIX =
         "768";
 
+    /** Only extracted basic-zombie PAM in this asset pack. */
+    private static final String EGYPT_BASIC_PAM =
+        "768/FULL/ZOMBIE/ZOMBIE_EGYPT_BASIC/ZOMBIE_EGYPT_BASIC.PAM";
+
+    /** Generic Imp PAM that is actually extracted. */
+    private static final String TUTORIAL_IMP_PAM =
+        "768/INITIAL/ZOMBIE/ZOMBIE_TUTORIAL_IMP/ZOMBIE_TUTORIAL_IMP.PAM";
+
+    private boolean loggedMissingSeasonBasic;
+    private boolean loggedMissingSeasonImp;
+
     private final Map<String, String> pamPaths =
         new HashMap<>();
 
@@ -80,6 +91,7 @@ public final class ZombieAnimationResolver {
                 "ZombieAnimationResolver",
                 "No PAM found for zombie: " + pamName
             );
+            resolvedSpecs.put(key, null);
             return null;
         }
 
@@ -204,6 +216,14 @@ public final class ZombieAnimationResolver {
             return "ZOMBIE_TUTORIAL";
         }
 
+        if (isImp(zombie)) {
+            return getImpZombiePam(seasonName);
+        }
+
+        if (isJuggler(zombie)) {
+            return "ZOMBIE_DARK_JESTER";
+        }
+
         if (zombie.getId() != null
             && !zombie.getId().isBlank()) {
 
@@ -259,6 +279,44 @@ public final class ZombieAnimationResolver {
         }
 
         return "ZOMBIE_EGYPT_BASIC";
+    }
+
+    private boolean isImp(Zombie zombie) {
+        String name = zombie.getName();
+        String id = zombie.getId();
+        return "Imp".equalsIgnoreCase(name)
+            || "ZombieImp".equalsIgnoreCase(id);
+    }
+
+    private String getImpZombiePam(String seasonName) {
+        if (seasonName == null) {
+            return "ZOMBIE_TUTORIAL_IMP";
+        }
+
+        if ("FrozenCave".equalsIgnoreCase(seasonName)) {
+            return "ZOMBIE_ICEAGE_IMP";
+        }
+
+        if ("Big Wave Beach".equalsIgnoreCase(seasonName)) {
+            return "ZOMBIE_BEACH_IMP_MERMAID";
+        }
+
+        if ("Dark Ages".equalsIgnoreCase(seasonName)) {
+            return "ZOMBIE_DARK_IMP_MONK";
+        }
+
+        if ("Ancient Egypt".equalsIgnoreCase(seasonName)) {
+            return "ZOMBIE_EGYPT_IMP";
+        }
+
+        return "ZOMBIE_TUTORIAL_IMP";
+    }
+
+    private boolean isJuggler(Zombie zombie) {
+        String name = zombie.getName();
+        String id = zombie.getId();
+        return "Juggler".equalsIgnoreCase(name)
+            || "ZombieDarkJuggler".equalsIgnoreCase(id);
     }
 
     private void scanDirectory(
@@ -350,15 +408,38 @@ public final class ZombieAnimationResolver {
             return "768/INITIAL/ZOMBIE/ZOMBIE_EGYPT_RA/ZOMBIE_EGYPT_RA.PAM";
         } if (cleanToken.contains("BARRELROLLER")){
             return "768/FULL/ZOMBIE/ZOMBIE_PIRATE_BARREL_PUSHER/ZOMBIE_PIRATE_BARREL_PUSHER.PAM";
-        } if (cleanToken.contains("ZOMBOSS")){
-            if (cleanToken.contains("ANCIENT")) return "768/INITIAL/ZOMBIE/ZOMBIE_EGYPT_ZOMBOSS/ZOMBIE_EGYPT_ZOMBOSS.PAM";
-            else if (cleanToken.contains("BEACH")) return "768/FULL/ZOMBIE/ZOMBIE_BEACH_ZOMBOSS/ZOMBIE_BEACH_ZOMBOSS.PAM";
+        }
+        if (key.contains("JUGGLER")) {
+            String jesterKey = key.replace("JUGGLER", "JESTER");
+            String jester = pamPaths.get(jesterKey);
+            if (jester == null) {
+                jester = pamPaths.get("ZOMBIEDARKJESTER");
+            }
+            if (jester != null) {
+                return jester;
+            }
+        }
+        if (looksLikeZomboss(key)) {
+            String zombossPath = findScannedZombossPath(key);
+            if (zombossPath != null) {
+                return zombossPath;
+            }
         }
 
         String exact = pamPaths.get(key);
 
         if (exact != null) {
             return exact;
+        }
+
+        String missingSeasonBasic = missingSeasonBasicFallback(key);
+        if (missingSeasonBasic != null) {
+            return missingSeasonBasic;
+        }
+
+        String missingSeasonImp = missingSeasonImpFallback(key);
+        if (missingSeasonImp != null) {
+            return missingSeasonImp;
         }
 
         String coreKey = key;
@@ -380,6 +461,8 @@ public final class ZombieAnimationResolver {
             String candidateKey = entry.getKey();
 
             if (!coreKey.isEmpty()
+                && coreKey.length() >= 5
+                && !coreKey.equals("ZOMBIE")
                 && candidateKey.contains(coreKey)) {
 
                 Gdx.app.log(
@@ -410,6 +493,137 @@ public final class ZombieAnimationResolver {
         }
 
         return findByToken(wantedToken, false);
+    }
+
+    /**
+     * Dark / Ice Age / Beach peasant PAMs are listed in RESOURCES.json but were
+     * never extracted. Use the Egypt peasant until those folders exist on disk.
+     */
+    private String missingSeasonBasicFallback(String key) {
+        boolean missingPeasant =
+            key.contains("DARKBASIC")
+                || key.contains("ICEAGEBASIC")
+                || key.contains("BEACHBASIC");
+
+        if (!missingPeasant) {
+            return null;
+        }
+
+        String egypt = pamPaths.get("ZOMBIEEGYPTBASIC");
+        if (egypt == null) {
+            egypt = EGYPT_BASIC_PAM;
+        }
+
+        if (!loggedMissingSeasonBasic) {
+            loggedMissingSeasonBasic = true;
+            Gdx.app.log(
+                "ZombieAnimationResolver",
+                "Season peasant PAM is not on disk (" + key
+                    + "). Using Egypt basic until zombie_dark_basic / "
+                    + "zombie_iceage_basic / zombie_beach_basic are extracted."
+            );
+        }
+
+        return egypt;
+    }
+
+    /**
+     * Season Imp PAMs (Egypt mummy, Dark monk, Ice Age, Beach mermaid) are in
+     * RESOURCES.json but not extracted. Use the tutorial Imp instead.
+     * Imp Dragon is a different zombie and is not remapped here.
+     */
+    private String missingSeasonImpFallback(String key) {
+        if (!looksLikeGenericImp(key)) {
+            return null;
+        }
+
+        String tutorial = pamPaths.get("ZOMBIETUTORIALIMP");
+        if (tutorial == null) {
+            tutorial = pamPaths.get("GARGANTUARIMP");
+        }
+        if (tutorial == null) {
+            tutorial = TUTORIAL_IMP_PAM;
+        }
+
+        if (!loggedMissingSeasonImp) {
+            loggedMissingSeasonImp = true;
+            Gdx.app.log(
+                "ZombieAnimationResolver",
+                "Season Imp PAM is not on disk (" + key
+                    + "). Using tutorial Imp until egypt/monk/iceage/mermaid Imp PAMs are extracted."
+            );
+        }
+
+        return tutorial;
+    }
+
+    private boolean looksLikeGenericImp(String key) {
+        if (!key.contains("IMP")) {
+            return false;
+        }
+        if (key.contains("DRAGON")
+            || key.contains("IMPACT")
+            || key.contains("IMPPEAR")
+            || key.contains("ASH")
+            || key.contains("SHOCK")) {
+            return false;
+        }
+        return key.equals("ZOMBIEIMP")
+            || key.equals("IMP")
+            || key.contains("EGYPTIMP")
+            || key.contains("ICEAGEIMP")
+            || key.contains("BEACHIMP")
+            || key.contains("IMPMONK")
+            || key.contains("DARKIMP")
+            || key.contains("TUTORIALIMP")
+            || key.contains("PIRATEIMP");
+    }
+
+    private boolean looksLikeZomboss(String key) {
+        return key.contains("ZOMBOSS")
+            || (key.contains("BOSS")
+            && (key.contains("EGYPT")
+            || key.contains("ANCIENT")
+            || key.contains("BEACH")
+            || key.contains("DARK")
+            || key.contains("FROZEN")
+            || key.contains("ICEAGE")
+            || key.contains("CAVE")));
+    }
+
+    private String findScannedZombossPath(String key) {
+        String needle;
+        if (key.contains("EGYPT") || key.contains("ANCIENT")) {
+            needle = "EGYPTZOMBOSS";
+        } else if (key.contains("BEACH") || key.contains("BIGWAVE")) {
+            needle = "BEACHZOMBOSS";
+        } else if (key.contains("DARK") || key.contains("AGES")) {
+            needle = "DARKZOMBOSS";
+        } else if (key.contains("FROZEN") || key.contains("ICEAGE") || key.contains("CAVE")) {
+            needle = "ICEAGEZOMBOSS";
+        } else {
+            return null;
+        }
+
+        for (Map.Entry<String, String> entry : pamPaths.entrySet()) {
+            String candidate = entry.getKey();
+            String path = entry.getValue().replace('\\', '/').toUpperCase().replace("_", "");
+            if (candidate.contains(needle) || path.contains(needle)) {
+                return entry.getValue();
+            }
+        }
+
+        return switch (needle) {
+            case "EGYPTZOMBOSS" ->
+                "768/INITIAL/ZOMBIE/ZOMBIE_EGYPT_ZOMBOSS/ZOMBIE_EGYPT_ZOMBOSS.PAM";
+            case "BEACHZOMBOSS" ->
+                "768/FULL/ZOMBIE/ZOMBIE_BEACH_ZOMBOSS/ZOMBIE_BEACH_ZOMBOSS.PAM";
+            case "DARKZOMBOSS" ->
+                "768/FULL/ZOMBIE/ZOMBIE_DARK_ZOMBOSS/ZOMBIE_DARK_ZOMBOSS.PAM";
+            case "ICEAGEZOMBOSS" ->
+                "768/FULL/ZOMBIE/ZOMBIE_ICEAGE_ZOMBOSS/ZOMBIE_ICEAGE_ZOMBOSS.PAM";
+            default -> null;
+        };
     }
 
     private String findByToken(String wantedToken, boolean exact) {
@@ -446,11 +660,13 @@ public final class ZombieAnimationResolver {
                 fileName.split("[^A-Z0-9]+");
 
             for (String token : tokens) {
+                if (token.length() < 5 || "ZOMBIE".equals(token) || "BASIC".equals(token)) {
+                    continue;
+                }
 
                 boolean matches = exact
                     ? token.equals(wantedToken)
-                    : (wantedToken.length() >= 4
-                    && token.length() >= 4
+                    : (wantedToken.length() >= 5
                     && (token.startsWith(wantedToken)
                     || wantedToken.startsWith(token)));
 

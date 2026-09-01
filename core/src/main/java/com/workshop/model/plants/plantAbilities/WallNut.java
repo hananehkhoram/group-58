@@ -50,7 +50,7 @@ public class WallNut implements BaseAbility {
 
     public boolean hasZombieOrProjectileAt(int row, int col, GameContext ctx) {
         boolean zombiePresent = ctx.getAliveZombies().stream()
-            .anyMatch(z -> z != null && !z.isDead() && z.getRow() == row && (int) z.getX() == col);
+            .anyMatch(z -> z != null && !z.isDead() && z.occupiesRow(row) && (int) z.getX() == col);
 
         if (zombiePresent) {
             return true;
@@ -151,7 +151,7 @@ public class WallNut implements BaseAbility {
         int pRow = self.getRow();
         int maxRows = ctx.getLevel().getRows();
         for (Zombie z : ctx.getAliveZombies()) {
-            if (!z.isDead() && z.getRow() == pRow) {
+            if (!z.isDead() && !z.isBoss() && z.getRow() == pRow) {
                 z.setY(calculateNewRow(pRow, maxRows));
             }
         }
@@ -160,7 +160,7 @@ public class WallNut implements BaseAbility {
     private void plantFoodLaneAttract(Plant self, GameContext ctx) {
         int pRow = self.getRow();
         for (Zombie z : ctx.getAliveZombies()) {
-            if (!z.isDead() && Math.abs(z.getRow() - pRow) <= 1) {
+            if (!z.isDead() && !z.isBoss() && Math.abs(z.getRow() - pRow) <= 1) {
                 z.setY(pRow);
             }
         }

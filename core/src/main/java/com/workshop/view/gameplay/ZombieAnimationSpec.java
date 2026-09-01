@@ -26,8 +26,6 @@ public final class ZombieAnimationSpec {
             }
             if (clean.contains("BARRELROLLER")){
                 return "768/FULL/ZOMBIE/ZOMBIE_PIRATE_BARREL_PUSHER/ZOMBIE_PIRATE_BARREL_PUSHER.PAM";
-            } if (clean.contains("ZOMBOSS") || clean.contains("ZOMBIEBOSS")){
-                return "768/INITIAL/ZOMBIE/ZOMBIE_EGYPT_ZOMBOSS/ZOMBIE_EGYPT_ZOMBOSS.PAM";
             }
         }
         return pamPath;

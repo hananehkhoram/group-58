@@ -1,5 +1,6 @@
 package com.workshop.controller.repository;
 
+import com.workshop.model.zombie.BossZombieRegistry;
 import com.workshop.model.zombie.Zombie;
 
 import java.io.IOException;
@@ -105,6 +106,10 @@ public class ZombieRepository implements AssetRepository<Zombie>{
         );
 
     public boolean isAvailableInChapter(String zombieName, String chapterName) {
+        if (!BossZombieRegistry.isAllowedInSeason(zombieName, chapterName)) {
+            return false;
+        }
+
         Set<String> exclusiveTo = CHAPTER_EXCLUSIVE_ZOMBIES.get(zombieName);
 
         if (exclusiveTo == null) {

@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.workshop.model.zombie.Zombie;
+import com.workshop.model.zombie.behavior.ZombossSummon;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ public final class ZombieActor extends Actor {
     private static final float MAX_DANGER_TINT = 0.65f;
 
     private static final float TARGET_HEIGHT_TO_CELL_RATIO = 1.6f;
+    private static final float BOSS_HEIGHT_TO_CELL_RATIO = 3.6f;
 
     private Float resolvedScale;
 
@@ -126,8 +128,11 @@ public final class ZombieActor extends Actor {
             return 1f;
         }
 
+        float heightRatio = zombie.isBoss()
+            ? BOSS_HEIGHT_TO_CELL_RATIO
+            : TARGET_HEIGHT_TO_CELL_RATIO;
         resolvedScale =
-            (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO) / bounds.height;
+            (cellHeight * heightRatio) / bounds.height;
 
         return resolvedScale;
     }
@@ -347,7 +352,7 @@ public final class ZombieActor extends Actor {
         }
 
         updateAnimationState();
-        stateTime += delta;
+        stateTime += zombie.isStunned() ? delta * 0.2f : delta;
     }
 
     private void updateAnimationState() {
@@ -355,6 +360,12 @@ public final class ZombieActor extends Actor {
 
         if (zombie.isEating()) {
             nextState = ZombieAnimationState.EAT;
+        } else if (zombie.isBoss()) {
+            ZombossSummon zomboss = zombie.getZomboss();
+            boolean moving = zomboss != null && zomboss.isPhysicallyMoving();
+            nextState = moving
+                ? ZombieAnimationState.WALK
+                : ZombieAnimationState.IDLE;
         } else {
             nextState = ZombieAnimationState.WALK;
         }
@@ -459,12 +470,21 @@ public final class ZombieActor extends Actor {
             ? parentAlpha * 0.55f
             : parentAlpha;
 
-        batch.setColor(
-            1f + flash,
-            1f - dangerTint + flash,
-            1f - dangerTint + flash,
-            bodyAlpha
-        );
+        if (zombie.isStunned()) {
+            batch.setColor(
+                1f,
+                0.85f + flash * 0.15f,
+                0.2f + flash,
+                bodyAlpha
+            );
+        } else {
+            batch.setColor(
+                1f + flash,
+                1f - dangerTint + flash,
+                1f - dangerTint + flash,
+                bodyAlpha
+            );
+        }
 
         String clip = animationSpec.getClip(currentState, zombie.hasLostArm());
 

@@ -310,6 +310,7 @@ public class ShowMap implements Command {
             case SLIPPERY_DOWN -> "v";
             case NECROMANCY -> "N";
             case CRATER -> "C";
+            case BURNED -> "B";
             default -> ".";
         };
     }
