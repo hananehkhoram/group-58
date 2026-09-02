@@ -307,7 +307,7 @@ public class PlantSelectionScreen implements Screen {
         });
 
         boolean isMaxLevel = focusedPlant.getLevel() >= 4;
-        int upgradeCost = isMaxLevel ? 0 : focusedPlant.getLevel() * 100 + 100;
+        int upgradeCost = isMaxLevel ? 0 : (focusedPlant.getLevel() + 1) * 5;
         String upgradeText = isMaxLevel ? "MAX LEVEL" : "UPGRADE (" + upgradeCost + " Coins)";
         TextButton upgradeBtn = new TextButton(upgradeText, skin, "purple");
         upgradeBtn.setDisabled(isMaxLevel);
