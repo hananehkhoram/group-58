@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
+import com.workshop.model.PendingFxQueue;
 
 import java.util.List;
 
@@ -64,7 +65,7 @@ public final class EgyptSummonFxLayer extends Group {
 
     @Override
     public void act(float delta) {
-        GameContext.EgyptSummonSpawn spawn;
+        PendingFxQueue.EgyptSummonSpawn spawn;
         while ((spawn = gameContext.pollEgyptSummon()) != null) {
             addActor(new SummonActor(spawn.row, spawn.x));
         }

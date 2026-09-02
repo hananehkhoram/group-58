@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
+import com.workshop.model.PendingFxQueue;
 import com.workshop.model.zombie.Zombie;
 
 import java.util.List;
@@ -153,7 +154,7 @@ public final class BeachZombossFxLayer extends Group {
     @Override
     public void act(float delta) {
         if (spawnSharks) {
-            GameContext.BeachSharkSpawn spawn;
+            PendingFxQueue.BeachSharkSpawn spawn;
             while ((spawn = gameContext.pollBeachShark()) != null) {
                 addActor(new SharkActor(spawn.row, spawn.col));
             }

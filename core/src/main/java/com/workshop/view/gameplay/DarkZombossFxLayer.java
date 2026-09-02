@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
+import com.workshop.model.PendingFxQueue;
 import com.workshop.model.zombie.Zombie;
 
 import java.util.List;
@@ -69,11 +70,11 @@ public final class DarkZombossFxLayer extends Group {
 
     @Override
     public void act(float delta) {
-        GameContext.DarkFireballSpawn fireball;
+        PendingFxQueue.DarkFireballSpawn fireball;
         while ((fireball = gameContext.pollDarkFireball()) != null) {
             addActor(new FireballActor(fireball.row, fireball.col, fireball.flightSeconds));
         }
-        GameContext.DarkFireBreathSpawn breath;
+        PendingFxQueue.DarkFireBreathSpawn breath;
         while ((breath = gameContext.pollDarkFireBreath()) != null) {
             addActor(new BreathActor(breath.topRow, breath.bottomRow, breath.durationSeconds));
         }

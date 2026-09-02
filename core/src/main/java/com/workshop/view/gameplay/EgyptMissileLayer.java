@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
+import com.workshop.model.PendingFxQueue;
 
 import java.util.List;
 
@@ -67,7 +68,7 @@ public final class EgyptMissileLayer extends Group {
 
     @Override
     public void act(float delta) {
-        GameContext.EgyptMissileSpawn spawn;
+        PendingFxQueue.EgyptMissileSpawn spawn;
         while ((spawn = gameContext.pollEgyptMissile()) != null) {
             addActor(new MissileActor(spawn.row, spawn.col, spawn.flightSeconds));
         }

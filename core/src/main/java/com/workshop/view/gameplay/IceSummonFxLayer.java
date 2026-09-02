@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.workshop.controller.repository.Textures;
 import com.workshop.model.GameContext;
+import com.workshop.model.PendingFxQueue;
 
 import java.util.List;
 
@@ -70,7 +71,7 @@ public final class IceSummonFxLayer extends Group {
 
     @Override
     public void act(float delta) {
-        GameContext.IceSummonSpawn spawn;
+        PendingFxQueue.IceSummonSpawn spawn;
         while ((spawn = gameContext.pollIceSummon()) != null) {
             addActor(new SummonActor(spawn.row, spawn.col));
         }
