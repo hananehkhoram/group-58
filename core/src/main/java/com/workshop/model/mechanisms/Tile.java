@@ -82,8 +82,6 @@ public class Tile {
         Plant existing = ctx.getPlantGrid()[y][x];
 
         if (plant != null && plant.isStackableCover()) {
-            // Pumpkin: only plantable on top of an existing, not-already
-            // -covered plant — never on an empty tile.
             if (existing == null || existing.getCoverPlant() != null) {
                 return false;
             }
