@@ -22,7 +22,6 @@ public class User {
     protected int numberOfPassedLevels;
     protected int maxMewPoint;
     private boolean hasNetworkBonusScore;
-    private Settings settings;
     private boolean stayedLogin;
 
     private Set<String> completedQuestIds = new HashSet<>();
@@ -120,7 +119,6 @@ public class User {
     public void setPlantFoodCount(int plantFoodCount) {
         this.plantFoodCount = plantFoodCount;
     }
-    public Settings getSettings() { return settings; }
 
     public int getLastLevel(){return lastLevel;}
     public int getLastSeason(){return lastSeason;}

@@ -364,20 +364,6 @@ public class PlantCardActor extends Table {
         return group;
     }
 
-    private void updateCooldownLabel() {
-        if (cooldownLabel == null) {
-            return;
-        }
-
-        if (cooldownRemainingSeconds <= 0) {
-            cooldownLabel.setText("");
-            return;
-        }
-
-        int seconds = (int) Math.ceil(cooldownRemainingSeconds);
-        cooldownLabel.setText(seconds + "s");
-    }
-
     public void setCooldownRemaining(double seconds) {
         cooldownRemainingSeconds = Math.max(0, seconds);
 

@@ -33,7 +33,6 @@ public class ZombossSummon implements Behaviors {
     private static final double DARK_FIRE_BREATH_SECONDS = 1.2;
 
     private final Random random = new Random();
-    private long lastActionTick = -1;
     private ZombossState currentState = ZombossState.INTRO;
 
     private boolean isSpawned = false;
@@ -189,7 +188,6 @@ public class ZombossSummon implements Behaviors {
             executeRandomAbility(zombie, ctx);
             actionElapsed = 0;
             pendingFirstAction = false;
-            lastActionTick = currentTick;
         }
     }
 
@@ -205,7 +203,6 @@ public class ZombossSummon implements Behaviors {
         if (introElapsed >= INTRO_DURATION_SECONDS) {
             this.isSpawned = true;
             this.currentState = ZombossState.IDLE;
-            this.lastActionTick = currentTick;
             this.pendingFirstAction = true;
             this.actionElapsed = ACTION_COOLDOWN_SECONDS;
         }
@@ -242,7 +239,7 @@ public class ZombossSummon implements Behaviors {
                 fireEgyptMissile(boss, ctx);
                 break;
             default:
-                performEgyptDash(boss, ctx);
+                performEgyptDash(boss);
                 break;
         }
     }
@@ -814,7 +811,7 @@ public class ZombossSummon implements Behaviors {
         }
     }
 
-    private void performEgyptDash(Zombie boss, GameContext ctx) {
+    private void performEgyptDash(Zombie boss) {
         this.currentState = ZombossState.DASHING;
         this.isDashing = true;
         this.isReturning = false;

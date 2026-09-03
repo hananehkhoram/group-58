@@ -92,7 +92,4 @@ public class BeghouldGame {
         return gameEngine;
     }
 
-    public BeghouledManager getBeghouledManager() {
-        return beghouledManager;
-    }
 }

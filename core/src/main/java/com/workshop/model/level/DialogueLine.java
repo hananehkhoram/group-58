@@ -27,15 +27,6 @@ public class DialogueLine {
         this.portraitPamClip = portraitPamClip;
     }
 
-    public DialogueLine(String speakerName, String portraitPath, String text) {
-        this(speakerName, text, portraitPath, null, null, null);
-    }
-
-    public DialogueLine(String speakerName, String text) {
-        this(speakerName, text, null, null, null, null);
-    }
-
-    /** پرتره از یک آی‌دی منبع داخلیِ بازی (TextureBank/RESOURCES.json). */
     public static DialogueLine withResourcePortrait(
         String speakerName,
         String resourceId,
@@ -44,7 +35,6 @@ public class DialogueLine {
         return new DialogueLine(speakerName, text, null, resourceId, null, null);
     }
 
-    /** پرتره از یک انیمیشن PAM (مثل DaveWinnie_NarrationIcons). */
     public static DialogueLine withPamPortrait(
         String speakerName,
         String pamPath,

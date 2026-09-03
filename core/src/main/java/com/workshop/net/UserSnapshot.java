@@ -21,25 +21,6 @@ public final class UserSnapshot {
     public int securityQuestionId;
     public String securityAnswerHash;
 
-    public static UserSnapshot fromUser(User user) {
-        UserSnapshot snap = new UserSnapshot();
-        snap.username = user.getUsername();
-        snap.passwordHash = user.getPassword();
-        snap.nickName = user.getNickName();
-        snap.email = user.getEmail();
-        snap.gender = user.getGender() == Gender.FEMALE ? "female" : "male";
-        snap.coins = user.getCoins();
-        snap.gems = user.getGems();
-        snap.maxMewPoint = user.getMaxMewPoint();
-        snap.lastLevel = user.getLastLevel();
-        snap.lastSeason = user.getLastSeason();
-        snap.minigamesCompleted = user.getMinigamesCompleted();
-        snap.dailyQuests = user.getDailyQuestsCompletedCount();
-        snap.otherQuests = user.getOtherQuestsCompletedCount();
-        snap.hasNetworkBonusScore = user.hasNetworkBonusScore();
-        return snap;
-    }
-
     public void applyTo(User user) {
         if (username != null && !username.isBlank()) {
             user.setUsername(username);

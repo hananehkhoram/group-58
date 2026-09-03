@@ -7,20 +7,6 @@ import pvz.libpvz.pam.PamPlayer;
 
 import pvz.libpvz.textures.TextureBank;
 
-/**
- * Holds the single {@link TextureBank} used to look up PvZ2 UI/game image regions
- * (via libPVZ) by their resource ID, e.g. "IMAGE_UI_MAINMENU_PVZ2_LOGO_HORIZONTAL".
- *
- * Requires the extracted game assets (IMAGES/, ATLASES/, RESOURCES.json) to be
- * present under the project's assets/ folder — libPVZ ships no game assets itself,
- * you must supply your own from a legally owned copy of the game.
- *
- * Doesn't rely on the working directory being set to assets/ (build.gradle's
- * workingDir only applies when actually launched through Gradle — IDE "run main()
- * directly" configurations ignore it and default to the project root instead).
- * Instead this tries a handful of likely locations relative to wherever the JVM
- * actually started, and uses whichever one actually has ATLASES/ in it.
- */
 public final class Textures {
 
     private static TextureBank instance;

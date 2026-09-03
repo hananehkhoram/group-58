@@ -33,7 +33,6 @@ public class PotActor extends Group {
     private final Pot pot;
     private final PamPlayer pamPlayer;
     private final TextureBank textureBank;
-    private final Skin skin;
     private final Listener listener;
 
     private final Label timeLabel;
@@ -53,7 +52,6 @@ public class PotActor extends Group {
         this.pot = pot;
         this.pamPlayer = pamPlayer;
         this.textureBank = textureBank;
-        this.skin = skin;
         this.listener = listener;
 
         setSize(90, 100);

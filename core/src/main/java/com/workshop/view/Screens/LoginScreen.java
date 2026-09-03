@@ -53,8 +53,6 @@ public class LoginScreen implements Screen {
     private TextField answerField;
     private TextField newPasswordField;
 
-    private Step currentStep = Step.LOGIN;
-
     public LoginScreen(Listener listener) {
         this.listener = listener;
         this.skin = PvzSkin.get();
@@ -253,7 +251,6 @@ public class LoginScreen implements Screen {
     }
 
     private void showStep(Step step) {
-        currentStep = step;
         Table table;
         switch (step) {
             case FORGOT_EMAIL: table = forgotEmailTable; break;

@@ -176,8 +176,6 @@ public class Zombie implements Damageable {
     public int healthPhase() {
         return ZombieBossCombat.phaseForHp(hp, getMaxHp());
     }
-
-    public void applyStun(double seconds) { status.applyStun(seconds, this); }
     public boolean isStunned() { return status.isStunned(); }
 
     @Override
@@ -295,7 +293,6 @@ public class Zombie implements Damageable {
     public boolean isBoss() { return isBoss; }
     public void setBoss(boolean boss) { this.isBoss = boss; }
     public void setBeingSucked(boolean beingSucked) { this.beingSucked = beingSucked; }
-    public boolean isBeingSucked() { return beingSucked; }
     public void setRow(int r) { this.y = r; }
 
     public boolean searchEffect(Effects effect) {

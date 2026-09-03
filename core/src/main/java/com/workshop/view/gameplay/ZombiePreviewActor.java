@@ -45,7 +45,4 @@ public final class ZombiePreviewActor extends Actor {
         );
     }
 
-    public void restartAnimation() {
-        stateTime = 0f;
-    }
 }

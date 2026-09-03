@@ -45,18 +45,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-/**
- * Screen for a networked 2-player "I, Zombie" match, built from the same
- * layers the single-player {@code GamePlayScreen} uses (real backgrounds,
- * PAM plant/zombie animations, brains, red line) so it looks and feels like
- * the real game instead of a placeholder board.
- * <p>
- * The host renders its own live {@link GameContext} directly. The guest has
- * no simulation of its own, so a {@link GuestLawnMirror} turns incoming
- * snapshots into an equivalent (but purely visual) GameContext that the
- * exact same rendering layers can read from. Projectiles are only shown on
- * the host, since the guest's mirror doesn't track them.
- */
 public class NetworkIzambiScreen implements Screen {
 
     private final PvzGame game;

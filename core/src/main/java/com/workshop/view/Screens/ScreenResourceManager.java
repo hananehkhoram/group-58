@@ -13,10 +13,6 @@ import pvz.libpvz.pam.PamPlayer;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Centralized resource manager for resolving animation and texture paths.
- * Handles PAM file path normalization and multiple fallback strategies.
- */
 public final class ScreenResourceManager {
 
     private static final Map<String, String> existingPamPaths = new HashMap<>();

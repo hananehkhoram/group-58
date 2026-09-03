@@ -9,22 +9,6 @@ import com.badlogic.gdx.files.FileHandle;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Plays background music / sound cues from files under assets/music/, with
- * separately adjustable music/SFX volume (persisted across restarts via
- * Preferences). Reuses {@link Textures#assetsRoot()} for path resolution instead
- * of Gdx.files.internal() — same reason as everywhere else: doesn't depend on the
- * classpath copy of resources being fresh or a specific working directory.
- *
- * Call sites pass a path WITHOUT extension (e.g. "music/winmusic") — this tries
- * the common extensions in order.
- *
- * Two APIs, for two different jobs:
- *   playMusic(path, loop) — ONE background track at a time (menu music, gameplay
- *     music, win/lose/Dave). Starting a new one stops whatever was playing.
- *   playSfx(path) — short one-shot sounds (coin, diamond, pause) that overlap
- *     whatever background music is already playing instead of replacing it.
- */
 public final class Audio {
 
     private static final String[] EXTENSIONS = {".ogg", ".mp3", ".wav"};

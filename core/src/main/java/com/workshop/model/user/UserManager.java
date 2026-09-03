@@ -7,9 +7,6 @@ import java.util.List;
 
 public class UserManager {//singelton
     private static final String USERS_FILE = "Files/users.dat";
-    private static final String FIELD_SEP = "|";
-    private static final String LIST_SEP = ",";
-    private static final String PLANT_SEP = "#";
     private static UserManager instance = null;
     public List<User> users;
     private User currentUser;
@@ -118,11 +115,6 @@ public class UserManager {//singelton
         this.currentUser.setSecurityAnswer(answer);
     }
 
-    public boolean isAnswerCorrect(String answer, User user) {
-        if (user.getSecurityAnswer().equals(answer)) return true;
-        return false;
-    }
-
     public boolean isPasswordCorrect(String password, String username) {
         User foundUser = findUserByName(username);
         String hashedEnteredPassword = Security.hashPassword(password);
@@ -132,18 +124,6 @@ public class UserManager {//singelton
         }
         return true;
     }
-
-    public void changePassword(String password,User user) {
-        user.setPassword(Security.hashPassword(password));
-    }
-
-    public boolean isEmailCorrect(String email, String name) {
-        User foundUser = findUserByName(name);
-        if (foundUser == null) return false;
-        if (!foundUser.getEmail().equalsIgnoreCase(email)) return false;
-        return true;
-    }
-
 
     public void login(User user) {
         this.currentUser = user;

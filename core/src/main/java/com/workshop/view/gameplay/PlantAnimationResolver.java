@@ -152,23 +152,6 @@ public final class PlantAnimationResolver {
         }
     }
 
-    private String findClip(
-        List<String> clips,
-        String expectedName
-    ) {
-        if (clips == null) {
-            return null;
-        }
-
-        for (String clip : clips) {
-            if (expectedName.equalsIgnoreCase(clip)) {
-                return clip;
-            }
-        }
-
-        return null;
-    }
-
     private static String stripImagesPrefix(String path) {
         if (path == null) {
             return null;
@@ -202,17 +185,5 @@ public final class PlantAnimationResolver {
             return "ROTORUTABAGA";
         }
         return null;
-    }
-
-    private void logAvailableClips(
-        String plantName,
-        String pamPath,
-        List<String> clips
-    ) {
-        Gdx.app.log(
-            "PlantAnimationResolver",
-            plantName + " -> " + pamPath
-                + " | clips: " + clips
-        );
     }
 }

@@ -85,7 +85,6 @@ public class GamePlayScreen implements Screen {
     private final Image rightBackground;
 
     private final ShapeRenderer shapeRenderer;
-    private final Runnable exitAction;
 
     private final OrthographicCamera worldCamera;
 
@@ -144,7 +143,6 @@ public class GamePlayScreen implements Screen {
     private Image plantFoodMousePreview;
     private Texture plantFoodCursorTexture;
 
-    private Table seedBankContainer;
 
     private Table seedBankTable;
     private Table zombieBankTable;
@@ -166,7 +164,6 @@ public class GamePlayScreen implements Screen {
         Runnable restartAction,
         Runnable exitAction
     ) {
-        this.exitAction = exitAction;
 
         this.ctx = gameContext;
         this.gameEngine = gameContext.getGameEngine();
@@ -1828,19 +1825,6 @@ public class GamePlayScreen implements Screen {
     }
 
     protected Stage getStage() { return stage; }
-
-    private float getCellCenterX(int column) {
-        return getGridX()
-            + column * getCellWidth()
-            + getCellWidth() / 2f;
-    }
-
-    private float getCellCenterY(int row) {
-        return getGridY()
-            + getGridHeight()
-            - row * getCellHeight()
-            - getCellHeight() / 2f;
-    }
 
     private void updateIntroCamera(float delta) {
         if (introFinished || pauseOverlay.isVisible()) {

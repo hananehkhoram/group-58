@@ -32,13 +32,6 @@ public class Grave {
             onDestroyed(ctx);
         }
     }
-    public String displayGraveType() {
-        return switch (this.type) {
-            case HAS_SUN -> "Sun";       // Grave with Sun
-            case HAS_PLANT_FOOD -> "Food"; // Grave with Food
-            default -> "Normal";            // Normal Grave
-        };
-    }
 
     public int getRow() {
         return row;

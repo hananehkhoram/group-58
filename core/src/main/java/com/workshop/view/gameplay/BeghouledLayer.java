@@ -109,15 +109,6 @@ public class BeghouledLayer extends Group {
 
                 } else {
 
-                    boolean result =
-                        ctx.getBeghouldManager()
-                            .trySwap(
-                                selectedCol,
-                                selectedRow,
-                                col,
-                                row
-                            );
-
                     selectedRow = -1;
                     selectedCol = -1;
                 }
@@ -335,13 +326,6 @@ public class BeghouledLayer extends Group {
             );
 
             card.setOnClick(c -> {
-
-                String result =
-                    ctx.getBeghouldManager()
-                        .upgradeAll(
-                            option.getFromPlant()
-                        );
-
                 rebuildUpgradePanel();
             });
 

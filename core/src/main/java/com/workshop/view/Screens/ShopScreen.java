@@ -70,7 +70,6 @@ public class ShopScreen implements Screen {
     private static final float DESIGN_WIDTH = 1024f;
     private static final float DESIGN_HEIGHT = 576f;
 
-    private final GameContext ctx;
     private final Listener listener;
     private final Stage stage;
     private final ScreenViewport viewport;
@@ -92,7 +91,6 @@ public class ShopScreen implements Screen {
     private List<Label> dailyTimerLabels = new ArrayList<>();
 
     public ShopScreen(GameContext ctx, Listener listener) {
-        this.ctx = ctx;
         this.listener = listener;
         this.skin = PvzSkin.get();
 

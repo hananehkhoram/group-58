@@ -40,7 +40,6 @@ public class CouchIzambiScreen extends GamePlayScreen {
     private int selectedZombieIndex = 0;
 
     private Plant selectedPlantForPlacement = null;
-    private Planting plantingCommand;
 
     private Stage hudStage;
     private Skin skin;
@@ -60,7 +59,6 @@ public class CouchIzambiScreen extends GamePlayScreen {
 
         MenuManager plantingMenuManager = new MenuManager(gameContext);
         plantingMenuManager.setGameEngine(gameContext.getGameEngine());
-        this.plantingCommand = new Planting(plantingMenuManager);
 
         IZombieManager manager = new IZombieManager(0, 5);
         List<String> keys = new ArrayList<>(manager.getAvailableZombieCosts().keySet());

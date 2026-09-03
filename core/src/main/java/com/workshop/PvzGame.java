@@ -33,8 +33,6 @@ public class PvzGame extends Game {
 
     private final MenuManager menuManager = new MenuManager(null);
 
-    private Season currentSeason;
-
     @Override
     public void setScreen(Screen screen) {
         super.setScreen(screen);
@@ -167,16 +165,7 @@ public class PvzGame extends Game {
 
     public void showTravelMenu() {
         setScreen(new TravelMenuScreen(
-            this,
-            UserManager.getInstance().getCurrentUser(),
-            currentSeason
-        ));
-    }
-
-    public void showSkinTest() {
-        setScreen(new SkinTestScreen(
-            this,
-            UserManager.getInstance().getCurrentUser()
+            this
         ));
     }
 
@@ -281,8 +270,6 @@ public class PvzGame extends Game {
         setScreen(new GameScreen(new GameScreen.Listener() {
             @Override
             public void onEnterLevel(Season season, Level level) {
-
-                currentSeason = season;
                 menuManager.startBattle(level, season);
                 GameContext ctx = menuManager.getCtx();
 
@@ -328,10 +315,6 @@ public class PvzGame extends Game {
         }));
     }
 
-    private void goToBattleScreen(GameContext ctx) {
-        showGamePlay(ctx);
-    }
-
     public void showLeaderboard() {
         setScreen(new LeaderBoardScreen(this));
     }
@@ -372,9 +355,6 @@ public class PvzGame extends Game {
                 this::showTravelMenu
             )
         );
-    }
-    public void showVaseBreaker() {
-        showVaseBreaker(1);
     }
 
     public void showVaseBreaker(int levelNumber) {
@@ -543,19 +523,6 @@ public class PvzGame extends Game {
                 }
             )
         );
-    }
-
-    public void startLevel(Season season, Level level){
-
-        menuManager.startBattle(level, season);
-
-        GameContext ctx = menuManager.getCtx();
-
-        if (level.skipsPlantSelection()) {
-            beginBattleWithoutSelection(ctx);
-        } else {
-            showPlantSelection(ctx);
-        }
     }
 
     @Override

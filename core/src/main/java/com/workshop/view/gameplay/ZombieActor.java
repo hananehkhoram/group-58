@@ -163,58 +163,6 @@ public final class ZombieActor extends Actor {
         drawScaled(batch, pamPath, clip, time, x, y, loop, scale, null);
     }
 
-    private void drawOverlayScaled(
-        Batch batch,
-        String pamPath,
-        String clip,
-        float time,
-        float x,
-        float y,
-        boolean loop
-    ) {
-
-        Rectangle bounds = pamPlayer.bounds(
-            pamPath,
-            clip
-        );
-
-        float scale = 1f;
-
-        if (bounds != null && bounds.height > 0f) {
-            scale =
-                (cellHeight * TARGET_HEIGHT_TO_CELL_RATIO)
-                    / bounds.height;
-        }
-
-        Matrix4 oldTransform =
-            batch.getTransformMatrix().cpy();
-
-        Matrix4 transform =
-            new Matrix4(oldTransform);
-
-        transform.translate(x, y, 0);
-        transform.scale(scale, scale, 1f);
-        transform.translate(-x, -y, 0);
-
-        batch.setTransformMatrix(transform);
-
-        try {
-            pamPlayer.draw(
-                batch,
-                pamPath,
-                clip,
-                time,
-                x,
-                y,
-                loop,
-                null
-            );
-        } catch(Throwable ignored) {
-        }
-
-        batch.setTransformMatrix(oldTransform);
-    }
-
     private void drawScaled(
         Batch batch,
         String pamPath,
@@ -766,10 +714,6 @@ public final class ZombieActor extends Actor {
         );
     }
 
-    public ZombieAnimationState getCurrentState() {
-        return currentState;
-    }
-
     public Zombie getZombie() {
         return zombie;
     }
@@ -823,8 +767,6 @@ public final class ZombieActor extends Actor {
 
         Matrix4 transform =
             new Matrix4(oldTransform);
-
-        float scaleX = zombie.isFacingRight() ? -scale : scale;
 
         transform.translate(x, y, 0);
         transform.scale(-scale, scale, 1f);

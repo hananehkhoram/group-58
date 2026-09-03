@@ -18,22 +18,13 @@ public class LevelNodeActor extends Actor {
         "768/INITIAL/WORLDMAP/LEVEL_NODE_MINIGAME/LEVEL_NODE_MINIGAME.PAM";
 
     private float stateTime = 0;
-    private String animation = "idle";
 
-    private int miniGameId;
-    private int levelId;
-    private String levelName;
 
     private boolean locked;
 
     private float scale = 0.3f;
-    private int miniGameType;
 
     public LevelNodeActor(int miniGameId, int levelId, String levelName, Listener listener){
-
-        this.miniGameId = miniGameId;
-        this.levelId = levelId;
-        this.levelName = levelName;
 
         User currentUser = UserManager.getInstance().getCurrentUser();
 

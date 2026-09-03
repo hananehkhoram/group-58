@@ -57,7 +57,6 @@ public class CollectionScreen implements Screen {
     private final Stage stage;
     private final Skin skin;
     private final Listener listener;
-    private final CollectionMenu menuLogic;
     private User currentUser;
     private Table rootTable;
     private Table gridTable;
@@ -74,7 +73,6 @@ public class CollectionScreen implements Screen {
         this.listener = listener;
         this.skin = PvzSkin.get();
         this.stage = new Stage(new ScreenViewport());
-        this.menuLogic = new CollectionMenu(ctx);
         this.currentUser = UserManager.getInstance().getCurrentUser();
         this.batch = new SpriteBatch();
 

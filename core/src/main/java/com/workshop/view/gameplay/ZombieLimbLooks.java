@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-/** اسپرایت جدا برای سر و دست افتاده. */
 final class ZombieLimbLooks {
 
     private static TextureRegion head;
@@ -32,10 +31,6 @@ final class ZombieLimbLooks {
 
     private interface Painter {
         void paint(Pixmap pixmap);
-    }
-
-    private static TextureRegion make(Painter painter) {
-        return make(64, 64, painter);
     }
 
     private static TextureRegion make(int width, int height, Painter painter) {

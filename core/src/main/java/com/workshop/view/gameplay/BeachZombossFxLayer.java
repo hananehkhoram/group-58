@@ -20,10 +20,6 @@ import java.util.List;
 
 import pvz.libpvz.pam.PamPlayer;
 
-/**
- * کوسه‌های کوچک زامباس بیچ و نوار باد توربین؛ جدا از انفجارهای معمولی
- * تا scale/clip اشتباه BurstActor آن‌ها را نامرئی نکند.
- */
 public final class BeachZombossFxLayer extends Group {
 
     private static final String SHARK_PAM =
@@ -188,91 +184,6 @@ public final class BeachZombossFxLayer extends Group {
 
         batch.flush();
         batch.setBlendFunction(src, dst);
-        batch.setColor(1f, 1f, 1f, parentAlpha);
-    }
-
-    private void drawWindPam(
-        Batch batch,
-        float parentAlpha,
-        float mouthX,
-        float mouthY,
-        float cellWidth,
-        float cellHeight
-    ) {
-        String clip = pickClip(WIND_PAM, "animation", "idle", "loop");
-        if (clip == null) {
-            return;
-        }
-        Rectangle bounds;
-        try {
-            bounds = pamPlayer.bounds(WIND_PAM, clip);
-        } catch (RuntimeException exception) {
-            Gdx.app.error("BeachZombossFxLayer", "bounds failed for " + WIND_PAM, exception);
-            return;
-        }
-        if (bounds == null || bounds.width <= 0f || bounds.height <= 0f) {
-            return;
-        }
-        float scale = Math.min(
-            (cellWidth * 4.6f) / bounds.width,
-            (cellHeight * 2.8f) / bounds.height
-        );
-        batch.flush();
-        Matrix4 original = batch.getTransformMatrix().cpy();
-        Matrix4 scaled = original.cpy()
-            .translate(mouthX, mouthY, 0f)
-            .scale(scale, scale, 1f)
-            .translate(-mouthX, -mouthY, 0f);
-        batch.setTransformMatrix(scaled);
-        batch.setColor(1f, 1f, 1f, parentAlpha);
-        try {
-            pamPlayer.draw(batch, WIND_PAM, clip, windTime, mouthX, mouthY, true);
-        } catch (RuntimeException exception) {
-            Gdx.app.error("BeachZombossFxLayer", "draw failed for " + WIND_PAM, exception);
-        }
-        batch.flush();
-        batch.setTransformMatrix(original);
-    }
-
-    private void drawFallbackSwirl(
-        Batch batch,
-        float parentAlpha,
-        float mouthX,
-        float mouthY,
-        float cellWidth,
-        float cellHeight
-    ) {
-        TextureRegion region = swirlRegion();
-        if (region == null) {
-            return;
-        }
-        float size = Math.max(cellWidth, cellHeight) * 3.4f;
-        float origin = size / 2f;
-        batch.setColor(1f, 1f, 1f, parentAlpha * 0.95f);
-        batch.draw(
-            region,
-            mouthX - origin,
-            mouthY - origin,
-            origin,
-            origin,
-            size,
-            size,
-            1f,
-            1f,
-            -windTime * 220f
-        );
-        batch.draw(
-            region,
-            mouthX - origin * 0.72f,
-            mouthY - origin * 0.72f,
-            origin * 0.72f,
-            origin * 0.72f,
-            size * 0.72f,
-            size * 0.72f,
-            1f,
-            1f,
-            windTime * 310f
-        );
         batch.setColor(1f, 1f, 1f, parentAlpha);
     }
 

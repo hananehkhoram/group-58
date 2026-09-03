@@ -19,11 +19,6 @@ import com.workshop.net.MatchListener;
 import com.workshop.net.NetResponse;
 import pvz.skin.PvzSkin;
 
-/**
- * Entry point for the 2-player "I, Zombie" mode: challenge a specific
- * online user, join the random-matchmaking queue, or play locally on this
- * device (the bonus couch-play mode).
- */
 public class OpponentSelectScreen implements Screen {
 
     private final PvzGame game;

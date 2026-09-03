@@ -8,15 +8,6 @@ public class Console {
     public Console() {
     }
 
-    public static String getInput(String var0) {
-        if (scanner.hasNextLine()) {
-            System.out.print(var0);
-            return scanner.nextLine().trim();
-        } else {
-            return "exit";
-        }
-    }
-
     public static void showMessage(String var0, Object... var1) {
         System.out.printf(var0 + "%n", var1);
     }

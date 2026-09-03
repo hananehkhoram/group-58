@@ -78,7 +78,6 @@ public final class WaveSystem {
     private void spawnWave(Wave wave) {
         wave.start(ctx);
         ctx.incrementWaveIndex();
-        ctx.setActiveWaveInProgress(true);
     }
 
     private IZombieManager getIZombieManager() {

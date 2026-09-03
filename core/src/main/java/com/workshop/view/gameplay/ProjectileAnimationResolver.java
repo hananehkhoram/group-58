@@ -677,10 +677,6 @@ public final class ProjectileAnimationResolver {
         return larger.containsAll(smaller) && !smaller.equals(larger);
     }
 
-    private static boolean isSamePath(String first, String second) {
-        return first != null && second != null && first.equalsIgnoreCase(second);
-    }
-
     private static boolean isConflictingEffectTag(
         String token,
         BulletType currentBullet

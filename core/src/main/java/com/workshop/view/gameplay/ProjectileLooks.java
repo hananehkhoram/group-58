@@ -26,10 +26,6 @@ final class ProjectileLooks {
         );
     }
 
-    static String imageId(Plant plant, ProjectileVisualVariant variant) {
-        return imageId(plant, variant, null);
-    }
-
     static String imageId(
         Plant plant,
         ProjectileVisualVariant variant,

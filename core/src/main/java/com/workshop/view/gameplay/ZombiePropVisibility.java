@@ -7,11 +7,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Explorer has unattached clothing/torch image slices that draw at the
- * canvas rest pose above the head. There is no separately named hat part
- * in this PAM; do not overlay a guessed atlas sprite.
- */
 final class ZombiePropVisibility {
 
     private static final String[] HIDDEN_EXPLORER_PARTS = {

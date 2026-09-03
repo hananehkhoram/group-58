@@ -17,7 +17,6 @@ public class GameEngine {
     private Tile[][] tiles;
     private LawnMower[] lawnMowers;
     private final Random random = new Random();
-    private MenuManager menuManager;
 
     private final WaveSystem waveSystem;
     private final ZombieSystem zombieSystem;
@@ -30,7 +29,6 @@ public class GameEngine {
         this.ctx = ctx;
         this.tiles = Tile.buildTiles(ctx);
         this.lawnMowers = LawnMower.buildLawnMowers();
-        this.menuManager = menuManager;
 
         this.waveSystem = new WaveSystem(ctx);
         this.zombieSystem = new ZombieSystem(ctx, lawnMowers);
@@ -95,16 +93,8 @@ public class GameEngine {
         winLoseChecker.check();
     }
 
-    public Zombie[] getRowZombies(int row) {
-        return lawnMowerSystem.getRowZombies(row);
-    }
-
     public void removePlant(int row, int col) {
         plantSystem.removePlant(row, col);
-    }
-
-    public void updateProjectiles(double deltaTime) {
-        projectileSystem.update(deltaTime);
     }
 
     public List<Zombie> findTargets(int row, int col, TargetingMode mode) {

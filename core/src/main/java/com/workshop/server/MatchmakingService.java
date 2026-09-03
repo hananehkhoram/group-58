@@ -6,13 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Server-side half of the networked "I, Zombie" mini-game: lets a client
- * challenge a specific online user or join a random queue, pairs two
- * clients into a match, and relays opaque match messages between them.
- * The server never looks at what's inside a relayed message — it is only
- * a switchboard, matching the "clients don't talk directly" requirement.
- */
 public final class MatchmakingService {
 
     private static final class PendingChallenge {
@@ -66,15 +59,10 @@ public final class MatchmakingService {
         ClientHandler other(ClientHandler handler) {
             return handler == handlerA ? handlerB : handlerA;
         }
-
-        String usernameOf(ClientHandler handler) {
-            return handler == handlerA ? usernameA : usernameB;
-        }
     }
 
     private final SessionManager sessions;
     private final Object lock = new Object();
-
     private final Map<String, PendingChallenge> pendingChallengesByTarget = new ConcurrentHashMap<>();
     private final Deque<QueueEntry> randomQueue = new ArrayDeque<>();
     private final Map<String, MatchSession> matchesById = new ConcurrentHashMap<>();

@@ -216,14 +216,6 @@ public class PauseOverlay {
         return overlay.isVisible();
     }
 
-    public void toggle() {
-        if (isVisible()) {
-            hide();
-        } else {
-            show();
-        }
-    }
-
     public void dispose() {
         dimTexture.dispose();
         borderTexture.dispose();

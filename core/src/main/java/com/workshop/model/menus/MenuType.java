@@ -21,10 +21,6 @@ public enum MenuType {
         this.menuName = commandName;
     }
 
-    public String getMenuName() {
-        return menuName;
-    }
-
     public static MenuType fromMenuName(String name) {
         for (MenuType type : values()) {
             if (type.menuName.equalsIgnoreCase(name)) {

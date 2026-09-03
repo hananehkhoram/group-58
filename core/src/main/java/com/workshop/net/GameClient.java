@@ -235,20 +235,6 @@ public final class GameClient {
         return rows;
     }
 
-    public synchronized List<String> getOnlineUsers() {
-        NetResponse response = request("GET_ONLINE_USERS");
-        List<String> names = new ArrayList<>();
-        if (!response.ok || response.payload == null || response.payload.isBlank()) {
-            return names;
-        }
-        for (String name : response.payload.split(",", -1)) {
-            if (!name.isBlank()) {
-                names.add(name);
-            }
-        }
-        return names;
-    }
-
     public synchronized NetResponse challenge(String targetUsername, String role) {
         return request("CHALLENGE", targetUsername, role);
     }

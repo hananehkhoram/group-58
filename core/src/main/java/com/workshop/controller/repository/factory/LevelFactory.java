@@ -46,17 +46,6 @@ public class LevelFactory {
         return name.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
     }
 
-    private static List<Plant> plants(String... names) {
-        List<Plant> result = new ArrayList<>();
-        for (String name : names) {
-            Plant plant = p(name);
-            if (plant != null) {
-                result.add(plant);
-            }
-        }
-        return result;
-    }
-
     private static Wave[] generateWaves(int waveCount, int baseCost, int waveDelayTicks) {
         Wave[] waves = new Wave[waveCount];
         for (int i = 0; i < waveCount; i++) {
@@ -131,8 +120,6 @@ public class LevelFactory {
         String davePam =
             "768/INITIAL/CRAZYDAVE/DAVEWINNIE_NARRATIONICONS/DAVEWINNIE_NARRATIONICONS.PAM";
         String daveClip = "dave";
-
-        String pennyResourceId = "IMAGE_UI_PENNY_PURSUITS_ZOMBOSS_PENNY";
 
         day1.setIntroDialogue(List.of(
             com.workshop.model.level.DialogueLine.withPamPortrait(

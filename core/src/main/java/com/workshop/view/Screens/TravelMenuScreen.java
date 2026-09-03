@@ -32,7 +32,7 @@ public class TravelMenuScreen implements Screen {
 
     private LevelNodeActor.Listener listener;
 
-    public TravelMenuScreen(PvzGame game, User user, Season season) {
+    public TravelMenuScreen(PvzGame game) {
 
         listener = new LevelNodeActor.Listener() {
             @Override
@@ -152,8 +152,6 @@ public class TravelMenuScreen implements Screen {
         for (int j = 0; j < 5; j++){
 
             for(int i = 0; i < 3; i++){
-
-                int miniGameLevel = i + 1;
 
                 int miniGameId = 0;
 

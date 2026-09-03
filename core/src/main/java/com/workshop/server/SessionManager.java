@@ -15,10 +15,6 @@ public final class SessionManager {
         online.entrySet().removeIf(entry -> entry.getValue() == handler);
     }
 
-    public boolean isOnline(String username) {
-        return online.containsKey(username.toLowerCase());
-    }
-
     public ClientHandler handlerFor(String username) {
         return online.get(username.toLowerCase());
     }

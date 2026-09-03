@@ -537,14 +537,6 @@ public final class ZombieAnimationResolver {
             }
         }
     }
-
-    public String resolveAshPam(Zombie zombie) {
-        if (zombie == null) {
-            return fallbackAshPam();
-        }
-        return resolveAshPam(resolvePamName(zombie, null));
-    }
-
     private String resolveAshPam(String pamName) {
         String key = normalize(pamName);
         String bestPath = fallbackAshPam();

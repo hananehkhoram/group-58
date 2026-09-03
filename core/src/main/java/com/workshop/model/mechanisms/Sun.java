@@ -28,10 +28,6 @@ public class Sun {
         return isOnGround;
     }
 
-    public int getTicksUntilHitGround() {
-        return ticksUntilHitGround;
-    }
-
     public float getFallProgress() {
         if (isOnGround) {
             return 1f;

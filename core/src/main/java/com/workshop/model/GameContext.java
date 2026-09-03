@@ -48,10 +48,7 @@ public class GameContext {
     private final PendingFxQueue fx = new PendingFxQueue();
     private final BoardPickups pickups = new BoardPickups();
     private final LevelStats stats = new LevelStats();
-
-    private boolean isSetupPhase;
     private LevelManager levelManager;
-    private boolean activeWaveInProgress;
     private boolean manualStartCommandReceived;
     private long manualWaveStartTick;
     private boolean battleStarted;
@@ -327,8 +324,6 @@ public class GameContext {
     public int getTotalLostPlants() { return stats.getTotalLostPlants(); }
     public boolean isGameEnded() { return gameEnded; }
     public boolean isPlayerWon() { return playerWon; }
-    public boolean isSetupPhase() { return isSetupPhase; }
-    public void setSetupPhase(boolean v) { this.isSetupPhase = v; }
     public TimeManager getTimeManager() { return timeManager; }
     public PlantFactory getPlantFactory() { return plantFactory; }
     public DataManager getDataManager() { return dm; }
@@ -345,20 +340,12 @@ public class GameContext {
         this.externalWinLossHandling = externalWinLossHandling;
     }
 
-    public void setActiveWaveInProgress(boolean activeWaveInProgress) {
-        this.activeWaveInProgress = activeWaveInProgress;
-    }
-
     public GameEngine getGameEngine() { return this.gameEngine; }
     public void setGameEngine(GameEngine gameEngine) { this.gameEngine = gameEngine; }
     public boolean isManualStartCommandReceived() { return manualStartCommandReceived; }
-    public void setManualStartCommandReceived(boolean manualStartCommandReceived) {
-        this.manualStartCommandReceived = manualStartCommandReceived;
-    }
 
     public void triggerManualWaveStart() {
         this.manualStartCommandReceived = true;
-        this.isSetupPhase = false;
         if (timeManager != null) {
             this.manualWaveStartTick = timeManager.getTotalTicks();
         }
@@ -401,7 +388,6 @@ public class GameContext {
     public void incrementQuickKillPattern() { stats.incrementQuickKillPattern(); }
     public void incrementPrecisionFinishPattern() { stats.incrementPrecisionFinishPattern(); }
     public void bumpKillStreak() { stats.bumpKillStreak(); }
-    public void resetKillStreak() { stats.resetKillStreak(); }
     public int getMultiKillPatternCount() { return stats.getMultiKillPatternCount(); }
     public int getSimultaneousKillPatternCount() { return stats.getSimultaneousKillPatternCount(); }
     public int getQuickKillPatternCount() { return stats.getQuickKillPatternCount(); }

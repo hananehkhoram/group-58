@@ -8,9 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Level-scoped scoring / quest counters previously inlined in {@link GameContext}.
- */
 public final class LevelStats {
 
     private int multiKillPatternCount;

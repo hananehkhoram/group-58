@@ -10,10 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-/**
- * فایل‌های فقط‌خواندنی پروژه را ابتدا از resources پیدا می‌کند.
- * اگر فایل در resources نبود، چند مسیر مناسب برای حالت توسعه را بررسی می‌کند.
- */
 final class ResourceFileReader {
 
     private ResourceFileReader() {
@@ -22,7 +18,6 @@ final class ResourceFileReader {
     static BufferedReader openUtf8(String filePath) throws IOException {
         String resourcePath = normalize(filePath);
 
-        // ابتدا فایل را از classpath و resources پیدا می‌کنیم.
         InputStream resourceStream = openResource(resourcePath);
 
         if (resourceStream != null) {
@@ -34,7 +29,6 @@ final class ResourceFileReader {
             );
         }
 
-        // مسیرهای جایگزین برای اجرای مستقیم پروژه در محیط توسعه
         List<Path> candidates = List.of(
             Path.of(filePath),
             Path.of("assets").resolve(resourcePath),

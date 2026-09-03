@@ -61,13 +61,6 @@ final class ZombieStatusEffects {
         return stunRemaining > 0;
     }
 
-    double getStunRemaining() {
-        return stunRemaining;
-    }
-
-    /**
-     * @return true if the zombie update should return early (frozen block or butter lock)
-     */
     boolean tick(Zombie zombie, List<Effects> effects, boolean isBoss, double deltaTime) {
         if (isBoss && isIced) {
             isIced = false;

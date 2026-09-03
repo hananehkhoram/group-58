@@ -38,9 +38,6 @@ public final class PlantActor extends Actor {
         "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_PLANT/FROSTBITE_ICE_BLOCK_PLANT.PAM";
     private static final String ICE_BLOCK_PREFERRED_CLIP = "idle";
 
-    private boolean wasIced;
-    private int lastFreezeLevel;
-
     private static final String CHILL_OVERLAY_PAM =
         "768/FULL/EFFECTS/FROSTBITE_CHILL_PLANT/FROSTBITE_CHILL_PLANT.PAM";
     private static final String CHILL_OVERLAY_PREFERRED_CLIP = "idle";
@@ -249,8 +246,6 @@ public final class PlantActor extends Actor {
         hitFlash.update(delta);
 
         boolean iced = plant.isIced();
-        int freezeLevel = plant.getFreezeLevel();
-
         if (!iced) {
             stateTime += delta;
 
@@ -276,8 +271,6 @@ public final class PlantActor extends Actor {
             }
         }
 
-        wasIced = iced;
-        lastFreezeLevel = freezeLevel;
         frostStateTime += delta;
 
         plant.tickPlantFoodGlow(delta);
@@ -720,10 +713,6 @@ public final class PlantActor extends Actor {
     public void playIdle() {
         currentState = PlantAnimationState.IDLE;
         stateTime = 0f;
-    }
-
-    public PlantAnimationState getCurrentState() {
-        return currentState;
     }
 
     public Plant getPlant() {

@@ -10,7 +10,6 @@ import java.util.*;
 public class BeghouledManager {
     private static final int SUN_VALUE = 50;
 
-    /** جدول ارتقا طبق سند: نام گیاه فعلی -> [نام گیاه ارتقایافته، هزینه به خورشید] */
     private final Map<String, Object[]> upgradeTable;
 
     private GameContext ctx;

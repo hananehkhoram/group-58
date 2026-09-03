@@ -14,14 +14,6 @@ import java.util.List;
 
 public final class BrainLayer extends Group {
 
-    /*
-     * این مقدار را با مسیر واقعی PAM مغز خودت جایگزین کن.
-     *
-     * مثال ساختار مسیر:
-     * 768/.../.../SOMETHING.PAM
-     *
-     * اسم واقعی را حدس نزن.
-     */
     private static final String BRAIN_PAM =
         "768/FULL/ZOMBIE/POWER_BRAIN_PROJECTILE/POWER_BRAIN_PROJECTILE.PAM";
 
